@@ -1,0 +1,7 @@
+node_modules/
+dist/
+output/*.csv
+debug/
+.env
+.DS_Store
+*.log

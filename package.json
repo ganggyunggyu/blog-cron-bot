@@ -1,0 +1,22 @@
+{
+  "name": "naver-exposure-bot",
+  "version": "1.0.0",
+  "description": "네이버 검색 노출 크론 봇",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "test": "ts-node src/test.ts"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "mongoose": "^8.0.0",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0"
+  }
+}
