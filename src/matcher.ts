@@ -37,18 +37,18 @@ export const matchBlogs = (
 
   const uniqueGroups = new Set(items.map((item) => item.group));
 
-  console.log(uniqueGroups);
+  // console.log(uniqueGroups);
   const isPopular = uniqueGroups.size === 1;
 
-  console.log(`\n🔍 검색어: ${query}`);
-  console.log(
-    `📊 총 ${items.length}개 아이템, 고유 group ${uniqueGroups.size}개`
-  );
-  console.log(`✅ 구분: ${isPopular ? '인기글' : '스블 (스마트블로그)'}`);
+  // console.log(`\n🔍 검색어: ${query}`);
+  // console.log(
+  //   `📊 총 ${items.length}개 아이템, 고유 group ${uniqueGroups.size}개`
+  // );
+  // console.log(`✅ 구분: ${isPopular ? '인기글' : '스블 (스마트블로그)'}`);
 
-  if (!isPopular) {
-    console.log('📌 인기 주제들:', Array.from(uniqueGroups));
-  }
+  // if (!isPopular) {
+  //   console.log('📌 인기 주제들:', Array.from(uniqueGroups));
+  // }
 
   const itemPositions = new Map<PopularItem, number>();
 

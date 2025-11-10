@@ -72,7 +72,6 @@ export const updateKeywordResult = async (
       url,
       lastChecked: new Date(),
     });
-    console.log(`✅ 키워드 업데이트 완료: ${keywordId}`);
   } catch (error) {
     console.error('❌ 키워드 업데이트 실패:', error);
     throw error;

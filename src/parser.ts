@@ -31,10 +31,10 @@ export const extractPopularItems = (html: string): PopularItem[] => {
   const $ = cheerio.load(html);
   const items: PopularItem[] = [];
 
-  console.log('\n📦 파싱 시작...\n');
+  // console.log('\n📦 파싱 시작...\n');
 
   const $collectionRoots = $(SELECTORS.collectionRoot);
-  console.log(`🔍 collection-root ${$collectionRoots.length}개 발견\n`);
+  // console.log(`🔍 collection-root ${$collectionRoots.length}개 발견\n`);
 
   $collectionRoots.each((rootIdx, root) => {
     const $root = $(root);
@@ -47,10 +47,10 @@ export const extractPopularItems = (html: string): PopularItem[] => {
 
     const topicName = headline || '인기글';
 
-    console.log(`\n📌 주제 ${rootIdx + 1}: "${topicName}"`);
+    // console.log(`\n📌 주제 ${rootIdx + 1}: "${topicName}"`);
 
     const $blocks = $root.find(SELECTORS.blockMod);
-    console.log(`  → 블록 ${$blocks.length}개 발견`);
+    // console.log(`  → 블록 ${$blocks.length}개 발견`);
 
     $blocks.each((_, block) => {
       const $block = $(block);
@@ -97,7 +97,7 @@ export const extractPopularItems = (html: string): PopularItem[] => {
 
   const $singleIntentionSections = $(SELECTORS.singleIntentionList);
   if ($singleIntentionSections.length > 0) {
-    console.log(`\n🔍 single-intention-list ${$singleIntentionSections.length}개 발견\n`);
+    // console.log(`\n🔍 single-intention-list ${$singleIntentionSections.length}개 발견\n`);
 
     $singleIntentionSections.each((sectionIdx, section) => {
       const $section = $(section);
@@ -111,10 +111,10 @@ export const extractPopularItems = (html: string): PopularItem[] => {
 
       const topicName = headline || '인기글';
 
-      console.log(`\n📌 주제 ${sectionIdx + 1}: "${topicName}"`);
+      // console.log(`\n📌 주제 ${sectionIdx + 1}: "${topicName}"`);
 
       const $items = $section.find(SELECTORS.intentionItem);
-      console.log(`  → 아이템 ${$items.length}개 발견`);
+      // console.log(`  → 아이템 ${$items.length}개 발견`);
 
       $items.each((_, item) => {
         const $item = $(item);
@@ -148,7 +148,7 @@ export const extractPopularItems = (html: string): PopularItem[] => {
     });
   }
 
-  console.log(`\n✅ 총 ${items.length}개 아이템 파싱 완료\n`);
+  // console.log(`\n✅ 총 ${items.length}개 아이템 파싱 완료\n`);
 
   const unique = new Map<string, PopularItem>();
   for (const item of items) {

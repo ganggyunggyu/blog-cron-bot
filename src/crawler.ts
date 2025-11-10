@@ -22,22 +22,22 @@ export const crawlWithRetry = async (
 ): Promise<string> => {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      console.log(`🔄 [시도 ${attempt}/${maxRetries}] 검색어: ${query}`);
+      // console.log(`🔄 [시도 ${attempt}/${maxRetries}] 검색어: ${query}`);
 
       const url = buildNaverSearchUrl(query);
       const html = await fetchHtml(url, NAVER_DESKTOP_HEADERS);
 
-      console.log(`✅ 성공! HTML 크롤링 완료`);
+      // console.log(`✅ 성공! HTML 크롤링 완료`);
 
       return html;
     } catch (error) {
-      console.error(`❌ 실패 (시도 ${attempt}/${maxRetries}):`, error);
+      // console.error(`❌ 실패 (시도 ${attempt}/${maxRetries}):`, error);
 
       if (attempt < maxRetries) {
-        console.log('⏳ 30초 후 재시도...');
+        // console.log('⏳ 30초 후 재시도...');
         await delay(30000);
       } else {
-        console.error('❌ 최대 재시도 횟수 초과');
+        // console.error('❌ 최대 재시도 횟수 초과');
         throw error;
       }
     }
