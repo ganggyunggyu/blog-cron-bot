@@ -1,62 +1,43 @@
-import { crawlWithRetry } from './crawler';
-import { extractPopularItems } from './parser';
-import { matchBlogs } from './matcher';
-import { saveToCSV } from './csv-writer';
-import * as fs from 'fs';
-import * as path from 'path';
+import { connectDB, disconnectDB, getAllKeywords } from './database';
+import * as dotenv from 'dotenv';
 
-async function testSingleKeyword() {
-  const testKeyword = '커피머신';
+dotenv.config();
 
-  console.log('🚀 테스트 시작\n');
-  console.log(`🔍 테스트 키워드: "${testKeyword}"\n`);
+async function testMongoDBFetch() {
+  console.log('🚀 MongoDB 데이터 가져오기 테스트\n');
 
   try {
-    const html = await crawlWithRetry(testKeyword, 3);
-
-    const debugDir = path.join(__dirname, '../debug');
-    if (!fs.existsSync(debugDir)) {
-      fs.mkdirSync(debugDir, { recursive: true });
+    const uri = process.env.MONGODB_URI;
+    if (!uri) {
+      throw new Error('MONGODB_URI 환경변수가 설정되지 않았습니다');
     }
-    const htmlFilePath = path.join(debugDir, `${testKeyword}_debug.html`);
-    fs.writeFileSync(htmlFilePath, html, 'utf8');
-    console.log(`\n📁 HTML 저장됨: ${htmlFilePath}`);
 
-    const items = extractPopularItems(html);
-    console.log(items);
-    console.log(`\n✅ 인기글 ${items.length}개 추출`);
+    await connectDB(uri);
 
-    const matches = matchBlogs(testKeyword, items);
+    const keywords = await getAllKeywords();
 
-    if (matches.length > 0) {
-      console.log(`\n🎯 "${testKeyword}" 노출 발견! (${matches.length}개)\n`);
-      matches.forEach((match) => {
-        console.log(`  - 블로그ID: ${match.blogId}`);
-        console.log(`  - 블로그명: ${match.blogName}`);
-        console.log(`  - 타입: ${match.exposureType}`);
-        if (match.topicName) {
-          console.log(`  - 주제: ${match.topicName}`);
-        }
-        console.log(`  - 순위: ${match.position}위`);
-        console.log(`  - 제목: ${match.postTitle}`);
-        console.log(`  - URL: ${match.postLink}`);
+    console.log(`\n📊 총 ${keywords.length}개 키워드 발견\n`);
+
+    if (keywords.length > 0) {
+      console.log('📝 키워드 목록:\n');
+      keywords.forEach((kw, idx) => {
+        console.log(`${idx + 1}. ${kw.keyword}`);
+        console.log(`   회사: ${kw.company}`);
+        console.log(`   노출 여부: ${kw.visibility ? '✅ 노출됨' : '❌ 노출 안됨'}`);
+        console.log(`   인기주제: ${kw.popularTopic || '(없음)'}`);
+        console.log(`   URL: ${kw.url || '(없음)'}`);
+        console.log(`   시트타입: ${kw.sheetType}`);
+        console.log(`   마지막 체크: ${kw.lastChecked.toLocaleString('ko-KR')}`);
         console.log('');
       });
-
-      const timestamp = new Date()
-        .toISOString()
-        .replace(/[:.]/g, '-')
-        .slice(0, 19);
-      const filename = `test_${testKeyword}_${timestamp}.csv`;
-      saveToCSV(matches, filename);
-    } else {
-      console.log(`\n❌ "${testKeyword}" 노출 없음`);
     }
 
-    console.log('\n✅ 테스트 완료!');
+    await disconnectDB();
+
+    console.log('✅ 테스트 완료!');
   } catch (error) {
     console.error('❌ 테스트 실패:', error);
   }
 }
 
-testSingleKeyword();
+testMongoDBFetch();
