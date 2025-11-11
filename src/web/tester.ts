@@ -138,13 +138,12 @@ function extractPostVendorName(html: string): string {
     const $ = cheerio.load(html);
     const t = $('.se-oglink-title').first().text().trim();
     if (t) {
-      if (t.includes('네이버')) {
+      if (t === '네이버 지도') {
         const s = $('.se-oglink-summary').first().text().trim();
-        const raw = s || t;
-        const parts = raw.split(/\s*[:\-]\s*/);
-        const head = (parts[0] || '').trim();
-        return head || raw;
+        return s || t;
       }
+      const m = t.match(/^(.+?)\s*:\s*네이버\s*$/);
+      if (m) return (m[1] || '').trim();
       const parts = t.split(/\s*[:\-]\s*/);
       const head = (parts[0] || '').trim();
       return head || t;

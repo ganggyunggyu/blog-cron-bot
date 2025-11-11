@@ -393,14 +393,15 @@ function extractPostVendorName(html: string): string {
     // 1) Prefer se-oglink-title first
     const titleText = $('.se-oglink-title').first().text().trim();
     if (titleText) {
-      // If title contains '네이버', use summary instead
-      if (titleText.includes('네이버')) {
+      // Exact "네이버 지도" → rely on summary as-is
+      if (titleText === '네이버 지도') {
         const summaryText = $('.se-oglink-summary').first().text().trim();
-        const raw = summaryText || titleText;
-        const parts = raw.split(/\s*[:\-]\s*/);
-        const head = (parts[0] || '').trim();
-        return head || raw;
+        return summaryText || titleText;
       }
+      // Pattern like "가게명 : 네이버" → extract left part
+      const m = titleText.match(/^(.+?)\s*:\s*네이버\s*$/);
+      if (m) return (m[1] || '').trim();
+      // Fallback: split by common delimiters
       const parts = titleText.split(/\s*[:\-]\s*/);
       const head = (parts[0] || '').trim();
       return head || titleText;
