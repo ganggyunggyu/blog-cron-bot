@@ -1,41 +1,132 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Exposure Tester</title>
     <style>
-      :root { --bg:#0b0b0d; --fg:#e6e6e6; --muted:#9aa0a6; --accent:#4f8cff; --card:#141418; }
-      * { box-sizing: border-box }
-      body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, 'Noto Sans KR', Arial, 'Apple Color Emoji', 'Segoe UI Emoji'; background: var(--bg); color: var(--fg); }
-      .wrap { max-width: 900px; margin: 40px auto; padding: 0 16px; }
-      .card { background: var(--card); border: 1px solid #1f2128; border-radius: 12px; padding: 16px; }
-      .row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end; }
-      label { display:block; font-size:12px; color: var(--muted); margin-bottom: 6px; }
-      input[type="text"] { width:100%; padding:12px; border-radius:10px; border:1px solid #2a2e35; background:#101115; color:var(--fg); }
-      .controls { display:flex; gap:12px; align-items:center; }
-      .btn { padding: 10px 14px; border:1px solid #2a2e35; border-radius:10px; background: #11131a; color: var(--fg); cursor:pointer; }
-      .btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
-      .switch { display:flex; gap:8px; align-items:center; font-size: 13px; color: var(--muted); }
-      .out { margin-top:16px; white-space: pre-wrap; word-break: break-word; }
-      .grid { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
-      .tag { display:inline-block; padding:2px 8px; border:1px solid #2a2e35; border-radius:999px; font-size:12px; color: var(--muted); }
-      .kv { display:grid; grid-template-columns: 140px 1fr; gap:8px; font-size:14px; }
-      .muted { color: var(--muted); }
+      :root {
+        --bg: #0b0b0d;
+        --fg: #e6e6e6;
+        --muted: #9aa0a6;
+        --accent: #4f8cff;
+        --card: #141418;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+          'Noto Sans KR', Arial, 'Apple Color Emoji', 'Segoe UI Emoji';
+        background: var(--bg);
+        color: var(--fg);
+      }
+      .wrap {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 0 16px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid #1f2128;
+        border-radius: 12px;
+        padding: 16px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: end;
+      }
+      label {
+        display: block;
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      input[type='text'] {
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        border: 1px solid #2a2e35;
+        background: #101115;
+        color: var(--fg);
+      }
+      .controls {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .btn {
+        padding: 10px 14px;
+        border: 1px solid #2a2e35;
+        border-radius: 10px;
+        background: #11131a;
+        color: var(--fg);
+        cursor: pointer;
+      }
+      .btn.primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: white;
+      }
+      .switch {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .out {
+        margin-top: 16px;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .tag {
+        display: inline-block;
+        padding: 2px 8px;
+        border: 1px solid #2a2e35;
+        border-radius: 999px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .kv {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: 8px;
+        font-size: 14px;
+      }
+      .muted {
+        color: var(--muted);
+      }
     </style>
   </head>
   <body>
     <div class="wrap">
-      <h1 style="margin:0 0 16px; font-size:20px;">Exposure Tester</h1>
+      <h1 style="margin: 0 0 16px; font-size: 20px">Exposure Tester</h1>
       <div class="card">
         <div class="row">
           <div>
             <label>키워드 (괄호 포함 입력 가능)</label>
-            <input id="kw" type="text" placeholder="예: 대전 봉명동 맛집 (육풍 봉명점)" />
+            <input
+              id="kw"
+              type="text"
+              placeholder="예: 대전 봉명동 맛집 (육풍 봉명점)"
+            />
           </div>
           <div class="controls">
-            <label class="switch"><input id="any" type="checkbox" /> 모든 블로그 허용</label>
-            <label class="switch"><input id="html" type="checkbox" /> HTML 저장</label>
+            <label class="switch"
+              ><input id="any" type="checkbox" /> 모든 블로그 허용</label
+            >
+            <label class="switch"
+              ><input id="html" type="checkbox" /> HTML 저장</label
+            >
             <button class="btn primary" id="go">테스트</button>
           </div>
         </div>
@@ -50,28 +141,48 @@
         const keyword = $('#kw').value.trim();
         const allowAnyBlog = $('#any').checked;
         const fetchHtml = $('#html').checked;
-        if (!keyword) { res.textContent = '키워드를 입력하세요.'; return; }
+        if (!keyword) {
+          res.textContent = '키워드를 입력하세요.';
+          return;
+        }
         res.textContent = '요청 중...';
         try {
-          const r = await fetch('/api/test', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ keyword, allowAnyBlog, fetchHtml })});
+          const r = await fetch('/api/test', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ keyword, allowAnyBlog, fetchHtml }),
+          });
           const data = await r.json();
-          if (!data.ok) { res.textContent = '미노출'; return; }
+          if (!data.ok) {
+            res.textContent = '미노출';
+            return;
+          }
           const m = data.match || {};
           res.innerHTML = `
             <div class="grid">
               <div class="kv">
                 <div class="muted">입력 키워드</div><div>${data.query}</div>
-                <div class="muted">검색어</div><div>${data.baseKeyword || data.query}</div>
-                <div class="muted">식당명</div><div>${data.restaurantName || '-'}</div>
-                <div class="muted">노출타입</div><div><span class="tag">${m.topicName || m.exposureType || '-'}</span></div>
+                <div class="muted">검색어</div><div>${
+                  data.baseKeyword || data.query
+                }</div>
+                <div class="muted">식당명</div><div>${
+                  data.restaurantName || '-'
+                }</div>
+                <div class="muted">노출타입</div><div><span class="tag">${
+                  m.topicName || m.exposureType || '-'
+                }</span></div>
                 <div class="muted">순위</div><div>${m.position ?? '-'}</div>
                 <div class="muted">블로그명</div><div>${m.blogName || '-'}</div>
               </div>
               <div class="kv">
                 <div class="muted">제목</div><div>${m.postTitle || '-'}</div>
-                <div class="muted">링크</div><div><a href="${m.postLink}" target="_blank" rel="noreferrer">${m.postLink}</a></div>
+                <div class="muted">링크</div><div><a href="${
+                  m.postLink
+                }" target="_blank" rel="noreferrer">${m.postLink}</a></div>
                 <div class="muted">블로그ID</div><div>${m.blogId || '-'}</div>
-                <div class="muted">포스트 업체명</div><div>${data.postVendorName || '-'}</div>
+                <div class="muted">포스트 업체명</div><div>${
+                  data.postVendorName || '-'
+                }</div>
               </div>
             </div>
           `;
@@ -81,4 +192,4 @@
       });
     </script>
   </body>
-  </html>
+</html>
