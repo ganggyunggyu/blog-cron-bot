@@ -40,9 +40,18 @@ async function main() {
   const onlyKeywordRegex = (process.env.ONLY_KEYWORD_REGEX || '').trim();
 
   let filtered = allKeywords;
-  const normalize = (s: unknown) => String(s ?? '').toLowerCase().replace(/\s+/g, '');
-  if (onlySheetType) filtered = filtered.filter((k: any) => normalize(k.sheetType) === normalize(onlySheetType));
-  if (onlyCompany) filtered = filtered.filter((k: any) => normalize(k.company) === normalize(onlyCompany));
+  const normalize = (s: unknown) =>
+    String(s ?? '')
+      .toLowerCase()
+      .replace(/\s+/g, '');
+  if (onlySheetType)
+    filtered = filtered.filter(
+      (k: any) => normalize(k.sheetType) === normalize(onlySheetType)
+    );
+  if (onlyCompany)
+    filtered = filtered.filter(
+      (k: any) => normalize(k.company) === normalize(onlyCompany)
+    );
   if (onlyKeywordRegex) {
     try {
       const re = new RegExp(onlyKeywordRegex);
@@ -51,10 +60,14 @@ async function main() {
   }
 
   const startIndexRaw = Number(process.env.START_INDEX ?? '0');
-  const startIndex = Number.isFinite(startIndexRaw) ? Math.max(0, Math.min(startIndexRaw, filtered.length)) : 0;
+  const startIndex = Number.isFinite(startIndexRaw)
+    ? Math.max(0, Math.min(startIndexRaw, filtered.length))
+    : 0;
 
   const keywords = filtered.slice(startIndex);
-  console.log(`📋 검색어 ${keywords.length}개 처리 예정 (필터 applied, start=${startIndex})\n`);
+  console.log(
+    `📋 검색어 ${keywords.length}개 처리 예정 (필터 applied, start=${startIndex})\n`
+  );
 
   const allResults: ExposureResult[] = [];
   const usedCombinations = new Set<string>();
@@ -63,15 +76,18 @@ async function main() {
     const keywordDoc = keywords[i];
     const query = keywordDoc.keyword;
 
-    const restaurantName = String((keywordDoc as any).restaurantName || '').trim() || (() => {
-      const m = (query || '').match(/\(([^)]+)\)/);
-      return m ? m[1].trim() : '';
-    })();
+    const restaurantName =
+      String((keywordDoc as any).restaurantName || '').trim() ||
+      (() => {
+        const m = (query || '').match(/\(([^)]+)\)/);
+        return m ? m[1].trim() : '';
+      })();
 
     const baseKeyword = (query || '').replace(/\([^)]*\)/g, '').trim();
 
     try {
-      const searchQuery = baseKeyword && baseKeyword.length > 0 ? baseKeyword : query;
+      const searchQuery =
+        baseKeyword && baseKeyword.length > 0 ? baseKeyword : query;
       const html = await crawlWithRetry(searchQuery, config.maxRetries);
       const items = extractPopularItems(html);
       const allowAnyBlog =
@@ -89,7 +105,7 @@ async function main() {
       let matchSource: 'VENDOR' | 'TITLE' | '' = '';
 
       if (restaurantName) {
-        // 2-step: (1) try vendor from HTML via se-oglink-title/se-map-title, (2) fallback to title
+        // 2-step: (1) try vendor from HTML via se-oglink-summary/se-map-title, (2) fallback to title
         const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, '');
         const rn = restaurantName.toLowerCase();
         const rnNorm = normalize(restaurantName);
@@ -114,7 +130,9 @@ async function main() {
             const vendor = extractPostVendorName(htmlCand);
             if (vendor) {
               const vNorm = normalize(vendor);
-              const ok = vNorm.includes(rnNorm) || (baseBrandNorm.length >= 2 && vNorm.includes(baseBrandNorm));
+              const ok =
+                vNorm.includes(rnNorm) ||
+                (baseBrandNorm.length >= 2 && vNorm.includes(baseBrandNorm));
               if (ok) {
                 matched = cand;
                 matchedHtml = htmlCand;
@@ -138,7 +156,9 @@ async function main() {
           const displayTopic = matched.topicName || matched.exposureType || '-';
           const displayVendor = postVendorName || '-';
           console.log(
-            `[${i + 1}/${keywords.length}] ${query} ✅ ${displayRestaurant} / ${displayRank} / ${displayTopic} / ${displayVendor} / ${displayTitle} / SRC=VENDOR`
+            `[${i + 1}/${
+              keywords.length
+            }] ${query} ✅ ${displayRestaurant} / ${displayRank} / ${displayTopic} / ${displayVendor} / ${displayTitle} / SRC=VENDOR`
           );
 
           await updateKeywordResult(
@@ -166,7 +186,8 @@ async function main() {
           const title = titleRaw.toLowerCase();
           const titleNorm = normalize(titleRaw);
           const hasFull = title.includes(rn) || titleNorm.includes(rnNorm);
-          const hasBrand = baseBrandNorm.length >= 2 && titleNorm.includes(baseBrandNorm);
+          const hasBrand =
+            baseBrandNorm.length >= 2 && titleNorm.includes(baseBrandNorm);
           return hasFull || hasBrand;
         });
         if (availableMatches.length > 0) {
@@ -187,14 +208,18 @@ async function main() {
             const titleNorm = normalize(titleRaw);
             return tokens.every((tok) => {
               const tLower = tok.toLowerCase();
-              return title.includes(tLower) || titleNorm.includes(normalize(tok));
+              return (
+                title.includes(tLower) || titleNorm.includes(normalize(tok))
+              );
             });
           });
 
           // Fallback: tokens-in-order regex on normalized title (handles insertions like "수원역고기맛집")
           if (availableMatches.length === 0 && tokens.length >= 2) {
             const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const tnorm = tokens.map((t) => esc(t.toLowerCase().replace(/\s+/g, '')));
+            const tnorm = tokens.map((t) =>
+              esc(t.toLowerCase().replace(/\s+/g, ''))
+            );
             const forward = new RegExp(tnorm.join('.*'));
             const backward = new RegExp([...tnorm].reverse().join('.*'));
             availableMatches = beforeTitleFilter.filter((m) => {
@@ -270,11 +295,14 @@ async function main() {
         const displayRestaurant = restaurantName || '-';
         const displayRank = firstMatch.position ?? '-';
         const displayTitle = firstMatch.postTitle || '-';
-        const displayTopic = firstMatch.topicName || firstMatch.exposureType || '-';
+        const displayTopic =
+          firstMatch.topicName || firstMatch.exposureType || '-';
         const displayVendor = postVendorName || '-';
         const srcInfo = matchSource ? ` / SRC=${matchSource}` : '';
         console.log(
-          `[${i + 1}/${keywords.length}] ${query} ✅ ${displayRestaurant} / ${displayRank} / ${displayTopic} / ${displayVendor} / ${displayTitle}${srcInfo}`
+          `[${i + 1}/${
+            keywords.length
+          }] ${query} ✅ ${displayRestaurant} / ${displayRank} / ${displayTopic} / ${displayVendor} / ${displayTitle}${srcInfo}`
         );
 
         await updateKeywordResult(
@@ -293,10 +321,22 @@ async function main() {
       } else {
         const displayRestaurant = restaurantName || '-';
         console.log(
-          `[${i + 1}/${keywords.length}] ${query} ❌ ${displayRestaurant} / - / - / - / -`
+          `[${i + 1}/${
+            keywords.length
+          }] ${query} ❌ ${displayRestaurant} / - / - / - / -`
         );
 
-        await updateKeywordResult(String(keywordDoc._id), false, '', '', restaurantName, '', '', undefined, '');
+        await updateKeywordResult(
+          String(keywordDoc._id),
+          false,
+          '',
+          '',
+          restaurantName,
+          '',
+          '',
+          undefined,
+          ''
+        );
       }
 
       if (i < keywords.length - 1) {
@@ -305,9 +345,21 @@ async function main() {
     } catch (error) {
       const displayRestaurant = restaurantName || '-';
       console.log(
-        `[${i + 1}/${keywords.length}] ${query} ❌ ${displayRestaurant} / - / - / - / - (에러)`
+        `[${i + 1}/${
+          keywords.length
+        }] ${query} ❌ ${displayRestaurant} / - / - / - / - (에러)`
       );
-      await updateKeywordResult(String(keywordDoc._id), false, '', '', restaurantName, '', '', undefined, '');
+      await updateKeywordResult(
+        String(keywordDoc._id),
+        false,
+        '',
+        '',
+        restaurantName,
+        '',
+        '',
+        undefined,
+        ''
+      );
     }
   }
 
@@ -338,8 +390,8 @@ function extractPostVendorName(html: string): string {
   if (!html) return '';
   try {
     const $ = cheerio.load(html);
-    // Prefer se-oglink-title, fallback to se-map-title
-    const rawOglink = $('.se-oglink-title').first().text().trim();
+    // Prefer se-oglink-summary, fallback to se-map-title
+    const rawOglink = $('.se-oglink-summary').first().text().trim();
     const rawMap = $('.se-map-title').first().text().trim();
     const raw = rawOglink || rawMap;
     if (!raw) return '';
@@ -406,13 +458,16 @@ function containsVendorSelectors(html: string): boolean {
   if (!html) return false;
   try {
     const $ = cheerio.load(html);
-    return $('.se-oglink-title').length > 0 || $('.se-map-title').length > 0;
+    return $('.se-oglink-summary').length > 0 || $('.se-map-title').length > 0;
   } catch {
     return false;
   }
 }
 
-function buildMobilePostUrl(originalUrl: string, fallbackUrl?: string): string | null {
+function buildMobilePostUrl(
+  originalUrl: string,
+  fallbackUrl?: string
+): string | null {
   try {
     const candidates = [originalUrl];
     if (fallbackUrl) candidates.push(fallbackUrl);
@@ -426,7 +481,10 @@ function buildMobilePostUrl(originalUrl: string, fallbackUrl?: string): string |
   return null;
 }
 
-function parseBlogParams(u: string): { blogId: string | null; logNo: string | null } {
+function parseBlogParams(u: string): {
+  blogId: string | null;
+  logNo: string | null;
+} {
   try {
     const url = new URL(u, 'https://blog.naver.com');
     // pattern 1: https://blog.naver.com/{blogId}/{logNo}
