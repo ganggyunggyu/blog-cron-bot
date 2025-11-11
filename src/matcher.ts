@@ -30,10 +30,12 @@ export const extractBlogId = (blogUrl: string): string => {
 
 export const matchBlogs = (
   query: string,
-  items: PopularItem[]
+  items: PopularItem[],
+  options?: { allowAnyBlog?: boolean }
 ): ExposureResult[] => {
   const results: ExposureResult[] = [];
   const allowedIds = new Set(BLOG_IDS.map((id) => id.toLowerCase()));
+  const allowAnyBlog = !!(options && options.allowAnyBlog);
 
   const uniqueGroups = new Set(items.map((item) => item.group));
 
@@ -62,9 +64,10 @@ export const matchBlogs = (
   }
 
   items.forEach((item, index) => {
-    const blogId = extractBlogId(item.blogLink);
+    const blogId = extractBlogId(item.blogLink || item.link);
 
-    if (blogId && allowedIds.has(blogId)) {
+    const accept = allowAnyBlog ? !!blogId : (blogId && allowedIds.has(blogId));
+    if (accept) {
       const exposureType = isPopular ? '인기글' : '스블';
       const topicName = isPopular ? '' : item.group;
 
