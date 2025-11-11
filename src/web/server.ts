@@ -4,6 +4,9 @@ import bodyParser from 'body-parser';
 import { testKeyword } from './tester';
 import { runBatch } from './batch_runner';
 import { connectDB, disconnectDB } from '../database';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 const PORT = Number(process.env.PORT || 5178);
