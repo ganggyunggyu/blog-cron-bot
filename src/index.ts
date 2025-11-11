@@ -118,6 +118,7 @@ async function main() {
 
         const maxChecks = Number(process.env.MAX_CONTENT_CHECKS || '3');
         const delayMs = Number(process.env.CONTENT_CHECK_DELAY_MS || '600');
+        const brandRoot = normalize((restaurantName.split(/\s+/)[0] || '').trim());
 
         let matched: ExposureResult | null = null;
         let matchedHtml = '';
@@ -132,7 +133,8 @@ async function main() {
               const vNorm = normalize(vendor);
               const ok =
                 vNorm.includes(rnNorm) ||
-                (baseBrandNorm.length >= 2 && vNorm.includes(baseBrandNorm));
+                (baseBrandNorm.length >= 2 && vNorm.includes(baseBrandNorm)) ||
+                (brandRoot.length >= 2 && vNorm.includes(brandRoot));
               if (ok) {
                 matched = cand;
                 matchedHtml = htmlCand;
@@ -187,7 +189,8 @@ async function main() {
           const titleNorm = normalize(titleRaw);
           const hasFull = title.includes(rn) || titleNorm.includes(rnNorm);
           const hasBrand =
-            baseBrandNorm.length >= 2 && titleNorm.includes(baseBrandNorm);
+            (baseBrandNorm.length >= 2 && titleNorm.includes(baseBrandNorm)) ||
+            (brandRoot.length >= 2 && titleNorm.includes(brandRoot));
           return hasFull || hasBrand;
         });
         if (availableMatches.length > 0) {

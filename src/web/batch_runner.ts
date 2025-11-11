@@ -156,6 +156,7 @@ export async function runBatch(
             .replace(/[\p{Script=Hangul}]{1,4}점$/u, '')
             .trim()
         );
+        const brandRoot = normalize((restaurantName.split(/\s+/)[0] || '').trim());
         // Step 2: vendor-based
         let matched: ExposureResult | null = null;
         let matchedHtml = '';
@@ -169,7 +170,8 @@ export async function runBatch(
               const vNorm = normalize(vendor);
               if (
                 vNorm.includes(rnNorm) ||
-                (brandNorm.length >= 2 && vNorm.includes(brandNorm))
+                (brandNorm.length >= 2 && vNorm.includes(brandNorm)) ||
+                (brandRoot.length >= 2 && vNorm.includes(brandRoot))
               ) {
                 matched = cand;
                 matchedHtml = htmlCand;
@@ -190,7 +192,8 @@ export async function runBatch(
           const tnorm = normalize(title);
           return (
             tnorm.includes(rnNorm) ||
-            (brandNorm.length >= 2 && tnorm.includes(brandNorm))
+            (brandNorm.length >= 2 && tnorm.includes(brandNorm)) ||
+            (brandRoot.length >= 2 && tnorm.includes(brandRoot))
           );
         });
         if (avail.length > 0) {
