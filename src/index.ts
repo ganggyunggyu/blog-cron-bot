@@ -390,15 +390,27 @@ function extractPostVendorName(html: string): string {
   if (!html) return '';
   try {
     const $ = cheerio.load(html);
-    // Prefer se-oglink-summary, fallback to se-map-title
-    const rawOglink = $('.se-oglink-summary').first().text().trim();
-    const rawMap = $('.se-map-title').first().text().trim();
-    const raw = rawOglink || rawMap;
-    if (!raw) return '';
-    // Split on common delimiters like colon or hyphen and return the head
-    const parts = raw.split(/\s*[:\-]\s*/);
+    // 1) Prefer se-oglink-title first
+    const titleText = $('.se-oglink-title').first().text().trim();
+    if (titleText) {
+      // If title contains '네이버', use summary instead
+      if (titleText.includes('네이버')) {
+        const summaryText = $('.se-oglink-summary').first().text().trim();
+        const raw = summaryText || titleText;
+        const parts = raw.split(/\s*[:\-]\s*/);
+        const head = (parts[0] || '').trim();
+        return head || raw;
+      }
+      const parts = titleText.split(/\s*[:\-]\s*/);
+      const head = (parts[0] || '').trim();
+      return head || titleText;
+    }
+    // 2) Fallback to se-map-title
+    const mapText = $('.se-map-title').first().text().trim();
+    if (!mapText) return '';
+    const parts = mapText.split(/\s*[:\-]\s*/);
     const head = (parts[0] || '').trim();
-    return head || raw;
+    return head || mapText;
   } catch {
     return '';
   }
@@ -458,7 +470,11 @@ function containsVendorSelectors(html: string): boolean {
   if (!html) return false;
   try {
     const $ = cheerio.load(html);
-    return $('.se-oglink-summary').length > 0 || $('.se-map-title').length > 0;
+    return (
+      $('.se-oglink-title').length > 0 ||
+      $('.se-oglink-summary').length > 0 ||
+      $('.se-map-title').length > 0
+    );
   } catch {
     return false;
   }

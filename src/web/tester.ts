@@ -134,16 +134,26 @@ export const testKeyword = async (
 function extractPostVendorName(html: string): string {
   if (!html) return '';
   try {
-    // Lazy import to avoid top-level dep in some environments
     const cheerio = require('cheerio');
     const $ = cheerio.load(html);
-    const rawOglink = $('.se-oglink-summary').first().text().trim();
-    const rawMap = $('.se-map-title').first().text().trim();
-    const raw = rawOglink || rawMap;
-    if (!raw) return '';
-    const parts = raw.split(/\s*[:\-]\s*/);
+    const t = $('.se-oglink-title').first().text().trim();
+    if (t) {
+      if (t.includes('네이버')) {
+        const s = $('.se-oglink-summary').first().text().trim();
+        const raw = s || t;
+        const parts = raw.split(/\s*[:\-]\s*/);
+        const head = (parts[0] || '').trim();
+        return head || raw;
+      }
+      const parts = t.split(/\s*[:\-]\s*/);
+      const head = (parts[0] || '').trim();
+      return head || t;
+    }
+    const m = $('.se-map-title').first().text().trim();
+    if (!m) return '';
+    const parts = m.split(/\s*[:\-]\s*/);
     const head = (parts[0] || '').trim();
-    return head || raw;
+    return head || m;
   } catch {
     return '';
   }
@@ -201,7 +211,11 @@ function containsVendorSelectors(html: string): boolean {
   try {
     const cheerio = require('cheerio');
     const $ = cheerio.load(html);
-    return $('.se-oglink-summary').length > 0 || $('.se-map-title').length > 0;
+    return (
+      $('.se-oglink-title').length > 0 ||
+      $('.se-oglink-summary').length > 0 ||
+      $('.se-map-title').length > 0
+    );
   } catch {
     return false;
   }
