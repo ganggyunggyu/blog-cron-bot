@@ -7,10 +7,19 @@ export interface TestOptions {
   allowAnyBlog?: boolean;
   fetchHtml?: boolean;
   debug?: boolean;
+  maxContentChecks?: number;
+  contentCheckDelay?: number;
 }
 
 export interface TestInput {
   keyword: string;
+  restaurantName?: string;
+}
+
+export interface DetailedMatch {
+  match: ExposureResult;
+  postVendorName?: string;
+  matchedHtml?: string;
 }
 
 export interface TestResult {
@@ -18,10 +27,7 @@ export interface TestResult {
   query: string;
   baseKeyword: string;
   restaurantName: string;
-  match?: ExposureResult;
-  matchedHtml?: string;
-  reasons?: string[];
-  postVendorName?: string;
+  matches: DetailedMatch[];
 }
 
 const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, '');
@@ -32,7 +38,7 @@ export const testKeyword = async (
 ): Promise<TestResult> => {
   const query = (input.keyword || '').trim();
   const m = query.match(/\(([^)]+)\)/);
-  const restaurantName = m ? m[1].trim() : '';
+  const restaurantName = (input.restaurantName || '').trim() || (m ? m[1].trim() : '');
   const baseKeyword = query.replace(/\([^)]*\)/g, '').trim();
 
   const searchQuery = baseKeyword || query;
@@ -59,6 +65,7 @@ export const testKeyword = async (
         .replace(/[\p{Script=Hangul}]{1,4}점$/u, '')
         .trim()
     );
+    const brandRoot = normalize((restaurantName.split(/\s+/)[0] || '').trim());
 
     available = available.filter((m2) => {
       const titleRaw = m2.postTitle || '';
@@ -66,7 +73,8 @@ export const testKeyword = async (
       const titleNorm = normalize(titleRaw);
       const hasFull = title.includes(rn) || titleNorm.includes(rnNorm);
       const hasBrand =
-        baseBrandNorm.length >= 2 && titleNorm.includes(baseBrandNorm);
+        (baseBrandNorm.length >= 2 && titleNorm.includes(baseBrandNorm)) ||
+        (brandRoot.length >= 2 && titleNorm.includes(brandRoot));
       return hasFull || hasBrand;
     });
   } else {
@@ -101,34 +109,36 @@ export const testKeyword = async (
     }
   }
 
-  if (available.length > 0) {
-    const first = available[0];
-    used.add(`${query}:${first.postTitle}`);
-    let matchedHtml = '';
-    let postVendorName = '';
-    try {
-      const resolved = await fetchResolvedPostHtml(first.postLink);
-      postVendorName = extractPostVendorName(resolved);
-      if (options.fetchHtml) matchedHtml = resolved;
-    } catch (_) {}
-    return {
-      ok: true,
-      query,
-      baseKeyword,
-      restaurantName,
-      match: first,
-      matchedHtml,
-      postVendorName,
-    };
+  // Build detailed results for all available matches
+  const details: DetailedMatch[] = [];
+  const maxChecks = Number(options.maxContentChecks ?? 10);
+  const delayMs = Number(options.contentCheckDelay ?? 300);
+
+  for (let i = 0; i < available.length; i++) {
+    const item = available[i];
+    if (options.fetchHtml && i < maxChecks) {
+      try {
+        const resolved = await fetchResolvedPostHtml(item.postLink);
+        const vendor = extractPostVendorName(resolved);
+        details.push({ match: item, postVendorName: vendor, matchedHtml: resolved });
+      } catch {
+        details.push({ match: item });
+      }
+      if (i < available.length - 1 && delayMs > 0) {
+        await new Promise((r) => setTimeout(r, delayMs));
+      }
+    } else {
+      details.push({ match: item });
+    }
   }
 
-  const result: TestResult = {
-    ok: false,
+  return {
+    ok: details.length > 0,
     query,
     baseKeyword,
     restaurantName,
+    matches: details,
   };
-  return result;
 };
 
 function extractPostVendorName(html: string): string {

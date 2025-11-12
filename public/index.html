@@ -130,10 +130,17 @@
             <button class="btn primary" id="go">테스트</button>
           </div>
         </div>
-        <div class="row" style="margin-top:12px; grid-template-columns: 1fr auto;">
+        <div
+          class="row"
+          style="margin-top: 12px; grid-template-columns: 1fr auto"
+        >
           <div>
             <label>API BASE (예: https://api.example.com)</label>
-            <input id="api" type="text" placeholder="빈값이면 동일 도메인(/api) 사용" />
+            <input
+              id="api"
+              type="text"
+              placeholder="빈값이면 동일 도메인(/api) 사용"
+            />
           </div>
           <div class="controls">
             <button class="btn" id="saveApi">API 저장</button>
@@ -189,7 +196,7 @@
                 <div class="muted">식당명</div><div>${
                   data.restaurantName || '-'
                 }</div>
-                <div class="muted">노출타입</div><div><span class="tag">${
+                <div class="muted">인기주제</div><div><span class="tag">${
                   m.topicName || m.exposureType || '-'
                 }</span></div>
                 <div class="muted">순위</div><div>${m.position ?? '-'}</div>
