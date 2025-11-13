@@ -21,7 +21,7 @@ interface Config {
 
 const config: Config = {
   maxRetries: 3,
-  delayBetweenQueries: 2000,
+  delayBetweenQueries: 200,
 };
 
 async function main() {
@@ -118,7 +118,9 @@ async function main() {
 
         const maxChecks = Number(process.env.MAX_CONTENT_CHECKS || '3');
         const delayMs = Number(process.env.CONTENT_CHECK_DELAY_MS || '600');
-        const brandRoot = normalize((restaurantName.split(/\s+/)[0] || '').trim());
+        const brandRoot = normalize(
+          (restaurantName.split(/\s+/)[0] || '').trim()
+        );
 
         let matched: ExposureResult | null = null;
         let matchedHtml = '';
