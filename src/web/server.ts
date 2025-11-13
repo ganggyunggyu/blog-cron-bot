@@ -39,12 +39,12 @@ app.get('/batch', (_req, res) => {
 });
 
 app.post('/api/run', async (req, res) => {
-  const { startIndex = 0, limit = 5, onlySheetType = '', onlyCompany = '', onlyKeywordRegex = '', allowAnyBlog = false, maxContentChecks = 3, contentCheckDelay = 600 } = req.body || {};
+  const { startIndex = 0, limit = 5, onlySheetType = '', onlyCompany = '', onlyKeywordRegex = '', onlyId = '', onlyIds = [], allowAnyBlog = false, maxContentChecks = 3, contentCheckDelay = 600 } = req.body || {};
   const uri = process.env.MONGODB_URI;
   if (!uri) return res.status(500).json({ ok: false, error: 'MONGODB_URI not set' });
   try {
     await connectDB(uri);
-    const result = await runBatch({ startIndex: Number(startIndex), limit: Number(limit), onlySheetType, onlyCompany, onlyKeywordRegex, allowAnyBlog: !!allowAnyBlog, maxContentChecks: Number(maxContentChecks), contentCheckDelay: Number(contentCheckDelay) });
+    const result = await runBatch({ startIndex: Number(startIndex), limit: Number(limit), onlySheetType, onlyCompany, onlyKeywordRegex, onlyId: String(onlyId || ''), onlyIds: Array.isArray(onlyIds) ? onlyIds : [], allowAnyBlog: !!allowAnyBlog, maxContentChecks: Number(maxContentChecks), contentCheckDelay: Number(contentCheckDelay) });
     res.json({ ok: true, ...result });
   } catch (e: any) {
     res.status(500).json({ ok: false, error: e?.message || 'internal error' });
