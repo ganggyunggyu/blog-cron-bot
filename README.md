@@ -11,6 +11,7 @@
 - CSV 결과 파일 생성
 - MongoDB 연동 (키워드 관리 및 결과 저장)
 - 에러 발생 시 30초 텀 재시도
+ - 시트타입별 동작 옵션 지원 (예: 도그마루)
 
 ## 설치
 
@@ -66,6 +67,24 @@ pnpm build
 ```bash
 pnpm start
 ```
+
+## 시트타입별 동작 (sheet-config)
+
+`src/sheet-config.ts`에서 시트타입별 동작을 설정할 수 있습니다. 환경변수가 설정되어 있으면 시트 설정보다 환경변수가 우선합니다.
+
+- 기본값(package)
+  - `allowAnyBlog: false`
+  - `maxContentChecks: 3`
+  - `contentCheckDelayMs: 600`
+  - CSV 접두어: `results-package`
+
+- 도그마루(dogmaru, 도그마루)
+  - `allowAnyBlog: true`
+  - `maxContentChecks: 4`
+  - `contentCheckDelayMs: 500`
+  - CSV 접두어: `results-dogmaru`
+
+실행 시 `ONLY_SHEET_TYPE`를 지정하면 CSV 파일명이 해당 시트 접두어로 저장됩니다.
 
 ## 크론 설정 (선택)
 
@@ -125,3 +144,38 @@ export const BLOG_IDS = [
 ## 라이선스
 
 MIT
+
+선택 옵션(전역 오버라이드 / 필터):
+
+```
+# 특정 시트타입만 실행
+ONLY_SHEET_TYPE=도그마루
+
+# 특정 도큐먼트(_id)만 실행
+ONLY_ID=6915416a62308ae2b62d48fb
+
+# 전역 동작 오버라이드 (시트 설정보다 우선)
+ALLOW_ANY_BLOG=true        # or false/0/1
+MAX_CONTENT_CHECKS=4       # 각 키워드당 확인할 게시글 개수
+CONTENT_CHECK_DELAY_MS=500 # 게시글 확인 간 딜레이(ms)
+```
+
+Web UI 배치 실행 필터
+
+엔드포인트: `POST /api/run`
+
+Body 예시
+
+```json
+{
+  "onlyId": "6915416a62308ae2b62d48fb"
+}
+```
+
+여러 건 실행:
+
+```json
+{
+  "onlyIds": ["6915416a62308ae2b62d48fb", "64fd...abcd"]
+}
+```
