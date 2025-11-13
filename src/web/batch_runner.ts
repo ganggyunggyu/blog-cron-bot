@@ -4,6 +4,7 @@ import { crawlWithRetry, delay, fetchHtml } from '../crawler';
 import { extractPopularItems } from '../parser';
 import { matchBlogs, ExposureResult } from '../matcher';
 import { NAVER_DESKTOP_HEADERS } from '../constants';
+import { getSheetOptions, normalizeSheetType } from '../sheet-config';
 import * as cheerio from 'cheerio';
 
 type AnyObj = Record<string, any>;
@@ -14,6 +15,8 @@ export interface BatchParams {
   onlySheetType?: string;
   onlyCompany?: string;
   onlyKeywordRegex?: string;
+  onlyId?: string;
+  onlyIds?: string[];
   allowAnyBlog?: boolean;
   maxContentChecks?: number;
   contentCheckDelay?: number;
@@ -43,9 +46,7 @@ export async function runBatch(
 ): Promise<{ total: number; processed: BatchItemResult[] }> {
   const startIndex = Math.max(0, Number(params.startIndex ?? 0));
   const limit = Math.max(1, Number(params.limit ?? 5));
-  const allowAnyBlog = !!params.allowAnyBlog;
-  const maxChecks = Math.max(1, Number(params.maxContentChecks ?? 3));
-  const checkDelay = Math.max(0, Number(params.contentCheckDelay ?? 600));
+  // Per-sheet options are applied per document inside the loop, with request overrides.
 
   const allKeywords = await getAllKeywords();
   const norm = (v: any) =>
@@ -68,6 +69,14 @@ export async function runBatch(
       filtered = filtered.filter((k) => re.test(k.keyword));
     } catch {}
   }
+  if (params.onlyId) {
+    const id = String(params.onlyId).trim();
+    filtered = filtered.filter((k) => String((k as AnyObj)._id) === id);
+  }
+  if (params.onlyIds && Array.isArray(params.onlyIds) && params.onlyIds.length > 0) {
+    const set = new Set(params.onlyIds.map((v) => String(v)));
+    filtered = filtered.filter((k) => set.has(String((k as AnyObj)._id)));
+  }
 
   const keywords = filtered.slice(startIndex, startIndex + limit);
   const used = new Set<string>();
@@ -83,6 +92,32 @@ export async function runBatch(
     const searchQuery = baseKeyword || query;
 
     try {
+      const sheetOpts = getSheetOptions(String((doc as AnyObj).sheetType || ''));
+      const allowAnyBlog =
+        typeof params.allowAnyBlog === 'boolean'
+          ? !!params.allowAnyBlog
+          : !!sheetOpts.allowAnyBlog;
+      const maxChecks =
+        params.maxContentChecks != null
+          ? Math.max(1, Number(params.maxContentChecks))
+          : Math.max(1, Number(sheetOpts.maxContentChecks));
+      const checkDelay =
+        params.contentCheckDelay != null
+          ? Math.max(0, Number(params.contentCheckDelay))
+          : Math.max(0, Number(sheetOpts.contentCheckDelayMs));
+      // Determine vendor target based on restaurant/sheet/company
+      const sheetTypeCanon = normalizeSheetType(String((doc as AnyObj).sheetType || ''));
+      const companyRaw = String((doc as AnyObj).company || '').trim();
+      const companyNorm = normalize(companyRaw);
+      const vendorBrand = companyNorm.includes(normalize('서리펫'))
+        ? '서리펫'
+        : sheetTypeCanon === 'dogmaru'
+        ? '도그마루'
+        : '';
+      // 서리펫은 브랜드 우선, 그 외는 (업장명) → 브랜드 순서
+      const vendorTarget = vendorBrand === '서리펫' ? '서리펫' : restaurantName || vendorBrand;
+      const effectiveName = vendorTarget || restaurantName;
+
       const html = await crawlWithRetry(searchQuery, 3);
       const items = extractPopularItems(html);
       const allMatches = matchBlogs(query, items, { allowAnyBlog });
@@ -101,7 +136,7 @@ export async function runBatch(
           true,
           m.topicName || m.exposureType,
           m.postLink,
-          restaurantName,
+          effectiveName,
           m.postTitle,
           matchedHtml || '',
           m.position,
@@ -110,7 +145,7 @@ export async function runBatch(
         processed.push({
           ok: true,
           keyword: query,
-          restaurantName,
+          restaurantName: effectiveName,
           topic: m.topicName || m.exposureType,
           rank: m.position ?? null,
           blogId: m.blogId,
@@ -127,7 +162,7 @@ export async function runBatch(
           false,
           '',
           '',
-          restaurantName,
+          effectiveName,
           '',
           '',
           undefined,
@@ -136,7 +171,7 @@ export async function runBatch(
         processed.push({
           ok: false,
           keyword: query,
-          restaurantName,
+          restaurantName: effectiveName,
           topic: '',
           rank: null,
           blogId: '',
@@ -148,15 +183,15 @@ export async function runBatch(
         });
       };
 
-      if (restaurantName) {
-        const rnNorm = normalize(restaurantName);
+      if (vendorTarget) {
+        const rnNorm = normalize(vendorTarget);
         const brandNorm = normalize(
-          restaurantName
+          vendorTarget
             .replace(/(본점|지점)$/u, '')
             .replace(/[\p{Script=Hangul}]{1,4}점$/u, '')
             .trim()
         );
-        const brandRoot = normalize((restaurantName.split(/\s+/)[0] || '').trim());
+        const brandRoot = normalize((vendorTarget.split(/\s+/)[0] || '').trim());
         // Step 2: vendor-based
         let matched: ExposureResult | null = null;
         let matchedHtml = '';

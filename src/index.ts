@@ -10,6 +10,7 @@ import * as cheerio from 'cheerio';
 import { extractPopularItems } from './parser';
 import { matchBlogs, ExposureResult, extractBlogId } from './matcher';
 import { saveToCSV } from './csv-writer';
+import { getSheetOptions, normalizeSheetType } from './sheet-config';
 import { NAVER_DESKTOP_HEADERS, BLOG_IDS } from './constants';
 
 dotenv.config();
@@ -38,6 +39,7 @@ async function main() {
   const onlySheetType = (process.env.ONLY_SHEET_TYPE || '').trim();
   const onlyCompany = (process.env.ONLY_COMPANY || '').trim();
   const onlyKeywordRegex = (process.env.ONLY_KEYWORD_REGEX || '').trim();
+  const onlyId = (process.env.ONLY_ID || '').trim();
 
   let filtered = allKeywords;
   const normalize = (s: unknown) =>
@@ -58,6 +60,9 @@ async function main() {
       filtered = filtered.filter((k: any) => re.test(k.keyword));
     } catch {}
   }
+  if (onlyId) {
+    filtered = filtered.filter((k: any) => String(k._id) === onlyId);
+  }
 
   const startIndexRaw = Number(process.env.START_INDEX ?? '0');
   const startIndex = Number.isFinite(startIndexRaw)
@@ -75,13 +80,27 @@ async function main() {
   for (let i = 0; i < keywords.length; i++) {
     const keywordDoc = keywords[i];
     const query = keywordDoc.keyword;
+    const sheetOpts = getSheetOptions((keywordDoc as any).sheetType);
 
+    // 1) 우선 괄호로 들어온 업장명
     const restaurantName =
       String((keywordDoc as any).restaurantName || '').trim() ||
       (() => {
         const m = (query || '').match(/\(([^)]+)\)/);
         return m ? m[1].trim() : '';
       })();
+    // 2) 시트타입/업체명 기반 보정 타겟
+    const companyRaw = String((keywordDoc as any).company || '').trim();
+    const sheetTypeCanon = normalizeSheetType((keywordDoc as any).sheetType || '');
+    const norm = (s: string) => s.toLowerCase().replace(/\s+/g, '');
+    const companyNorm = norm(companyRaw);
+    const vendorBrand = companyNorm.includes(norm('서리펫'))
+      ? '서리펫'
+      : sheetTypeCanon === 'dogmaru'
+      ? '도그마루'
+      : '';
+    // 서리펫은 업체명 변수(브랜드)를 최우선으로 사용, 그 외에는 (업장명) → 브랜드 순서
+    let vendorTarget = vendorBrand === '서리펫' ? '서리펫' : restaurantName || vendorBrand;
 
     const baseKeyword = (query || '').replace(/\([^)]*\)/g, '').trim();
 
@@ -90,9 +109,18 @@ async function main() {
         baseKeyword && baseKeyword.length > 0 ? baseKeyword : query;
       const html = await crawlWithRetry(searchQuery, config.maxRetries);
       const items = extractPopularItems(html);
+      // Per-sheet option with env override
+      const allowAnyEnv = String(process.env.ALLOW_ANY_BLOG || '').toLowerCase();
       const allowAnyBlog =
-        String(process.env.ALLOW_ANY_BLOG || '').toLowerCase() === 'true' ||
-        String(process.env.ALLOW_ANY_BLOG || '') === '1';
+        allowAnyEnv === 'true'
+          ? true
+          : allowAnyEnv === '1'
+          ? true
+          : allowAnyEnv === 'false'
+          ? false
+          : allowAnyEnv === '0'
+          ? false
+          : !!sheetOpts.allowAnyBlog;
       const allMatches = matchBlogs(query, items, { allowAnyBlog });
 
       // Duplicates filtered first
@@ -104,20 +132,26 @@ async function main() {
       const beforeTitleFilter = [...availableMatches];
       let matchSource: 'VENDOR' | 'TITLE' | '' = '';
 
-      if (restaurantName) {
+      if (vendorTarget) {
         // 2-step: (1) try vendor from HTML via se-oglink-summary/se-map-title, (2) fallback to title
         const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, '');
-        const rn = restaurantName.toLowerCase();
-        const rnNorm = normalize(restaurantName);
+        const rn = vendorTarget.toLowerCase();
+        const rnNorm = normalize(vendorTarget);
         const baseBrandNorm = normalize(
-          restaurantName
+          vendorTarget
             .replace(/(본점|지점)$/u, '')
             .replace(/[\p{Script=Hangul}]{1,4}점$/u, '')
             .trim()
         );
 
-        const maxChecks = Number(process.env.MAX_CONTENT_CHECKS || '3');
-        const delayMs = Number(process.env.CONTENT_CHECK_DELAY_MS || '600');
+        const maxChecksEnv = Number(process.env.MAX_CONTENT_CHECKS);
+        const delayMsEnv = Number(process.env.CONTENT_CHECK_DELAY_MS);
+        const maxChecks = Number.isFinite(maxChecksEnv)
+          ? Math.max(1, maxChecksEnv)
+          : Math.max(1, Number(sheetOpts.maxContentChecks));
+        const delayMs = Number.isFinite(delayMsEnv)
+          ? Math.max(0, delayMsEnv)
+          : Math.max(0, Number(sheetOpts.contentCheckDelayMs));
         const brandRoot = normalize(
           (restaurantName.split(/\s+/)[0] || '').trim()
         );
@@ -154,7 +188,7 @@ async function main() {
           const combination = `${query}:${matched.postTitle}`;
           usedCombinations.add(combination);
 
-          const displayRestaurant = restaurantName || '-';
+          const displayRestaurant = vendorTarget || '-';
           const displayRank = matched.position ?? '-';
           const displayTitle = matched.postTitle || '-';
           const displayTopic = matched.topicName || matched.exposureType || '-';
@@ -170,7 +204,7 @@ async function main() {
             true,
             matched.topicName || matched.exposureType,
             matched.postLink,
-            restaurantName,
+            vendorTarget,
             matched.postTitle,
             matchedHtml,
             matched.position, // rank
@@ -369,7 +403,11 @@ async function main() {
   }
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-  const filename = `results_${timestamp}.csv`;
+  const filterSheet = (process.env.ONLY_SHEET_TYPE || '').trim();
+  const csvPrefix = filterSheet
+    ? getSheetOptions(filterSheet).csvFilePrefix
+    : 'results';
+  const filename = `${csvPrefix}_${timestamp}.csv`;
 
   saveToCSV(allResults, filename);
 
