@@ -12,6 +12,7 @@ import { matchBlogs, ExposureResult, extractBlogId } from './matcher';
 import { saveToCSV } from './csv-writer';
 import { getSheetOptions, normalizeSheetType } from './sheet-config';
 import { NAVER_DESKTOP_HEADERS, BLOG_IDS } from './constants';
+import { getSearchQuery } from './utils';
 
 dotenv.config();
 
@@ -22,10 +23,10 @@ interface Config {
 
 const config: Config = {
   maxRetries: 3,
-  delayBetweenQueries: 200,
+  delayBetweenQueries: 7000,
 };
 
-async function main() {
+export async function main() {
   const mongoUri = process.env.MONGODB_URI;
   if (!mongoUri) {
     console.error('❌ MONGODB_URI 환경 변수가 설정되지 않았습니다.');
@@ -91,7 +92,9 @@ async function main() {
       })();
     // 2) 시트타입/업체명 기반 보정 타겟
     const companyRaw = String((keywordDoc as any).company || '').trim();
-    const sheetTypeCanon = normalizeSheetType((keywordDoc as any).sheetType || '');
+    const sheetTypeCanon = normalizeSheetType(
+      (keywordDoc as any).sheetType || ''
+    );
     const norm = (s: string) => s.toLowerCase().replace(/\s+/g, '');
     const companyNorm = norm(companyRaw);
     const vendorBrand = companyNorm.includes(norm('서리펫'))
@@ -100,17 +103,22 @@ async function main() {
       ? '도그마루'
       : '';
     // 서리펫은 업체명 변수(브랜드)를 최우선으로 사용, 그 외에는 (업장명) → 브랜드 순서
-    let vendorTarget = vendorBrand === '서리펫' ? '서리펫' : restaurantName || vendorBrand;
+    let vendorTarget =
+      vendorBrand === '서리펫' ? '서리펫' : restaurantName || vendorBrand;
 
-    const baseKeyword = (query || '').replace(/\([^)]*\)/g, '').trim();
+    const baseKeyword = getSearchQuery(query || '');
 
     try {
       const searchQuery =
-        baseKeyword && baseKeyword.length > 0 ? baseKeyword : query;
+        baseKeyword && baseKeyword.length > 0
+          ? baseKeyword
+          : getSearchQuery(query || '');
       const html = await crawlWithRetry(searchQuery, config.maxRetries);
       const items = extractPopularItems(html);
       // Per-sheet option with env override
-      const allowAnyEnv = String(process.env.ALLOW_ANY_BLOG || '').toLowerCase();
+      const allowAnyEnv = String(
+        process.env.ALLOW_ANY_BLOG || ''
+      ).toLowerCase();
       const allowAnyBlog =
         allowAnyEnv === 'true'
           ? true
@@ -564,7 +572,9 @@ function parseBlogParams(u: string): {
   return { blogId: null, logNo: null };
 }
 
-main().catch((error) => {
-  console.error('❌ 프로그램 오류:', error);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((error) => {
+    console.error('❌ 프로그램 오류:', error);
+    process.exit(1);
+  });
+}

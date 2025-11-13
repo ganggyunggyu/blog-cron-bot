@@ -1,7 +1,9 @@
 import { NAVER_DESKTOP_HEADERS } from './constants';
+import { getSearchQuery } from './utils';
 
 export const buildNaverSearchUrl = (query: string): string => {
-  return `https://search.naver.com/search.naver?where=nexearch&sm=top_sly.hst&fbm=0&acr=1&ie=utf8&query=${encodeURIComponent(query)}`;
+  const q = getSearchQuery(query);
+  return `https://search.naver.com/search.naver?where=nexearch&sm=top_sly.hst&fbm=0&acr=1&ie=utf8&query=${encodeURIComponent(q)}`;
 };
 
 export const fetchHtml = async (url: string, headers: Record<string, string>): Promise<string> => {
@@ -23,7 +25,6 @@ export const crawlWithRetry = async (
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       // console.log(`🔄 [시도 ${attempt}/${maxRetries}] 검색어: ${query}`);
-
       const url = buildNaverSearchUrl(query);
       const html = await fetchHtml(url, NAVER_DESKTOP_HEADERS);
 

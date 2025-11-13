@@ -1,4 +1,5 @@
 import { NAVER_DESKTOP_HEADERS } from '../constants';
+import { getSearchQuery } from '../utils';
 import { crawlWithRetry, fetchHtml } from '../crawler';
 import { extractPopularItems } from '../parser';
 import { matchBlogs, ExposureResult } from '../matcher';
@@ -39,7 +40,7 @@ export const testKeyword = async (
   const query = (input.keyword || '').trim();
   const m = query.match(/\(([^)]+)\)/);
   const restaurantName = (input.restaurantName || '').trim() || (m ? m[1].trim() : '');
-  const baseKeyword = query.replace(/\([^)]*\)/g, '').trim();
+  const baseKeyword = getSearchQuery(query);
 
   const searchQuery = baseKeyword || query;
   const html = await crawlWithRetry(searchQuery, 3);

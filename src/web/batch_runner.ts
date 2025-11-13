@@ -4,6 +4,7 @@ import { crawlWithRetry, delay, fetchHtml } from '../crawler';
 import { extractPopularItems } from '../parser';
 import { matchBlogs, ExposureResult } from '../matcher';
 import { NAVER_DESKTOP_HEADERS } from '../constants';
+import { getSearchQuery } from '../utils';
 import { getSheetOptions, normalizeSheetType } from '../sheet-config';
 import * as cheerio from 'cheerio';
 
@@ -88,8 +89,8 @@ export async function runBatch(
     const rnFromDoc = String(doc.restaurantName || '');
     const m = query.match(/\(([^)]+)\)/);
     const restaurantName = (rnFromDoc || (m ? m[1].trim() : '')).trim();
-    const baseKeyword = query.replace(/\([^)]*\)/g, '').trim();
-    const searchQuery = baseKeyword || query;
+    const baseKeyword = getSearchQuery(query);
+    const searchQuery = baseKeyword || getSearchQuery(query);
 
     try {
       const sheetOpts = getSheetOptions(String((doc as AnyObj).sheetType || ''));

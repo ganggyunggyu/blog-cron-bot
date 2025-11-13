@@ -1,6 +1,7 @@
 import * as dotenv from 'dotenv';
 import * as cheerio from 'cheerio';
 import { crawlWithRetry, fetchHtml, delay } from './crawler';
+import { getSearchQuery } from './utils';
 import { extractPopularItems } from './parser';
 import { matchBlogs, ExposureResult, extractBlogId } from './matcher';
 import { NAVER_DESKTOP_HEADERS } from './constants';
@@ -29,8 +30,8 @@ async function runExposureCheck(queryRaw: string) {
   };
 
   const restaurantName = extractParen(queryRaw);
-  const baseKeyword = (queryRaw || '').replace(/\([^)]*\)/g, '').trim();
-  const searchQuery = baseKeyword && baseKeyword.length > 0 ? baseKeyword : queryRaw;
+  const baseKeyword = getSearchQuery(queryRaw || '');
+  const searchQuery = baseKeyword && baseKeyword.length > 0 ? baseKeyword : getSearchQuery(queryRaw || '');
 
   const allowAnyBlog =
     String(process.env.ALLOW_ANY_BLOG || '').toLowerCase() === 'true' ||

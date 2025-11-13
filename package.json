@@ -8,22 +8,29 @@
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
     "test": "ts-node src/test.ts",
+    "naver:popular:update": "ts-node src/tools/update-popular-selectors.ts",
+    "naver:popular:update:local": "ts-node src/tools/update-popular-selectors-local.ts",
     "migrate:rank": "ts-node src/migrations/migrate_rank.ts",
     "web": "TS_NODE_TRANSPILE_ONLY=1 TS_NODE_IGNORE_DIAGNOSTICS=7006,2307 ts-node src/web/server.ts",
-    "web:strict": "ts-node src/web/server.ts"
+    "web:strict": "ts-node src/web/server.ts",
+    "cron": "ts-node src/cron.ts",
+    "cron:test": "TEST_DELAY_MINUTES=1 ts-node src/cron.ts"
   },
   "dependencies": {
-    "cheerio": "^1.0.0",
-    "express": "^4.18.2",
+    "axios": "^1.13.2",
     "body-parser": "^1.20.2",
+    "cheerio": "^1.0.0",
+    "dotenv": "^16.0.0",
+    "express": "^4.18.2",
     "mongoose": "^8.0.0",
-    "dotenv": "^16.0.0"
+    "node-cron": "^4.2.1"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@types/express": "^4.17.21",
     "@types/body-parser": "^1.19.5",
-    "typescript": "^5.0.0",
-    "ts-node": "^10.9.0"
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.0.0",
+    "@types/node-cron": "^3.0.11",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
   }
 }

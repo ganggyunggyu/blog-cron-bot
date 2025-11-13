@@ -21,36 +21,28 @@ const SELECTORS = {
   postTitleWrap: '.fds-comps-right-image-text-title-wrap',
 
   singleIntentionList: '.fds-ugc-single-intention-item-list',
-  intentionItem: '.NtKCZYlcjvHdeUoASy2I',
-  intentionTitle: '.z1n21OFoYx6_tGcWKL_x',
-  intentionHeadline: '.sds-comps-text-type-headline1.sds-comps-text-weight-sm',
+  intentionItem: '.xYjt3uiECoJ0o6Pj0xOU',
+  intentionTitle: 'a._228e3bd1.CC5p8OBUeZzCymeWTg7v',
+  intentionHeadline: '.sds-comps-text.sds-comps-text-type-headline1',
+  intentionPreview: '.vhAXtgPpcvABjkgTaDZ0 .sds-comps-text-type-body1',
   intentionProfile: '.sds-comps-profile-info-title-text a',
+  intentionImage: '.sds-comps-image img',
 } as const;
 
 export const extractPopularItems = (html: string): PopularItem[] => {
   const $ = cheerio.load(html);
   const items: PopularItem[] = [];
 
-  // console.log('\n📦 파싱 시작...\n');
-
   const $collectionRoots = $(SELECTORS.collectionRoot);
-  // console.log(`🔍 collection-root ${$collectionRoots.length}개 발견\n`);
 
   $collectionRoots.each((rootIdx, root) => {
     const $root = $(root);
 
-    const headline = $root
-      .find(SELECTORS.headline)
-      .first()
-      .text()
-      .trim();
+    const headline = $root.find(SELECTORS.headline).first().text().trim();
 
     const topicName = headline || '인기글';
 
-    // console.log(`\n📌 주제 ${rootIdx + 1}: "${topicName}"`);
-
     const $blocks = $root.find(SELECTORS.blockMod);
-    // console.log(`  → 블록 ${$blocks.length}개 발견`);
 
     $blocks.each((_, block) => {
       const $block = $(block);
@@ -97,8 +89,6 @@ export const extractPopularItems = (html: string): PopularItem[] => {
 
   const $singleIntentionSections = $(SELECTORS.singleIntentionList);
   if ($singleIntentionSections.length > 0) {
-    // console.log(`\n🔍 single-intention-list ${$singleIntentionSections.length}개 발견\n`);
-
     $singleIntentionSections.each((sectionIdx, section) => {
       const $section = $(section);
 
@@ -111,10 +101,7 @@ export const extractPopularItems = (html: string): PopularItem[] => {
 
       const topicName = headline || '인기글';
 
-      // console.log(`\n📌 주제 ${sectionIdx + 1}: "${topicName}"`);
-
       const $items = $section.find(SELECTORS.intentionItem);
-      // console.log(`  → 아이템 ${$items.length}개 발견`);
 
       $items.each((_, item) => {
         const $item = $(item);
@@ -127,6 +114,16 @@ export const extractPopularItems = (html: string): PopularItem[] => {
         const blogName = $profile.text().trim();
         const blogHref = $profile.attr('href')?.trim() || '';
 
+        const snippet = $item
+          .find(SELECTORS.intentionPreview)
+          .first()
+          .text()
+          .trim();
+
+        const image =
+          $item.find(SELECTORS.intentionImage).first().attr('src')?.trim() ||
+          '';
+
         if (
           postHref &&
           title &&
@@ -136,8 +133,8 @@ export const extractPopularItems = (html: string): PopularItem[] => {
           items.push({
             title,
             link: postHref,
-            snippet: '',
-            image: '',
+            snippet,
+            image,
             badge: '',
             group: topicName,
             blogLink: blogHref,
@@ -147,8 +144,6 @@ export const extractPopularItems = (html: string): PopularItem[] => {
       });
     });
   }
-
-  // console.log(`\n✅ 총 ${items.length}개 아이템 파싱 완료\n`);
 
   const unique = new Map<string, PopularItem>();
   for (const item of items) {
