@@ -41,12 +41,15 @@ async function runFullWorkflow() {
     console.log('\n📥 [Step 3/3] 노출 현황 시트에 적용...');
     console.log(`   API: ${SHEET_APP_URL}/api/cron/import-all`);
 
-    // const importResponse = await axios.get(`${SHEET_APP_URL}/api/cron/import-all`, {
-    //   timeout: 60000, // 60초 타임아웃
-    // });
+    const importResponse = await axios.get(
+      `${SHEET_APP_URL}/api/cron/import-all`,
+      {
+        timeout: 60000, // 60초 타임아웃
+      }
+    );
 
-    // console.log('✅ [Step 3/3] 완료:', importResponse.data);
-    // console.log(`   - 업데이트: ${importResponse.data.updated || 0}개`);
+    console.log('✅ [Step 3/3] 완료:', importResponse.data);
+    console.log(`   - 업데이트: ${importResponse.data.updated || 0}개`);
 
     const endTime = new Date();
     const duration = (endTime.getTime() - startTime.getTime()) / 1000;
