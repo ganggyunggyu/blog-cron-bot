@@ -88,11 +88,13 @@ export const updateKeywordResult = async (
       lastChecked: new Date(),
     } as Partial<IKeyword>;
 
-    if (typeof restaurantName !== 'undefined') update.restaurantName = restaurantName;
+    if (typeof restaurantName !== 'undefined')
+      update.restaurantName = restaurantName;
     if (typeof matchedTitle !== 'undefined') update.matchedTitle = matchedTitle;
     if (typeof matchedHtml !== 'undefined') update.matchedHtml = matchedHtml;
     if (typeof rank !== 'undefined') update.rank = rank;
-    if (typeof postVendorName !== 'undefined') update.postVendorName = postVendorName;
+    if (typeof postVendorName !== 'undefined')
+      update.postVendorName = postVendorName;
 
     await Keyword.findByIdAndUpdate(keywordId, update);
   } catch (error) {
