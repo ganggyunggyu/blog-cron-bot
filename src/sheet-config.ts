@@ -31,14 +31,14 @@ const SHEET_OPTIONS: Record<string, SheetOptions> = {
   package: {
     allowAnyBlog: false,
     maxContentChecks: 3,
-    contentCheckDelayMs: 600,
+    contentCheckDelayMs: 0,
     csvFilePrefix: 'results-package',
   },
 
   dogmaru: {
     allowAnyBlog: false,
     maxContentChecks: 4,
-    contentCheckDelayMs: 500,
+    contentCheckDelayMs: 0,
     csvFilePrefix: 'results-dogmaru',
   },
 };

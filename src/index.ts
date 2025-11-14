@@ -8,10 +8,10 @@ import {
 import { crawlWithRetry, delay, fetchHtml } from './crawler';
 import * as cheerio from 'cheerio';
 import { extractPopularItems } from './parser';
-import { matchBlogs, ExposureResult, extractBlogId } from './matcher';
+import { matchBlogs, ExposureResult } from './matcher';
 import { saveToCSV } from './csv-writer';
 import { getSheetOptions, normalizeSheetType } from './sheet-config';
-import { NAVER_DESKTOP_HEADERS, BLOG_IDS } from './constants';
+import { NAVER_DESKTOP_HEADERS } from './constants';
 import { getSearchQuery } from './utils';
 
 dotenv.config();
@@ -23,7 +23,7 @@ interface Config {
 
 const config: Config = {
   maxRetries: 3,
-  delayBetweenQueries: 500,
+  delayBetweenQueries: 100,
 };
 
 export async function main() {
@@ -276,54 +276,6 @@ export async function main() {
           }
         }
       }
-
-      /*
-      // Reason logging (summary always on failure; details when LOG_REASONS=1)
-      const verboseReasons =
-        String(process.env.LOG_REASONS || '').toLowerCase() === 'true' ||
-        String(process.env.LOG_REASONS || '') === '1';
-
-      if (verboseReasons || availableMatches.length === 0) {
-        const reasons: string[] = [];
-        const allowedIdsSet = new Set(BLOG_IDS.map((id) => id.toLowerCase()));
-
-        // Pre-whitelist
-        for (const it of items) {
-          const blogId = extractBlogId((it as any).blogLink || it.link);
-          const accept = allowAnyBlog ? !!blogId : (blogId && allowedIdsSet.has(String(blogId).toLowerCase()));
-          if (!accept) {
-            const why = !blogId ? 'NO_BLOG_ID' : 'NOT_WHITELISTED';
-            reasons.push(`- WHITELIST ${why}: ${it.blogName || '-'} (${blogId || '-'}) / ${it.title || '-'} / ${it.link || '-'}`);
-          }
-        }
-
-        // Duplicates
-        for (const m of allMatches) {
-          const combination = `${query}:${m.postTitle}`;
-          if (usedCombinations.has(combination)) {
-            reasons.push(`- DUPLICATE: ${m.postTitle} / ${m.postLink}`);
-          }
-        }
-
-        // Title mismatches
-        const finalSet = new Set(availableMatches.map((m) => m.postLink));
-        for (const m of beforeTitleFilter) {
-          if (!finalSet.has(m.postLink)) {
-            if (restaurantName) {
-              reasons.push(`- TITLE_MISMATCH (restaurant/brand+area): ${m.postTitle} / ${m.postLink}`);
-            } else {
-              reasons.push(`- TITLE_MISMATCH (tokens): ${m.postTitle} / ${m.postLink}`);
-            }
-          }
-        }
-
-        // Print summary (and a few examples)
-        const header = `[reasons] ${query} — total=${reasons.length}`;
-        console.log(header);
-        const maxShow = verboseReasons ? Math.min(10, reasons.length) : Math.min(5, reasons.length);
-        for (let k = 0; k < maxShow; k++) console.log(reasons[k]);
-      }
-      */
 
       if (availableMatches.length > 0) {
         const firstMatch = availableMatches[0];
