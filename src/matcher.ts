@@ -13,17 +13,18 @@ export interface ExposureResult {
 }
 
 export const extractBlogId = (blogUrl: string): string => {
-  try {
-    const url = new URL(blogUrl);
+  if (!blogUrl) return '';
 
-    if (
-      url.hostname.includes('blog.naver.com') ||
-      url.hostname.includes('m.blog.naver.com')
-    ) {
-      const segments = url.pathname.replace(/^\//, '').split('/');
-      return (segments[0] || '').toLowerCase();
-    }
-  } catch {}
+  const urlPatterns = [
+    /blog\.naver\.com\/([^/?&#]+)/,
+    /in\.naver\.com\/([^/?&#]+)/,
+    /m\.blog\.naver\.com\/([^/?&#]+)/,
+  ];
+
+  for (const pattern of urlPatterns) {
+    const match = blogUrl.match(pattern);
+    if (match?.[1]) return match[1].toLowerCase();
+  }
 
   return '';
 };
