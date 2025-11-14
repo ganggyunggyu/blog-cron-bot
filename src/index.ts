@@ -23,7 +23,7 @@ interface Config {
 
 const config: Config = {
   maxRetries: 3,
-  delayBetweenQueries: 7000,
+  delayBetweenQueries: 500,
 };
 
 export async function main() {
