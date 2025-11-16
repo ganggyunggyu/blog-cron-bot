@@ -7,22 +7,24 @@ dotenv.config();
 
 const SHEET_APP_URL = process.env.SHEET_APP_URL || 'http://localhost:3000';
 
-const SHEET_ID = '1T9PHu-fH6HPmyYA9dtfXaDLm20XAPN-9mzlE2QTPkF0';
+const TEST_SHEET_ID = '1T9PHu-fH6HPmyYA9dtfXaDLm20XAPN-9mzlE2QTPkF0';
+
+const PRODUCT_SHEET_ID = '1vrN5gvtokWxPs8CNaNcvZQLWyIMBOIcteYXQbyfiZl0';
 
 const requests = [
   {
-    sheetId: SHEET_ID,
-    sheetName: '패키지 노출체크 프로그램',
+    sheetId: PRODUCT_SHEET_ID,
+    sheetName: '패키지',
     sheetType: 'package',
   },
   {
-    sheetId: SHEET_ID,
-    sheetName: '일반건 노출체크 프로그램',
+    sheetId: PRODUCT_SHEET_ID,
+    sheetName: '도그마루 제외',
     sheetType: 'dogmaru-exclude',
   },
   {
-    sheetId: SHEET_ID,
-    sheetName: '도그마루 노출체크 프로그램',
+    sheetId: PRODUCT_SHEET_ID,
+    sheetName: '도그마루',
     sheetType: 'dogmaru',
   },
 ] as {
@@ -38,7 +40,6 @@ async function runCrawlingJob() {
 async function runFullWorkflow() {
   const startTime = new Date();
   console.log(`\n[${startTime.toLocaleString('ko-KR')}] 크론잡 시작`);
-  console.log('━'.repeat(60));
 
   try {
     console.log('\n[Step 1/3] DB동기화');
@@ -67,7 +68,7 @@ async function runFullWorkflow() {
     const importResponse = await axios.post(
       `${SHEET_APP_URL}/api/keywords/import`,
       {
-        sheetId: SHEET_ID,
+        sheetId: TEST_SHEET_ID,
         sheetName: 'all',
       }
     );
