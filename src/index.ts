@@ -90,6 +90,7 @@ export async function main() {
         const m = (query || '').match(/\(([^)]+)\)/);
         return m ? m[1].trim() : '';
       })();
+
     // 2) 시트타입/업체명 기반 보정 타겟
     const companyRaw = String((keywordDoc as any).company || '').trim();
     const sheetTypeCanon = normalizeSheetType(
@@ -130,12 +131,32 @@ export async function main() {
           ? false
           : !!sheetOpts.allowAnyBlog;
       const allMatches = matchBlogs(query, items, { allowAnyBlog });
+      console.log(`[MATCH] allMatches: ${allMatches.length}개`);
+      allMatches.forEach((m, idx) => {
+        console.log(
+          `  ${idx + 1}. ${m.blogName} - ${m.postTitle.substring(0, 50)}...`
+        );
+      });
+
+      // Check if it's popular (single group) or smart blog (multiple groups)
+      const uniqueGroups = new Set(items.map((item) => item.group));
+      const isPopular = uniqueGroups.size === 1;
+      console.log(
+        `[TYPE] ${
+          isPopular
+            ? '인기글 (단일 그룹)'
+            : `스블 (${uniqueGroups.size}개 주제)`
+        }`
+      );
 
       // Duplicates filtered first
       let availableMatches = allMatches.filter((match) => {
         const combination = `${query}:${match.postTitle}`;
         return !usedCombinations.has(combination);
       });
+      console.log(
+        `[MATCH] availableMatches (중복 제거 후): ${availableMatches.length}개`
+      );
 
       const beforeTitleFilter = [...availableMatches];
       let matchSource: 'VENDOR' | 'TITLE' | '' = '';
@@ -154,16 +175,22 @@ export async function main() {
 
         const maxChecksEnv = Number(process.env.MAX_CONTENT_CHECKS);
         const delayMsEnv = Number(process.env.CONTENT_CHECK_DELAY_MS);
-        const maxChecks = Number.isFinite(maxChecksEnv)
+        const configuredMaxChecks = Number.isFinite(maxChecksEnv)
           ? Math.max(1, maxChecksEnv)
           : Math.max(1, Number(sheetOpts.maxContentChecks));
+
+        // 스블(여러 주제)일 때는 maxChecks 무시, 인기글(단일 그룹)일 때만 적용
+        const maxChecks = isPopular
+          ? configuredMaxChecks
+          : availableMatches.length;
+
         const delayMs = Number.isFinite(delayMsEnv)
           ? Math.max(0, delayMsEnv)
           : Math.max(0, Number(sheetOpts.contentCheckDelayMs));
         const brandRoot = normalize(
           (restaurantName.split(/\s+/)[0] || '').trim()
         );
-
+        console.log(brandRoot);
         let matched: ExposureResult | null = null;
         let matchedHtml = '';
         let postVendorName = '';
@@ -175,18 +202,25 @@ export async function main() {
             const vendor = extractPostVendorName(htmlCand);
             if (vendor) {
               const vNorm = normalize(vendor);
-              const ok =
-                vNorm.includes(rnNorm) ||
-                (baseBrandNorm.length >= 2 && vNorm.includes(baseBrandNorm)) ||
-                (brandRoot.length >= 2 && vNorm.includes(brandRoot));
+              const check1 = vNorm.includes(rnNorm);
+              const check2 =
+                baseBrandNorm.length >= 2 && vNorm.includes(baseBrandNorm);
+              const check3 = brandRoot.length >= 2 && vNorm.includes(brandRoot);
+
+              const ok = check1 || check2 || check3;
+
               if (ok) {
                 matched = cand;
                 matchedHtml = htmlCand;
                 postVendorName = vendor;
                 break;
               }
+            } else {
+              console.warn(`  → No vendor found in HTML`);
             }
-          } catch {}
+          } catch (err) {
+            console.error(`  → Error: ${(err as Error).message}`);
+          }
           if (j < availableMatches.length - 1 && delayMs > 0) {
             await delay(delayMs);
           }
