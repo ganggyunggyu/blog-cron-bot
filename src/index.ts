@@ -298,9 +298,9 @@ export async function main() {
         }`
       );
 
-      // Duplicates filtered first
+      // Duplicates filtered first (per keyword document)
       let availableMatches = allMatches.filter((match) => {
-        const combination = `${query}:${match.postTitle}`;
+        const combination = `${keywordDoc._id}:${match.postTitle}`;
         return !usedCombinations.has(combination);
       });
       console.log(
@@ -401,7 +401,7 @@ export async function main() {
 
           for (let k = 0; k < allVendorMatches.length; k++) {
             const vm = allVendorMatches[k];
-            const combination = `${query}:${vm.match.postTitle}`;
+            const combination = `${keywordDoc._id}:${vm.match.postTitle}`;
 
             // 중복 체크
             if (usedCombinations.has(combination)) {
@@ -532,7 +532,7 @@ export async function main() {
         // 모든 TITLE 매칭 처리
         for (let k = 0; k < availableMatches.length; k++) {
           const match = availableMatches[k];
-          const combination = `${query}:${match.postTitle}`;
+          const combination = `${keywordDoc._id}:${match.postTitle}`;
 
           // 중복 체크
           if (usedCombinations.has(combination)) {
