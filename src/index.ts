@@ -13,70 +13,23 @@ import { saveToCSV } from './csv-writer';
 import { getSheetOptions, normalizeSheetType } from './sheet-config';
 import { NAVER_DESKTOP_HEADERS } from './constants';
 import { getSearchQuery } from './utils';
+import { formatDetailedLogs } from './lib/log-formatter';
+import {
+  Config,
+  DetailedLog,
+  VendorMatchDetails,
+  TitleMatchDetails,
+  MatchedPostInfo,
+} from './types';
 
 dotenv.config();
-
-interface Config {
-  maxRetries: number;
-  delayBetweenQueries: number;
-}
-
-interface VendorMatchDetails {
-  restaurantName: string;
-  baseBrand: string;
-  brandRoot: string;
-  extractedVendor: string;
-  matchedBy: 'rnNorm' | 'baseBrandNorm' | 'brandRoot';
-  checkIndex: number;
-  rnNorm: string;
-  baseBrandNorm: string;
-}
-
-interface TitleMatchDetails {
-  tokensUsed: string[];
-  tokensRequired: number;
-}
-
-interface MatchedPostInfo {
-  blogName: string;
-  blogId: string;
-  postTitle: string;
-  postLink: string;
-  position: number;
-  topicName: string;
-  exposureType: string;
-  extractedVendor: string;
-}
-
-interface DetailedLogEntry {
-  index: number;
-  keyword: string;
-  searchQuery: string;
-  restaurantName: string;
-  vendorTarget: string;
-  success: boolean;
-  matchSource?: 'VENDOR' | 'TITLE';
-  totalItemsParsed: number;
-  htmlStructure: {
-    isPopular: boolean;
-    uniqueGroups: number;
-  };
-  allMatchesCount: number;
-  availableMatchesCount: number;
-  matchedPost?: MatchedPostInfo;
-  vendorMatchDetails?: VendorMatchDetails;
-  titleMatchDetails?: TitleMatchDetails;
-  failureReason?: string;
-  timestamp: string;
-  processingTime: number;
-}
 
 const config: Config = {
   maxRetries: 3,
   delayBetweenQueries: 100,
 };
 
-function saveDetailedLogs(logs: DetailedLogEntry[], timestamp: string): void {
+function saveDetailedLogs(logs: DetailedLog[], timestamp: string): void {
   const fs = require('fs');
   const path = require('path');
 
@@ -93,87 +46,14 @@ function saveDetailedLogs(logs: DetailedLogEntry[], timestamp: string): void {
 
   // TXT 저장 (사람이 읽기 쉬운 형태)
   const txtPath = path.join(logsDir, `detailed-${timestamp}.txt`);
-  const lines: string[] = [];
-
-  lines.push('='.repeat(80));
-  lines.push('노출 검출 상세 로그');
-  lines.push(`생성 시간: ${new Date().toLocaleString('ko-KR')}`);
-  lines.push(`총 처리: ${logs.length}개`);
-  lines.push(`성공: ${logs.filter((l) => l.success).length}개`);
-  lines.push(`실패: ${logs.filter((l) => !l.success).length}개`);
-  lines.push('='.repeat(80));
-  lines.push('');
-
-  logs.forEach((log) => {
-    lines.push('-'.repeat(80));
-    lines.push(`[${log.index}] ${log.keyword} ${log.success ? '✅' : '❌'}`);
-    lines.push('-'.repeat(80));
-    lines.push(`검색어: ${log.keyword}`);
-    lines.push(`실제 검색: ${log.searchQuery}`);
-    lines.push(`업장명: ${log.restaurantName || '-'}`);
-    lines.push(`타겟: ${log.vendorTarget || '-'}`);
-    lines.push(`결과: ${log.success ? '✅ 노출 인정' : '❌ 노출 없음'}`);
-    lines.push(`처리 시간: ${log.processingTime}ms`);
-    lines.push('');
-
-    lines.push(`[파싱 결과]`);
-    lines.push(`  - 총 아이템: ${log.totalItemsParsed}개`);
-    lines.push(`  - 타입: ${log.htmlStructure.isPopular ? '인기글 (단일 그룹)' : `스블 (${log.htmlStructure.uniqueGroups}개 주제)`}`);
-    lines.push(`  - 매칭 후보: ${log.allMatchesCount}개`);
-    lines.push(`  - 사용 가능: ${log.availableMatchesCount}개 (중복 제거 후)`);
-    lines.push('');
-
-    if (log.success && log.matchedPost) {
-      lines.push(`[매칭된 포스트]`);
-      lines.push(`  - 블로그: ${log.matchedPost.blogName} (${log.matchedPost.blogId})`);
-      lines.push(`  - 제목: ${log.matchedPost.postTitle}`);
-      lines.push(`  - 링크: ${log.matchedPost.postLink}`);
-      lines.push(`  - 순위: ${log.matchedPost.position}위`);
-      lines.push(`  - 주제: ${log.matchedPost.topicName || '-'}`);
-      lines.push(`  - 노출: ${log.matchedPost.exposureType}`);
-      lines.push(`  - 추출 업장명: ${log.matchedPost.extractedVendor || '-'}`);
-      lines.push(`  - 매칭 방식: ${log.matchSource || '-'}`);
-      lines.push('');
-
-      if (log.vendorMatchDetails) {
-        const vmd = log.vendorMatchDetails;
-        lines.push(`[VENDOR 매칭 상세]`);
-        lines.push(`  - 타겟 업장명: ${vmd.restaurantName}`);
-        lines.push(`  - baseBrand: ${vmd.baseBrand}`);
-        lines.push(`  - brandRoot: ${vmd.brandRoot}`);
-        lines.push(`  - 추출된 업장명: ${vmd.extractedVendor}`);
-        lines.push(`  - 매칭 조건: ${vmd.matchedBy}`);
-        lines.push(`    * rnNorm: ${vmd.rnNorm}`);
-        lines.push(`    * baseBrandNorm: ${vmd.baseBrandNorm}`);
-        lines.push(`  - 체크 순서: ${vmd.checkIndex + 1}번째`);
-        lines.push('');
-      }
-
-      if (log.titleMatchDetails) {
-        const tmd = log.titleMatchDetails;
-        lines.push(`[TITLE 매칭 상세]`);
-        lines.push(`  - 사용된 토큰: ${tmd.tokensUsed.join(', ')}`);
-        lines.push(`  - 필요 토큰 수: ${tmd.tokensRequired}개`);
-        lines.push('');
-      }
-    } else if (log.failureReason) {
-      lines.push(`[실패 원인]`);
-      lines.push(`  ${log.failureReason}`);
-      lines.push('');
-    }
-
-    lines.push('');
-  });
-
-  lines.push('='.repeat(80));
-  lines.push('로그 종료');
-  lines.push('='.repeat(80));
-
-  fs.writeFileSync(txtPath, lines.join('\n'), 'utf-8');
+  const formattedLog = formatDetailedLogs(logs);
+  fs.writeFileSync(txtPath, formattedLog, 'utf-8');
   console.log(`📄 TXT 로그 저장: ${txtPath}`);
 }
 
 export async function main() {
+  const startTime = Date.now();
+
   const mongoUri = process.env.MONGODB_URI;
   if (!mongoUri) {
     console.error('❌ MONGODB_URI 환경 변수가 설정되지 않았습니다.');
@@ -223,16 +103,28 @@ export async function main() {
   );
 
   const allResults: ExposureResult[] = [];
-  const usedCombinations = new Set<string>();
-  const detailedLogs: DetailedLogEntry[] = [];
+  const detailedLogs: DetailedLog[] = [];
 
-  for (let i = 0; i < keywords.length; i++) {
-    const keywordDoc = keywords[i];
+  // 1️⃣ 크롤링 캐시 및 매칭 큐 (searchQuery별)
+  const crawlCache = new Map<string, string>(); // searchQuery -> html
+  const matchQueueMap = new Map<string, ExposureResult[]>(); // searchQuery -> 매칭 큐
+  const itemsCache = new Map<string, any[]>(); // searchQuery -> items
+  const htmlStructureCache = new Map<
+    string,
+    { isPopular: boolean; uniqueGroups: number }
+  >(); // searchQuery -> 구조 정보
+
+  console.log(`\n🔍 총 ${keywords.length}개 키워드 처리\n`);
+
+  // 2️⃣ 키워드를 원래 순서대로 하나씩 처리
+  let globalIndex = 0;
+  for (const keywordDoc of keywords) {
     const query = keywordDoc.keyword;
-    const sheetOpts = getSheetOptions((keywordDoc as any).sheetType);
+    const searchQuery = getSearchQuery(query || '');
+    globalIndex++;
     const keywordStartTime = Date.now();
 
-    // 1) 우선 괄호로 들어온 업장명
+    // ⚠️ 프로그램 제외 대상 체크 (크롤링 전 스킵)
     const restaurantName =
       String((keywordDoc as any).restaurantName || '').trim() ||
       (() => {
@@ -240,391 +132,120 @@ export async function main() {
         return m ? m[1].trim() : '';
       })();
 
-    // 2) 시트타입/업체명 기반 보정 타겟
-    const companyRaw = String((keywordDoc as any).company || '').trim();
-    const sheetTypeCanon = normalizeSheetType(
-      (keywordDoc as any).sheetType || ''
-    );
-    const norm = (s: string) => s.toLowerCase().replace(/\s+/g, '');
-    const companyNorm = norm(companyRaw);
-    const vendorBrand = companyNorm.includes(norm('서리펫'))
-      ? '서리펫'
-      : sheetTypeCanon === 'dogmaru'
-      ? '도그마루'
-      : '';
-    // 서리펫은 업체명 변수(브랜드)를 최우선으로 사용, 그 외에는 (업장명) → 브랜드 순서
-    let vendorTarget =
-      vendorBrand === '서리펫' ? '서리펫' : restaurantName || vendorBrand;
+    const company = String((keywordDoc as any).company || '').trim();
+    const normalizedCompany = company.toLowerCase().replace(/\s+/g, '');
+    if (normalizedCompany.includes('프로그램')) {
+      console.log(
+        `[${globalIndex}/${keywords.length}] ${query} ⏭️  ${company} - 프로그램 제외 대상 (스킵)`
+      );
 
-    const baseKeyword = getSearchQuery(query || '');
+      await updateKeywordResult(
+        String(keywordDoc._id),
+        false,
+        '',
+        '',
+        restaurantName,
+        '',
+        '',
+        undefined,
+        ''
+      );
 
-    try {
-      const searchQuery =
-        baseKeyword && baseKeyword.length > 0
-          ? baseKeyword
-          : getSearchQuery(query || '');
-      const html = await crawlWithRetry(searchQuery, config.maxRetries);
-      const items = extractPopularItems(html);
-      // Per-sheet option with env override
-      const allowAnyEnv = String(
-        process.env.ALLOW_ANY_BLOG || ''
-      ).toLowerCase();
-      const allowAnyBlog =
-        allowAnyEnv === 'true'
-          ? true
-          : allowAnyEnv === '1'
-          ? true
-          : allowAnyEnv === 'false'
-          ? false
-          : allowAnyEnv === '0'
-          ? false
-          : !!sheetOpts.allowAnyBlog;
-      const allMatches = matchBlogs(query, items, { allowAnyBlog });
-      console.log(`[MATCH] allMatches: ${allMatches.length}개`);
-      allMatches.forEach((m, idx) => {
+      detailedLogs.push({
+        index: globalIndex,
+        keyword: query,
+        searchQuery,
+        restaurantName,
+        vendorTarget: '',
+        success: false,
+        totalItemsParsed: 0,
+        htmlStructure: { isPopular: false, uniqueGroups: 0 },
+        allMatchesCount: 0,
+        availableMatchesCount: 0,
+        failureReason: '프로그램 제외 대상',
+        timestamp: new Date().toISOString(),
+        processingTime: Date.now() - keywordStartTime,
+      });
+
+      continue;
+    }
+
+    // 3️⃣ 이미 크롤링했는지 확인
+    let items: any[];
+    let allMatches: ExposureResult[];
+    let isPopular: boolean;
+    let uniqueGroupsSize: number;
+
+    if (!crawlCache.has(searchQuery)) {
+      // 첫 크롤링
+      console.log(`\n${'='.repeat(60)}`);
+      console.log(`🔎 [신규 크롤링] 검색어: "${searchQuery}"`);
+      console.log('='.repeat(60));
+
+      const sheetOpts = getSheetOptions((keywordDoc as any).sheetType);
+
+      try {
+        const html = await crawlWithRetry(searchQuery, config.maxRetries);
+        items = extractPopularItems(html);
+
+        // Per-sheet option with env override
+        const allowAnyEnv = String(
+          process.env.ALLOW_ANY_BLOG || ''
+        ).toLowerCase();
+        const allowAnyBlog =
+          allowAnyEnv === 'true'
+            ? true
+            : allowAnyEnv === '1'
+            ? true
+            : allowAnyEnv === 'false'
+            ? false
+            : allowAnyEnv === '0'
+            ? false
+            : !!sheetOpts.allowAnyBlog;
+
+        allMatches = matchBlogs(query, items, { allowAnyBlog });
         console.log(
-          `  ${idx + 1}. ${m.blogName} - ${m.postTitle.substring(0, 50)}...`
-        );
-      });
-
-      // Check if it's popular (single group) or smart blog (multiple groups)
-      const uniqueGroups = new Set(items.map((item) => item.group));
-      const isPopular = uniqueGroups.size === 1;
-      console.log(
-        `[TYPE] ${
-          isPopular
-            ? '인기글 (단일 그룹)'
-            : `스블 (${uniqueGroups.size}개 주제)`
-        }`
-      );
-
-      // Duplicates filtered first (per keyword document)
-      let availableMatches = allMatches.filter((match) => {
-        const combination = `${keywordDoc._id}:${match.postTitle}`;
-        return !usedCombinations.has(combination);
-      });
-      console.log(
-        `[MATCH] availableMatches (중복 제거 후): ${availableMatches.length}개`
-      );
-
-      const beforeTitleFilter = [...availableMatches];
-      let matchSource: 'VENDOR' | 'TITLE' | '' = '';
-
-      if (vendorTarget) {
-        // 2-step: (1) try vendor from HTML via se-oglink-summary/se-map-title, (2) fallback to title
-        const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, '');
-        const rn = vendorTarget.toLowerCase();
-        const rnNorm = normalize(vendorTarget);
-        const baseBrandNorm = normalize(
-          vendorTarget
-            .replace(/(본점|지점)$/u, '')
-            .replace(/[\p{Script=Hangul}]{1,4}점$/u, '')
-            .trim()
+          `[CRAWL] 파싱: ${items.length}개 → 매칭: ${allMatches.length}개`
         );
 
-        const maxChecksEnv = Number(process.env.MAX_CONTENT_CHECKS);
-        const delayMsEnv = Number(process.env.CONTENT_CHECK_DELAY_MS);
-        const configuredMaxChecks = Number.isFinite(maxChecksEnv)
-          ? Math.max(1, maxChecksEnv)
-          : Math.max(1, Number(sheetOpts.maxContentChecks));
-
-        // 스블(여러 주제)일 때는 maxChecks 무시, 인기글(단일 그룹)일 때만 적용
-        const maxChecks = isPopular
-          ? configuredMaxChecks
-          : availableMatches.length;
-
-        const delayMs = Number.isFinite(delayMsEnv)
-          ? Math.max(0, delayMsEnv)
-          : Math.max(0, Number(sheetOpts.contentCheckDelayMs));
-        const brandRoot = normalize(
-          (restaurantName.split(/\s+/)[0] || '').trim()
+        // Check if it's popular (single group) or smart blog (multiple groups)
+        const uniqueGroups = new Set(items.map((item) => item.group));
+        isPopular = uniqueGroups.size === 1;
+        uniqueGroupsSize = uniqueGroups.size;
+        const topicNames = Array.from(uniqueGroups).join(', ');
+        console.log(
+          `[TYPE] ${isPopular ? '인기글 (단일 그룹)' : `스블 (${topicNames})`}`
         );
-        console.log(brandRoot);
 
-        // 모든 VENDOR 매칭을 수집
-        const allVendorMatches: Array<{
-          match: ExposureResult;
-          html: string;
-          vendor: string;
-          matchDetails: VendorMatchDetails;
-        }> = [];
-
-        for (let j = 0; j < availableMatches.length && j < maxChecks; j++) {
-          const cand = availableMatches[j];
-          try {
-            const htmlCand = await fetchResolvedPostHtml(cand.postLink);
-            const vendor = extractPostVendorName(htmlCand);
-            if (vendor) {
-              const vNorm = normalize(vendor);
-              const check1 = vNorm.includes(rnNorm);
-              const check2 =
-                baseBrandNorm.length >= 2 && vNorm.includes(baseBrandNorm);
-              const check3 = brandRoot.length >= 2 && vNorm.includes(brandRoot);
-
-              const ok = check1 || check2 || check3;
-
-              if (ok) {
-                allVendorMatches.push({
-                  match: cand,
-                  html: htmlCand,
-                  vendor: vendor,
-                  matchDetails: {
-                    restaurantName: vendorTarget,
-                    baseBrand: vendorTarget
-                      .replace(/(본점|지점)$/u, '')
-                      .replace(/[\p{Script=Hangul}]{1,4}점$/u, '')
-                      .trim(),
-                    brandRoot,
-                    extractedVendor: vendor,
-                    matchedBy: check1 ? 'rnNorm' : check2 ? 'baseBrandNorm' : 'brandRoot',
-                    checkIndex: j,
-                    rnNorm,
-                    baseBrandNorm,
-                  },
-                });
-                // break 제거! 모든 매칭을 찾기 위해 계속 진행
-              }
-            } else {
-              console.warn(`  → No vendor found in HTML`);
-            }
-          } catch (err) {
-            console.error(`  → Error: ${(err as Error).message}`);
-          }
-          if (j < availableMatches.length - 1 && delayMs > 0) {
-            await delay(delayMs);
-          }
-        }
-
-        // 모든 VENDOR 매칭 처리
-        if (allVendorMatches.length > 0) {
-          console.log(`[VENDOR] ${allVendorMatches.length}개 매칭 발견!`);
-
-          for (let k = 0; k < allVendorMatches.length; k++) {
-            const vm = allVendorMatches[k];
-            const combination = `${keywordDoc._id}:${vm.match.postTitle}`;
-
-            // 중복 체크
-            if (usedCombinations.has(combination)) {
-              console.log(`  ${k + 1}. 중복 제외: ${vm.match.postTitle}`);
-              continue;
-            }
-            usedCombinations.add(combination);
-
-            const displayRestaurant = vendorTarget || '-';
-            const displayRank = vm.match.position ?? '-';
-            const displayTitle = vm.match.postTitle || '-';
-            const displayTopic = vm.match.topicName || vm.match.exposureType || '-';
-            const displayVendor = vm.vendor || '-';
-            console.log(
-              `[${i + 1}/${keywords.length}] ${query} ✅ ${displayRestaurant} / ${displayRank} / ${displayTopic} / ${displayVendor} / ${displayTitle} / SRC=VENDOR (${k + 1}/${allVendorMatches.length})`
-            );
-
-            // DB는 첫 번째만 저장
-            if (k === 0) {
-              await updateKeywordResult(
-                String(keywordDoc._id),
-                true,
-                vm.match.topicName || vm.match.exposureType,
-                vm.match.postLink,
-                vendorTarget,
-                vm.match.postTitle,
-                vm.html,
-                vm.match.position, // rank
-                vm.vendor
-              );
-            }
-
-            // allResults에 모두 추가
-            allResults.push(vm.match);
-
-            // 상세 로그 저장 (각 매칭마다)
-            detailedLogs.push({
-              index: i + 1,
-              keyword: query,
-              searchQuery: baseKeyword,
-              restaurantName,
-              vendorTarget,
-              success: true,
-              matchSource: 'VENDOR',
-              totalItemsParsed: items.length,
-              htmlStructure: {
-                isPopular,
-                uniqueGroups: uniqueGroups.size,
-              },
-              allMatchesCount: allMatches.length,
-              availableMatchesCount: availableMatches.length,
-              matchedPost: {
-                blogName: vm.match.blogName,
-                blogId: vm.match.blogId,
-                postTitle: vm.match.postTitle,
-                postLink: vm.match.postLink,
-                position: vm.match.position ?? 0,
-                topicName: vm.match.topicName || '',
-                exposureType: vm.match.exposureType,
-                extractedVendor: vm.vendor,
-              },
-              vendorMatchDetails: vm.matchDetails,
-              timestamp: new Date().toISOString(),
-              processingTime: Date.now() - keywordStartTime,
-            });
-          }
-
-          if (i < keywords.length - 1) {
-            await delay(config.delayBetweenQueries);
-          }
-          continue; // go next keyword
-        }
-
-        // 3rd fallback: title-only check when vendor selectors were not usable
-        availableMatches = availableMatches.filter((m) => {
-          const titleRaw = m.postTitle || '';
-          const title = titleRaw.toLowerCase();
-          const titleNorm = normalize(titleRaw);
-          const hasFull = title.includes(rn) || titleNorm.includes(rnNorm);
-          const hasBrand =
-            (baseBrandNorm.length >= 2 && titleNorm.includes(baseBrandNorm)) ||
-            (brandRoot.length >= 2 && titleNorm.includes(brandRoot));
-          return hasFull || hasBrand;
+        // 캐시에 저장
+        crawlCache.set(searchQuery, html);
+        itemsCache.set(searchQuery, items);
+        matchQueueMap.set(searchQuery, [...allMatches]);
+        htmlStructureCache.set(searchQuery, {
+          isPopular,
+          uniqueGroups: uniqueGroupsSize,
         });
-        if (availableMatches.length > 0) {
-          matchSource = 'TITLE';
-        }
-      } else {
-        // No restaurant qualifier: require that all base keyword tokens appear in title (space-insensitive)
-        const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, '');
-        const tokens = baseKeyword
-          .split(/\s+/)
-          .map((t) => t.trim())
-          .filter((t) => t.length > 0);
 
-        if (tokens.length > 0) {
-          availableMatches = availableMatches.filter((m) => {
-            const titleRaw = m.postTitle || '';
-            const title = titleRaw.toLowerCase();
-            const titleNorm = normalize(titleRaw);
-            return tokens.every((tok) => {
-              const tLower = tok.toLowerCase();
-              return (
-                title.includes(tLower) || titleNorm.includes(normalize(tok))
-              );
-            });
-          });
+        console.log(`[QUEUE] 초기 큐 크기: ${allMatches.length}개\n`);
 
-          // Fallback: tokens-in-order regex on normalized title (handles insertions like "수원역고기맛집")
-          if (availableMatches.length === 0 && tokens.length >= 2) {
-            const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const tnorm = tokens.map((t) =>
-              esc(t.toLowerCase().replace(/\s+/g, ''))
-            );
-            const forward = new RegExp(tnorm.join('.*'));
-            const backward = new RegExp([...tnorm].reverse().join('.*'));
-            availableMatches = beforeTitleFilter.filter((m) => {
-              const titleNorm = normalize(m.postTitle || '');
-              return forward.test(titleNorm) || backward.test(titleNorm);
-            });
-          }
-        }
-      }
+        await delay(config.delayBetweenQueries);
+      } catch (error) {
+        console.error(
+          `\n❌ 검색어 "${searchQuery}" 크롤링 에러:`,
+          (error as Error).message
+        );
 
-      if (availableMatches.length > 0) {
-        console.log(`[TITLE] ${availableMatches.length}개 매칭 발견!`);
+        const restaurantName =
+          String((keywordDoc as any).restaurantName || '').trim() ||
+          (() => {
+            const m = (query || '').match(/\(([^)]+)\)/);
+            return m ? m[1].trim() : '';
+          })();
 
-        // 모든 TITLE 매칭 처리
-        for (let k = 0; k < availableMatches.length; k++) {
-          const match = availableMatches[k];
-          const combination = `${keywordDoc._id}:${match.postTitle}`;
-
-          // 중복 체크
-          if (usedCombinations.has(combination)) {
-            console.log(`  ${k + 1}. 중복 제외: ${match.postTitle}`);
-            continue;
-          }
-          usedCombinations.add(combination);
-
-          let matchedHtml = '';
-          let postVendorName = '';
-          try {
-            matchedHtml = await fetchResolvedPostHtml(match.postLink);
-            postVendorName = extractPostVendorName(matchedHtml);
-          } catch (_) {
-            matchedHtml = '';
-          }
-
-          const displayRestaurant = restaurantName || '-';
-          const displayRank = match.position ?? '-';
-          const displayTitle = match.postTitle || '-';
-          const displayTopic = match.topicName || match.exposureType || '-';
-          const displayVendor = postVendorName || '-';
-          const srcInfo = matchSource ? ` / SRC=${matchSource}` : '';
-          console.log(
-            `[${i + 1}/${keywords.length}] ${query} ✅ ${displayRestaurant} / ${displayRank} / ${displayTopic} / ${displayVendor} / ${displayTitle}${srcInfo} (${k + 1}/${availableMatches.length})`
-          );
-
-          // DB는 첫 번째만 저장
-          if (k === 0) {
-            await updateKeywordResult(
-              String(keywordDoc._id),
-              true,
-              match.topicName || match.exposureType,
-              match.postLink,
-              restaurantName,
-              match.postTitle,
-              matchedHtml,
-              match.position, // rank
-              postVendorName
-            );
-          }
-
-          // allResults에 모두 추가
-          allResults.push(match);
-
-          // 상세 로그 저장 (각 매칭마다)
-          const titleMatchDetails: TitleMatchDetails | undefined = vendorTarget
-            ? undefined
-            : {
-                tokensUsed: baseKeyword
-                  .split(/\s+/)
-                  .map((t) => t.trim())
-                  .filter((t) => t.length > 0),
-                tokensRequired: baseKeyword.split(/\s+/).filter((t) => t.trim().length > 0).length,
-              };
-
-          detailedLogs.push({
-            index: i + 1,
-            keyword: query,
-            searchQuery: baseKeyword,
-            restaurantName,
-            vendorTarget,
-            success: true,
-            matchSource: matchSource || undefined,
-            totalItemsParsed: items.length,
-            htmlStructure: {
-              isPopular,
-              uniqueGroups: uniqueGroups.size,
-            },
-            allMatchesCount: allMatches.length,
-            availableMatchesCount: beforeTitleFilter.length,
-            matchedPost: {
-              blogName: match.blogName,
-              blogId: match.blogId,
-              postTitle: match.postTitle,
-              postLink: match.postLink,
-              position: match.position ?? 0,
-              topicName: match.topicName || '',
-              exposureType: match.exposureType,
-              extractedVendor: postVendorName,
-            },
-            titleMatchDetails,
-            timestamp: new Date().toISOString(),
-            processingTime: Date.now() - keywordStartTime,
-          });
-        }
-      } else {
-        const displayRestaurant = restaurantName || '-';
         console.log(
-          `[${i + 1}/${
-            keywords.length
-          }] ${query} ❌ ${displayRestaurant} / - / - / - / -`
+          `[${globalIndex}/${keywords.length}] ${query} ❌ ${
+            restaurantName || '-'
+          } / - / - / - / - (크롤링 에러)`
         );
 
         await updateKeywordResult(
@@ -639,43 +260,64 @@ export async function main() {
           ''
         );
 
-        // 실패 케이스 로그 추가
         detailedLogs.push({
-          index: i + 1,
+          index: globalIndex,
           keyword: query,
-          searchQuery: baseKeyword,
+          searchQuery,
           restaurantName,
-          vendorTarget,
+          vendorTarget: '',
           success: false,
-          totalItemsParsed: items.length,
-          htmlStructure: {
-            isPopular,
-            uniqueGroups: uniqueGroups.size,
-          },
-          allMatchesCount: allMatches.length,
-          availableMatchesCount: beforeTitleFilter.length,
-          failureReason: allMatches.length === 0
-            ? '파싱된 아이템 중 우리 블로그 없음'
-            : beforeTitleFilter.length === 0
-            ? '중복 제거 후 매칭 없음'
-            : vendorTarget
-            ? 'VENDOR 체크 실패 및 TITLE 필터링 실패'
-            : 'TITLE 필터링 실패 (토큰 미포함)',
+          totalItemsParsed: 0,
+          htmlStructure: { isPopular: false, uniqueGroups: 0 },
+          allMatchesCount: 0,
+          availableMatchesCount: 0,
+          failureReason: `크롤링 에러: ${(error as Error).message}`,
           timestamp: new Date().toISOString(),
           processingTime: Date.now() - keywordStartTime,
         });
-      }
 
-      if (i < keywords.length - 1) {
-        await delay(config.delayBetweenQueries);
+        continue;
       }
-    } catch (error) {
-      const displayRestaurant = restaurantName || '-';
+    } else {
+      // 캐시 사용
       console.log(
-        `[${i + 1}/${
-          keywords.length
-        }] ${query} ❌ ${displayRestaurant} / - / - / - / - (에러)`
+        `\n[${globalIndex}/${keywords.length}] 🔄 캐시 사용: "${searchQuery}"`
       );
+      items = itemsCache.get(searchQuery)!;
+      const structure = htmlStructureCache.get(searchQuery)!;
+      isPopular = structure.isPopular;
+      uniqueGroupsSize = structure.uniqueGroups;
+    }
+
+    // 4️⃣ 큐 가져오기
+    const matchQueue = matchQueueMap.get(searchQuery)!;
+    const allMatchesCount = matchQueue.length; // 현재 남은 큐 크기
+
+    // (restaurantName은 위에서 이미 추출됨)
+
+    // vendorTarget 계산
+    const companyRaw = String((keywordDoc as any).company || '').trim();
+    const sheetTypeCanon = normalizeSheetType(
+      (keywordDoc as any).sheetType || ''
+    );
+    const norm = (s: string) => s.toLowerCase().replace(/\s+/g, '');
+    const companyNorm = norm(companyRaw);
+    const vendorBrand = companyNorm.includes(norm('서리펫'))
+      ? '서리펫'
+      : sheetTypeCanon === 'dogmaru'
+      ? '도그마루'
+      : '';
+    // 서리펫/도그마루도 식당명이랑 동일하게: restaurantName(괄호) 우선, 없으면 업체명(vendorBrand)
+    const vendorTarget = restaurantName || vendorBrand;
+
+    // 5️⃣ 큐가 비었으면 바로 실패 처리
+    if (matchQueue.length === 0) {
+      console.log(
+        `[${globalIndex}/${keywords.length}] ${query} ❌ ${
+          restaurantName || '-'
+        } / - / - / - / - (큐 소진)`
+      );
+
       await updateKeywordResult(
         String(keywordDoc._id),
         false,
@@ -688,27 +330,263 @@ export async function main() {
         ''
       );
 
-      // 에러 케이스 로그 추가
       detailedLogs.push({
-        index: i + 1,
+        index: globalIndex,
         keyword: query,
-        searchQuery: baseKeyword || query,
+        searchQuery,
         restaurantName,
-        vendorTarget: vendorTarget || '',
+        vendorTarget,
         success: false,
-        totalItemsParsed: 0,
-        htmlStructure: {
-          isPopular: false,
-          uniqueGroups: 0,
-        },
+        totalItemsParsed: items.length,
+        htmlStructure: { isPopular, uniqueGroups: uniqueGroupsSize },
         allMatchesCount: 0,
         availableMatchesCount: 0,
-        failureReason: `에러 발생: ${(error as Error).message}`,
+        failureReason: '매칭 큐 소진 (이전 키워드에 모두 할당됨)',
+        timestamp: new Date().toISOString(),
+        processingTime: Date.now() - keywordStartTime,
+      });
+
+      continue;
+    }
+
+    // 6️⃣ 큐에서 필터링 통과하는 첫 번째 찾기
+    let matchedIndex = -1;
+    let nextMatch: ExposureResult | undefined;
+    let passed = false;
+    let matchSource: 'VENDOR' | 'TITLE' | '' = '';
+    let matchedHtml = '';
+    let extractedVendor = '';
+    let vendorMatchDetails: VendorMatchDetails | undefined;
+
+    // 7️⃣ 큐를 순회하면서 vendorTarget/TITLE 필터링 통과하는 걸 찾기
+    for (let queueIdx = 0; queueIdx < matchQueue.length; queueIdx++) {
+      const candidate = matchQueue[queueIdx];
+      let candidatePassed = false;
+      let candidateSource: 'VENDOR' | 'TITLE' | '' = '';
+      let candidateHtml = '';
+      let candidateVendor = '';
+      let candidateVendorDetails: VendorMatchDetails | undefined;
+
+      if (vendorTarget) {
+        // VENDOR 체크
+        try {
+          candidateHtml = await fetchResolvedPostHtml(candidate.postLink);
+          candidateVendor = extractPostVendorName(candidateHtml);
+
+          if (candidateVendor) {
+            const normalize = (s: string) =>
+              s.toLowerCase().replace(/\s+/g, '');
+            const rnNorm = normalize(vendorTarget);
+            const baseBrand = vendorTarget
+              .replace(/(본점|지점)$/u, '')
+              .replace(/[\p{Script=Hangul}]{1,4}점$/u, '')
+              .trim();
+            const baseBrandNorm = normalize(baseBrand);
+            const brandRoot = normalize(
+              (restaurantName.split(/\s+/)[0] || '').trim()
+            );
+            const vNorm = normalize(candidateVendor);
+
+            const check1 = vNorm.includes(rnNorm);
+            const check2 =
+              baseBrandNorm.length >= 2 && vNorm.includes(baseBrandNorm);
+            const check3 = brandRoot.length >= 2 && vNorm.includes(brandRoot);
+
+            if (check1 || check2 || check3) {
+              candidatePassed = true;
+              candidateSource = 'VENDOR';
+              candidateVendorDetails = {
+                restaurantName: vendorTarget,
+                baseBrand,
+                brandRoot,
+                extractedVendor: candidateVendor,
+                matchedBy: check1
+                  ? 'rnNorm'
+                  : check2
+                  ? 'baseBrandNorm'
+                  : 'brandRoot',
+                checkIndex: queueIdx,
+                rnNorm,
+                baseBrandNorm,
+              };
+            }
+          }
+        } catch (err) {
+          console.warn(
+            `  [VENDOR 체크 실패 (큐 ${queueIdx})] ${(err as Error).message}`
+          );
+        }
+
+        // VENDOR 실패 시 TITLE 체크
+        if (!candidatePassed) {
+          const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, '');
+          const titleRaw = candidate.postTitle || '';
+          const title = titleRaw.toLowerCase();
+          const titleNorm = normalize(titleRaw);
+          const rn = vendorTarget.toLowerCase();
+          const rnNorm = normalize(vendorTarget);
+          const baseBrand = vendorTarget
+            .replace(/(본점|지점)$/u, '')
+            .replace(/[\p{Script=Hangul}]{1,4}점$/u, '')
+            .trim();
+          const baseBrandNorm = normalize(baseBrand);
+          const brandRoot = normalize(
+            (restaurantName.split(/\s+/)[0] || '').trim()
+          );
+
+          const hasFull = title.includes(rn) || titleNorm.includes(rnNorm);
+          const hasBrand =
+            (baseBrandNorm.length >= 2 && titleNorm.includes(baseBrandNorm)) ||
+            (brandRoot.length >= 2 && titleNorm.includes(brandRoot));
+
+          if (hasFull || hasBrand) {
+            candidatePassed = true;
+            candidateSource = 'TITLE';
+          }
+        }
+      } else {
+        // vendorTarget 없는 경우: TITLE 토큰 체크
+        const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, '');
+        const tokens = searchQuery
+          .split(/\s+/)
+          .map((t) => t.trim())
+          .filter((t) => t.length > 0);
+
+        const titleRaw = candidate.postTitle || '';
+        const title = titleRaw.toLowerCase();
+        const titleNorm = normalize(titleRaw);
+
+        const allTokensMatch = tokens.every((tok) => {
+          const tLower = tok.toLowerCase();
+          return title.includes(tLower) || titleNorm.includes(normalize(tok));
+        });
+
+        if (allTokensMatch) {
+          candidatePassed = true;
+          candidateSource = 'TITLE';
+        }
+      }
+
+      // 통과했으면 선택하고 루프 종료
+      if (candidatePassed) {
+        matchedIndex = queueIdx;
+        nextMatch = candidate;
+        passed = true;
+        matchSource = candidateSource;
+        matchedHtml = candidateHtml;
+        extractedVendor = candidateVendor;
+        vendorMatchDetails = candidateVendorDetails;
+        break;
+      }
+    }
+
+    // 큐에서 제거
+    if (matchedIndex >= 0) {
+      matchQueue.splice(matchedIndex, 1);
+    }
+
+    // 8️⃣ 결과 처리
+    if (passed && nextMatch) {
+      // HTML 재추출 (vendorTarget 없는 경우)
+      if (!vendorTarget && !matchedHtml) {
+        try {
+          matchedHtml = await fetchResolvedPostHtml(nextMatch.postLink);
+          extractedVendor = extractPostVendorName(matchedHtml);
+        } catch (_) {}
+      }
+
+      const displayRank = nextMatch.position ?? '-';
+      const displayTitle = nextMatch.postTitle || '-';
+      const displayTopic = nextMatch.topicName || nextMatch.exposureType || '-';
+      console.log(
+        `[${globalIndex}/${keywords.length}] ${query} ✅ ${
+          restaurantName || '-'
+        } / ${displayRank} / ${displayTopic} / ${
+          extractedVendor || '-'
+        } / ${displayTitle} / SRC=${matchSource}`
+      );
+
+      await updateKeywordResult(
+        String(keywordDoc._id),
+        true,
+        nextMatch.topicName || nextMatch.exposureType,
+        nextMatch.postLink,
+        restaurantName,
+        nextMatch.postTitle,
+        matchedHtml,
+        nextMatch.position,
+        extractedVendor
+      );
+
+      allResults.push(nextMatch);
+
+      detailedLogs.push({
+        index: globalIndex,
+        keyword: query,
+        searchQuery,
+        restaurantName,
+        vendorTarget,
+        success: true,
+        matchSource: matchSource || undefined,
+        totalItemsParsed: items.length,
+        htmlStructure: { isPopular, uniqueGroups: uniqueGroupsSize },
+        allMatchesCount: allMatchesCount + 1, // 사용 전 큐 크기
+        availableMatchesCount: matchQueue.length + 1, // +1 for the one we just used
+        matchedPost: {
+          blogName: nextMatch.blogName,
+          blogId: nextMatch.blogId,
+          postTitle: nextMatch.postTitle,
+          postLink: nextMatch.postLink,
+          position: nextMatch.position ?? 0,
+          topicName: nextMatch.topicName || '',
+          exposureType: nextMatch.exposureType,
+          extractedVendor,
+        },
+        vendorMatchDetails,
+        timestamp: new Date().toISOString(),
+        processingTime: Date.now() - keywordStartTime,
+      });
+    } else {
+      // 필터링 실패
+      console.log(
+        `[${globalIndex}/${keywords.length}] ${query} ❌ ${
+          restaurantName || '-'
+        } / - / - / - / - (필터링 실패)`
+      );
+
+      await updateKeywordResult(
+        String(keywordDoc._id),
+        false,
+        '',
+        '',
+        restaurantName,
+        '',
+        '',
+        undefined,
+        ''
+      );
+
+      detailedLogs.push({
+        index: globalIndex,
+        keyword: query,
+        searchQuery,
+        restaurantName,
+        vendorTarget,
+        success: false,
+        totalItemsParsed: items.length,
+        htmlStructure: { isPopular, uniqueGroups: uniqueGroupsSize },
+        allMatchesCount: allMatchesCount,
+        availableMatchesCount: matchQueue.length,
+        failureReason: vendorTarget
+          ? 'VENDOR 및 TITLE 필터링 모두 실패'
+          : 'TITLE 필터링 실패 (토큰 미포함)',
         timestamp: new Date().toISOString(),
         processingTime: Date.now() - keywordStartTime,
       });
     }
   }
+
+  // 🔟 최종 결과 저장
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   const filterSheet = (process.env.ONLY_SHEET_TYPE || '').trim();
@@ -718,6 +596,17 @@ export async function main() {
   const filename = `${csvPrefix}_${timestamp}.csv`;
 
   saveToCSV(allResults, filename);
+
+  const elapsedMs = Date.now() - startTime;
+  const hours = Math.floor(elapsedMs / (1000 * 60 * 60));
+  const minutes = Math.floor((elapsedMs % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((elapsedMs % (1000 * 60)) / 1000);
+  const elapsedTimeStr =
+    hours > 0
+      ? `${hours}시간 ${minutes}분 ${seconds}초`
+      : minutes > 0
+      ? `${minutes}분 ${seconds}초`
+      : `${seconds}초`;
 
   console.log('\n' + '='.repeat(50));
   console.log('📊 크롤링 완료 요약');
@@ -732,6 +621,7 @@ export async function main() {
   console.log(
     `✅ 스블: ${allResults.filter((r) => r.exposureType === '스블').length}개`
   );
+  console.log(`✅ 처리 시간: ${elapsedTimeStr}`);
   console.log('='.repeat(50) + '\n');
 
   // 상세 로그 저장
@@ -748,7 +638,7 @@ export async function main() {
   await disconnectDB();
 }
 
-function extractPostVendorName(html: string): string {
+export function extractPostVendorName(html: string): string {
   if (!html) return '';
   try {
     const $ = cheerio.load(html);
@@ -779,7 +669,7 @@ function extractPostVendorName(html: string): string {
   }
 }
 
-async function fetchResolvedPostHtml(url: string): Promise<string> {
+export async function fetchResolvedPostHtml(url: string): Promise<string> {
   try {
     const outer = await fetchHtml(url, NAVER_DESKTOP_HEADERS);
     // Naver desktop blog often loads content inside #mainFrame iframe
