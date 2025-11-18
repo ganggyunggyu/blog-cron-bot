@@ -7,8 +7,6 @@ dotenv.config();
 
 const SHEET_APP_URL = process.env.SHEET_APP_URL || 'http://localhost:3000';
 
-const TEST_SHEET_ID = '1T9PHu-fH6HPmyYA9dtfXaDLm20XAPN-9mzlE2QTPkF0';
-
 const PRODUCT_SHEET_ID = '1vrN5gvtokWxPs8CNaNcvZQLWyIMBOIcteYXQbyfiZl0';
 
 const requests = [
@@ -65,16 +63,59 @@ async function runFullWorkflow() {
 
     console.log('\n[Step 3/3] 시트에 적용');
 
-    const importResponse = await axios.post(
+    const TEST_CONFIG = {
+      SHEET_ID: '1T9PHu-fH6HPmyYA9dtfXaDLm20XAPN-9mzlE2QTPkF0',
+      SHEET_NAMES: {
+        PACKAGE: '패키지 노출체크 프로그램',
+        DOGMARU_EXCLUDE: '일반건 노출체크 프로그램',
+        DOGMARU: '도그마루 노출체크 프로그램',
+      },
+      LABELS: {
+        PACKAGE: '패키지 노출체크 프로그램',
+        DOGMARU_EXCLUDE: '일반건 노출체크 프로그램',
+        DOGMARU: '도그마루 노출체크 프로그램',
+      },
+    } as const;
+
+    const packageImportRes = await axios.post(
       `${SHEET_APP_URL}/api/keywords/import`,
       {
-        sheetId: TEST_SHEET_ID,
-        sheetName: 'all',
+        sheetId: TEST_CONFIG.SHEET_ID,
+        sheetName: TEST_CONFIG.LABELS.PACKAGE,
+        sheetType: TEST_CONFIG.SHEET_NAMES.PACKAGE,
+        mode: 'rewrite',
       }
     );
 
-    console.log('[Step 3/3] 완료:', importResponse.data);
-    console.log(`   - 업데이트: ${importResponse.data.updated || 0}개`);
+    console.log(packageImportRes);
+    console.log('[Step 3/3] 완료:', packageImportRes);
+    console.log(`   - 업데이트: ${packageImportRes.data.updated || 0}개`);
+
+    const dogExImportResponse = await axios.post(
+      `${SHEET_APP_URL}/api/keywords/import`,
+      {
+        sheetId: TEST_CONFIG.SHEET_ID,
+        sheetName: TEST_CONFIG.LABELS.DOGMARU_EXCLUDE,
+        sheetType: TEST_CONFIG.SHEET_NAMES.DOGMARU_EXCLUDE,
+        mode: 'rewrite',
+      }
+    );
+
+    console.log('[Step 3/3] 완료:', dogExImportResponse);
+    console.log(`   - 업데이트: ${dogExImportResponse.data.updated || 0}개`);
+
+    const dogImportRes = await axios.post(
+      `${SHEET_APP_URL}/api/keywords/import`,
+      {
+        sheetId: TEST_CONFIG.SHEET_ID,
+        sheetName: TEST_CONFIG.LABELS.DOGMARU,
+        sheetType: TEST_CONFIG.SHEET_NAMES.DOGMARU,
+        mode: 'rewrite',
+      }
+    );
+
+    console.log('[Step 3/3] 완료:', dogImportRes);
+    console.log(`   - 업데이트: ${dogImportRes.data.updated || 0}개`);
 
     const endTime = new Date();
     const duration = (endTime.getTime() - startTime.getTime()) / 1000;
