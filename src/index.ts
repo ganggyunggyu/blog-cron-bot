@@ -29,7 +29,11 @@ const config: Config = {
   delayBetweenQueries: 100,
 };
 
-function saveDetailedLogs(logs: DetailedLog[], timestamp: string): void {
+function saveDetailedLogs(
+  logs: DetailedLog[],
+  timestamp: string,
+  elapsedTimeStr: string
+): void {
   const fs = require('fs');
   const path = require('path');
 
@@ -46,7 +50,7 @@ function saveDetailedLogs(logs: DetailedLog[], timestamp: string): void {
 
   // TXT 저장 (사람이 읽기 쉬운 형태)
   const txtPath = path.join(logsDir, `detailed-${timestamp}.txt`);
-  const formattedLog = formatDetailedLogs(logs);
+  const formattedLog = formatDetailedLogs(logs, elapsedTimeStr);
   fs.writeFileSync(txtPath, formattedLog, 'utf-8');
   console.log(`📄 TXT 로그 저장: ${txtPath}`);
 }
@@ -111,7 +115,7 @@ export async function main() {
   const itemsCache = new Map<string, any[]>(); // searchQuery -> items
   const htmlStructureCache = new Map<
     string,
-    { isPopular: boolean; uniqueGroups: number }
+    { isPopular: boolean; uniqueGroups: number; topicNames: string[] }
   >(); // searchQuery -> 구조 정보
 
   console.log(`\n🔍 총 ${keywords.length}개 키워드 처리\n`);
@@ -159,7 +163,7 @@ export async function main() {
         vendorTarget: '',
         success: false,
         totalItemsParsed: 0,
-        htmlStructure: { isPopular: false, uniqueGroups: 0 },
+        htmlStructure: { isPopular: false, uniqueGroups: 0, topicNames: [] },
         allMatchesCount: 0,
         availableMatchesCount: 0,
         failureReason: '프로그램 제외 대상',
@@ -175,6 +179,7 @@ export async function main() {
     let allMatches: ExposureResult[];
     let isPopular: boolean;
     let uniqueGroupsSize: number;
+    let topicNamesArray: string[] = [];
 
     if (!crawlCache.has(searchQuery)) {
       // 첫 크롤링
@@ -212,9 +217,10 @@ export async function main() {
         const uniqueGroups = new Set(items.map((item) => item.group));
         isPopular = uniqueGroups.size === 1;
         uniqueGroupsSize = uniqueGroups.size;
-        const topicNames = Array.from(uniqueGroups).join(', ');
+        const topicNamesArray = Array.from(uniqueGroups);
+        const topicNamesStr = topicNamesArray.join(', ');
         console.log(
-          `[TYPE] ${isPopular ? '인기글 (단일 그룹)' : `스블 (${topicNames})`}`
+          `[TYPE] ${isPopular ? '인기글 (단일 그룹)' : `스블 (${topicNamesStr})`}`
         );
 
         // 캐시에 저장
@@ -224,6 +230,7 @@ export async function main() {
         htmlStructureCache.set(searchQuery, {
           isPopular,
           uniqueGroups: uniqueGroupsSize,
+          topicNames: topicNamesArray,
         });
 
         console.log(`[QUEUE] 초기 큐 크기: ${allMatches.length}개\n`);
@@ -268,7 +275,7 @@ export async function main() {
           vendorTarget: '',
           success: false,
           totalItemsParsed: 0,
-          htmlStructure: { isPopular: false, uniqueGroups: 0 },
+          htmlStructure: { isPopular: false, uniqueGroups: 0, topicNames: [] },
           allMatchesCount: 0,
           availableMatchesCount: 0,
           failureReason: `크롤링 에러: ${(error as Error).message}`,
@@ -287,6 +294,7 @@ export async function main() {
       const structure = htmlStructureCache.get(searchQuery)!;
       isPopular = structure.isPopular;
       uniqueGroupsSize = structure.uniqueGroups;
+      topicNamesArray = structure.topicNames;
     }
 
     // 4️⃣ 큐 가져오기
@@ -338,7 +346,11 @@ export async function main() {
         vendorTarget,
         success: false,
         totalItemsParsed: items.length,
-        htmlStructure: { isPopular, uniqueGroups: uniqueGroupsSize },
+        htmlStructure: {
+          isPopular,
+          uniqueGroups: uniqueGroupsSize,
+          topicNames: topicNamesArray,
+        },
         allMatchesCount: 0,
         availableMatchesCount: 0,
         failureReason: '매칭 큐 소진 (이전 키워드에 모두 할당됨)',
@@ -445,26 +457,9 @@ export async function main() {
           }
         }
       } else {
-        // vendorTarget 없는 경우: TITLE 토큰 체크
-        const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, '');
-        const tokens = searchQuery
-          .split(/\s+/)
-          .map((t) => t.trim())
-          .filter((t) => t.length > 0);
-
-        const titleRaw = candidate.postTitle || '';
-        const title = titleRaw.toLowerCase();
-        const titleNorm = normalize(titleRaw);
-
-        const allTokensMatch = tokens.every((tok) => {
-          const tLower = tok.toLowerCase();
-          return title.includes(tLower) || titleNorm.includes(normalize(tok));
-        });
-
-        if (allTokensMatch) {
-          candidatePassed = true;
-          candidateSource = 'TITLE';
-        }
+        // vendorTarget 없는 경우: 일반 키워드 → 기본 노출 (매칭만 되면 성공!)
+        candidatePassed = true;
+        candidateSource = 'TITLE';
       }
 
       // 통과했으면 선택하고 루프 종료
@@ -529,7 +524,11 @@ export async function main() {
         success: true,
         matchSource: matchSource || undefined,
         totalItemsParsed: items.length,
-        htmlStructure: { isPopular, uniqueGroups: uniqueGroupsSize },
+        htmlStructure: {
+          isPopular,
+          uniqueGroups: uniqueGroupsSize,
+          topicNames: topicNamesArray,
+        },
         allMatchesCount: allMatchesCount + 1, // 사용 전 큐 크기
         availableMatchesCount: matchQueue.length + 1, // +1 for the one we just used
         matchedPost: {
@@ -574,7 +573,11 @@ export async function main() {
         vendorTarget,
         success: false,
         totalItemsParsed: items.length,
-        htmlStructure: { isPopular, uniqueGroups: uniqueGroupsSize },
+        htmlStructure: {
+          isPopular,
+          uniqueGroups: uniqueGroupsSize,
+          topicNames: topicNamesArray,
+        },
         allMatchesCount: allMatchesCount,
         availableMatchesCount: matchQueue.length,
         failureReason: vendorTarget
@@ -625,7 +628,7 @@ export async function main() {
   console.log('='.repeat(50) + '\n');
 
   // 상세 로그 저장
-  saveDetailedLogs(detailedLogs, timestamp);
+  saveDetailedLogs(detailedLogs, timestamp, elapsedTimeStr);
 
   console.log('\n' + '='.repeat(50));
   console.log('📝 상세 로그 저장 완료');

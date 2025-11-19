@@ -1,6 +1,9 @@
 import { DetailedLog } from '../types';
 
-export function formatLogHeader(logs: DetailedLog[]): string[] {
+export function formatLogHeader(
+  logs: DetailedLog[],
+  elapsedTimeStr: string
+): string[] {
   return [
     '='.repeat(80),
     '노출 검출 상세 로그',
@@ -8,6 +11,7 @@ export function formatLogHeader(logs: DetailedLog[]): string[] {
     `총 처리: ${logs.length}개`,
     `성공: ${logs.filter((l) => l.success).length}개`,
     `실패: ${logs.filter((l) => !l.success).length}개`,
+    `전체 처리 시간: ${elapsedTimeStr}`,
     '='.repeat(80),
     '',
   ];
@@ -38,14 +42,28 @@ export function formatParsingResult(log: DetailedLog): string[] {
     ? '인기글 (단일 그룹)'
     : `스블 (${log.htmlStructure.uniqueGroups}개 주제)`;
 
-  return [
+  const lines = [
     '[파싱 결과]',
     `  - 총 아이템: ${log.totalItemsParsed}개`,
     `  - 타입: ${typeDesc}`,
+  ];
+
+  // 주제 목록 추가 (스블인 경우에만)
+  if (
+    !log.htmlStructure.isPopular &&
+    log.htmlStructure.topicNames &&
+    log.htmlStructure.topicNames.length > 0
+  ) {
+    lines.push(`  - 주제 목록: ${log.htmlStructure.topicNames.join(', ')}`);
+  }
+
+  lines.push(
     `  - 매칭 후보: ${log.allMatchesCount}개`,
     `  - 사용 가능: ${log.availableMatchesCount}개 (중복 제거 후)`,
-    '',
-  ];
+    ''
+  );
+
+  return lines;
 }
 
 export function formatMatchedPost(log: DetailedLog): string[] {
@@ -140,10 +158,13 @@ export function formatLogFooter(): string[] {
   ];
 }
 
-export function formatDetailedLogs(logs: DetailedLog[]): string {
+export function formatDetailedLogs(
+  logs: DetailedLog[],
+  elapsedTimeStr: string
+): string {
   const lines: string[] = [];
 
-  lines.push(...formatLogHeader(logs));
+  lines.push(...formatLogHeader(logs, elapsedTimeStr));
   logs.forEach((log) => {
     lines.push(...formatLogEntry(log));
   });

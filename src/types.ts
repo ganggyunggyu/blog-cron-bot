@@ -37,6 +37,7 @@ export interface DetailedLog {
   htmlStructure: {
     isPopular: boolean;
     uniqueGroups: number;
+    topicNames: string[];
   };
   allMatchesCount: number;
   availableMatchesCount: number;
