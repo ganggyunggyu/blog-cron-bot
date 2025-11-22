@@ -5,7 +5,7 @@ export const buildNaverSearchUrl = (query: string): string => {
   const q = getSearchQuery(query);
   return `https://search.naver.com/search.naver?where=nexearch&sm=top_sly.hst&fbm=0&acr=1&ie=utf8&query=${encodeURIComponent(
     q
-  )}`;
+  )}&acr=1`;
 };
 
 export const fetchHtml = async (
