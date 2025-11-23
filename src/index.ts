@@ -220,7 +220,9 @@ export async function main() {
         const topicNamesArray = Array.from(uniqueGroups);
         const topicNamesStr = topicNamesArray.join(', ');
         console.log(
-          `[TYPE] ${isPopular ? '인기글 (단일 그룹)' : `스블 (${topicNamesStr})`}`
+          `[TYPE] ${
+            isPopular ? '인기글 (단일 그룹)' : `스블 (${topicNamesStr})`
+          }`
         );
 
         // 캐시에 저장
