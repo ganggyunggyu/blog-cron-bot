@@ -1,147 +1,105 @@
 import cron from 'node-cron';
 import axios from 'axios';
 import dotenv from 'dotenv';
+import os from 'os';
 import { main as runCrawl } from './index';
+import { requests, importRes } from './constants';
+import { syncKeywords, importKeywords } from './api';
 
 dotenv.config();
-
-const SHEET_APP_URL = process.env.SHEET_APP_URL || 'http://localhost:3000';
-
-const PRODUCT_SHEET_ID = '1vrN5gvtokWxPs8CNaNcvZQLWyIMBOIcteYXQbyfiZl0';
-
-const requests = [
-  {
-    sheetId: PRODUCT_SHEET_ID,
-    sheetName: '패키지',
-    sheetType: 'package',
-  },
-  {
-    sheetId: PRODUCT_SHEET_ID,
-    sheetName: '도그마루 제외',
-    sheetType: 'dogmaru-exclude',
-  },
-  {
-    sheetId: PRODUCT_SHEET_ID,
-    sheetName: '도그마루',
-    sheetType: 'dogmaru',
-  },
-] as {
-  sheetId: string;
-  sheetName: string;
-  sheetType: string;
-}[];
 
 async function runCrawlingJob() {
   await runCrawl();
 }
 
+const log = {
+  box: (title: string, content: string[]) => {
+    const width = 50;
+    const line = '─'.repeat(width);
+    console.log(`\n┌${line}┐`);
+    console.log(`│ ${title.padEnd(width - 1)}│`);
+    console.log(`├${line}┤`);
+    content.forEach((c) => console.log(`│ ${c.padEnd(width - 1)}│`));
+    console.log(`└${line}┘`);
+  },
+  step: (
+    num: number,
+    total: number,
+    msg: string,
+    status: 'start' | 'done' = 'start'
+  ) => {
+    const icon = status === 'done' ? '✓' : '▶';
+    console.log(`  ${icon} [${num}/${total}] ${msg}`);
+  },
+  result: (label: string, count: number) => {
+    console.log(`     └─ ${label}: ${count}건`);
+  },
+};
+
+const formatDuration = (ms: number): string => {
+  const sec = Math.floor(ms / 1000);
+  const min = Math.floor(sec / 60);
+  if (min > 0) return `${min}분 ${sec % 60}초`;
+  return `${sec}초`;
+};
+
 async function runFullWorkflow() {
   const startTime = new Date();
-  console.log(`\n[${startTime.toLocaleString('ko-KR')}] 크론잡 시작`);
+
+  log.box('CRON JOB START', [
+    `시작: ${startTime.toLocaleString('ko-KR')}`,
+    `OS: ${os.platform()} (${os.arch()})`,
+  ]);
 
   try {
-    console.log('\n[Step 1/3] DB동기화');
+    log.step(1, 3, 'DB 동기화');
+    await syncKeywords(requests[0]);
+    await syncKeywords(requests[1]);
+    await syncKeywords(requests[2]);
+    log.step(1, 3, 'DB 동기화', 'done');
 
-    const packageRes = await axios.post(
-      `${SHEET_APP_URL}/api/keywords/sync`,
-      requests[0]
-    );
-    const dgexRes = await axios.post(
-      `${SHEET_APP_URL}/api/keywords/sync`,
-      requests[1]
-    );
-    const dogRes = await axios.post(
-      `${SHEET_APP_URL}/api/keywords/sync`,
-      requests[2]
-    );
-
-    console.log('[Step 1/3] 완료:');
-
-    console.log('\n[Step 2/3] 노출 체크 시작');
+    log.step(2, 3, '노출 체크');
     await runCrawlingJob();
-    console.log('[Step 2/3] 완료');
+    log.step(2, 3, '노출 체크', 'done');
 
-    console.log('\n[Step 3/3] 시트에 적용');
+    log.step(3, 3, '시트 반영');
+    const packageImportRes = await importKeywords(importRes[0]);
+    log.result('패키지', packageImportRes.updated || 0);
 
-    const TEST_CONFIG = {
-      SHEET_ID: '1T9PHu-fH6HPmyYA9dtfXaDLm20XAPN-9mzlE2QTPkF0',
-      SHEET_NAMES: {
-        PACKAGE: '패키지 노출체크 프로그램',
-        DOGMARU_EXCLUDE: '일반건 노출체크 프로그램',
-        DOGMARU: '도그마루 노출체크 프로그램',
-      },
-      LABELS: {
-        PACKAGE: '패키지 노출체크 프로그램',
-        DOGMARU_EXCLUDE: '일반건 노출체크 프로그램',
-        DOGMARU: '도그마루 노출체크 프로그램',
-      },
-    } as const;
+    const dogExImportRes = await importKeywords(importRes[1]);
+    log.result('일반건', dogExImportRes.updated || 0);
 
-    const packageImportRes = await axios.post(
-      `${SHEET_APP_URL}/api/keywords/import`,
-      {
-        sheetId: TEST_CONFIG.SHEET_ID,
-        sheetName: TEST_CONFIG.LABELS.PACKAGE,
-        sheetType: TEST_CONFIG.SHEET_NAMES.PACKAGE,
-        mode: 'rewrite',
-      }
-    );
-
-    console.log(packageImportRes);
-    console.log('[Step 3/3] 완료:', packageImportRes);
-    console.log(`   - 업데이트: ${packageImportRes.data.updated || 0}개`);
-
-    const dogExImportResponse = await axios.post(
-      `${SHEET_APP_URL}/api/keywords/import`,
-      {
-        sheetId: TEST_CONFIG.SHEET_ID,
-        sheetName: TEST_CONFIG.LABELS.DOGMARU_EXCLUDE,
-        sheetType: TEST_CONFIG.SHEET_NAMES.DOGMARU_EXCLUDE,
-        mode: 'rewrite',
-      }
-    );
-
-    console.log('[Step 3/3] 완료:', dogExImportResponse);
-    console.log(`   - 업데이트: ${dogExImportResponse.data.updated || 0}개`);
-
-    const dogImportRes = await axios.post(
-      `${SHEET_APP_URL}/api/keywords/import`,
-      {
-        sheetId: TEST_CONFIG.SHEET_ID,
-        sheetName: TEST_CONFIG.LABELS.DOGMARU,
-        sheetType: TEST_CONFIG.SHEET_NAMES.DOGMARU,
-        mode: 'rewrite',
-      }
-    );
-
-    console.log('[Step 3/3] 완료:', dogImportRes);
-    console.log(`   - 업데이트: ${dogImportRes.data.updated || 0}개`);
+    const dogmaruImportRes = await importKeywords(importRes[2]);
+    log.result('도그마루', dogmaruImportRes.updated || 0);
+    log.step(3, 3, '시트 반영', 'done');
 
     const endTime = new Date();
-    const duration = (endTime.getTime() - startTime.getTime()) / 1000;
+    const duration = endTime.getTime() - startTime.getTime();
 
-    console.log('\n' + '━'.repeat(60));
-    console.log('[CRON] 전체 워크플로우 완료!');
-    console.log(`시작 시간: ${startTime.toLocaleString('ko-KR')}`);
-    console.log(`완료 시간: ${endTime.toLocaleString('ko-KR')}`);
-    console.log(`소요 시간: ${duration.toFixed(1)}초`);
-    console.log('━'.repeat(60) + '\n');
+    log.box('CRON JOB COMPLETE', [
+      `완료: ${endTime.toLocaleString('ko-KR')}`,
+      `소요: ${formatDuration(duration)}`,
+      `총 업데이트: ${
+        (packageImportRes.updated || 0) +
+        (dogExImportRes.updated || 0) +
+        (dogmaruImportRes.updated || 0)
+      }건`,
+    ]);
   } catch (error) {
-    console.error('\n' + '━'.repeat(60));
-    console.error('[CRON] 에러 발생:');
+    const endTime = new Date();
+    const errMsg = axios.isAxiosError(error)
+      ? `API 오류: ${error.response?.status || 'N/A'}`
+      : (error as Error).message;
 
-    if (axios.isAxiosError(error)) {
-      console.error(`   - API 호출 실패: ${error.message}`);
-      console.error(`   - URL: ${error.config?.url}`);
-      if (error.response) {
-        console.error(`   - 상태 코드: ${error.response.status}`);
-        console.error(`   - 응답 데이터:`, error.response.data);
-      }
-    } else {
-      console.error(`   - ${(error as Error).message}`);
+    log.box('CRON JOB FAILED', [
+      `시간: ${endTime.toLocaleString('ko-KR')}`,
+      `오류: ${errMsg.slice(0, 45)}`,
+    ]);
+
+    if (axios.isAxiosError(error) && error.response) {
+      console.error('  상세:', error.response.data);
     }
 
-    console.error('━'.repeat(60) + '\n');
     throw error;
   }
 }
@@ -163,21 +121,24 @@ if (testDelayMinutes > 0) {
     { hour: '2-digit', minute: '2-digit' }
   )})`;
 } else {
-  cronSchedule = '30 8 * * *';
-  scheduleDescription = '매일 오전 8시';
+  cronSchedule = '10 9 * * *';
+  scheduleDescription = '매일 오전 9시 10분';
 }
 
-console.log('🚀 크론 스케줄러 시작');
-console.log(`⏰ 스케줄: ${cronSchedule} (${scheduleDescription})`);
-console.log(`📅 현재 시간: ${new Date().toLocaleString('ko-KR')}`);
-console.log(`🌐 Sheet App URL: ${SHEET_APP_URL}`);
+const startupInfo = [
+  `OS: ${os.platform()} ${os.arch()} (${os.release()})`,
+  `스케줄: ${cronSchedule}`,
+  `모드: ${scheduleDescription}`,
+  `현재: ${new Date().toLocaleString('ko-KR')}`,
+];
 
 if (testDelayMinutes > 0) {
   const targetTime = new Date(Date.now() + testDelayMinutes * 60 * 1000);
-  console.log(`🧪 테스트 실행 예정: ${targetTime.toLocaleString('ko-KR')}`);
+  startupInfo.push(`실행 예정: ${targetTime.toLocaleTimeString('ko-KR')}`);
 }
 
-console.log('⏳ 대기 중\n');
+log.box('CRON SCHEDULER', startupInfo);
+console.log('\n  ⏳ 대기 중...\n');
 
 cron.schedule(
   cronSchedule,
