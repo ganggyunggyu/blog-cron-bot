@@ -1,4 +1,4 @@
-import { DetailedLog } from '../types';
+import { DetailedLog } from '../../types';
 
 export function formatLogHeader(
   logs: DetailedLog[],
@@ -48,7 +48,6 @@ export function formatParsingResult(log: DetailedLog): string[] {
     `  - 타입: ${typeDesc}`,
   ];
 
-  // 주제 목록 추가 (스블인 경우에만)
   if (
     !log.htmlStructure.isPopular &&
     log.htmlStructure.topicNames &&
@@ -90,7 +89,7 @@ export function formatVendorMatchDetails(log: DetailedLog): string[] {
     return [];
   }
 
-  const vmd = log.vendorMatchDetails;
+  const { vendorMatchDetails: vmd } = log;
 
   return [
     '[VENDOR 매칭 상세]',
@@ -111,7 +110,7 @@ export function formatTitleMatchDetails(log: DetailedLog): string[] {
     return [];
   }
 
-  const tmd = log.titleMatchDetails;
+  const { titleMatchDetails: tmd } = log;
 
   return [
     '[TITLE 매칭 상세]',
@@ -126,11 +125,7 @@ export function formatFailureReason(log: DetailedLog): string[] {
     return [];
   }
 
-  return [
-    '[실패 원인]',
-    `  ${log.failureReason}`,
-    '',
-  ];
+  return ['[실패 원인]', `  ${log.failureReason}`, ''];
 }
 
 export function formatLogEntry(log: DetailedLog): string[] {
@@ -151,11 +146,7 @@ export function formatLogEntry(log: DetailedLog): string[] {
 }
 
 export function formatLogFooter(): string[] {
-  return [
-    '='.repeat(80),
-    '로그 종료',
-    '='.repeat(80),
-  ];
+  return ['='.repeat(80), '로그 종료', '='.repeat(80)];
 }
 
 export function formatDetailedLogs(
