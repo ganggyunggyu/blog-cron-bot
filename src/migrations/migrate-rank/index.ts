@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-import { connectDB, disconnectDB, Keyword } from '../database';
+import { connectDB, disconnectDB, Keyword } from '../../database';
 
 dotenv.config();
 
@@ -31,7 +31,6 @@ async function main(): Promise<void> {
     log(`rank 채움 필요 문서: ${needsCopy}`);
 
     if (needsCopy > 0) {
-      // Fetch and bulk write to ensure compatibility across Mongo/Mongoose versions
       const docs = await Keyword.find(toCopyFilter)
         .select({ _id: 1, matchedPosition: 1 })
         .lean();
@@ -72,3 +71,4 @@ main().catch((e) => {
   process.exit(1);
 });
 
+export { main as migrateRank };

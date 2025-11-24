@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-import { connectDB, disconnectDB, Keyword } from '../database';
+import { connectDB, disconnectDB, Keyword } from '../../database';
 
 dotenv.config();
 
@@ -32,7 +32,10 @@ async function main(): Promise<void> {
       const nextRestaurant = (d as any).restaurantName || restaurant;
 
       const needsKeyword = base.length > 0 && base !== d.keyword;
-      const needsRestaurant = typeof (d as any).restaurantName === 'undefined' ? (nextRestaurant.length > 0) : ((d as any).restaurantName !== nextRestaurant);
+      const needsRestaurant =
+        typeof (d as any).restaurantName === 'undefined'
+          ? nextRestaurant.length > 0
+          : (d as any).restaurantName !== nextRestaurant;
 
       if (needsKeyword || needsRestaurant) {
         const $set: Record<string, unknown> = {};
@@ -63,3 +66,4 @@ main().catch((e) => {
   process.exit(1);
 });
 
+export { main as migrateKeywordsSplit, extractRestaurant };
