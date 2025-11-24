@@ -1,8 +1,8 @@
-import { NAVER_DESKTOP_HEADERS } from '../constants';
-import { getSearchQuery } from '../utils';
-import { crawlWithRetry, fetchHtml } from '../crawler';
-import { extractPopularItems } from '../parser';
-import { matchBlogs, ExposureResult } from '../matcher';
+import { NAVER_DESKTOP_HEADERS } from '../../constants';
+import { getSearchQuery } from '../../utils';
+import { crawlWithRetry, fetchHtml } from '../../crawler';
+import { extractPopularItems } from '../../parser';
+import { matchBlogs, ExposureResult } from '../../matcher';
 
 export interface TestOptions {
   allowAnyBlog?: boolean;
@@ -97,9 +97,7 @@ export const testKeyword = async (
 
       if (available.length === 0 && tokens.length >= 2) {
         const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const tnorm = tokens.map((t) =>
-          esc(t.toLowerCase().replace(/\s+/g, ''))
-        );
+        const tnorm = tokens.map((t) => esc(t.toLowerCase().replace(/\s+/g, '')));
         const forward = new RegExp(tnorm.join('.*'));
         const backward = new RegExp([...tnorm].reverse().join('.*'));
         available = beforeTitle.filter((m2) => {
@@ -110,7 +108,6 @@ export const testKeyword = async (
     }
   }
 
-  // Build detailed results for all available matches
   const details: DetailedMatch[] = [];
   const maxChecks = Number(options.maxContentChecks ?? 10);
   const delayMs = Number(options.contentCheckDelay ?? 300);
@@ -231,10 +228,7 @@ function containsVendorSelectors(html: string): boolean {
   }
 }
 
-function buildMobilePostUrl(
-  originalUrl: string,
-  fallbackUrl?: string
-): string | null {
+function buildMobilePostUrl(originalUrl: string, fallbackUrl?: string): string | null {
   try {
     const candidates = [originalUrl];
     if (fallbackUrl) candidates.push(fallbackUrl);
@@ -246,16 +240,12 @@ function buildMobilePostUrl(
   return null;
 }
 
-function parseBlogParams(u: string): {
-  blogId: string | null;
-  logNo: string | null;
-} {
+function parseBlogParams(u: string): { blogId: string | null; logNo: string | null } {
   try {
     const url = new URL(u, 'https://blog.naver.com');
     const path = url.pathname.replace(/^\/+/, '').split('/');
     if (path.length >= 2 && path[0] !== 'PostView.naver') {
-      const blogId = path[0];
-      const logNo = path[1];
+      const [blogId, logNo] = path;
       if (blogId && logNo) return { blogId, logNo };
     }
     if (url.pathname.includes('PostView.naver')) {

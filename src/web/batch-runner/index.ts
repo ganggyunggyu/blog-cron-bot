@@ -1,11 +1,10 @@
-/* Minimal batch runner for web UI; mirrors core logic in src/index.ts */
-import { getAllKeywords, updateKeywordResult } from '../database';
-import { crawlWithRetry, delay, fetchHtml } from '../crawler';
-import { extractPopularItems } from '../parser';
-import { matchBlogs, ExposureResult } from '../matcher';
-import { NAVER_DESKTOP_HEADERS } from '../constants';
-import { getSearchQuery } from '../utils';
-import { getSheetOptions, normalizeSheetType } from '../sheet-config';
+import { getAllKeywords, updateKeywordResult } from '../../database';
+import { crawlWithRetry, delay, fetchHtml } from '../../crawler';
+import { extractPopularItems } from '../../parser';
+import { matchBlogs, ExposureResult } from '../../matcher';
+import { NAVER_DESKTOP_HEADERS } from '../../constants';
+import { getSearchQuery } from '../../utils';
+import { getSheetOptions, normalizeSheetType } from '../../sheet-config';
 import * as cheerio from 'cheerio';
 
 type AnyObj = Record<string, any>;
@@ -47,7 +46,6 @@ export async function runBatch(
 ): Promise<{ total: number; processed: BatchItemResult[] }> {
   const startIndex = Math.max(0, Number(params.startIndex ?? 0));
   const limit = Math.max(1, Number(params.limit ?? 5));
-  // Per-sheet options are applied per document inside the loop, with request overrides.
 
   const allKeywords = await getAllKeywords();
   const norm = (v: any) =>
@@ -57,13 +55,9 @@ export async function runBatch(
 
   let filtered: AnyObj[] = allKeywords as AnyObj[];
   if (params.onlySheetType)
-    filtered = filtered.filter(
-      (k) => norm(k.sheetType) === norm(params.onlySheetType)
-    );
+    filtered = filtered.filter((k) => norm(k.sheetType) === norm(params.onlySheetType));
   if (params.onlyCompany)
-    filtered = filtered.filter(
-      (k) => norm(k.company) === norm(params.onlyCompany)
-    );
+    filtered = filtered.filter((k) => norm(k.company) === norm(params.onlyCompany));
   if (params.onlyKeywordRegex) {
     try {
       const re = new RegExp(params.onlyKeywordRegex);
@@ -95,9 +89,7 @@ export async function runBatch(
     try {
       const sheetOpts = getSheetOptions(String((doc as AnyObj).sheetType || ''));
       const allowAnyBlog =
-        typeof params.allowAnyBlog === 'boolean'
-          ? !!params.allowAnyBlog
-          : !!sheetOpts.allowAnyBlog;
+        typeof params.allowAnyBlog === 'boolean' ? !!params.allowAnyBlog : !!sheetOpts.allowAnyBlog;
       const maxChecks =
         params.maxContentChecks != null
           ? Math.max(1, Number(params.maxContentChecks))
@@ -106,25 +98,21 @@ export async function runBatch(
         params.contentCheckDelay != null
           ? Math.max(0, Number(params.contentCheckDelay))
           : Math.max(0, Number(sheetOpts.contentCheckDelayMs));
-      // Determine vendor target based on restaurant/sheet/company
       const sheetTypeCanon = normalizeSheetType(String((doc as AnyObj).sheetType || ''));
       const companyRaw = String((doc as AnyObj).company || '').trim();
       const companyNorm = normalize(companyRaw);
       const vendorBrand = companyNorm.includes(normalize('서리펫'))
         ? '서리펫'
         : sheetTypeCanon === 'dogmaru'
-        ? '도그마루'
-        : '';
-      // 서리펫은 브랜드 우선, 그 외는 (업장명) → 브랜드 순서
+          ? '도그마루'
+          : '';
       const vendorTarget = vendorBrand === '서리펫' ? '서리펫' : restaurantName || vendorBrand;
       const effectiveName = vendorTarget || restaurantName;
 
       const html = await crawlWithRetry(searchQuery, 3);
       const items = extractPopularItems(html);
       const allMatches = matchBlogs(query, items, { allowAnyBlog });
-      let avail = allMatches.filter(
-        (m) => !used.has(`${query}:${m.postTitle}`)
-      );
+      let avail = allMatches.filter((m) => !used.has(`${query}:${m.postTitle}`));
 
       const makeOk = async (
         m: ExposureResult,
@@ -193,7 +181,6 @@ export async function runBatch(
             .trim()
         );
         const brandRoot = normalize((vendorTarget.split(/\s+/)[0] || '').trim());
-        // Step 2: vendor-based
         let matched: ExposureResult | null = null;
         let matchedHtml = '';
         let postVendorName = '';
@@ -222,7 +209,6 @@ export async function runBatch(
           await makeOk(matched, matchedHtml, postVendorName);
           continue;
         }
-        // Step 3: title fallback
         avail = avail.filter((m2) => {
           const title = String(m2.postTitle || '');
           const tnorm = normalize(title);
@@ -245,7 +231,6 @@ export async function runBatch(
         }
         await makeFail('NO_MATCH_AFTER_VENDOR_AND_TITLE');
       } else {
-        // No restaurant: tokens must appear (with in-order fallback)
         const tokens = baseKeyword
           .split(/\s+/)
           .map((t) => t.trim())
@@ -256,10 +241,7 @@ export async function runBatch(
             const title = String(m2.postTitle || '');
             const raw = title.toLowerCase();
             const tnorm = normalize(title);
-            return tn.every(
-              (tt, i) =>
-                raw.includes(tokens[i].toLowerCase()) || tnorm.includes(tt)
-            );
+            return tn.every((tt, i) => raw.includes(tokens[i].toLowerCase()) || tnorm.includes(tt));
           });
           if (list.length === 0 && tn.length >= 2) {
             const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -398,10 +380,7 @@ function containsVendorSelectors(html: string): boolean {
   }
 }
 
-function buildMobilePostUrl(
-  originalUrl: string,
-  fallbackUrl?: string
-): string | null {
+function buildMobilePostUrl(originalUrl: string, fallbackUrl?: string): string | null {
   try {
     const candidates = [originalUrl];
     if (fallbackUrl) candidates.push(fallbackUrl);
@@ -413,16 +392,12 @@ function buildMobilePostUrl(
   return null;
 }
 
-function parseBlogParams(u: string): {
-  blogId: string | null;
-  logNo: string | null;
-} {
+function parseBlogParams(u: string): { blogId: string | null; logNo: string | null } {
   try {
     const url = new URL(u, 'https://blog.naver.com');
     const path = url.pathname.replace(/^\/+/, '').split('/');
     if (path.length >= 2 && path[0] !== 'PostView.naver') {
-      const blogId = path[0];
-      const logNo = path[1];
+      const [blogId, logNo] = path;
       if (blogId && logNo) return { blogId, logNo };
     }
     if (url.pathname.includes('PostView.naver')) {

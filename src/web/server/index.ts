@@ -1,9 +1,9 @@
 import express from 'express';
 import path from 'path';
 import bodyParser from 'body-parser';
-import { testKeyword } from './tester';
-import { runBatch } from './batch_runner';
-import { connectDB, disconnectDB } from '../database';
+import { testKeyword } from '../tester';
+import { runBatch } from '../batch-runner';
+import { connectDB, disconnectDB } from '../../database';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -13,8 +13,7 @@ const PORT = Number(process.env.PORT || 5178);
 
 app.use(bodyParser.json({ limit: '1mb' }));
 
-// Static UI
-const publicDir = path.join(__dirname, '../../public');
+const publicDir = path.join(__dirname, '../../../public');
 app.use(express.static(publicDir));
 
 app.get('/health', (_req, res) => {
@@ -39,12 +38,34 @@ app.get('/batch', (_req, res) => {
 });
 
 app.post('/api/run', async (req, res) => {
-  const { startIndex = 0, limit = 5, onlySheetType = '', onlyCompany = '', onlyKeywordRegex = '', onlyId = '', onlyIds = [], allowAnyBlog = false, maxContentChecks = 3, contentCheckDelay = 600 } = req.body || {};
+  const {
+    startIndex = 0,
+    limit = 5,
+    onlySheetType = '',
+    onlyCompany = '',
+    onlyKeywordRegex = '',
+    onlyId = '',
+    onlyIds = [],
+    allowAnyBlog = false,
+    maxContentChecks = 3,
+    contentCheckDelay = 600,
+  } = req.body || {};
   const uri = process.env.MONGODB_URI;
   if (!uri) return res.status(500).json({ ok: false, error: 'MONGODB_URI not set' });
   try {
     await connectDB(uri);
-    const result = await runBatch({ startIndex: Number(startIndex), limit: Number(limit), onlySheetType, onlyCompany, onlyKeywordRegex, onlyId: String(onlyId || ''), onlyIds: Array.isArray(onlyIds) ? onlyIds : [], allowAnyBlog: !!allowAnyBlog, maxContentChecks: Number(maxContentChecks), contentCheckDelay: Number(contentCheckDelay) });
+    const result = await runBatch({
+      startIndex: Number(startIndex),
+      limit: Number(limit),
+      onlySheetType,
+      onlyCompany,
+      onlyKeywordRegex,
+      onlyId: String(onlyId || ''),
+      onlyIds: Array.isArray(onlyIds) ? onlyIds : [],
+      allowAnyBlog: !!allowAnyBlog,
+      maxContentChecks: Number(maxContentChecks),
+      contentCheckDelay: Number(contentCheckDelay),
+    });
     res.json({ ok: true, ...result });
   } catch (e: any) {
     res.status(500).json({ ok: false, error: e?.message || 'internal error' });
@@ -54,6 +75,7 @@ app.post('/api/run', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
   console.log(`UI server listening on http://localhost:${PORT}`);
 });
+
+export { app };
