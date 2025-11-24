@@ -11,9 +11,9 @@ import { extractPopularItems } from './parser';
 import { matchBlogs, ExposureResult } from './matcher';
 import { saveToCSV } from './csv-writer';
 import { getSheetOptions, normalizeSheetType } from './sheet-config';
-import { NAVER_DESKTOP_HEADERS } from './constants';
+
 import { getSearchQuery } from './utils';
-import { formatDetailedLogs } from './lib/log-formatter';
+import { formatDetailedLogs } from './logs';
 import {
   Config,
   DetailedLog,
@@ -21,6 +21,7 @@ import {
   TitleMatchDetails,
   MatchedPostInfo,
 } from './types';
+import { NAVER_DESKTOP_HEADERS } from './constants';
 
 dotenv.config();
 

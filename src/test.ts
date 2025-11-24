@@ -4,8 +4,9 @@ import { crawlWithRetry, fetchHtml, delay } from './crawler';
 import { getSearchQuery } from './utils';
 import { extractPopularItems } from './parser';
 import { matchBlogs, ExposureResult, extractBlogId } from './matcher';
-import { NAVER_DESKTOP_HEADERS } from './constants';
+
 import { connectDB, disconnectDB, getAllKeywords } from './database';
+import { NAVER_DESKTOP_HEADERS } from './constants';
 
 dotenv.config();
 
@@ -31,7 +32,10 @@ async function runExposureCheck(queryRaw: string) {
 
   const restaurantName = extractParen(queryRaw);
   const baseKeyword = getSearchQuery(queryRaw || '');
-  const searchQuery = baseKeyword && baseKeyword.length > 0 ? baseKeyword : getSearchQuery(queryRaw || '');
+  const searchQuery =
+    baseKeyword && baseKeyword.length > 0
+      ? baseKeyword
+      : getSearchQuery(queryRaw || '');
 
   const allowAnyBlog =
     String(process.env.ALLOW_ANY_BLOG || '').toLowerCase() === 'true' ||
@@ -39,7 +43,9 @@ async function runExposureCheck(queryRaw: string) {
   const maxChecks = Number(process.env.MAX_CONTENT_CHECKS || '3');
   const delayMs = Number(process.env.CONTENT_CHECK_DELAY_MS || '600');
 
-  console.log(`\n🔎 테스트 검색어: "${queryRaw}" (실제 검색: "${searchQuery}")`);
+  console.log(
+    `\n🔎 테스트 검색어: "${queryRaw}" (실제 검색: "${searchQuery}")`
+  );
   if (restaurantName) console.log(`🍽️ 괄호 내 업장: "${restaurantName}"`);
 
   try {
@@ -57,9 +63,14 @@ async function runExposureCheck(queryRaw: string) {
       const rn = restaurantName.toLowerCase();
       const rnNorm = normalize(restaurantName);
       const baseBrandNorm = normalize(
-        restaurantName.replace(/(본점|지점)$/u, '').replace(/[\p{Script=Hangul}]{1,4}점$/u, '').trim()
+        restaurantName
+          .replace(/(본점|지점)$/u, '')
+          .replace(/[\p{Script=Hangul}]{1,4}점$/u, '')
+          .trim()
       );
-      const brandRoot = normalize((restaurantName.split(/\s+/)[0] || '').trim());
+      const brandRoot = normalize(
+        (restaurantName.split(/\s+/)[0] || '').trim()
+      );
 
       let matched: ExposureResult | null = null;
       let matchedHtml = '';
@@ -89,7 +100,11 @@ async function runExposureCheck(queryRaw: string) {
 
       if (matched) {
         console.log(
-          `✅ 노출 확인 (VENDOR): ${restaurantName} / ${matched.position ?? '-'} / ${matched.topicName || matched.exposureType || '-'} / ${postVendorName} / ${matched.postTitle}`
+          `✅ 노출 확인 (VENDOR): ${restaurantName} / ${
+            matched.position ?? '-'
+          } / ${
+            matched.topicName || matched.exposureType || '-'
+          } / ${postVendorName} / ${matched.postTitle}`
         );
         console.log(`🔗 ${matched.postLink}`);
         return;
@@ -115,7 +130,11 @@ async function runExposureCheck(queryRaw: string) {
           vendorName = extractPostVendorName(htmlFirst);
         } catch {}
         console.log(
-          `✅ 노출 확인 (TITLE): ${restaurantName} / ${first.position ?? '-'} / ${first.topicName || first.exposureType || '-'} / ${vendorName || '-'} / ${first.postTitle}`
+          `✅ 노출 확인 (TITLE): ${restaurantName} / ${
+            first.position ?? '-'
+          } / ${first.topicName || first.exposureType || '-'} / ${
+            vendorName || '-'
+          } / ${first.postTitle}`
         );
         console.log(`🔗 ${first.postLink}`);
         return;
@@ -133,7 +152,9 @@ async function runExposureCheck(queryRaw: string) {
       vendorName = extractPostVendorName(htmlFirst);
     } catch {}
     console.log(
-      `✅ 노출 확인: - / ${first.position ?? '-'} / ${first.topicName || first.exposureType || '-'} / ${vendorName || '-'} / ${first.postTitle}`
+      `✅ 노출 확인: - / ${first.position ?? '-'} / ${
+        first.topicName || first.exposureType || '-'
+      } / ${vendorName || '-'} / ${first.postTitle}`
     );
     console.log(`🔗 ${first.postLink}`);
   } catch (e) {
@@ -162,11 +183,15 @@ async function testMongoDBFetch() {
       keywords.forEach((kw, idx) => {
         console.log(`${idx + 1}. ${kw.keyword}`);
         console.log(`   회사: ${kw.company}`);
-        console.log(`   노출 여부: ${kw.visibility ? '✅ 노출됨' : '❌ 노출 안됨'}`);
+        console.log(
+          `   노출 여부: ${kw.visibility ? '✅ 노출됨' : '❌ 노출 안됨'}`
+        );
         console.log(`   인기주제: ${kw.popularTopic || '(없음)'}`);
         console.log(`   URL: ${kw.url || '(없음)'}`);
         console.log(`   시트타입: ${kw.sheetType}`);
-        console.log(`   마지막 체크: ${kw.lastChecked.toLocaleString('ko-KR')}`);
+        console.log(
+          `   마지막 체크: ${kw.lastChecked.toLocaleString('ko-KR')}`
+        );
         console.log('');
       });
     }
@@ -266,7 +291,10 @@ function containsVendorSelectors(html: string): boolean {
   }
 }
 
-function buildMobilePostUrl(originalUrl: string, fallbackUrl?: string): string | null {
+function buildMobilePostUrl(
+  originalUrl: string,
+  fallbackUrl?: string
+): string | null {
   try {
     const candidates = [originalUrl];
     if (fallbackUrl) candidates.push(fallbackUrl);
@@ -280,7 +308,10 @@ function buildMobilePostUrl(originalUrl: string, fallbackUrl?: string): string |
   return null;
 }
 
-function parseBlogParams(u: string): { blogId: string | null; logNo: string | null } {
+function parseBlogParams(u: string): {
+  blogId: string | null;
+  logNo: string | null;
+} {
   try {
     const url = new URL(u, 'https://blog.naver.com');
     const path = url.pathname.replace(/^\/+/, '').split('/');
