@@ -1,11 +1,9 @@
-import { NAVER_DESKTOP_HEADERS } from './constants';
+import { NAVER_MOBILE_HEADERS } from './constants';
 import { getSearchQuery } from './utils';
 
 export const buildNaverSearchUrl = (query: string): string => {
   const q = getSearchQuery(query);
-  return `https://search.naver.com/search.naver?where=nexearch&sm=top_sly.hst&fbm=0&acr=1&ie=utf8&query=${encodeURIComponent(
-    q
-  )}&acr=1`;
+  return `https://m.search.naver.com/search.naver?query=${encodeURIComponent(q)}`;
 };
 
 export const fetchHtml = async (
@@ -31,7 +29,7 @@ export const crawlWithRetry = async (
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const url = buildNaverSearchUrl(query);
-      const html = await fetchHtml(url, NAVER_DESKTOP_HEADERS);
+      const html = await fetchHtml(url, NAVER_MOBILE_HEADERS);
 
       return html;
     } catch (error) {
