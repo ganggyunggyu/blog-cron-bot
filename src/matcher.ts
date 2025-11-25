@@ -10,6 +10,7 @@ export interface ExposureResult {
   exposureType: string;
   topicName: string;
   position: number;
+  positionWithCafe?: number; // 인기글인 경우 카페 포함 순위
 }
 
 export const extractBlogId = (blogUrl: string): string => {
@@ -64,6 +65,9 @@ export const matchBlogs = (
         ? index + 1
         : itemPositions.get(item) || index + 1;
 
+      // 인기글인 경우 카페 포함 순위 추가
+      const positionWithCafe = isPopular ? item.positionWithCafe : undefined;
+
       results.push({
         query,
         blogId,
@@ -73,6 +77,7 @@ export const matchBlogs = (
         exposureType,
         topicName,
         position,
+        positionWithCafe,
       });
     }
   });

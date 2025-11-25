@@ -10,12 +10,14 @@ export interface PopularItem {
   group: string;
   blogLink: string;
   blogName: string;
+  positionWithCafe?: number; // 카페 포함 원본 순위
 }
 
 export class PopularParser {
   private $: cheerio.CheerioAPI;
   private selectors: PopularSelectorConfig;
   private items: PopularItem[] = [];
+  private globalPosition: number = 0; // 카페 포함 전체 순위 추적
 
   constructor(html: string, selectors?: Partial<PopularSelectorConfig>) {
     this.$ = cheerio.load(html);
@@ -24,6 +26,7 @@ export class PopularParser {
 
   extract(): PopularItem[] {
     this.items = [];
+    this.globalPosition = 0;
     this.parseCollectionBlocks();
     this.parseSingleIntentionList();
     return this.getUniqueItems();
@@ -44,7 +47,8 @@ export class PopularParser {
 
       $blocks.each((_, block) => {
         const $block = $(block);
-        const item = this.parseBlockItem($block, topicName);
+        this.globalPosition++; // 모든 항목(카페 포함) 카운트
+        const item = this.parseBlockItem($block, topicName, this.globalPosition);
         if (item) this.items.push(item);
       });
     });
@@ -52,9 +56,9 @@ export class PopularParser {
 
   private parseBlockItem(
     $block: cheerio.Cheerio<any>,
-    topicName: string
+    topicName: string,
+    position: number
   ): PopularItem | null {
-    const { $ } = this;
     const sel = this.selectors;
 
     const $blogInfo = $block.find(sel.blogInfo).first();
@@ -88,6 +92,7 @@ export class PopularParser {
       group: topicName,
       blogLink: blogHref,
       blogName,
+      positionWithCafe: position, // 카페 포함 원본 순위
     };
   }
 
@@ -113,7 +118,8 @@ export class PopularParser {
 
       $items.each((_, item) => {
         const $item = $(item);
-        const parsed = this.parseIntentionItem($item, topicName);
+        this.globalPosition++; // 모든 항목(카페 포함) 카운트
+        const parsed = this.parseIntentionItem($item, topicName, this.globalPosition);
         if (parsed) this.items.push(parsed);
       });
     });
@@ -121,7 +127,8 @@ export class PopularParser {
 
   private parseIntentionItem(
     $item: cheerio.Cheerio<any>,
-    topicName: string
+    topicName: string,
+    position: number
   ): PopularItem | null {
     const sel = this.selectors;
 
@@ -149,6 +156,7 @@ export class PopularParser {
       group: topicName,
       blogLink: blogHref,
       blogName,
+      positionWithCafe: position, // 카페 포함 원본 순위
     };
   }
 

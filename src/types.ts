@@ -20,6 +20,7 @@ export interface MatchedPostInfo {
   postTitle: string;
   postLink: string;
   position: number;
+  positionWithCafe?: number; // 인기글인 경우 카페 포함 순위
   topicName: string;
   exposureType: string;
   extractedVendor: string;
