@@ -10,9 +10,9 @@ export interface IKeyword extends Document {
   lastChecked: Date;
   restaurantName?: string;
   matchedTitle?: string;
-  matchedHtml?: string;
   postVendorName?: string;
   rank?: number;
+  rankWithCafe?: number; // 인기글인 경우 카페 포함 순위
   createdAt: Date;
   updatedAt: Date;
 }
@@ -28,9 +28,9 @@ const KeywordSchema: Schema = new Schema(
     lastChecked: { type: Date, default: Date.now },
     restaurantName: { type: String, default: '' },
     matchedTitle: { type: String, default: '' },
-    matchedHtml: { type: String, default: '' },
     postVendorName: { type: String, default: '' },
     rank: { type: Number, default: 0 },
+    rankWithCafe: { type: Number, default: 0 }, // 인기글인 경우 카페 포함 순위
   },
   {
     timestamps: true,
@@ -76,9 +76,9 @@ export const updateKeywordResult = async (
   url: string,
   restaurantName?: string,
   matchedTitle?: string,
-  matchedHtml?: string,
   rank?: number,
-  postVendorName?: string
+  postVendorName?: string,
+  rankWithCafe?: number
 ): Promise<void> => {
   try {
     const update: Partial<IKeyword> = {
@@ -91,10 +91,10 @@ export const updateKeywordResult = async (
     if (typeof restaurantName !== 'undefined')
       update.restaurantName = restaurantName;
     if (typeof matchedTitle !== 'undefined') update.matchedTitle = matchedTitle;
-    if (typeof matchedHtml !== 'undefined') update.matchedHtml = matchedHtml;
     if (typeof rank !== 'undefined') update.rank = rank;
     if (typeof postVendorName !== 'undefined')
       update.postVendorName = postVendorName;
+    if (typeof rankWithCafe !== 'undefined') update.rankWithCafe = rankWithCafe;
 
     await Keyword.findByIdAndUpdate(keywordId, update);
   } catch (error) {

@@ -20,7 +20,6 @@ export interface TestInput {
 export interface DetailedMatch {
   match: ExposureResult;
   postVendorName?: string;
-  matchedHtml?: string;
 }
 
 export interface TestResult {
@@ -118,7 +117,7 @@ export const testKeyword = async (
       try {
         const resolved = await fetchResolvedPostHtml(item.postLink);
         const vendor = extractPostVendorName(resolved);
-        details.push({ match: item, postVendorName: vendor, matchedHtml: resolved });
+        details.push({ match: item, postVendorName: vendor });
       } catch {
         details.push({ match: item });
       }

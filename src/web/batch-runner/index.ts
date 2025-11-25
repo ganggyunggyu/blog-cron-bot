@@ -116,7 +116,6 @@ export async function runBatch(
 
       const makeOk = async (
         m: ExposureResult,
-        matchedHtml?: string,
         postVendorName?: string
       ) => {
         used.add(`${query}:${m.postTitle}`);
@@ -127,9 +126,9 @@ export async function runBatch(
           m.postLink,
           effectiveName,
           m.postTitle,
-          matchedHtml || '',
           m.position,
-          postVendorName || ''
+          postVendorName || '',
+          m.positionWithCafe
         );
         processed.push({
           ok: true,
@@ -153,9 +152,9 @@ export async function runBatch(
           '',
           effectiveName,
           '',
-          '',
           undefined,
-          ''
+          '',
+          undefined
         );
         processed.push({
           ok: false,
@@ -182,7 +181,6 @@ export async function runBatch(
         );
         const brandRoot = normalize((vendorTarget.split(/\s+/)[0] || '').trim());
         let matched: ExposureResult | null = null;
-        let matchedHtml = '';
         let postVendorName = '';
         for (let j = 0; j < avail.length && j < maxChecks; j++) {
           const cand = avail[j];
@@ -197,7 +195,6 @@ export async function runBatch(
                 (brandRoot.length >= 2 && vNorm.includes(brandRoot))
               ) {
                 matched = cand;
-                matchedHtml = htmlCand;
                 postVendorName = vendor;
                 break;
               }
@@ -206,7 +203,7 @@ export async function runBatch(
           if (j < avail.length - 1 && checkDelay > 0) await delay(checkDelay);
         }
         if (matched) {
-          await makeOk(matched, matchedHtml, postVendorName);
+          await makeOk(matched, postVendorName);
           continue;
         }
         avail = avail.filter((m2) => {
@@ -220,13 +217,12 @@ export async function runBatch(
         });
         if (avail.length > 0) {
           const pick = avail[0];
-          let htmlPick = '';
           let vendor = '';
           try {
-            htmlPick = await fetchResolvedPostHtml(pick.postLink);
+            const htmlPick = await fetchResolvedPostHtml(pick.postLink);
             vendor = extractPostVendorName(htmlPick);
           } catch {}
-          await makeOk(pick, htmlPick, vendor);
+          await makeOk(pick, vendor);
           continue;
         }
         await makeFail('NO_MATCH_AFTER_VENDOR_AND_TITLE');
@@ -259,13 +255,12 @@ export async function runBatch(
           }
           if (list.length > 0) {
             const pick = list[0];
-            let htmlPick = '';
             let vendor = '';
             try {
-              htmlPick = await fetchResolvedPostHtml(pick.postLink);
+              const htmlPick = await fetchResolvedPostHtml(pick.postLink);
               vendor = extractPostVendorName(htmlPick);
             } catch {}
-            await makeOk(pick, htmlPick, vendor);
+            await makeOk(pick, vendor);
             continue;
           }
         }
@@ -280,9 +275,9 @@ export async function runBatch(
         '',
         restaurantName,
         '',
-        '',
         undefined,
-        ''
+        '',
+        undefined
       );
       processed.push({
         ok: false,
