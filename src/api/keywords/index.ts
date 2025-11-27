@@ -1,18 +1,9 @@
 import axios from 'axios';
-import { SHEET_APP_URL } from '../../constants';
-
-interface SyncRequest {
-  sheetId: string;
-  sheetName: string;
-  sheetType: string;
-}
-
-interface ImportRequest {
-  sheetId: string;
-  sheetName: string;
-  sheetType: string;
-  mode: string;
-}
+import {
+  SHEET_APP_URL,
+  SyncRequest,
+  ImportRequest,
+} from '../../constants';
 
 interface SyncResponse {
   success: boolean;
@@ -56,4 +47,5 @@ export const importAllKeywords = async (
   return results;
 };
 
-export { SyncRequest, ImportRequest, SyncResponse, ImportResponse };
+export { SyncRequest, ImportRequest } from '../../constants';
+export type { SyncResponse, ImportResponse };
