@@ -1,0 +1,105 @@
+import { ExposureResult } from '../../matcher';
+import { DetailedLogBuilder } from '../../logs/detailed-log';
+import { Config, VendorMatchDetails } from '../../types';
+
+export type KeywordType = 'restaurant' | 'pet' | 'basic';
+
+/** 키워드 문서 정보 */
+export interface KeywordDoc {
+  _id: string;
+  keyword: string;
+  company?: string;
+  restaurantName?: string;
+  sheetType?: string;
+}
+
+/** 키워드 컨텍스트 (핸들러에서 공통으로 사용) */
+export interface KeywordContext {
+  keywordDoc: KeywordDoc;
+  query: string;
+  searchQuery: string;
+  restaurantName: string;
+  vendorTarget: string;
+  keywordType: KeywordType;
+}
+
+/** 처리 진행 컨텍스트 */
+export interface ProcessingContext {
+  globalIndex: number;
+  totalKeywords: number;
+  keywordStartTime: number;
+  logBuilder: DetailedLogBuilder;
+}
+
+/** HTML 구조 분석 결과 */
+export interface HtmlStructure {
+  items: any[];
+  isPopular: boolean;
+  uniqueGroupsSize: number;
+  topicNamesArray: string[];
+}
+
+/** 크롤링 캐시 맵들 */
+export interface CrawlCaches {
+  crawlCache: Map<string, string>;
+  itemsCache: Map<string, any[]>;
+  matchQueueMap: Map<string, ExposureResult[]>;
+  htmlStructureCache: Map<string, {
+    isPopular: boolean;
+    uniqueGroups: number;
+    topicNames: string[];
+  }>;
+}
+
+/** 매칭 결과 정보 */
+export interface MatchResult {
+  nextMatch: ExposureResult;
+  extractedVendor: string;
+  matchSource: 'VENDOR' | 'TITLE' | '';
+  vendorMatchDetails?: VendorMatchDetails;
+  allMatchesCount: number;
+  remainingQueueCount: number;
+}
+
+/** getCrawlResult 파라미터 */
+export interface CrawlParams {
+  searchQuery: string;
+  keywordDoc: KeywordDoc;
+  query: string;
+  config: Config;
+  keywordType: KeywordType;
+  processing: ProcessingContext;
+  caches: CrawlCaches;
+}
+
+/** handleExcluded 파라미터 */
+export interface ExcludedParams {
+  keyword: KeywordContext;
+  company: string;
+  processing: ProcessingContext;
+}
+
+/** handleQueueEmpty 파라미터 */
+export interface QueueEmptyParams {
+  keyword: KeywordContext;
+  html: HtmlStructure;
+  processing: ProcessingContext;
+}
+
+/** handleSuccess 파라미터 */
+export interface SuccessParams {
+  keyword: KeywordContext;
+  html: HtmlStructure;
+  match: MatchResult;
+  processing: ProcessingContext;
+  allResults: ExposureResult[];
+}
+
+/** handleFilterFailure 파라미터 */
+export interface FilterFailureParams {
+  keyword: KeywordContext;
+  html: HtmlStructure;
+  allMatchesCount: number;
+  remainingQueueCount: number;
+  processing: ProcessingContext;
+}

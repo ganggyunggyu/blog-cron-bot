@@ -11,6 +11,15 @@ import { Config } from '../../types';
 import { findMatchingPost } from '../post-filter';
 import { fetchResolvedPostHtml } from '../vendor-extractor';
 import { checkConsecutiveImages } from '../post-quality-checker';
+import {
+  KeywordContext,
+  ProcessingContext,
+  HtmlStructure,
+  ExcludedParams,
+  QueueEmptyParams,
+  SuccessParams,
+  FilterFailureParams,
+} from './types';
 
 /**
  * 모든 키워드를 순차적으로 처리 (크롤링, 필터링, 결과 저장)
@@ -48,18 +57,23 @@ export const processKeywords = async (
     const keywordType = getKeywordType(keywordDoc, restaurantName);
 
     if (shouldExclude(company)) {
-      await handleExcluded(
-        keywordDoc,
-        query,
-        searchQuery,
-        restaurantName,
+      await handleExcluded({
+        keyword: {
+          keywordDoc,
+          query,
+          searchQuery,
+          restaurantName,
+          vendorTarget: '',
+          keywordType,
+        },
         company,
-        keywordType,
-        globalIndex,
-        keywords.length,
-        keywordStartTime,
-        logBuilder
-      );
+        processing: {
+          globalIndex,
+          totalKeywords: keywords.length,
+          keywordStartTime,
+          logBuilder,
+        },
+      });
       continue;
     }
 
@@ -93,22 +107,23 @@ export const processKeywords = async (
 
     // 5️⃣ 큐가 비었으면 실패 처리
     if (matchQueue.length === 0) {
-      await handleQueueEmpty(
-        keywordDoc,
-        query,
-        searchQuery,
-        restaurantName,
-        vendorTarget,
-        keywordType,
-        items,
-        isPopular,
-        uniqueGroupsSize,
-        topicNamesArray,
-        globalIndex,
-        keywords.length,
-        keywordStartTime,
-        logBuilder
-      );
+      await handleQueueEmpty({
+        keyword: {
+          keywordDoc,
+          query,
+          searchQuery,
+          restaurantName,
+          vendorTarget,
+          keywordType,
+        },
+        html: { items, isPopular, uniqueGroupsSize, topicNamesArray },
+        processing: {
+          globalIndex,
+          totalKeywords: keywords.length,
+          keywordStartTime,
+          logBuilder,
+        },
+      });
       continue;
     }
 
@@ -134,49 +149,50 @@ export const processKeywords = async (
     }
 
     // 8️⃣ 결과 처리
+    const keywordCtx: KeywordContext = {
+      keywordDoc,
+      query,
+      searchQuery,
+      restaurantName,
+      vendorTarget,
+      keywordType,
+    };
+    const htmlCtx: HtmlStructure = {
+      items,
+      isPopular,
+      uniqueGroupsSize,
+      topicNamesArray,
+    };
+    const processingCtx: ProcessingContext = {
+      globalIndex,
+      totalKeywords: keywords.length,
+      keywordStartTime,
+      logBuilder,
+    };
+
     if (passed && nextMatch) {
-      await handleSuccess(
-        keywordDoc,
-        query,
-        searchQuery,
-        restaurantName,
-        vendorTarget,
-        keywordType,
-        nextMatch,
-        extractedVendor,
-        matchSource,
-        vendorMatchDetails,
-        items,
-        isPopular,
-        uniqueGroupsSize,
-        topicNamesArray,
-        allMatchesCount,
-        matchQueue.length,
-        globalIndex,
-        keywords.length,
-        keywordStartTime,
-        logBuilder,
-        allResults
-      );
+      await handleSuccess({
+        keyword: keywordCtx,
+        html: htmlCtx,
+        match: {
+          nextMatch,
+          extractedVendor,
+          matchSource,
+          vendorMatchDetails,
+          allMatchesCount,
+          remainingQueueCount: matchQueue.length,
+        },
+        processing: processingCtx,
+        allResults,
+      });
     } else {
-      await handleFilterFailure(
-        keywordDoc,
-        query,
-        searchQuery,
-        restaurantName,
-        vendorTarget,
-        keywordType,
-        items,
-        isPopular,
-        uniqueGroupsSize,
-        topicNamesArray,
+      await handleFilterFailure({
+        keyword: keywordCtx,
+        html: htmlCtx,
         allMatchesCount,
-        matchQueue.length,
-        globalIndex,
-        keywords.length,
-        keywordStartTime,
-        logBuilder
-      );
+        remainingQueueCount: matchQueue.length,
+        processing: processingCtx,
+      });
     }
   }
 
@@ -198,18 +214,13 @@ const shouldExclude = (company: string): boolean => {
   return normalizedCompany.includes('프로그램');
 };
 
-const handleExcluded = async (
-  keywordDoc: any,
-  query: string,
-  searchQuery: string,
-  restaurantName: string,
-  company: string,
-  keywordType: 'restaurant' | 'pet' | 'basic',
-  globalIndex: number,
-  totalKeywords: number,
-  keywordStartTime: number,
-  logBuilder: DetailedLogBuilder
-): Promise<void> => {
+const handleExcluded = async (params: ExcludedParams): Promise<void> => {
+  const { keyword, company, processing } = params;
+  const { keywordDoc, query, searchQuery, restaurantName, keywordType } =
+    keyword;
+  const { globalIndex, totalKeywords, keywordStartTime, logBuilder } =
+    processing;
+
   progressLogger.skip({
     index: globalIndex,
     total: totalKeywords,
@@ -417,22 +428,19 @@ const getKeywordType = (
   return 'basic';
 };
 
-const handleQueueEmpty = async (
-  keywordDoc: any,
-  query: string,
-  searchQuery: string,
-  restaurantName: string,
-  vendorTarget: string,
-  keywordType: 'restaurant' | 'pet' | 'basic',
-  items: any[],
-  isPopular: boolean,
-  uniqueGroupsSize: number,
-  topicNamesArray: string[],
-  globalIndex: number,
-  totalKeywords: number,
-  keywordStartTime: number,
-  logBuilder: DetailedLogBuilder
-): Promise<void> => {
+const handleQueueEmpty = async (params: QueueEmptyParams): Promise<void> => {
+  const { keyword, processing } = params;
+  const {
+    keywordDoc,
+    query,
+    searchQuery,
+    restaurantName,
+    vendorTarget,
+    keywordType,
+  } = keyword;
+  const { globalIndex, totalKeywords, keywordStartTime, logBuilder } =
+    processing;
+
   progressLogger.failure({
     index: globalIndex,
     total: totalKeywords,
@@ -466,29 +474,28 @@ const handleQueueEmpty = async (
   logBuilder.push(queueEmptyLog);
 };
 
-const handleSuccess = async (
-  keywordDoc: any,
-  query: string,
-  searchQuery: string,
-  restaurantName: string,
-  vendorTarget: string,
-  keywordType: 'restaurant' | 'pet' | 'basic',
-  nextMatch: ExposureResult,
-  extractedVendor: string,
-  matchSource: 'VENDOR' | 'TITLE' | '',
-  vendorMatchDetails: any,
-  items: any[],
-  isPopular: boolean,
-  uniqueGroupsSize: number,
-  topicNamesArray: string[],
-  allMatchesCount: number,
-  remainingQueueCount: number,
-  globalIndex: number,
-  totalKeywords: number,
-  keywordStartTime: number,
-  logBuilder: DetailedLogBuilder,
-  allResults: ExposureResult[]
-): Promise<void> => {
+const handleSuccess = async (params: SuccessParams): Promise<void> => {
+  const { keyword, html, match, processing, allResults } = params;
+  const {
+    keywordDoc,
+    query,
+    searchQuery,
+    restaurantName,
+    vendorTarget,
+    keywordType,
+  } = keyword;
+  const { items, isPopular, uniqueGroupsSize, topicNamesArray } = html;
+  const {
+    nextMatch,
+    extractedVendor,
+    matchSource,
+    vendorMatchDetails,
+    allMatchesCount,
+    remainingQueueCount,
+  } = match;
+  const { globalIndex, totalKeywords, keywordStartTime, logBuilder } =
+    processing;
+
   const displayRank = nextMatch.position ?? '-';
   const displayTitle = nextMatch.postTitle || '-';
   const displayTopic = nextMatch.topicName || nextMatch.exposureType || '-';
@@ -505,7 +512,6 @@ const handleSuccess = async (
     source: matchSource,
   });
 
-  // 🍽️ 식당 키워드인 경우: 포스트 품질 체크 (연속된 이미지 4개 이상 = 수정 필요)
   let isUpdateRequired: boolean | undefined = undefined;
   if (keywordType === 'restaurant') {
     try {
@@ -513,7 +519,9 @@ const handleSuccess = async (
       isUpdateRequired = checkConsecutiveImages(postHtml);
     } catch (err) {
       console.warn(
-        `  [품질 체크 실패] ${query}: ${(err as Error).message || 'Unknown error'}`
+        `  [품질 체크 실패] ${query}: ${
+          (err as Error).message || 'Unknown error'
+        }`
       );
     }
   }
@@ -567,23 +575,22 @@ const handleSuccess = async (
 };
 
 const handleFilterFailure = async (
-  keywordDoc: any,
-  query: string,
-  searchQuery: string,
-  restaurantName: string,
-  vendorTarget: string,
-  keywordType: 'restaurant' | 'pet' | 'basic',
-  items: any[],
-  isPopular: boolean,
-  uniqueGroupsSize: number,
-  topicNamesArray: string[],
-  allMatchesCount: number,
-  remainingQueueCount: number,
-  globalIndex: number,
-  totalKeywords: number,
-  keywordStartTime: number,
-  logBuilder: DetailedLogBuilder
+  params: FilterFailureParams
 ): Promise<void> => {
+  const { keyword, html, allMatchesCount, remainingQueueCount, processing } =
+    params;
+  const {
+    keywordDoc,
+    query,
+    searchQuery,
+    restaurantName,
+    vendorTarget,
+    keywordType,
+  } = keyword;
+  const { items, isPopular, uniqueGroupsSize, topicNamesArray } = html;
+  const { globalIndex, totalKeywords, keywordStartTime, logBuilder } =
+    processing;
+
   progressLogger.failure({
     index: globalIndex,
     total: totalKeywords,
