@@ -109,6 +109,13 @@ export async function runBatch(
       const vendorTarget = vendorBrand === '서리펫' ? '서리펫' : restaurantName || vendorBrand;
       const effectiveName = vendorTarget || restaurantName;
 
+      // keywordType 계산
+      const keywordType: 'restaurant' | 'pet' | 'basic' = restaurantName
+        ? 'restaurant'
+        : companyNorm.includes(normalize('서리펫')) || sheetTypeCanon === 'dogmaru'
+          ? 'pet'
+          : 'basic';
+
       const html = await crawlWithRetry(searchQuery, 3);
       const items = extractPopularItems(html);
       const allMatches = matchBlogs(query, items, { allowAnyBlog });
@@ -124,6 +131,7 @@ export async function runBatch(
           true,
           m.topicName || m.exposureType,
           m.postLink,
+          keywordType,
           effectiveName,
           m.postTitle,
           m.position,
@@ -150,6 +158,7 @@ export async function runBatch(
           false,
           '',
           '',
+          keywordType,
           effectiveName,
           '',
           undefined,
@@ -268,11 +277,22 @@ export async function runBatch(
       }
       if (idx < keywords.length - 1) await delay(500);
     } catch (e) {
+      // keywordType 계산 (error case)
+      const companyRaw = String((doc as AnyObj).company || '').trim();
+      const sheetTypeCanon = normalizeSheetType(String((doc as AnyObj).sheetType || ''));
+      const companyNorm = normalize(companyRaw);
+      const errorKeywordType: 'restaurant' | 'pet' | 'basic' = restaurantName
+        ? 'restaurant'
+        : companyNorm.includes(normalize('서리펫')) || sheetTypeCanon === 'dogmaru'
+          ? 'pet'
+          : 'basic';
+
       await updateKeywordResult(
         String(doc._id),
         false,
         '',
         '',
+        errorKeywordType,
         restaurantName,
         '',
         undefined,

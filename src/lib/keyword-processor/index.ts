@@ -9,6 +9,8 @@ import { DetailedLogBuilder } from '../../logs/detailed-log';
 import { progressLogger } from '../../logs/progress-logger';
 import { Config } from '../../types';
 import { findMatchingPost } from '../post-filter';
+import { fetchResolvedPostHtml } from '../vendor-extractor';
+import { checkConsecutiveImages } from '../post-quality-checker';
 
 /**
  * 모든 키워드를 순차적으로 처리 (크롤링, 필터링, 결과 저장)
@@ -43,6 +45,7 @@ export const processKeywords = async (
     // ⚠️ 프로그램 제외 대상 체크
     const restaurantName = extractRestaurantName(keywordDoc, query);
     const company = String((keywordDoc as any).company || '').trim();
+    const keywordType = getKeywordType(keywordDoc, restaurantName);
 
     if (shouldExclude(company)) {
       await handleExcluded(
@@ -51,6 +54,7 @@ export const processKeywords = async (
         searchQuery,
         restaurantName,
         company,
+        keywordType,
         globalIndex,
         keywords.length,
         keywordStartTime,
@@ -68,6 +72,7 @@ export const processKeywords = async (
       globalIndex,
       keywords.length,
       keywordStartTime,
+      keywordType,
       crawlCache,
       itemsCache,
       matchQueueMap,
@@ -94,6 +99,7 @@ export const processKeywords = async (
         searchQuery,
         restaurantName,
         vendorTarget,
+        keywordType,
         items,
         isPopular,
         uniqueGroupsSize,
@@ -135,6 +141,7 @@ export const processKeywords = async (
         searchQuery,
         restaurantName,
         vendorTarget,
+        keywordType,
         nextMatch,
         extractedVendor,
         matchSource,
@@ -158,6 +165,7 @@ export const processKeywords = async (
         searchQuery,
         restaurantName,
         vendorTarget,
+        keywordType,
         items,
         isPopular,
         uniqueGroupsSize,
@@ -196,6 +204,7 @@ const handleExcluded = async (
   searchQuery: string,
   restaurantName: string,
   company: string,
+  keywordType: 'restaurant' | 'pet' | 'basic',
   globalIndex: number,
   totalKeywords: number,
   keywordStartTime: number,
@@ -213,6 +222,7 @@ const handleExcluded = async (
     false,
     '',
     '',
+    keywordType,
     restaurantName,
     '',
     undefined,
@@ -239,6 +249,7 @@ const getCrawlResult = async (
   globalIndex: number,
   totalKeywords: number,
   keywordStartTime: number,
+  keywordType: 'restaurant' | 'pet' | 'basic',
   crawlCache: Map<string, string>,
   itemsCache: Map<string, any[]>,
   matchQueueMap: Map<string, ExposureResult[]>,
@@ -330,6 +341,7 @@ const getCrawlResult = async (
         false,
         '',
         '',
+        keywordType,
         restaurantName,
         '',
         undefined,
@@ -382,12 +394,36 @@ const getVendorTarget = (keywordDoc: any, restaurantName: string): string => {
   return restaurantName || vendorBrand;
 };
 
+const getKeywordType = (
+  keywordDoc: any,
+  restaurantName: string
+): 'restaurant' | 'pet' | 'basic' => {
+  const companyRaw = String((keywordDoc as any).company || '').trim();
+  const sheetTypeCanon = normalizeSheetType(
+    (keywordDoc as any).sheetType || ''
+  );
+  const norm = (s: string) => s.toLowerCase().replace(/\s+/g, '');
+  const companyNorm = norm(companyRaw);
+
+  // 1. restaurantName이 있으면 restaurant
+  if (restaurantName) return 'restaurant';
+
+  // 2. 서리펫 또는 도그마루면 pet
+  if (companyNorm.includes(norm('서리펫')) || sheetTypeCanon === 'dogmaru') {
+    return 'pet';
+  }
+
+  // 3. 나머지는 basic
+  return 'basic';
+};
+
 const handleQueueEmpty = async (
   keywordDoc: any,
   query: string,
   searchQuery: string,
   restaurantName: string,
   vendorTarget: string,
+  keywordType: 'restaurant' | 'pet' | 'basic',
   items: any[],
   isPopular: boolean,
   uniqueGroupsSize: number,
@@ -410,6 +446,7 @@ const handleQueueEmpty = async (
     false,
     '',
     '',
+    keywordType,
     restaurantName,
     '',
     undefined,
@@ -435,6 +472,7 @@ const handleSuccess = async (
   searchQuery: string,
   restaurantName: string,
   vendorTarget: string,
+  keywordType: 'restaurant' | 'pet' | 'basic',
   nextMatch: ExposureResult,
   extractedVendor: string,
   matchSource: 'VENDOR' | 'TITLE' | '',
@@ -467,16 +505,31 @@ const handleSuccess = async (
     source: matchSource,
   });
 
+  // 🍽️ 식당 키워드인 경우: 포스트 품질 체크 (연속된 이미지 4개 이상 = 수정 필요)
+  let isUpdateRequired: boolean | undefined = undefined;
+  if (keywordType === 'restaurant') {
+    try {
+      const postHtml = await fetchResolvedPostHtml(nextMatch.postLink);
+      isUpdateRequired = checkConsecutiveImages(postHtml);
+    } catch (err) {
+      console.warn(
+        `  [품질 체크 실패] ${query}: ${(err as Error).message || 'Unknown error'}`
+      );
+    }
+  }
+
   await updateKeywordResult(
     String(keywordDoc._id),
     true,
     nextMatch.topicName || nextMatch.exposureType,
     nextMatch.postLink,
+    keywordType,
     restaurantName,
     nextMatch.postTitle,
     nextMatch.position,
     extractedVendor,
-    nextMatch.positionWithCafe
+    nextMatch.positionWithCafe,
+    isUpdateRequired
   );
 
   allResults.push(nextMatch);
@@ -519,6 +572,7 @@ const handleFilterFailure = async (
   searchQuery: string,
   restaurantName: string,
   vendorTarget: string,
+  keywordType: 'restaurant' | 'pet' | 'basic',
   items: any[],
   isPopular: boolean,
   uniqueGroupsSize: number,
@@ -543,6 +597,7 @@ const handleFilterFailure = async (
     false,
     '',
     '',
+    keywordType,
     restaurantName,
     '',
     undefined,
