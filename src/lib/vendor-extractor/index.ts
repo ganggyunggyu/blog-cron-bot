@@ -12,8 +12,9 @@ export function extractPostVendorName(html: string): string {
     // 1) Prefer se-oglink-title first
     const titleText = $('.se-oglink-title').first().text().trim();
     if (titleText) {
-      // Exact "네이버 지도" → rely on summary as-is
-      if (titleText === '네이버 지도') {
+      // "네이버 지도" 또는 "네이버지도" → summary에서 업체명 추출
+      const titleNorm = titleText.replace(/\s+/g, '');
+      if (titleNorm === '네이버지도') {
         const summaryText = $('.se-oglink-summary').first().text().trim();
         return summaryText || titleText;
       }
