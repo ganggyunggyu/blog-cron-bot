@@ -7,12 +7,14 @@ export interface IKeyword extends Document {
   popularTopic: string;
   url: string;
   sheetType: string;
+  keywordType: 'restaurant' | 'pet' | 'basic'; // 키워드 타입 구분
   lastChecked: Date;
   restaurantName?: string;
   matchedTitle?: string;
   postVendorName?: string;
   rank?: number;
   rankWithCafe?: number; // 인기글인 경우 카페 포함 순위
+  isUpdateRequired?: boolean; // 포스트 수정 필요 여부 (식당 키워드만)
   createdAt: Date;
   updatedAt: Date;
 }
@@ -25,12 +27,14 @@ const KeywordSchema: Schema = new Schema(
     popularTopic: { type: String, default: '' },
     url: { type: String, default: '' },
     sheetType: { type: String, default: 'package' },
+    keywordType: { type: String, enum: ['restaurant', 'pet', 'basic'], default: 'basic' },
     lastChecked: { type: Date, default: Date.now },
     restaurantName: { type: String, default: '' },
     matchedTitle: { type: String, default: '' },
     postVendorName: { type: String, default: '' },
     rank: { type: Number, default: 0 },
     rankWithCafe: { type: Number, default: 0 }, // 인기글인 경우 카페 포함 순위
+    isUpdateRequired: { type: Boolean, default: false }, // 포스트 수정 필요 여부
   },
   {
     timestamps: true,
@@ -74,17 +78,20 @@ export const updateKeywordResult = async (
   visibility: boolean,
   popularTopic: string,
   url: string,
+  keywordType: 'restaurant' | 'pet' | 'basic',
   restaurantName?: string,
   matchedTitle?: string,
   rank?: number,
   postVendorName?: string,
-  rankWithCafe?: number
+  rankWithCafe?: number,
+  isUpdateRequired?: boolean
 ): Promise<void> => {
   try {
     const update: Partial<IKeyword> = {
       visibility,
       popularTopic,
       url,
+      keywordType,
       lastChecked: new Date(),
     } as Partial<IKeyword>;
 
@@ -95,6 +102,8 @@ export const updateKeywordResult = async (
     if (typeof postVendorName !== 'undefined')
       update.postVendorName = postVendorName;
     if (typeof rankWithCafe !== 'undefined') update.rankWithCafe = rankWithCafe;
+    if (typeof isUpdateRequired !== 'undefined')
+      update.isUpdateRequired = isUpdateRequired;
 
     await Keyword.findByIdAndUpdate(keywordId, update);
   } catch (error) {
