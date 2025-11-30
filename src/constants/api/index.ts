@@ -53,17 +53,30 @@ const SHEET_CONFIGS: SheetConfig[] = [
 ];
 
 // 테스트 설정
+// export const TEST_CONFIG = {
+//   SHEET_ID: '1T9PHu-fH6HPmyYA9dtfXaDLm20XAPN-9mzlE2QTPkF0',
+//   SHEET_NAMES: {
+//     PACKAGE: '패키지',
+//     DOGMARU_EXCLUDE: '일반건',
+//     DOGMARU: '도그마루',
+//   },
+//   LABELS: {
+//     PACKAGE: '패키지',
+//     DOGMARU_EXCLUDE: '일반건',
+//     DOGMARU: '도그마루',
+//   },
+// } as const;
 export const TEST_CONFIG = {
   SHEET_ID: '1T9PHu-fH6HPmyYA9dtfXaDLm20XAPN-9mzlE2QTPkF0',
   SHEET_NAMES: {
-    PACKAGE: '패키지',
-    DOGMARU_EXCLUDE: '일반건',
-    DOGMARU: '도그마루',
+    PACKAGE: '패키지 테스트',
+    DOGMARU_EXCLUDE: '일반건 테스트',
+    DOGMARU: '도그마루 테스트',
   },
   LABELS: {
-    PACKAGE: '패키지',
-    DOGMARU_EXCLUDE: '일반건',
-    DOGMARU: '도그마루',
+    PACKAGE: '패키지 테스트',
+    DOGMARU_EXCLUDE: '일반건 테스트',
+    DOGMARU: '도그마루 테스트',
   },
 } as const;
 

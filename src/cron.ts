@@ -121,7 +121,7 @@ if (testDelayMinutes > 0) {
     { hour: '2-digit', minute: '2-digit' }
   )})`;
 } else {
-  cronSchedule = '15 13 * * *';
+  cronSchedule = '01 09 * * *';
   scheduleDescription = '매일 오전 9시 10분';
 }
 
