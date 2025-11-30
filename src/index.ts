@@ -10,7 +10,7 @@ dotenv.config();
 
 const config: Config = {
   maxRetries: 3,
-  delayBetweenQueries: 100,
+  delayBetweenQueries: 1500,
 };
 
 export async function main() {

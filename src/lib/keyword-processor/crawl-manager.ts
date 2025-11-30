@@ -1,5 +1,5 @@
 import { ExposureResult } from '../../matcher';
-import { crawlWithRetry, delay } from '../../crawler';
+import { crawlWithRetry, randomDelay } from '../../crawler';
 import { extractPopularItems } from '../../parser';
 import { matchBlogs } from '../../matcher';
 import { getSheetOptions } from '../../sheet-config';
@@ -86,7 +86,7 @@ export const getCrawlResult = async (
 
       console.log(`[QUEUE] 초기 큐 크기: ${allMatches.length}개\n`);
 
-      await delay(config.delayBetweenQueries);
+      await randomDelay(config.delayBetweenQueries, config.delayBetweenQueries * 2);
     } catch (error) {
       console.error(
         `\n❌ 검색어 "${searchQuery}" 크롤링 에러:`,
