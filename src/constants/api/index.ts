@@ -80,6 +80,17 @@ export const TEST_CONFIG = {
   },
 } as const;
 
+export const ROOT_CONFIG = {
+  SHEET_ID: '1CsO-R1LMrsQdUw7T1KEL2I4bMxAeYnZIklOgr8e_DPY',
+
+  SHEET_NAMES: {
+    PACKAGE: '월보장 시트',
+  },
+  LABELS: {
+    PACKAGE: '월보장 시트',
+  },
+};
+
 // SyncRequest 배열 생성
 export const requests: SyncRequest[] = SHEET_CONFIGS.map(
   ({ sheetId, sheetName, sheetType }) => ({

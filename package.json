@@ -14,7 +14,8 @@
     "web": "cross-env TS_NODE_TRANSPILE_ONLY=1 TS_NODE_IGNORE_DIAGNOSTICS=7006,2307 ts-node src/web/server/index.ts",
     "web:strict": "ts-node src/web/server/index.ts",
     "cron": "ts-node src/cron.ts",
-    "cron:test": "cross-env TEST_DELAY_MINUTES=1 ts-node src/cron.ts"
+    "cron:test": "cross-env TEST_DELAY_MINUTES=1 ts-node src/cron.ts",
+    "cron:root": "ts-node src/cron-root.ts"
   },
   "dependencies": {
     "axios": "^1.13.2",
