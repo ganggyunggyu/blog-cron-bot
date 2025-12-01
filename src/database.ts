@@ -43,6 +43,47 @@ const KeywordSchema: Schema = new Schema(
 
 export const Keyword = mongoose.model<IKeyword>('Keyword', KeywordSchema);
 
+export interface IRootKeyword extends Document {
+  company: string;
+  keyword: string;
+  visibility: boolean;
+  popularTopic: string;
+  url: string;
+  keywordType: 'restaurant' | 'pet' | 'basic';
+  lastChecked: Date;
+  restaurantName?: string;
+  matchedTitle?: string;
+  postVendorName?: string;
+  rank?: number;
+  rankWithCafe?: number;
+  isUpdateRequired?: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const RootKeywordSchema: Schema = new Schema(
+  {
+    company: { type: String, required: true },
+    keyword: { type: String, required: true },
+    visibility: { type: Boolean, default: false },
+    popularTopic: { type: String, default: '' },
+    url: { type: String, default: '' },
+    keywordType: { type: String, enum: ['restaurant', 'pet', 'basic'], default: 'basic' },
+    lastChecked: { type: Date, default: Date.now },
+    restaurantName: { type: String, default: '' },
+    matchedTitle: { type: String, default: '' },
+    postVendorName: { type: String, default: '' },
+    rank: { type: Number, default: 0 },
+    rankWithCafe: { type: Number, default: 0 },
+    isUpdateRequired: { type: Boolean, default: false },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+export const RootKeyword = mongoose.model<IRootKeyword>('RootKeyword', RootKeywordSchema);
+
 export const connectDB = async (uri: string): Promise<void> => {
   try {
     await mongoose.connect(uri);
@@ -69,6 +110,17 @@ export const getAllKeywords = async (): Promise<IKeyword[]> => {
     return keywords;
   } catch (error) {
     console.error('❌ 키워드 로드 실패:', error);
+    throw error;
+  }
+};
+
+export const getAllRootKeywords = async (): Promise<IRootKeyword[]> => {
+  try {
+    const keywords = await RootKeyword.find({});
+    console.log(`✅ 총 ${keywords.length}개 루트 키워드 로드`);
+    return keywords;
+  } catch (error) {
+    console.error('❌ 루트 키워드 로드 실패:', error);
     throw error;
   }
 };
@@ -108,6 +160,45 @@ export const updateKeywordResult = async (
     await Keyword.findByIdAndUpdate(keywordId, update);
   } catch (error) {
     console.error('❌ 키워드 업데이트 실패:', error);
+    throw error;
+  }
+};
+
+export const updateRootKeywordResult = async (
+  keywordId: string,
+  visibility: boolean,
+  popularTopic: string,
+  url: string,
+  keywordType: 'restaurant' | 'pet' | 'basic',
+  restaurantName?: string,
+  matchedTitle?: string,
+  rank?: number,
+  postVendorName?: string,
+  rankWithCafe?: number,
+  isUpdateRequired?: boolean
+): Promise<void> => {
+  try {
+    const update: Partial<IRootKeyword> = {
+      visibility,
+      popularTopic,
+      url,
+      keywordType,
+      lastChecked: new Date(),
+    } as Partial<IRootKeyword>;
+
+    if (typeof restaurantName !== 'undefined')
+      update.restaurantName = restaurantName;
+    if (typeof matchedTitle !== 'undefined') update.matchedTitle = matchedTitle;
+    if (typeof rank !== 'undefined') update.rank = rank;
+    if (typeof postVendorName !== 'undefined')
+      update.postVendorName = postVendorName;
+    if (typeof rankWithCafe !== 'undefined') update.rankWithCafe = rankWithCafe;
+    if (typeof isUpdateRequired !== 'undefined')
+      update.isUpdateRequired = isUpdateRequired;
+
+    await RootKeyword.findByIdAndUpdate(keywordId, update);
+  } catch (error) {
+    console.error('❌ 루트 키워드 업데이트 실패:', error);
     throw error;
   }
 };
