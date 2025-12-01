@@ -14,9 +14,19 @@ export const extractRestaurantName = (
   );
 };
 
-export const shouldExclude = (company: string): boolean => {
+export const shouldExclude = (company: string, keyword?: string): boolean => {
   const normalizedCompany = company.toLowerCase().replace(/\s+/g, '');
-  return normalizedCompany.includes('프로그램');
+  if (normalizedCompany.includes('프로그램')) return true;
+
+  // 자료 미전달 키워드 제외
+  if (keyword) {
+    const normalizedKeyword = keyword.toLowerCase().replace(/\s+/g, '');
+    if (normalizedKeyword.includes('자료미전달') || normalizedKeyword.includes('미전달리스트')) {
+      return true;
+    }
+  }
+
+  return false;
 };
 
 export const getVendorTarget = (
