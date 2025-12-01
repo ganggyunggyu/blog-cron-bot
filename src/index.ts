@@ -4,14 +4,8 @@ import { saveToCSV } from './csv-writer';
 import { getSheetOptions } from './sheet-config';
 import { createDetailedLogBuilder, saveDetailedLogs } from './logs';
 import { processKeywords } from './lib/keyword-processor';
-import { Config } from './types';
 
 dotenv.config();
-
-const config: Config = {
-  maxRetries: 3,
-  delayBetweenQueries: 1500,
-};
 
 export async function main() {
   const startTime = Date.now();
@@ -68,7 +62,7 @@ export async function main() {
   const logBuilder = createDetailedLogBuilder();
 
   // 1️⃣~8️⃣ 키워드 처리 (크롤링, 필터링, 결과 저장)
-  const allResults = await processKeywords(keywords, config, logBuilder);
+  const allResults = await processKeywords(keywords, logBuilder);
 
   // 🔟 최종 결과 저장
 

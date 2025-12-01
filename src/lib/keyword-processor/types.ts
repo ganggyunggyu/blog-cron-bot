@@ -1,6 +1,6 @@
 import { ExposureResult } from '../../matcher';
 import { DetailedLogBuilder } from '../../logs/detailed-log';
-import { Config, VendorMatchDetails } from '../../types';
+import { VendorMatchDetails } from '../../types';
 
 export type KeywordType = 'restaurant' | 'pet' | 'basic';
 
@@ -86,7 +86,6 @@ export interface CrawlParams {
   searchQuery: string;
   keywordDoc: KeywordDoc;
   query: string;
-  config: Config;
   keywordType: KeywordType;
   processing: ProcessingContext;
   caches: CrawlCaches;

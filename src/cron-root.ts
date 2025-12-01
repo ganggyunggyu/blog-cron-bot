@@ -9,16 +9,10 @@ import {
 import { saveToCSV } from './csv-writer';
 import { createDetailedLogBuilder, saveDetailedLogs } from './logs';
 import { processKeywords } from './lib/keyword-processor';
-import { Config } from './types';
 import { ROOT_CONFIG, SHEET_APP_URL } from './constants';
 import axios from 'axios';
 
 dotenv.config();
-
-const config: Config = {
-  maxRetries: 3,
-  delayBetweenQueries: 1500,
-};
 
 export async function main() {
   const startTime = Date.now();
@@ -88,7 +82,7 @@ export async function main() {
   const logBuilder = createDetailedLogBuilder();
 
   // processKeywords 사용 (updateRootKeywordResult 전달)
-  const allResults = await processKeywords(keywords, config, logBuilder, {
+  const allResults = await processKeywords(keywords, logBuilder, {
     updateFunction: updateRootKeywordResult,
   });
 

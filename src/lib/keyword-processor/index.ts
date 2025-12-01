@@ -2,7 +2,6 @@ import { ExposureResult } from '../../matcher';
 import { updateKeywordResult } from '../../database';
 import { getSearchQuery } from '../../utils';
 import { DetailedLogBuilder } from '../../logs/detailed-log';
-import { Config } from '../../types';
 import { findMatchingPost } from '../post-filter';
 import {
   KeywordContext,
@@ -31,7 +30,6 @@ import { getCrawlResult } from './crawl-manager';
  */
 export const processKeywords = async (
   keywords: any[],
-  config: Config,
   logBuilder: DetailedLogBuilder,
   options?: ProcessKeywordsOptions
 ): Promise<ExposureResult[]> => {
@@ -93,7 +91,6 @@ export const processKeywords = async (
       searchQuery,
       keywordDoc,
       query,
-      config,
       globalIndex,
       keywords.length,
       keywordStartTime,

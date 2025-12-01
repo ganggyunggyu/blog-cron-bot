@@ -6,7 +6,7 @@ import { getSheetOptions } from '../../sheet-config';
 import { updateKeywordResult } from '../../database';
 import { DetailedLogBuilder } from '../../logs/detailed-log';
 import { progressLogger } from '../../logs/progress-logger';
-import { Config } from '../../types';
+import { CRAWL_CONFIG } from '../../constants';
 import { KeywordType, CrawlCaches } from './types';
 import { extractRestaurantName } from './keyword-classifier';
 
@@ -21,7 +21,6 @@ export const getCrawlResult = async (
   searchQuery: string,
   keywordDoc: any,
   query: string,
-  config: Config,
   globalIndex: number,
   totalKeywords: number,
   keywordStartTime: number,
@@ -43,7 +42,7 @@ export const getCrawlResult = async (
     const sheetOpts = getSheetOptions((keywordDoc as any).sheetType);
 
     try {
-      const html = await crawlWithRetry(searchQuery, config.maxRetries);
+      const html = await crawlWithRetry(searchQuery, CRAWL_CONFIG.maxRetries);
       items = extractPopularItems(html);
 
       const allowAnyEnv = String(
@@ -86,7 +85,7 @@ export const getCrawlResult = async (
 
       console.log(`[QUEUE] 초기 큐 크기: ${allMatches.length}개\n`);
 
-      await randomDelay(config.delayBetweenQueries, config.delayBetweenQueries * 2);
+      await randomDelay(CRAWL_CONFIG.delayBetweenQueries, CRAWL_CONFIG.delayBetweenQueries * 2);
     } catch (error) {
       console.error(
         `\n❌ 검색어 "${searchQuery}" 크롤링 에러:`,
