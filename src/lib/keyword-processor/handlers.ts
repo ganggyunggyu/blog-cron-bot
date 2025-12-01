@@ -1,5 +1,4 @@
 import { ExposureResult } from '../../matcher';
-import { updateKeywordResult } from '../../database';
 import { progressLogger } from '../../logs/progress-logger';
 import { fetchResolvedPostHtml } from '../vendor-extractor';
 import { checkConsecutiveImages } from '../post-quality-checker';
@@ -11,7 +10,7 @@ import {
 } from './types';
 
 export const handleExcluded = async (params: ExcludedParams): Promise<void> => {
-  const { keyword, company, processing } = params;
+  const { keyword, company, processing, updateFunction } = params;
   const { keywordDoc, query, searchQuery, restaurantName, keywordType } =
     keyword;
   const { globalIndex, totalKeywords, keywordStartTime, logBuilder } =
@@ -24,7 +23,7 @@ export const handleExcluded = async (params: ExcludedParams): Promise<void> => {
     company,
   });
 
-  await updateKeywordResult(
+  await updateFunction(
     String(keywordDoc._id),
     false,
     '',
@@ -51,7 +50,7 @@ export const handleExcluded = async (params: ExcludedParams): Promise<void> => {
 export const handleQueueEmpty = async (
   params: QueueEmptyParams
 ): Promise<void> => {
-  const { keyword, processing } = params;
+  const { keyword, processing, updateFunction } = params;
   const {
     keywordDoc,
     query,
@@ -71,7 +70,7 @@ export const handleQueueEmpty = async (
     reason: '큐 소진',
   });
 
-  await updateKeywordResult(
+  await updateFunction(
     String(keywordDoc._id),
     false,
     '',
@@ -97,7 +96,7 @@ export const handleQueueEmpty = async (
 };
 
 export const handleSuccess = async (params: SuccessParams): Promise<void> => {
-  const { keyword, html, match, processing, allResults } = params;
+  const { keyword, html, match, processing, allResults, updateFunction } = params;
   const {
     keywordDoc,
     query,
@@ -148,7 +147,7 @@ export const handleSuccess = async (params: SuccessParams): Promise<void> => {
     }
   }
 
-  await updateKeywordResult(
+  await updateFunction(
     String(keywordDoc._id),
     true,
     nextMatch.topicName || nextMatch.exposureType,
@@ -199,7 +198,7 @@ export const handleSuccess = async (params: SuccessParams): Promise<void> => {
 export const handleFilterFailure = async (
   params: FilterFailureParams
 ): Promise<void> => {
-  const { keyword, html, allMatchesCount, remainingQueueCount, processing } =
+  const { keyword, html, allMatchesCount, remainingQueueCount, processing, updateFunction } =
     params;
   const {
     keywordDoc,
@@ -221,7 +220,7 @@ export const handleFilterFailure = async (
     reason: '필터링 실패',
   });
 
-  await updateKeywordResult(
+  await updateFunction(
     String(keywordDoc._id),
     false,
     '',

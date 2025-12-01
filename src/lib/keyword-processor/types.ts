@@ -4,6 +4,26 @@ import { Config, VendorMatchDetails } from '../../types';
 
 export type KeywordType = 'restaurant' | 'pet' | 'basic';
 
+/** DB 업데이트 함수 타입 */
+export type UpdateFunction = (
+  keywordId: string,
+  visibility: boolean,
+  popularTopic: string,
+  url: string,
+  keywordType: KeywordType,
+  restaurantName?: string,
+  matchedTitle?: string,
+  rank?: number,
+  postVendorName?: string,
+  rankWithCafe?: number,
+  isUpdateRequired?: boolean
+) => Promise<void>;
+
+/** processKeywords 옵션 */
+export interface ProcessKeywordsOptions {
+  updateFunction?: UpdateFunction;
+}
+
 /** 키워드 문서 정보 */
 export interface KeywordDoc {
   _id: string;
@@ -77,6 +97,7 @@ export interface ExcludedParams {
   keyword: KeywordContext;
   company: string;
   processing: ProcessingContext;
+  updateFunction: UpdateFunction;
 }
 
 /** handleQueueEmpty 파라미터 */
@@ -84,6 +105,7 @@ export interface QueueEmptyParams {
   keyword: KeywordContext;
   html: HtmlStructure;
   processing: ProcessingContext;
+  updateFunction: UpdateFunction;
 }
 
 /** handleSuccess 파라미터 */
@@ -93,6 +115,7 @@ export interface SuccessParams {
   match: MatchResult;
   processing: ProcessingContext;
   allResults: ExposureResult[];
+  updateFunction: UpdateFunction;
 }
 
 /** handleFilterFailure 파라미터 */
@@ -102,4 +125,5 @@ export interface FilterFailureParams {
   allMatchesCount: number;
   remainingQueueCount: number;
   processing: ProcessingContext;
+  updateFunction: UpdateFunction;
 }

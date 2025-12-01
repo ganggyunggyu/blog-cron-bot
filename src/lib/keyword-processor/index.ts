@@ -1,4 +1,5 @@
 import { ExposureResult } from '../../matcher';
+import { updateKeywordResult } from '../../database';
 import { getSearchQuery } from '../../utils';
 import { DetailedLogBuilder } from '../../logs/detailed-log';
 import { Config } from '../../types';
@@ -8,6 +9,8 @@ import {
   ProcessingContext,
   HtmlStructure,
   CrawlCaches,
+  ProcessKeywordsOptions,
+  UpdateFunction,
 } from './types';
 import {
   handleExcluded,
@@ -29,8 +32,11 @@ import { getCrawlResult } from './crawl-manager';
 export const processKeywords = async (
   keywords: any[],
   config: Config,
-  logBuilder: DetailedLogBuilder
+  logBuilder: DetailedLogBuilder,
+  options?: ProcessKeywordsOptions
 ): Promise<ExposureResult[]> => {
+  const updateFunction: UpdateFunction =
+    options?.updateFunction ?? updateKeywordResult;
   const allResults: ExposureResult[] = [];
 
   // 1️⃣ 크롤링 캐시 및 매칭 큐 (searchQuery별)
@@ -60,7 +66,7 @@ export const processKeywords = async (
     const company = String((keywordDoc as any).company || '').trim();
     const keywordType = getKeywordType(keywordDoc, restaurantName);
 
-    if (shouldExclude(company)) {
+    if (shouldExclude(company, query)) {
       await handleExcluded({
         keyword: {
           keywordDoc,
@@ -77,6 +83,7 @@ export const processKeywords = async (
           keywordStartTime,
           logBuilder,
         },
+        updateFunction,
       });
       continue;
     }
@@ -124,6 +131,7 @@ export const processKeywords = async (
           keywordStartTime,
           logBuilder,
         },
+        updateFunction,
       });
       continue;
     }
@@ -185,6 +193,7 @@ export const processKeywords = async (
         },
         processing: processingCtx,
         allResults,
+        updateFunction,
       });
     } else {
       await handleFilterFailure({
@@ -193,6 +202,7 @@ export const processKeywords = async (
         allMatchesCount,
         remainingQueueCount: matchQueue.length,
         processing: processingCtx,
+        updateFunction,
       });
     }
   }
