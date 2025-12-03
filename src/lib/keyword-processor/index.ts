@@ -96,7 +96,8 @@ export const processKeywords = async (
       keywordStartTime,
       keywordType,
       caches,
-      logBuilder
+      logBuilder,
+      updateFunction
     );
 
     if (!crawlResult) continue;

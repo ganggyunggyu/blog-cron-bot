@@ -1,13 +1,11 @@
-import { ExposureResult } from '../../matcher';
 import { crawlWithRetry, randomDelay } from '../../crawler';
 import { extractPopularItems } from '../../parser';
 import { matchBlogs } from '../../matcher';
 import { getSheetOptions } from '../../sheet-config';
-import { updateKeywordResult } from '../../database';
 import { DetailedLogBuilder } from '../../logs/detailed-log';
 import { progressLogger } from '../../logs/progress-logger';
 import { CRAWL_CONFIG } from '../../constants';
-import { KeywordType, CrawlCaches } from './types';
+import { KeywordType, CrawlCaches, UpdateFunction } from './types';
 import { extractRestaurantName } from './keyword-classifier';
 
 interface CrawlResult {
@@ -26,7 +24,8 @@ export const getCrawlResult = async (
   keywordStartTime: number,
   keywordType: KeywordType,
   caches: CrawlCaches,
-  logBuilder: DetailedLogBuilder
+  logBuilder: DetailedLogBuilder,
+  updateFunction: UpdateFunction
 ): Promise<CrawlResult | null> => {
   const { crawlCache, itemsCache, matchQueueMap, htmlStructureCache } = caches;
 
@@ -102,7 +101,7 @@ export const getCrawlResult = async (
         reason: '크롤링 에러',
       });
 
-      await updateKeywordResult(
+      await updateFunction(
         String(keywordDoc._id),
         false,
         '',
@@ -110,9 +109,10 @@ export const getCrawlResult = async (
         keywordType,
         restaurantName,
         '',
-        undefined,
+        0,
         '',
-        undefined
+        0,
+        false
       );
 
       const crawlErrorLog = logBuilder.createCrawlError({

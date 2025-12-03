@@ -31,9 +31,10 @@ export const handleExcluded = async (params: ExcludedParams): Promise<void> => {
     keywordType,
     restaurantName,
     '',
-    undefined,
+    0,
     '',
-    undefined
+    0,
+    false
   );
 
   const excludedLog = logBuilder.createExcluded({
@@ -78,9 +79,10 @@ export const handleQueueEmpty = async (
     keywordType,
     restaurantName,
     '',
-    undefined,
+    0,
     '',
-    undefined
+    0,
+    false
   );
 
   const queueEmptyLog = logBuilder.createFailure({
@@ -228,9 +230,10 @@ export const handleFilterFailure = async (
     keywordType,
     restaurantName,
     '',
-    undefined,
+    0,
     '',
-    undefined
+    0,
+    false
   );
 
   const filterFailureLog = logBuilder.createFilterFailure({
