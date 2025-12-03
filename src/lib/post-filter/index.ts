@@ -109,23 +109,28 @@ export const findMatchingPost = async (
 const checkVendorMatch = (
   extractedVendor: string,
   vendorTarget: string,
-  restaurantName: string,
+  _restaurantName: string,
   queueIdx: number
 ): { matched: boolean; details?: VendorMatchDetails } => {
   const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, '');
 
   const rnNorm = normalize(vendorTarget);
+  // "점", "본점", "지점"만 제거 (위치 정보는 유지)
+  // 청기와타운 종로점 → 청기와타운종로 (종로 유지)
   const baseBrand = vendorTarget
     .replace(/(본점|지점)$/u, '')
-    .replace(/[\p{Script=Hangul}]{1,4}점$/u, '')
+    .replace(/점$/u, '')
     .trim();
   const baseBrandNorm = normalize(baseBrand);
-  const brandRoot = normalize((restaurantName.split(/\s+/)[0] || '').trim());
   const vNorm = normalize(extractedVendor);
 
+  // check1: 전체 이름 매칭 (벤더가 타겟 포함)
   const check1 = vNorm.includes(rnNorm);
+  // check2: 지점 접미사만 제거 후 매칭 (위치 정보 유지)
   const check2 = baseBrandNorm.length >= 2 && vNorm.includes(baseBrandNorm);
-  const check3 = brandRoot.length >= 2 && vNorm.includes(brandRoot);
+  // check3: 역방향 - 타겟이 벤더 포함 (벤더가 브랜드명만인 경우)
+  // 예: "키즈나 홍대" vs "키즈나"
+  const check3 = vNorm.length >= 2 && baseBrandNorm.includes(vNorm);
 
   if (check1 || check2 || check3) {
     return {
@@ -133,7 +138,7 @@ const checkVendorMatch = (
       details: {
         restaurantName: vendorTarget,
         baseBrand,
-        brandRoot,
+        brandRoot: '',
         extractedVendor,
         matchedBy: check1 ? 'rnNorm' : check2 ? 'baseBrandNorm' : 'brandRoot',
         checkIndex: queueIdx,
@@ -152,26 +157,25 @@ const checkVendorMatch = (
 const checkTitleMatch = (
   postTitle: string,
   vendorTarget: string,
-  restaurantName: string
+  _restaurantName: string
 ): boolean => {
   const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, '');
 
-  const titleRaw = postTitle;
-  const title = titleRaw.toLowerCase();
-  const titleNorm = normalize(titleRaw);
+  const title = postTitle.toLowerCase();
+  const titleNorm = normalize(postTitle);
   const rn = vendorTarget.toLowerCase();
   const rnNorm = normalize(vendorTarget);
+  // "점", "본점", "지점"만 제거 (위치 정보는 유지)
   const baseBrand = vendorTarget
     .replace(/(본점|지점)$/u, '')
-    .replace(/[\p{Script=Hangul}]{1,4}점$/u, '')
+    .replace(/점$/u, '')
     .trim();
   const baseBrandNorm = normalize(baseBrand);
-  const brandRoot = normalize((restaurantName.split(/\s+/)[0] || '').trim());
 
+  // check1: 전체 이름 매칭
   const hasFull = title.includes(rn) || titleNorm.includes(rnNorm);
-  const hasBrand =
-    (baseBrandNorm.length >= 2 && titleNorm.includes(baseBrandNorm)) ||
-    (brandRoot.length >= 2 && titleNorm.includes(brandRoot));
+  // check2: 지점 접미사만 제거 후 매칭 (위치 정보 유지)
+  const hasBrand = baseBrandNorm.length >= 2 && titleNorm.includes(baseBrandNorm);
 
   return hasFull || hasBrand;
 };
