@@ -77,4 +77,6 @@ export const BLOG_IDS = [
   'canopus_72',
   'youngtae0510',
   'sasane',
+  'yakooroo',
+  'tangerine-e',
 ];
