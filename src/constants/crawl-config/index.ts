@@ -1,4 +1,4 @@
 export const CRAWL_CONFIG = {
-  maxRetries: 3,
-  delayBetweenQueries: 300,
+  maxRetries: 5,
+  delayBetweenQueries: 500,
 } as const;
