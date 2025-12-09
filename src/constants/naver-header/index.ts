@@ -12,10 +12,12 @@ export const getRandomHeaders = (): Record<string, string> => ({
   'Sec-Fetch-Mode': 'navigate',
   'Sec-Fetch-Site': 'none',
   'Sec-Fetch-User': '?1',
-  'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+  'sec-ch-ua':
+    '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
   'sec-ch-ua-mobile': '?0',
   'sec-ch-ua-platform': '"Windows"',
   'Cache-Control': 'max-age=0',
+  Pragma: 'no-cache',
 });
 
 export const NAVER_DESKTOP_HEADERS = {
