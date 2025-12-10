@@ -11,7 +11,7 @@ export interface SheetOptions {
 const DEFAULT_OPTIONS: Required<SheetOptions> = {
   allowAnyBlog: false,
   maxContentChecks: 3,
-  contentCheckDelayMs: 600,
+  contentCheckDelayMs: 100,
   csvFilePrefix: 'results',
 };
 
