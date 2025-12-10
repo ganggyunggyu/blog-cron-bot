@@ -1,6 +1,26 @@
 import { getRandomHeaders } from './constants';
 import { getSearchQuery } from './utils';
 
+type GotScrapingClient = typeof import('got-scraping').gotScraping;
+
+let gotScrapingClient: GotScrapingClient | null = null;
+
+const dynamicImport = new Function(
+  'specifier',
+  'return import(specifier);'
+) as (specifier: string) => Promise<any>;
+
+const getGotScrapingClient = async (): Promise<GotScrapingClient> => {
+  if (!gotScrapingClient) {
+    const { gotScraping } = (await dynamicImport('got-scraping')) as {
+      gotScraping: GotScrapingClient;
+    };
+    gotScrapingClient = gotScraping;
+  }
+
+  return gotScrapingClient;
+};
+
 export const buildNaverSearchUrl = (query: string): string => {
   const q = getSearchQuery(query);
   return `https://m.search.naver.com/search.naver?query=${encodeURIComponent(
@@ -12,17 +32,24 @@ export const fetchHtml = async (
   url: string,
   headers: Record<string, string>
 ): Promise<string> => {
-  const response = await fetch(url, { headers });
+  const client = await getGotScrapingClient();
+  const response = await client.get(url, {
+    headers,
+    http2: true,
+    timeout: { request: 30000 },
+    throwHttpErrors: false,
+  });
 
-  if (!response.ok) {
-    const error = new Error(`HTTP ${response.status}`) as Error & {
+  const status = response.statusCode ?? 0;
+  if (status < 200 || status >= 300) {
+    const error = new Error(`HTTP ${status}`) as Error & {
       status: number;
     };
-    error.status = response.status;
+    error.status = status;
     throw error;
   }
 
-  return await response.text();
+  return response.body;
 };
 
 export const delay = (ms: number) =>

@@ -40,11 +40,3 @@ export const NAVER_DESKTOP_HEADERS = {
   'Sec-Fetch-User': '?1',
 };
 
-export const NAVER_MOBILE_HEADERS = {
-  'User-Agent':
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1',
-  Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-  'Accept-Language': 'ko-KR,ko;q=0.9',
-  Connection: 'keep-alive',
-  Referer: 'https://m.naver.com/',
-};
