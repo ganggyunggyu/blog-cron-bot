@@ -79,4 +79,5 @@ export const BLOG_IDS = [
   'sasane',
   'yakooroo',
   'tangerine-e',
+  'sesrsoa',
 ];
