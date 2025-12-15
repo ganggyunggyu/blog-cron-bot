@@ -19,6 +19,10 @@
 pnpm install
 ```
 
+## Ubuntu EC2 배포
+
+`docs/ec2-ubuntu.md` 참고.
+
 ## 환경 변수 설정
 
 `.env` 파일에 MongoDB URI를 설정하세요:

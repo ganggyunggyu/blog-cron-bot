@@ -1,122 +1,81 @@
-# Node-Cron 사용 가이드
+# 스케줄러 사용 가이드
 
-node-cron을 사용하여 매일 오전 8시에 자동으로 실행되는 크론잡입니다.
+`src/pm2-scheduler.ts`는 기본 키워드(Keyword) 워크플로우 스케줄러입니다.
+`src/pm2-scheduler-root.ts`는 루트 키워드(RootKeyword) 워크플로우 스케줄러입니다.
+KST(Asia/Seoul) 기준으로 시간을 감지해서 지정된 시각에 작업을 수행합니다.
 
-## 📋 워크플로우 개요
+`src/cron.ts`는 node-cron 기반(크론 표현식) 스케줄러로, 필요할 때만 사용합니다.
 
-크론잡은 3단계로 실행됩니다:
+## 워크플로우 개요
 
-1. **📤 Step 1: Sheet → DB 동기화** (`GET /api/cron/sync-all`)
-   - Google Sheets의 모든 데이터를 MongoDB로 가져옵니다
-   - 기존 데이터 삭제 후 새 데이터 삽입
+워크플로우는 3단계로 실행됩니다:
 
-2. **🔍 Step 2: 크롤링 및 노출 체크**
+1. Step 1: Sheet App → DB 동기화 (`POST ${SHEET_APP_URL}/api/keywords/sync`)
+   - 시트 데이터를 MongoDB로 동기화합니다
+
+2. Step 2: 크롤링 및 노출 체크
    - 네이버 검색 결과 크롤링
    - 블로그 노출 여부 확인
    - MongoDB에 결과 업데이트
 
-3. **📥 Step 3: DB → Sheet 적용** (`GET /api/cron/import-all`)
-   - 노출 체크 결과를 Google Sheets에 반영
-   - visibility 필드만 업데이트
+3. Step 3: DB → Sheet App 반영 (`POST ${SHEET_APP_URL}/api/keywords/import`)
+   - 노출 체크 결과를 시트에 반영합니다
 
 > ⚠️ **중요**: 3단계는 **반드시 순서대로** 실행됩니다. 중간에 실패하면 전체 워크플로우가 중단됩니다.
 
 ---
 
-## 🚀 빠른 시작
+## 빠른 시작
 
 ### 사전 준비
 
-1. **Sheet App 실행** (3000포트 필수)
-   ```bash
-   # Sheet App 프로젝트에서
-   pnpm dev
-   ```
-
-2. **환경 변수 설정** (`.env`)
+1. **환경 변수 설정** (`.env`)
    ```env
    MONGODB_URI=mongodb+srv://...
    SHEET_APP_URL=http://localhost:3000  # Sheet App URL (기본값)
+   # HH:mm 콤마 구분(하루 여러 번 가능)
+   WORKFLOW_RUN_TIMES=09:10,13:10,17:10
+   ROOT_RUN_TIMES=09:20,13:20,17:20
    ```
 
-### 1. 크론 스케줄러 실행
+### 1. 스케줄러 실행
 
 ```bash
-pnpm cron
+pnpm scheduler
+pnpm scheduler:root
 ```
 
-### 2. 테스트 실행 (5분 뒤)
+### 2. 테스트 실행 (N분 뒤)
 
 ```bash
-pnpm cron:test
+TEST_DELAY_MINUTES=1 pnpm scheduler
+TEST_DELAY_MINUTES=1 pnpm scheduler:root
 ```
 
-현재 시간 기준 **5분 뒤**에 실행됩니다.
-
-**다른 시간으로 테스트:**
+다른 시간으로 테스트:
 ```bash
 # 3분 뒤
-TEST_DELAY_MINUTES=3 pnpm cron
+TEST_DELAY_MINUTES=3 pnpm scheduler
+TEST_DELAY_MINUTES=3 pnpm scheduler:root
 
 # 10분 뒤
-TEST_DELAY_MINUTES=10 pnpm cron
+TEST_DELAY_MINUTES=10 pnpm scheduler
+TEST_DELAY_MINUTES=10 pnpm scheduler:root
 
 # 1분 뒤
-TEST_DELAY_MINUTES=1 pnpm cron
+TEST_DELAY_MINUTES=1 pnpm scheduler
+TEST_DELAY_MINUTES=1 pnpm scheduler:root
 ```
 
 ---
 
-## 📊 실행 예시
+## pm2 운영
 
-### 정상 모드 (pnpm cron)
-
-```bash
-$ pnpm cron
-
-🚀 크론 스케줄러 시작
-⏰ 스케줄: 0 8 * * * (매일 오전 8시)
-📅 현재 시간: 2024. 11. 13. 오후 1:00:00
-🌐 Sheet App URL: http://localhost:3000
-⏳ 대기 중...
-
-# 오전 8시까지 대기...
-```
-
-### 테스트 모드 (pnpm cron:test)
+EC2에서 상시 실행은 pm2를 권장합니다:
 
 ```bash
-$ pnpm cron:test
-
-🚀 크론 스케줄러 시작
-⏰ 스케줄: 5 13 * * * (테스트 모드: 5분 뒤 (오후 01:05))
-📅 현재 시간: 2024. 11. 13. 오후 1:00:00
-🌐 Sheet App URL: http://localhost:3000
-🧪 테스트 실행 예정: 2024. 11. 13. 오후 1:05:00
-⏳ 대기 중...
-
-# 5분 뒤 자동 실행...
-
-🤖 [2024. 11. 13. 오후 1:05:00] 크론잡 시작
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-📤 [Step 1/3] 전체 데이터 DB로 내보내기...
-✅ [Step 1/3] 완료
-   - 삭제: 150개
-   - 삽입: 155개
-
-🔍 [Step 2/3] 크롤링 및 노출 체크 시작...
-[1/155] 스마일라식 ✅
-...
-
-📥 [Step 3/3] 노출 현황 시트에 적용...
-✅ [Step 3/3] 완료
-   - 업데이트: 155개
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ [CRON] 전체 워크플로우 완료!
-⏱️  소요 시간: 330.5초
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+pnpm build
+pm2 start ecosystem.config.cjs --env production
+pm2 logs blog-cron-bot-keywords
+pm2 logs blog-cron-bot-root
 ```
-
-매일 오전 8시에 자동으로 실행됩니다! 🎉

@@ -7,6 +7,7 @@
 - 빌드/프로덕션: `pnpm build` 후 `pnpm start`
 - 스모크: `pnpm test` (네트워크/DB 사용)
 - 웹 실험 서버: `pnpm web` (요청 있을 때만 실행)
+- Ubuntu EC2 배포: `docs/ec2-ubuntu.md`
 
 # Code & HTTP Rules
 - Strict TS, 2-space indent, CJS module. 기존 상대 경로 패턴 유지(별도 경로 alias 없음).
