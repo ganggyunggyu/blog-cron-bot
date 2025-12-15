@@ -23,9 +23,7 @@ const getGotScrapingClient = async (): Promise<GotScrapingClient> => {
 
 export const buildNaverSearchUrl = (query: string): string => {
   const q = getSearchQuery(query);
-  return `https://m.search.naver.com/search.naver?query=${encodeURIComponent(
-    q
-  )}`;
+  return `https://search.naver.com/search.naver?query=${encodeURIComponent(q)}`;
 };
 
 export const fetchHtml = async (

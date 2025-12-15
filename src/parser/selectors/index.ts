@@ -23,6 +23,7 @@ export interface PopularSelectorConfig {
   snippetImageTitle: string;
   snippetImageHeadline: string;
   snippetImageProfile: string;
+  snippetImageImage: string;
 }
 
 export const DEFAULT_SELECTORS: PopularSelectorConfig = {
@@ -52,6 +53,7 @@ export const DEFAULT_SELECTORS: PopularSelectorConfig = {
   snippetImageTitle: 'a.RHXjrlEdF5ThcSmmhH8g',
   snippetImageHeadline: '.sds-comps-text-type-headline1',
   snippetImageProfile: '.sds-comps-profile-info-title-text a',
+  snippetImageImage: '.sds-comps-image img',
 } as const;
 
 export const updateSelectors = (
