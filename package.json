@@ -15,6 +15,10 @@
     "web:strict": "ts-node src/web/server/index.ts",
     "cron": "ts-node src/cron.ts",
     "cron:test": "cross-env TEST_DELAY_MINUTES=1 ts-node src/cron.ts",
+    "scheduler": "ts-node src/pm2-scheduler.ts",
+    "scheduler:test": "cross-env TEST_DELAY_MINUTES=1 ts-node src/pm2-scheduler.ts",
+    "scheduler:root": "ts-node src/pm2-scheduler-root.ts",
+    "scheduler:root:test": "cross-env TEST_DELAY_MINUTES=1 ts-node src/pm2-scheduler-root.ts",
     "cron:root": "ts-node src/cron-root.ts"
   },
   "dependencies": {

@@ -4,7 +4,8 @@ output/*.csv
 debug/
 .env
 .DS_Store
-/*.log
+*.log
+.scheduler-state*.json
 
-/*.pem
-/logs
+*.pem
+logs/
