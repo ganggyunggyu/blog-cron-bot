@@ -1,7 +1,7 @@
 import { ExposureResult } from '../../matcher';
 import { VendorMatchDetails } from '../../types';
 import {
-  extractPostVendorName,
+  extractPostVendorNames,
   fetchResolvedPostHtml,
 } from '../vendor-extractor';
 
@@ -40,11 +40,14 @@ export const findMatchingPost = async (
       // VENDOR 체크
       try {
         const candidateHtml = await fetchResolvedPostHtml(candidate.postLink);
-        candidateVendor = extractPostVendorName(candidateHtml);
+        const candidateVendors = extractPostVendorNames(candidateHtml);
 
-        if (candidateVendor) {
+        // 모든 업체명에 대해 매칭 체크
+        for (const vendor of candidateVendors) {
+          if (!vendor) continue;
+
           const result = checkVendorMatch(
-            candidateVendor,
+            vendor,
             vendorTarget,
             restaurantName,
             queueIdx
@@ -53,8 +56,15 @@ export const findMatchingPost = async (
           if (result.matched) {
             candidatePassed = true;
             candidateSource = 'VENDOR';
+            candidateVendor = vendor;
             candidateVendorDetails = result.details;
+            break;
           }
+        }
+
+        // 매칭 안 됐어도 첫 번째 업체명은 기록
+        if (!candidateVendor && candidateVendors.length > 0) {
+          candidateVendor = candidateVendors[0];
         }
       } catch (err) {
         console.warn(
