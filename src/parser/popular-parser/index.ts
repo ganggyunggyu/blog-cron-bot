@@ -1,7 +1,6 @@
 import * as cheerio from 'cheerio';
 import { DEFAULT_SELECTORS } from '../selectors';
 import { fetchHtml } from '../../crawler';
-import { NAVER_DESKTOP_HEADERS } from '../../constants';
 
 export interface PopularItem {
   title: string;
@@ -13,6 +12,7 @@ export interface PopularItem {
   blogLink: string;
   blogName: string;
   positionWithCafe?: number;
+  isNewLogic?: boolean;
 }
 
 const SELECTORS = DEFAULT_SELECTORS;
@@ -31,14 +31,22 @@ export const extractPopularItems = (html: string): PopularItem[] => {
     $singleIntentionSections.each((_, section) => {
       const $section = $(section);
 
-      const headline = $section
-        .parent()
-        .find('.fds-header .sds-comps-header-left .sds-comps-text-ellipsis-1')
-        .first()
-        .text()
-        .trim();
+      const headline =
+        $section
+          .parent()
+          .find('.sds-comps-header-title h2')
+          .first()
+          .text()
+          .trim() ||
+        $section
+          .parent()
+          .find('.fds-header .sds-comps-header-left .sds-comps-text-ellipsis-1')
+          .first()
+          .text()
+          .trim();
 
       const topicName = headline || '인기글';
+      const isNewItem = !headline;
 
       const $items = $section.find(SELECTORS.intentionItem);
 
@@ -75,6 +83,7 @@ export const extractPopularItems = (html: string): PopularItem[] => {
             blogLink: blogHref,
             blogName,
             positionWithCafe: globalPosition,
+            isNewLogic: isNewItem,
           });
         }
       });
@@ -87,14 +96,22 @@ export const extractPopularItems = (html: string): PopularItem[] => {
     $snippetParagraphSections.each((_, section) => {
       const $section = $(section);
 
-      const headline = $section
-        .parent()
-        .find('.fds-header .sds-comps-header-left .sds-comps-text-ellipsis-1')
-        .first()
-        .text()
-        .trim();
+      const headline =
+        $section
+          .parent()
+          .find('.sds-comps-header-title h2')
+          .first()
+          .text()
+          .trim() ||
+        $section
+          .parent()
+          .find('.fds-header .sds-comps-header-left .sds-comps-text-ellipsis-1')
+          .first()
+          .text()
+          .trim();
 
       const topicName = headline || '스니펫';
+      const isNewItem = !headline;
 
       const $items = $section.find(SELECTORS.snippetItem);
 
@@ -130,6 +147,7 @@ export const extractPopularItems = (html: string): PopularItem[] => {
             blogLink: blogHref,
             blogName,
             positionWithCafe: globalPosition,
+            isNewLogic: isNewItem,
           });
         }
       });
@@ -142,14 +160,22 @@ export const extractPopularItems = (html: string): PopularItem[] => {
     $snippetImageSections.each((_, section) => {
       const $section = $(section);
 
-      const headline = $section
-        .parent()
-        .find('.fds-header .sds-comps-header-left .sds-comps-text-ellipsis-1')
-        .first()
-        .text()
-        .trim();
+      const headline =
+        $section
+          .parent()
+          .find('.sds-comps-header-title h2')
+          .first()
+          .text()
+          .trim() ||
+        $section
+          .parent()
+          .find('.fds-header .sds-comps-header-left .sds-comps-text-ellipsis-1')
+          .first()
+          .text()
+          .trim();
 
       const topicName = headline || '스니펫 이미지';
+      const isNewItem = !headline;
 
       const $items = $section.find(SELECTORS.snippetImageItem);
 
@@ -182,6 +208,7 @@ export const extractPopularItems = (html: string): PopularItem[] => {
             blogLink: blogHref,
             blogName,
             positionWithCafe: globalPosition,
+            isNewLogic: isNewItem,
           });
         }
       });
@@ -201,7 +228,7 @@ export const extractPopularItems = (html: string): PopularItem[] => {
 export const fetchAndParsePopular = async (
   url: string
 ): Promise<PopularItem[]> => {
-  const html = await fetchHtml(url, NAVER_DESKTOP_HEADERS);
+  const html = await fetchHtml(url);
   return extractPopularItems(html);
 };
 

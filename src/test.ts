@@ -6,7 +6,6 @@ import { extractPopularItems } from './parser';
 import { matchBlogs, ExposureResult, extractBlogId } from './matcher';
 
 import { connectDB, disconnectDB, getAllKeywords } from './database';
-import { NAVER_DESKTOP_HEADERS } from './constants';
 
 dotenv.config();
 
@@ -233,19 +232,19 @@ function extractPostVendorName(html: string): string {
 
 async function fetchResolvedPostHtml(url: string): Promise<string> {
   try {
-    const outer = await fetchHtml(url, NAVER_DESKTOP_HEADERS);
+    const outer = await fetchHtml(url);
     if (outer && outer.includes('id="mainFrame"')) {
       const $ = cheerio.load(outer);
       const src = $('#mainFrame').attr('src') || '';
       if (src) {
         const abs = new URL(src, url).toString();
         try {
-          const inner = await fetchHtml(abs, NAVER_DESKTOP_HEADERS);
+          const inner = await fetchHtml(abs);
           if (containsVendorSelectors(inner)) return inner;
           const murl = buildMobilePostUrl(url, abs);
           if (murl) {
             try {
-              const mhtml = await fetchHtml(murl, NAVER_DESKTOP_HEADERS);
+              const mhtml = await fetchHtml(murl);
               if (containsVendorSelectors(mhtml)) return mhtml;
             } catch {}
           }
@@ -254,7 +253,7 @@ async function fetchResolvedPostHtml(url: string): Promise<string> {
           const murl = buildMobilePostUrl(url, src);
           if (murl) {
             try {
-              const mhtml = await fetchHtml(murl, NAVER_DESKTOP_HEADERS);
+              const mhtml = await fetchHtml(murl);
               if (containsVendorSelectors(mhtml)) return mhtml;
             } catch {}
           }
@@ -266,7 +265,7 @@ async function fetchResolvedPostHtml(url: string): Promise<string> {
       const murl = buildMobilePostUrl(url);
       if (murl) {
         try {
-          const mhtml = await fetchHtml(murl, NAVER_DESKTOP_HEADERS);
+          const mhtml = await fetchHtml(murl);
           if (containsVendorSelectors(mhtml)) return mhtml;
         } catch {}
       }

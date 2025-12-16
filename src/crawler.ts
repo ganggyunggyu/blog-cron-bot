@@ -1,7 +1,13 @@
-import { getRandomHeaders } from './constants';
 import { getSearchQuery } from './utils';
 
 type GotScrapingClient = typeof import('got-scraping').gotScraping;
+
+const generateAckey = (): string => {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  return Array.from({ length: 8 }, () =>
+    chars.charAt(Math.floor(Math.random() * chars.length))
+  ).join('');
+};
 
 let gotScrapingClient: GotScrapingClient | null = null;
 
@@ -23,16 +29,23 @@ const getGotScrapingClient = async (): Promise<GotScrapingClient> => {
 
 export const buildNaverSearchUrl = (query: string): string => {
   const q = getSearchQuery(query);
-  return `https://search.naver.com/search.naver?query=${encodeURIComponent(q)}`;
+  return `https://search.naver.com/search.naver?where=nexearch&sm=top_hty&fbm=0&ie=utf8&query=${encodeURIComponent(
+    q
+  )}&ackey=${generateAckey()}`;
 };
 
-export const fetchHtml = async (
-  url: string,
-  headers: Record<string, string>
-): Promise<string> => {
+export const fetchHtml = async (url: string): Promise<string> => {
   const client = await getGotScrapingClient();
   const response = await client.get(url, {
-    headers,
+    headerGeneratorOptions: {
+      browsers: ['chrome'],
+      devices: ['desktop'],
+      operatingSystems: ['windows'],
+      locales: ['ko-KR'],
+    },
+    headers: {
+      Referer: 'https://www.naver.com/',
+    },
     http2: true,
     timeout: { request: 30000 },
     throwHttpErrors: false,
@@ -63,8 +76,7 @@ export const crawlWithRetry = async (
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const url = buildNaverSearchUrl(query);
-      const headers = getRandomHeaders();
-      const html = await fetchHtml(url, headers);
+      const html = await fetchHtml(url);
 
       return html;
     } catch (error) {

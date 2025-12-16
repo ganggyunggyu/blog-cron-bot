@@ -1,40 +1,66 @@
 import * as cheerio from 'cheerio';
 import { fetchHtml } from '../../crawler';
-import { NAVER_DESKTOP_HEADERS } from '../../constants';
 
 /**
- * 네이버 블로그 포스트 HTML에서 업체명(가게명) 추출
+ * 네이버 블로그 포스트 HTML에서 모든 업체명(가게명) 추출 (배열)
  */
-export function extractPostVendorName(html: string): string {
-  if (!html) return '';
+export function extractPostVendorNames(html: string): string[] {
+  if (!html) return [];
   try {
     const $ = cheerio.load(html);
-    // 1) Prefer se-oglink-title first
-    const titleText = $('.se-oglink-title').first().text().trim();
-    if (titleText) {
-      // "네이버 지도" 또는 "네이버지도" → summary에서 업체명 추출
+    const vendors: string[] = [];
+
+    // 1) se-oglink-title (OG 링크)
+    $('.se-oglink-title').each((_, el) => {
+      const titleText = $(el).text().trim();
+      if (!titleText) return;
+
       const titleNorm = titleText.replace(/\s+/g, '');
       if (titleNorm === '네이버지도') {
-        const summaryText = $('.se-oglink-summary').first().text().trim();
-        return summaryText || titleText;
+        // 네이버 지도 링크면 summary에서 업체명 추출
+        const summaryText = $(el)
+          .closest('.se-oglink-info')
+          .find('.se-oglink-summary')
+          .first()
+          .text()
+          .trim();
+        if (summaryText) vendors.push(summaryText);
+      } else {
+        // "가게명 : 네이버" 패턴 처리
+        const m = titleText.match(/^(.+?)\s*:\s*네이버\s*$/);
+        if (m) {
+          vendors.push((m[1] || '').trim());
+        } else {
+          const parts = titleText.split(/\s*[:\-]\s*/);
+          const head = (parts[0] || '').trim();
+          vendors.push(head || titleText);
+        }
       }
-      // Pattern like "가게명 : 네이버" → extract left part
-      const m = titleText.match(/^(.+?)\s*:\s*네이버\s*$/);
-      if (m) return (m[1] || '').trim();
-      // Fallback: split by common delimiters
-      const parts = titleText.split(/\s*[:\-]\s*/);
+    });
+
+    // 2) se-map-title (지도 컴포넌트)
+    $('.se-map-title').each((_, el) => {
+      const mapText = $(el).text().trim();
+      if (!mapText) return;
+      const parts = mapText.split(/\s*[:\-]\s*/);
       const head = (parts[0] || '').trim();
-      return head || titleText;
-    }
-    // 2) Fallback to se-map-title
-    const mapText = $('.se-map-title').first().text().trim();
-    if (!mapText) return '';
-    const parts = mapText.split(/\s*[:\-]\s*/);
-    const head = (parts[0] || '').trim();
-    return head || mapText;
+      vendors.push(head || mapText);
+    });
+
+    // 중복 제거
+    return [...new Set(vendors)];
   } catch {
-    return '';
+    return [];
   }
+}
+
+/**
+ * 네이버 블로그 포스트 HTML에서 업체명(가게명) 추출 (첫 번째만)
+ * @deprecated extractPostVendorNames 사용 권장
+ */
+export function extractPostVendorName(html: string): string {
+  const vendors = extractPostVendorNames(html);
+  return vendors[0] || '';
 }
 
 /**
@@ -42,7 +68,7 @@ export function extractPostVendorName(html: string): string {
  */
 export async function fetchResolvedPostHtml(url: string): Promise<string> {
   try {
-    const outer = await fetchHtml(url, NAVER_DESKTOP_HEADERS);
+    const outer = await fetchHtml(url);
     // Naver desktop blog often loads content inside #mainFrame iframe
     if (outer && outer.includes('id="mainFrame"')) {
       const $ = cheerio.load(outer);
@@ -50,13 +76,13 @@ export async function fetchResolvedPostHtml(url: string): Promise<string> {
       if (src) {
         const abs = new URL(src, url).toString();
         try {
-          const inner = await fetchHtml(abs, NAVER_DESKTOP_HEADERS);
+          const inner = await fetchHtml(abs);
           if (containsVendorSelectors(inner)) return inner;
           // fallback to mobile if still not present
           const murl = buildMobilePostUrl(url, abs);
           if (murl) {
             try {
-              const mhtml = await fetchHtml(murl, NAVER_DESKTOP_HEADERS);
+              const mhtml = await fetchHtml(murl);
               if (containsVendorSelectors(mhtml)) return mhtml;
             } catch {}
           }
@@ -66,7 +92,7 @@ export async function fetchResolvedPostHtml(url: string): Promise<string> {
           const murl = buildMobilePostUrl(url, src);
           if (murl) {
             try {
-              const mhtml = await fetchHtml(murl, NAVER_DESKTOP_HEADERS);
+              const mhtml = await fetchHtml(murl);
               if (containsVendorSelectors(mhtml)) return mhtml;
             } catch {}
           }
@@ -79,7 +105,7 @@ export async function fetchResolvedPostHtml(url: string): Promise<string> {
       const murl = buildMobilePostUrl(url);
       if (murl) {
         try {
-          const mhtml = await fetchHtml(murl, NAVER_DESKTOP_HEADERS);
+          const mhtml = await fetchHtml(murl);
           if (containsVendorSelectors(mhtml)) return mhtml;
         } catch {}
       }
