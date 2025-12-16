@@ -16,7 +16,8 @@ export type UpdateFunction = (
   rank?: number,
   postVendorName?: string,
   rankWithCafe?: number,
-  isUpdateRequired?: boolean
+  isUpdateRequired?: boolean,
+  isNewLogic?: boolean
 ) => Promise<void>;
 
 /** processKeywords 옵션 */
@@ -97,6 +98,7 @@ export interface ExcludedParams {
   company: string;
   processing: ProcessingContext;
   updateFunction: UpdateFunction;
+  isNewLogic: boolean;
 }
 
 /** handleQueueEmpty 파라미터 */

@@ -8,9 +8,10 @@ import {
   SuccessParams,
   FilterFailureParams,
 } from './types';
+import { getIsNewLogic } from './keyword-classifier';
 
 export const handleExcluded = async (params: ExcludedParams): Promise<void> => {
-  const { keyword, company, processing, updateFunction } = params;
+  const { keyword, company, processing, updateFunction, isNewLogic } = params;
   const { keywordDoc, query, searchQuery, restaurantName, keywordType } =
     keyword;
   const { globalIndex, totalKeywords, keywordStartTime, logBuilder } =
@@ -34,7 +35,8 @@ export const handleExcluded = async (params: ExcludedParams): Promise<void> => {
     0,
     '',
     0,
-    false
+    false,
+    isNewLogic
   );
 
   const excludedLog = logBuilder.createExcluded({
@@ -51,7 +53,7 @@ export const handleExcluded = async (params: ExcludedParams): Promise<void> => {
 export const handleQueueEmpty = async (
   params: QueueEmptyParams
 ): Promise<void> => {
-  const { keyword, processing, updateFunction } = params;
+  const { keyword, html, processing, updateFunction } = params;
   const {
     keywordDoc,
     query,
@@ -60,8 +62,11 @@ export const handleQueueEmpty = async (
     vendorTarget,
     keywordType,
   } = keyword;
+  const { topicNamesArray } = html;
   const { globalIndex, totalKeywords, keywordStartTime, logBuilder } =
     processing;
+
+  const isNewLogic = getIsNewLogic(topicNamesArray);
 
   progressLogger.failure({
     index: globalIndex,
@@ -82,7 +87,8 @@ export const handleQueueEmpty = async (
     0,
     '',
     0,
-    false
+    false,
+    isNewLogic
   );
 
   const queueEmptyLog = logBuilder.createFailure({
@@ -149,6 +155,8 @@ export const handleSuccess = async (params: SuccessParams): Promise<void> => {
     }
   }
 
+  const isNewLogic = getIsNewLogic(topicNamesArray);
+
   await updateFunction(
     String(keywordDoc._id),
     true,
@@ -160,7 +168,8 @@ export const handleSuccess = async (params: SuccessParams): Promise<void> => {
     nextMatch.position,
     extractedVendor,
     nextMatch.positionWithCafe,
-    isUpdateRequired
+    isUpdateRequired,
+    isNewLogic
   );
 
   allResults.push(nextMatch);
@@ -214,6 +223,8 @@ export const handleFilterFailure = async (
   const { globalIndex, totalKeywords, keywordStartTime, logBuilder } =
     processing;
 
+  const isNewLogic = getIsNewLogic(topicNamesArray);
+
   progressLogger.failure({
     index: globalIndex,
     total: totalKeywords,
@@ -233,7 +244,8 @@ export const handleFilterFailure = async (
     0,
     '',
     0,
-    false
+    false,
+    isNewLogic
   );
 
   const filterFailureLog = logBuilder.createFilterFailure({

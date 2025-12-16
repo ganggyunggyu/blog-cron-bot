@@ -15,6 +15,7 @@ export interface IKeyword extends Document {
   rank?: number;
   rankWithCafe?: number; // 인기글인 경우 카페 포함 순위
   isUpdateRequired?: boolean; // 포스트 수정 필요 여부 (식당 키워드만)
+  isNewLogic?: boolean; // 네이버 새 로직 여부
   createdAt: Date;
   updatedAt: Date;
 }
@@ -35,6 +36,7 @@ const KeywordSchema: Schema = new Schema(
     rank: { type: Number, default: 0 },
     rankWithCafe: { type: Number, default: 0 }, // 인기글인 경우 카페 포함 순위
     isUpdateRequired: { type: Boolean, default: false }, // 포스트 수정 필요 여부
+    isNewLogic: { type: Boolean, default: false }, // 네이버 새 로직 여부
   },
   {
     timestamps: true,
@@ -57,6 +59,7 @@ export interface IRootKeyword extends Document {
   rank?: number;
   rankWithCafe?: number;
   isUpdateRequired?: boolean;
+  isNewLogic?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -76,6 +79,7 @@ const RootKeywordSchema: Schema = new Schema(
     rank: { type: Number, default: 0 },
     rankWithCafe: { type: Number, default: 0 },
     isUpdateRequired: { type: Boolean, default: false },
+    isNewLogic: { type: Boolean, default: false },
   },
   {
     timestamps: true,
@@ -136,7 +140,8 @@ export const updateKeywordResult = async (
   rank?: number,
   postVendorName?: string,
   rankWithCafe?: number,
-  isUpdateRequired?: boolean
+  isUpdateRequired?: boolean,
+  isNewLogic?: boolean
 ): Promise<void> => {
   try {
     const update: Partial<IKeyword> = {
@@ -156,6 +161,7 @@ export const updateKeywordResult = async (
     if (typeof rankWithCafe !== 'undefined') update.rankWithCafe = rankWithCafe;
     if (typeof isUpdateRequired !== 'undefined')
       update.isUpdateRequired = isUpdateRequired;
+    if (typeof isNewLogic !== 'undefined') update.isNewLogic = isNewLogic;
 
     await Keyword.findByIdAndUpdate(keywordId, update);
   } catch (error) {
@@ -175,7 +181,8 @@ export const updateRootKeywordResult = async (
   rank?: number,
   postVendorName?: string,
   rankWithCafe?: number,
-  isUpdateRequired?: boolean
+  isUpdateRequired?: boolean,
+  isNewLogic?: boolean
 ): Promise<void> => {
   try {
     const update: Partial<IRootKeyword> = {
@@ -195,6 +202,7 @@ export const updateRootKeywordResult = async (
     if (typeof rankWithCafe !== 'undefined') update.rankWithCafe = rankWithCafe;
     if (typeof isUpdateRequired !== 'undefined')
       update.isUpdateRequired = isUpdateRequired;
+    if (typeof isNewLogic !== 'undefined') update.isNewLogic = isNewLogic;
 
     await RootKeyword.findByIdAndUpdate(keywordId, update);
   } catch (error) {

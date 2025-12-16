@@ -10,7 +10,8 @@ export interface ExposureResult {
   exposureType: string;
   topicName: string;
   position: number;
-  positionWithCafe?: number; // 인기글인 경우 카페 포함 순위
+  positionWithCafe?: number;
+  isNewLogic?: boolean;
 }
 
 export const extractBlogId = (blogUrl: string): string => {
@@ -59,13 +60,12 @@ export const matchBlogs = (
     const accept = allowAnyBlog ? !!blogId : blogId && allowedIds.has(blogId);
     if (accept) {
       const exposureType = isPopular ? '인기글' : '스블';
-      const topicName = isPopular ? '' : item.group;
+      const topicName = item.group;
 
       const position = isPopular
         ? index + 1
         : itemPositions.get(item) || index + 1;
 
-      // 인기글인 경우 카페 포함 순위 추가
       const positionWithCafe = isPopular ? item.positionWithCafe : undefined;
 
       results.push({
@@ -78,6 +78,7 @@ export const matchBlogs = (
         topicName,
         position,
         positionWithCafe,
+        isNewLogic: item.isNewLogic ?? false,
       });
     }
   });

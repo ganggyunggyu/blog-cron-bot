@@ -22,6 +22,7 @@ import {
   shouldExclude,
   getKeywordType,
   getVendorTarget,
+  getIsNewLogic,
 } from './keyword-classifier';
 import { getCrawlResult } from './crawl-manager';
 
@@ -59,11 +60,30 @@ export const processKeywords = async (
     globalIndex++;
     const keywordStartTime = Date.now();
 
-    // ⚠️ 프로그램 제외 대상 체크
     const restaurantName = extractRestaurantName(keywordDoc, query);
     const company = String((keywordDoc as any).company || '').trim();
     const keywordType = getKeywordType(keywordDoc, restaurantName);
 
+    // 3️⃣ 크롤링 먼저 실행 (isNewLogic 판단을 위해)
+    const crawlResult = await getCrawlResult(
+      searchQuery,
+      keywordDoc,
+      query,
+      globalIndex,
+      keywords.length,
+      keywordStartTime,
+      keywordType,
+      caches,
+      logBuilder,
+      updateFunction
+    );
+
+    if (!crawlResult) continue;
+
+    const { items, isPopular, uniqueGroupsSize, topicNamesArray } = crawlResult;
+    const isNewLogic = getIsNewLogic(topicNamesArray);
+
+    // ⚠️ 프로그램 제외 대상 체크 (크롤링 후 판단)
     if (shouldExclude(company, query)) {
       await handleExcluded({
         keyword: {
@@ -82,27 +102,10 @@ export const processKeywords = async (
           logBuilder,
         },
         updateFunction,
+        isNewLogic,
       });
       continue;
     }
-
-    // 3️⃣ 크롤링 또는 캐시 사용
-    const crawlResult = await getCrawlResult(
-      searchQuery,
-      keywordDoc,
-      query,
-      globalIndex,
-      keywords.length,
-      keywordStartTime,
-      keywordType,
-      caches,
-      logBuilder,
-      updateFunction
-    );
-
-    if (!crawlResult) continue;
-
-    const { items, isPopular, uniqueGroupsSize, topicNamesArray } = crawlResult;
 
     // 4️⃣ 큐 가져오기
     const matchQueue = caches.matchQueueMap.get(searchQuery)!;

@@ -69,3 +69,11 @@ export const getKeywordType = (
   // 3. 나머지는 basic
   return 'basic';
 };
+
+/** 주제 목록으로 isNewLogic 판단 (기본값만 있으면 새 로직) */
+const DEFAULT_TOPICS = ['인기글', '스니펫', '스니펫 이미지'];
+
+export const getIsNewLogic = (topicNames: string[]): boolean => {
+  if (topicNames.length === 0) return false;
+  return topicNames.every((topic) => DEFAULT_TOPICS.includes(topic));
+};
