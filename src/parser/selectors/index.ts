@@ -40,7 +40,7 @@ export const DEFAULT_SELECTORS: PopularSelectorConfig = {
   // Snippet Paragraph (스블)
   snippetParagraphList: '.fds-ugc-snippet-paragraph-item-list',
   snippetItem: '[data-template-type="snippetParagraph"]',
-  snippetTitle: 'a.QCvLchZmBzziK2un6REU',
+  snippetTitle: 'a:has(.sds-comps-text-type-headline1)',
   snippetHeadline: '.sds-comps-text-type-headline1',
   snippetPreview: '.sds-comps-text-type-body1',
   snippetProfile: '.sds-comps-profile-info-title-text a',
@@ -49,7 +49,7 @@ export const DEFAULT_SELECTORS: PopularSelectorConfig = {
   // Snippet Image (스이)
   snippetImageList: '.fds-ugc-snippet-image-item-list',
   snippetImageItem: '[data-template-type="snippetImage"]',
-  snippetImageTitle: 'a.RHXjrlEdF5ThcSmmhH8g',
+  snippetImageTitle: 'a:has(.sds-comps-text-type-headline1)',
   snippetImageHeadline: '.sds-comps-text-type-headline1',
   snippetImageProfile: '.sds-comps-profile-info-title-text a',
 } as const;
