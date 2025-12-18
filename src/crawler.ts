@@ -1,6 +1,22 @@
 import { getSearchQuery } from './utils';
+import 'dotenv/config';
 
 type GotScrapingClient = typeof import('got-scraping').gotScraping;
+
+const buildNaverCookie = (): string | undefined => {
+  const nidAut = process.env.NAVER_NID_AUT;
+  const nidSes = process.env.NAVER_NID_SES;
+  const mLoc = process.env.NAVER_M_LOC;
+
+  if (nidAut && nidSes) {
+    let cookie = `NID_AUT=${nidAut}; NID_SES=${nidSes}`;
+    if (mLoc) {
+      cookie += `; m_loc=${mLoc}`;
+    }
+    return cookie;
+  }
+  return undefined;
+};
 
 const generateAckey = (): string => {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -36,6 +52,16 @@ export const buildNaverSearchUrl = (query: string): string => {
 
 export const fetchHtml = async (url: string): Promise<string> => {
   const client = await getGotScrapingClient();
+  const cookie = buildNaverCookie();
+
+  const headers: Record<string, string> = {
+    Referer: 'https://www.naver.com/',
+  };
+
+  if (cookie) {
+    headers.Cookie = cookie;
+  }
+
   const response = await client.get(url, {
     headerGeneratorOptions: {
       browsers: ['chrome'],
@@ -43,9 +69,7 @@ export const fetchHtml = async (url: string): Promise<string> => {
       operatingSystems: ['windows'],
       locales: ['ko-KR'],
     },
-    headers: {
-      Referer: 'https://www.naver.com/',
-    },
+    headers,
     http2: true,
     timeout: { request: 30000 },
     throwHttpErrors: false,
