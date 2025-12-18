@@ -10,12 +10,24 @@ import { saveToCSV } from './csv-writer';
 import { createDetailedLogBuilder, saveDetailedLogs } from './logs';
 import { processKeywords } from './lib/keyword-processor';
 import { ROOT_CONFIG, SHEET_APP_URL } from './constants';
+import { checkNaverLogin } from './lib/check-naver-login';
 import axios from 'axios';
 
 dotenv.config();
 
 export async function main() {
   const startTime = Date.now();
+
+  // 로그인 상태 확인
+  const loginStatus = await checkNaverLogin();
+  console.log('='.repeat(50));
+  if (loginStatus.isLoggedIn) {
+    console.log(`🔐 로그인 모드: ${loginStatus.userName} (${loginStatus.email})`);
+  } else {
+    console.log('🌐 비로그인 모드');
+  }
+  console.log('='.repeat(50) + '\n');
+
   type RootResponseType = { deleted: number; inserted: number };
   const mongoUri = process.env.MONGODB_URI;
   if (!mongoUri) {
