@@ -1,6 +1,6 @@
 import { ExposureResult } from '../../matcher';
 import { DetailedLogBuilder } from '../../logs/detailed-log';
-import { VendorMatchDetails } from '../../types';
+import { VendorMatchDetails, GuestRetryComparison } from '../../types';
 
 export type KeywordType = 'restaurant' | 'pet' | 'basic';
 
@@ -70,6 +70,8 @@ export interface CrawlCaches {
     uniqueGroups: number;
     topicNames: string[];
   }>;
+  /** 비로그인 재시도에서 이미 추가된 포스트 링크 (중복 방지) */
+  guestAddedLinksCache: Map<string, Set<string>>;
 }
 
 /** 매칭 결과 정보 */
@@ -117,6 +119,7 @@ export interface SuccessParams {
   processing: ProcessingContext;
   allResults: ExposureResult[];
   updateFunction: UpdateFunction;
+  guestRetryComparison?: GuestRetryComparison;
 }
 
 /** handleFilterFailure 파라미터 */
@@ -127,4 +130,5 @@ export interface FilterFailureParams {
   remainingQueueCount: number;
   processing: ProcessingContext;
   updateFunction: UpdateFunction;
+  guestRetryComparison?: GuestRetryComparison;
 }

@@ -3,6 +3,7 @@ import {
   MatchedPostInfo,
   VendorMatchDetails,
   TitleMatchDetails,
+  GuestRetryComparison,
 } from '../../types';
 
 interface HtmlStructure {
@@ -64,11 +65,15 @@ export class DetailedLogBuilder {
     });
   }
 
-  createFilterFailure(params: ParsedLogParams & { hasVendorTarget: boolean }): DetailedLog {
+  createFilterFailure(params: ParsedLogParams & {
+    hasVendorTarget: boolean;
+    guestRetryComparison?: GuestRetryComparison;
+  }): DetailedLog {
     const {
       index, keyword, searchQuery, restaurantName, vendorTarget,
       startTime, totalItemsParsed, htmlStructure,
       allMatchesCount, availableMatchesCount, hasVendorTarget,
+      guestRetryComparison,
     } = params;
 
     return {
@@ -82,6 +87,7 @@ export class DetailedLogBuilder {
       htmlStructure,
       allMatchesCount,
       availableMatchesCount,
+      guestRetryComparison,
       failureReason: hasVendorTarget
         ? 'VENDOR 및 TITLE 필터링 모두 실패'
         : 'TITLE 필터링 실패 (토큰 미포함)',
@@ -96,6 +102,7 @@ export class DetailedLogBuilder {
       matchedPost: MatchedPostInfo;
       vendorMatchDetails?: VendorMatchDetails;
       titleMatchDetails?: TitleMatchDetails;
+      guestRetryComparison?: GuestRetryComparison;
     }
   ): DetailedLog {
     const {
@@ -103,6 +110,7 @@ export class DetailedLogBuilder {
       startTime, totalItemsParsed, htmlStructure,
       allMatchesCount, availableMatchesCount,
       matchSource, matchedPost, vendorMatchDetails, titleMatchDetails,
+      guestRetryComparison,
     } = params;
 
     return {
@@ -120,6 +128,7 @@ export class DetailedLogBuilder {
       matchedPost,
       vendorMatchDetails,
       titleMatchDetails,
+      guestRetryComparison,
       timestamp: new Date().toISOString(),
       processingTime: Date.now() - startTime,
     };

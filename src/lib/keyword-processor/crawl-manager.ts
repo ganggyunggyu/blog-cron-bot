@@ -5,6 +5,7 @@ import { getSheetOptions } from '../../sheet-config';
 import { DetailedLogBuilder } from '../../logs/detailed-log';
 import { progressLogger } from '../../logs/progress-logger';
 import { CRAWL_CONFIG } from '../../constants';
+import { logger } from '../logger';
 import { KeywordType, CrawlCaches, UpdateFunction } from './types';
 import { extractRestaurantName } from './keyword-classifier';
 
@@ -36,8 +37,6 @@ export const getCrawlResult = async (
 
   if (!crawlCache.has(searchQuery)) {
     // 첫 크롤링
-    progressLogger.newCrawl(searchQuery);
-
     const sheetOpts = getSheetOptions((keywordDoc as any).sheetType);
 
     try {
@@ -59,18 +58,15 @@ export const getCrawlResult = async (
           : !!sheetOpts.allowAnyBlog;
 
       const allMatches = matchBlogs(query, items, { allowAnyBlog });
-      console.log(
-        `[CRAWL] 파싱: ${items.length}개 → 매칭: ${allMatches.length}개`
-      );
 
       const uniqueGroups = new Set(items.map((item: any) => item.group));
       isPopular = uniqueGroups.size === 1;
       uniqueGroupsSize = uniqueGroups.size;
       topicNamesArray = Array.from(uniqueGroups);
-      const topicNamesStr = topicNamesArray.join(', ');
-      console.log(
-        `[TYPE] ${isPopular ? '인기글 (단일 그룹)' : `스블 (${topicNamesStr})`}`
-      );
+
+      // 크롤링 결과 한 줄로 출력
+      const typeStr = isPopular ? '인기글' : '스블';
+      progressLogger.newCrawl(searchQuery, items.length, allMatches.length, typeStr);
 
       // 캐시에 저장
       crawlCache.set(searchQuery, html);
@@ -82,14 +78,11 @@ export const getCrawlResult = async (
         topicNames: topicNamesArray,
       });
 
-      console.log(`[QUEUE] 초기 큐 크기: ${allMatches.length}개\n`);
+      progressLogger.queueChange(0, allMatches.length, 'init');
 
       await randomDelay(CRAWL_CONFIG.delayBetweenQueries, CRAWL_CONFIG.delayBetweenQueries * 2);
     } catch (error) {
-      console.error(
-        `\n❌ 검색어 "${searchQuery}" 크롤링 에러:`,
-        (error as Error).message
-      );
+      logger.error(`검색어 "${searchQuery}" 크롤링 에러: ${(error as Error).message}`);
 
       const restaurantName = extractRestaurantName(keywordDoc, query);
 

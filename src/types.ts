@@ -26,6 +26,25 @@ export interface MatchedPostInfo {
   extractedVendor: string;
 }
 
+/** 비로그인 재시도 비교 정보 */
+export interface GuestRetryComparison {
+  attempted: boolean; // 비로그인 재시도 시도 여부
+  recovered: boolean; // 비로그인으로 노출 복구 성공 여부
+  loginTopics: string[]; // 로그인 상태 인기주제
+  guestTopics: string[]; // 비로그인 상태 인기주제
+  onlyInLogin: string[]; // 로그인에만 있는 주제
+  onlyInGuest: string[]; // 비로그인에만 있는 주제
+  commonTopics: string[]; // 공통 주제
+  loginMatchCount: number; // 로그인 매칭 수
+  guestMatchCount: number; // 비로그인 매칭 수
+  newMatchCount: number; // 신규 매칭 수 (비로그인 전용)
+  newPosts?: { // 비로그인 전용 포스트
+    blogName: string;
+    postTitle: string;
+    topicName: string;
+  }[];
+}
+
 export interface DetailedLog {
   index: number;
   keyword: string;
@@ -45,6 +64,7 @@ export interface DetailedLog {
   matchedPost?: MatchedPostInfo;
   vendorMatchDetails?: VendorMatchDetails;
   titleMatchDetails?: TitleMatchDetails;
+  guestRetryComparison?: GuestRetryComparison;
   failureReason?: string;
   timestamp: string;
   processingTime: number;

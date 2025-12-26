@@ -74,6 +74,8 @@ export const handleQueueEmpty = async (
     keyword: query,
     restaurantName,
     reason: '큐 소진',
+    queueBefore: 0,
+    queueAfter: 0,
   });
 
   await updateFunction(
@@ -104,7 +106,7 @@ export const handleQueueEmpty = async (
 };
 
 export const handleSuccess = async (params: SuccessParams): Promise<void> => {
-  const { keyword, html, match, processing, allResults, updateFunction } = params;
+  const { keyword, html, match, processing, allResults, updateFunction, guestRetryComparison } = params;
   const {
     keywordDoc,
     query,
@@ -139,6 +141,9 @@ export const handleSuccess = async (params: SuccessParams): Promise<void> => {
     vendor: extractedVendor || '-',
     title: displayTitle,
     source: matchSource,
+    queueBefore: remainingQueueCount + 1,
+    queueAfter: remainingQueueCount,
+    isGuestRecovered: guestRetryComparison?.recovered,
   });
 
   let isUpdateRequired: boolean | undefined = undefined;
@@ -202,6 +207,7 @@ export const handleSuccess = async (params: SuccessParams): Promise<void> => {
       extractedVendor,
     },
     vendorMatchDetails,
+    guestRetryComparison,
   });
   logBuilder.push(successLog);
 };
@@ -209,7 +215,7 @@ export const handleSuccess = async (params: SuccessParams): Promise<void> => {
 export const handleFilterFailure = async (
   params: FilterFailureParams
 ): Promise<void> => {
-  const { keyword, html, allMatchesCount, remainingQueueCount, processing, updateFunction } =
+  const { keyword, html, allMatchesCount, remainingQueueCount, processing, updateFunction, guestRetryComparison } =
     params;
   const {
     keywordDoc,
@@ -231,6 +237,8 @@ export const handleFilterFailure = async (
     keyword: query,
     restaurantName,
     reason: '필터링 실패',
+    queueBefore: remainingQueueCount,
+    queueAfter: remainingQueueCount,
   });
 
   await updateFunction(
@@ -264,6 +272,7 @@ export const handleFilterFailure = async (
     allMatchesCount,
     availableMatchesCount: remainingQueueCount,
     hasVendorTarget: !!vendorTarget,
+    guestRetryComparison,
   });
   logBuilder.push(filterFailureLog);
 };
