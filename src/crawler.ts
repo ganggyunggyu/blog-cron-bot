@@ -1,5 +1,6 @@
 import { getSearchQuery } from './utils';
 import 'dotenv/config';
+import { logger } from './lib/logger';
 
 type GotScrapingClient = typeof import('got-scraping').gotScraping;
 
@@ -87,6 +88,37 @@ export const fetchHtml = async (url: string): Promise<string> => {
   return response.body;
 };
 
+/** 비로그인 상태로 크롤링 (쿠키 없이) */
+export const fetchHtmlWithoutCookie = async (url: string): Promise<string> => {
+  const client = await getGotScrapingClient();
+
+  const response = await client.get(url, {
+    headerGeneratorOptions: {
+      browsers: ['chrome'],
+      devices: ['desktop'],
+      operatingSystems: ['windows'],
+      locales: ['ko-KR'],
+    },
+    headers: {
+      Referer: 'https://www.naver.com/',
+    },
+    http2: true,
+    timeout: { request: 30000 },
+    throwHttpErrors: false,
+  });
+
+  const status = response.statusCode ?? 0;
+  if (status < 200 || status >= 300) {
+    const error = new Error(`HTTP ${status}`) as Error & {
+      status: number;
+    };
+    error.status = status;
+    throw error;
+  }
+
+  return response.body;
+};
+
 export const delay = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -112,8 +144,8 @@ export const crawlWithRetry = async (
         const backoff = baseDelay * attempt;
         const jitter = Math.floor(Math.random() * 1000);
 
-        console.log(
-          `⚠️ ${err.message} - ${attempt}/${maxRetries} 재시도 (${Math.round(
+        logger.warn(
+          `${err.message} - ${attempt}/${maxRetries} 재시도 (${Math.round(
             (backoff + jitter) / 1000
           )}초 대기)`
         );
@@ -126,4 +158,39 @@ export const crawlWithRetry = async (
   }
 
   throw new Error('크롤링 실패');
+};
+
+/** 비로그인 상태로 크롤링 (재시도 포함) */
+export const crawlWithRetryWithoutCookie = async (
+  query: string,
+  maxRetries: number = 2
+): Promise<string> => {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const url = buildNaverSearchUrl(query);
+      const html = await fetchHtmlWithoutCookie(url);
+      return html;
+    } catch (error) {
+      const err = error as Error & { status?: number };
+      const is403 = err.status === 403;
+
+      if (attempt < maxRetries) {
+        const baseDelay = is403 ? 60000 : 30000;
+        const backoff = baseDelay * attempt;
+        const jitter = Math.floor(Math.random() * 1000);
+
+        logger.warn(
+          `[비로그인] ${err.message} - ${attempt}/${maxRetries} 재시도 (${Math.round(
+            (backoff + jitter) / 1000
+          )}초 대기)`
+        );
+
+        await delay(backoff + jitter);
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  throw new Error('비로그인 크롤링 실패');
 };
