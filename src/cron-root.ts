@@ -11,6 +11,7 @@ import { createDetailedLogBuilder, saveDetailedLogs } from './logs';
 import { processKeywords } from './lib/keyword-processor';
 import { ROOT_CONFIG, SHEET_APP_URL } from './constants';
 import { checkNaverLogin } from './lib/check-naver-login';
+import { logger } from './lib/logger';
 import axios from 'axios';
 
 dotenv.config();
@@ -18,20 +19,19 @@ dotenv.config();
 export async function main() {
   const startTime = Date.now();
 
-  // 로그인 상태 확인
   const loginStatus = await checkNaverLogin();
-  console.log('='.repeat(50));
+  logger.divider('로그인 상태');
   if (loginStatus.isLoggedIn) {
-    console.log(`🔐 로그인 모드: ${loginStatus.userName} (${loginStatus.email})`);
+    logger.success(`🔐 로그인 모드: ${loginStatus.userName} (${loginStatus.email})`);
   } else {
-    console.log('🌐 비로그인 모드');
+    logger.info('🌐 비로그인 모드');
   }
-  console.log('='.repeat(50) + '\n');
+  logger.blank();
 
   type RootResponseType = { deleted: number; inserted: number };
   const mongoUri = process.env.MONGODB_URI;
   if (!mongoUri) {
-    console.error('❌ MONGODB_URI 환경 변수가 설정되지 않았습니다.');
+    logger.error('MONGODB_URI 환경 변수가 설정되지 않았습니다.');
     process.exit(1);
   }
 
@@ -45,12 +45,9 @@ export async function main() {
     });
 
     const result = (await response.json()) as RootResponseType;
-    console.log(
-      `DB 동기화 완료! (삭제: ${result.deleted}, 삽입: ${result.inserted})`
-    );
+    logger.success(`DB 동기화 완료! (삭제: ${result.deleted}, 삽입: ${result.inserted})`);
   } catch (error) {
-    console.error('동기화 에러:', error);
-  } finally {
+    logger.error(`동기화 에러: ${(error as Error).message}`);
   }
 
   await connectDB(mongoUri);
@@ -87,13 +84,13 @@ export async function main() {
     : 0;
 
   const keywords = filtered.slice(startIndex);
-  console.log(
-    `📋 루트 키워드 ${keywords.length}개 처리 예정 (필터 applied, start=${startIndex})\n`
+  logger.info(
+    `📋 루트 키워드 ${keywords.length}개 처리 예정 (필터 applied, start=${startIndex})`
   );
+  logger.blank();
 
   const logBuilder = createDetailedLogBuilder();
 
-  // processKeywords 사용 (updateRootKeywordResult 전달)
   const allResults = await processKeywords(keywords, logBuilder, {
     updateFunction: updateRootKeywordResult,
   });
@@ -113,44 +110,36 @@ export async function main() {
       ? `${minutes}분 ${seconds}초`
       : `${seconds}초`;
 
-  console.log('\n' + '='.repeat(50));
-  console.log('📊 루트 키워드 크롤링 완료 요약');
-  console.log('='.repeat(50));
-  console.log(`✅ 총 검색어: ${keywords.length}개`);
-  console.log(`✅ 총 노출 발견: ${allResults.length}개`);
-  console.log(
-    `✅ 인기글: ${
-      allResults.filter((r) => r.exposureType === '인기글').length
-    }개`
-  );
-  console.log(
-    `✅ 스블: ${allResults.filter((r) => r.exposureType === '스블').length}개`
-  );
-  console.log(`✅ 처리 시간: ${elapsedTimeStr}`);
-  console.log('='.repeat(50) + '\n');
+  const popularCount = allResults.filter((r) => r.exposureType === '인기글').length;
+  const sblCount = allResults.filter((r) => r.exposureType === '스블').length;
+
+  logger.summary.complete('루트 키워드 크롤링 완료 요약', [
+    { label: '총 검색어', value: `${keywords.length}개` },
+    { label: '총 노출 발견', value: `${allResults.length}개` },
+    { label: '인기글', value: `${popularCount}개` },
+    { label: '스블', value: `${sblCount}개` },
+    { label: '처리 시간', value: elapsedTimeStr },
+  ]);
 
   const result = await axios.post(`${SHEET_APP_URL}/api/root-keywords/import`);
-
-  console.log(result.data);
+  logger.info(`시트 반영 결과: ${JSON.stringify(result.data)}`);
 
   const logs = logBuilder.getLogs();
   saveDetailedLogs(logs, `root_${timestamp}`, elapsedTimeStr);
 
-  console.log('\n' + '='.repeat(50));
-  console.log('📝 상세 로그 저장 완료');
-  console.log('='.repeat(50));
   const stats = logBuilder.getStats();
-  console.log(`✅ 총 로그 엔트리: ${stats.total}개`);
-  console.log(`✅ 성공: ${stats.success}개`);
-  console.log(`✅ 실패: ${stats.failed}개`);
-  console.log('='.repeat(50) + '\n');
+  logger.summary.complete('상세 로그 저장 완료', [
+    { label: '총 로그 엔트리', value: `${stats.total}개` },
+    { label: '성공', value: `${stats.success}개` },
+    { label: '실패', value: `${stats.failed}개` },
+  ]);
 
   await disconnectDB();
 }
 
 if (require.main === module) {
   main().catch((error) => {
-    console.error('❌ 프로그램 오류:', error);
+    logger.error(`프로그램 오류: ${(error as Error).message}`);
     process.exit(1);
   });
 }

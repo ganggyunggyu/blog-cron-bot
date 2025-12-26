@@ -10,6 +10,7 @@ import {
   SCHEDULER_TICK_INTERVAL_MS,
   SCHEDULER_TIME_ZONE,
 } from './constants/scheduler';
+import { logger } from './lib/logger';
 
 dotenv.config();
 
@@ -22,18 +23,6 @@ type ZonedKeys = {
 type SchedulerState = {
   lastRunByTime: Record<string, string>;
   pendingRunByTime: Record<string, string>;
-};
-
-const log = {
-  box: (title: string, content: string[]) => {
-    const width = 50;
-    const line = '─'.repeat(width);
-    console.log(`\n┌${line}┐`);
-    console.log(`│ ${title.padEnd(width - 1)}│`);
-    console.log(`├${line}┤`);
-    content.forEach((c) => console.log(`│ ${c.padEnd(width - 1)}│`));
-    console.log(`└${line}┘`);
-  },
 };
 
 const sleep = (ms: number): Promise<void> =>
@@ -52,8 +41,7 @@ const loadSchedulerState = (): SchedulerState => {
   try {
     const raw = fs.readFileSync(stateFilePath, 'utf8');
     const parsed = JSON.parse(raw) as Partial<SchedulerState>;
-    const lastRunByTime = parsed?.lastRunByTime;
-    const pendingRunByTime = parsed?.pendingRunByTime;
+    const { lastRunByTime, pendingRunByTime } = parsed;
 
     return {
       lastRunByTime:
@@ -75,7 +63,7 @@ const saveSchedulerState = (state: SchedulerState): void => {
   try {
     fs.writeFileSync(stateFilePath, JSON.stringify(state, null, 2));
   } catch (e) {
-    console.error('[ROOT_SCHED] state save failed:', (e as Error).message);
+    logger.error(`[ROOT_SCHED] state save failed: ${(e as Error).message}`);
   }
 };
 
@@ -181,27 +169,24 @@ const startRootScheduler = async (): Promise<void> => {
   let isJobRunning = false;
 
   const now = getZonedKeys(new Date(), SCHEDULER_TIME_ZONE);
-  log.box('PM2 ROOT SCHEDULER', [
-    `PID: ${process.pid}`,
-    `OS: ${os.platform()} ${os.arch()} (${os.release()})`,
-    `TZ: ${SCHEDULER_TIME_ZONE}`,
-    `현재: ${now.dateTimeLabel}`,
-    `모드: ${scheduleDescription}`,
-    `시간: ${runTimeList.join(', ') || '(none)'}`,
-    `TICK: ${Math.round(tickIntervalMs / 1000)}s`,
-    `STATE: ${getStateFilePath()}`,
+  logger.summary.start('PM2 ROOT SCHEDULER', [
+    { label: 'PID', value: String(process.pid) },
+    { label: 'OS', value: `${os.platform()} ${os.arch()} (${os.release()})` },
+    { label: 'TZ', value: SCHEDULER_TIME_ZONE },
+    { label: '현재', value: now.dateTimeLabel },
+    { label: '모드', value: scheduleDescription },
+    { label: '시간', value: runTimeList.join(', ') || '(none)' },
+    { label: 'TICK', value: `${Math.round(tickIntervalMs / 1000)}s` },
+    { label: 'STATE', value: getStateFilePath() },
   ]);
 
   const runWorkflow = async (runTimeKey: string, runDateKey: string) => {
     isJobRunning = true;
     try {
-      log.box('ROOT WORKFLOW RUN', [
-        `트리거: ${runTimeKey}`,
-        `기준일: ${runDateKey}`,
-      ]);
+      logger.box('ROOT WORKFLOW RUN', [`트리거: ${runTimeKey}`, `기준일: ${runDateKey}`], 'yellow');
       await runRootWorkflow();
     } catch (e) {
-      console.error('[ROOT_SCHED] workflow failed:', (e as Error).message);
+      logger.error(`[ROOT_SCHED] workflow failed: ${(e as Error).message}`);
     } finally {
       state.lastRunByTime[runTimeKey] = runDateKey;
       delete state.pendingRunByTime[runTimeKey];
@@ -239,7 +224,7 @@ const startRootScheduler = async (): Promise<void> => {
       saveSchedulerState(state);
 
       if (isJobRunning) {
-        console.log(`[ROOT_SCHED] ${dateTimeLabel} queued: ${timeKey}`);
+        logger.info(`[ROOT_SCHED] ${dateTimeLabel} queued: ${timeKey}`);
       } else {
         void runWorkflow(timeKey, dateKey);
       }
@@ -260,10 +245,7 @@ const startRootScheduler = async (): Promise<void> => {
       if (nextTimeKey) {
         const runDateKey = state.pendingRunByTime[nextTimeKey];
         if (runDateKey === dateKey) {
-          log.box('ROOT SCHEDULER CATCH-UP', [
-            `대상: ${nextTimeKey}`,
-            `현재: ${dateTimeLabel}`,
-          ]);
+          logger.box('ROOT SCHEDULER CATCH-UP', [`대상: ${nextTimeKey}`, `현재: ${dateTimeLabel}`], 'yellow');
           void runWorkflow(nextTimeKey, runDateKey);
         }
       }
@@ -274,7 +256,6 @@ const startRootScheduler = async (): Promise<void> => {
 };
 
 startRootScheduler().catch((error) => {
-  console.error('❌ 루트 스케줄러 오류:', error);
+  logger.error(`루트 스케줄러 오류: ${(error as Error).message}`);
   process.exit(1);
 });
-

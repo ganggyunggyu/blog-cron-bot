@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import { logger } from './lib/logger';
 
 export interface IKeyword extends Document {
   company: string;
@@ -91,9 +92,9 @@ export const RootKeyword = mongoose.model<IRootKeyword>('RootKeyword', RootKeywo
 export const connectDB = async (uri: string): Promise<void> => {
   try {
     await mongoose.connect(uri);
-    console.log('✅ MongoDB 연결 성공');
+    logger.success('MongoDB 연결 성공');
   } catch (error) {
-    console.error('❌ MongoDB 연결 실패:', error);
+    logger.error(`MongoDB 연결 실패: ${(error as Error).message}`);
     throw error;
   }
 };
@@ -101,19 +102,19 @@ export const connectDB = async (uri: string): Promise<void> => {
 export const disconnectDB = async (): Promise<void> => {
   try {
     await mongoose.disconnect();
-    console.log('✅ MongoDB 연결 종료');
+    logger.success('MongoDB 연결 종료');
   } catch (error) {
-    console.error('❌ MongoDB 연결 종료 실패:', error);
+    logger.error(`MongoDB 연결 종료 실패: ${(error as Error).message}`);
   }
 };
 
 export const getAllKeywords = async (): Promise<IKeyword[]> => {
   try {
     const keywords = await Keyword.find({});
-    console.log(`✅ 총 ${keywords.length}개 키워드 로드`);
+    logger.success(`총 ${keywords.length}개 키워드 로드`);
     return keywords;
   } catch (error) {
-    console.error('❌ 키워드 로드 실패:', error);
+    logger.error(`키워드 로드 실패: ${(error as Error).message}`);
     throw error;
   }
 };
@@ -121,10 +122,10 @@ export const getAllKeywords = async (): Promise<IKeyword[]> => {
 export const getAllRootKeywords = async (): Promise<IRootKeyword[]> => {
   try {
     const keywords = await RootKeyword.find({});
-    console.log(`✅ 총 ${keywords.length}개 루트 키워드 로드`);
+    logger.success(`총 ${keywords.length}개 루트 키워드 로드`);
     return keywords;
   } catch (error) {
-    console.error('❌ 루트 키워드 로드 실패:', error);
+    logger.error(`루트 키워드 로드 실패: ${(error as Error).message}`);
     throw error;
   }
 };
@@ -165,7 +166,7 @@ export const updateKeywordResult = async (
 
     await Keyword.findByIdAndUpdate(keywordId, update);
   } catch (error) {
-    console.error('❌ 키워드 업데이트 실패:', error);
+    logger.error(`키워드 업데이트 실패: ${(error as Error).message}`);
     throw error;
   }
 };
@@ -206,7 +207,7 @@ export const updateRootKeywordResult = async (
 
     await RootKeyword.findByIdAndUpdate(keywordId, update);
   } catch (error) {
-    console.error('❌ 루트 키워드 업데이트 실패:', error);
+    logger.error(`루트 키워드 업데이트 실패: ${(error as Error).message}`);
     throw error;
   }
 };

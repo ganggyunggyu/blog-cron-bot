@@ -14,6 +14,7 @@ import {
 } from './constants/scheduler';
 import { main as runCrawl } from './index';
 import { formatDuration } from './lib';
+import { logger } from './lib/logger';
 
 dotenv.config();
 
@@ -21,71 +22,48 @@ async function runCrawlingJob() {
   await runCrawl();
 }
 
-const log = {
-  box: (title: string, content: string[]) => {
-    const width = 50;
-    const line = '─'.repeat(width);
-    console.log(`\n┌${line}┐`);
-    console.log(`│ ${title.padEnd(width - 1)}│`);
-    console.log(`├${line}┤`);
-    content.forEach((c) => console.log(`│ ${c.padEnd(width - 1)}│`));
-    console.log(`└${line}┘`);
-  },
-  step: (
-    num: number,
-    total: number,
-    msg: string,
-    status: 'start' | 'done' = 'start'
-  ) => {
-    const icon = status === 'done' ? '✓' : '▶';
-    console.log(`  ${icon} [${num}/${total}] ${msg}`);
-  },
-  result: (label: string, count: number) => {
-    console.log(`     └─ ${label}: ${count}건`);
-  },
-};
-
 async function runFullWorkflow() {
   const startTime = new Date();
 
-  log.box('WORKFLOW START', [
-    `시작: ${startTime.toLocaleString('ko-KR')}`,
-    `OS: ${os.platform()} (${os.arch()})`,
+  logger.summary.start('WORKFLOW START', [
+    { label: '시작', value: startTime.toLocaleString('ko-KR') },
+    { label: 'OS', value: `${os.platform()} (${os.arch()})` },
   ]);
 
   try {
-    log.step(1, 3, 'DB 동기화');
+    logger.step(1, 3, 'DB 동기화');
     await syncKeywords(requests[0]);
     await syncKeywords(requests[1]);
     await syncKeywords(requests[2]);
-    log.step(1, 3, 'DB 동기화', 'done');
+    logger.step(1, 3, 'DB 동기화', 'done');
 
-    log.step(2, 3, '노출 체크');
+    logger.step(2, 3, '노출 체크');
     await runCrawlingJob();
-    log.step(2, 3, '노출 체크', 'done');
+    logger.step(2, 3, '노출 체크', 'done');
 
-    log.step(3, 3, '시트 반영');
+    logger.step(3, 3, '시트 반영');
     const packageImportRes = await importKeywords(importRes[0]);
-    log.result('패키지', packageImportRes.updated || 0);
+    logger.result('패키지', `${packageImportRes.updated || 0}건`);
 
     const dogExImportRes = await importKeywords(importRes[1]);
-    log.result('일반건', dogExImportRes.updated || 0);
+    logger.result('일반건', `${dogExImportRes.updated || 0}건`);
 
     const dogmaruImportRes = await importKeywords(importRes[2]);
-    log.result('도그마루', dogmaruImportRes.updated || 0);
-    log.step(3, 3, '시트 반영', 'done');
+    logger.result('도그마루', `${dogmaruImportRes.updated || 0}건`);
+    logger.step(3, 3, '시트 반영', 'done');
 
     const endTime = new Date();
     const duration = endTime.getTime() - startTime.getTime();
 
-    log.box('WORKFLOW COMPLETE', [
-      `완료: ${endTime.toLocaleString('ko-KR')}`,
-      `소요: ${formatDuration(duration)}`,
-      `총 업데이트: ${
-        (packageImportRes.updated || 0) +
-        (dogExImportRes.updated || 0) +
-        (dogmaruImportRes.updated || 0)
-      }건`,
+    const totalUpdated =
+      (packageImportRes.updated || 0) +
+      (dogExImportRes.updated || 0) +
+      (dogmaruImportRes.updated || 0);
+
+    logger.summary.complete('WORKFLOW COMPLETE', [
+      { label: '완료', value: endTime.toLocaleString('ko-KR') },
+      { label: '소요', value: formatDuration(duration) },
+      { label: '총 업데이트', value: `${totalUpdated}건` },
     ]);
   } catch (error) {
     const endTime = new Date();
@@ -93,13 +71,13 @@ async function runFullWorkflow() {
       ? `API 오류: ${error.response?.status || 'N/A'}`
       : (error as Error).message;
 
-    log.box('WORKFLOW FAILED', [
-      `시간: ${endTime.toLocaleString('ko-KR')}`,
-      `오류: ${errMsg.slice(0, 45)}`,
+    logger.summary.error('WORKFLOW FAILED', [
+      { label: '시간', value: endTime.toLocaleString('ko-KR') },
+      { label: '오류', value: errMsg.slice(0, 40) },
     ]);
 
     if (axios.isAxiosError(error) && error.response) {
-      console.error('  상세:', error.response.data);
+      logger.error(`상세: ${JSON.stringify(error.response.data)}`);
     }
 
     throw error;
@@ -155,7 +133,7 @@ const saveSchedulerState = (state: SchedulerState): void => {
   try {
     fs.writeFileSync(stateFilePath, JSON.stringify(state, null, 2));
   } catch (e) {
-    console.error('[SCHED] state save failed:', (e as Error).message);
+    logger.error(`[SCHED] state save failed: ${(e as Error).message}`);
   }
 };
 
@@ -261,24 +239,24 @@ const startScheduler = async (): Promise<void> => {
   let isJobRunning = false;
 
   const now = getZonedKeys(new Date(), SCHEDULER_TIME_ZONE);
-  log.box('PM2 SCHEDULER', [
-    `PID: ${process.pid}`,
-    `OS: ${os.platform()} ${os.arch()} (${os.release()})`,
-    `TZ: ${SCHEDULER_TIME_ZONE}`,
-    `현재: ${now.dateTimeLabel}`,
-    `모드: ${scheduleDescription}`,
-    `시간: ${runTimeList.join(', ') || '(none)'}`,
-    `TICK: ${Math.round(tickIntervalMs / 1000)}s`,
-    `STATE: ${getStateFilePath()}`,
+  logger.summary.start('PM2 SCHEDULER', [
+    { label: 'PID', value: String(process.pid) },
+    { label: 'OS', value: `${os.platform()} ${os.arch()} (${os.release()})` },
+    { label: 'TZ', value: SCHEDULER_TIME_ZONE },
+    { label: '현재', value: now.dateTimeLabel },
+    { label: '모드', value: scheduleDescription },
+    { label: '시간', value: runTimeList.join(', ') || '(none)' },
+    { label: 'TICK', value: `${Math.round(tickIntervalMs / 1000)}s` },
+    { label: 'STATE', value: getStateFilePath() },
   ]);
 
   const runWorkflow = async (runTimeKey: string, runDateKey: string) => {
     isJobRunning = true;
     try {
-      log.box('WORKFLOW RUN', [`트리거: ${runTimeKey}`, `기준일: ${runDateKey}`]);
+      logger.box('WORKFLOW RUN', [`트리거: ${runTimeKey}`, `기준일: ${runDateKey}`], 'yellow');
       await runFullWorkflow();
     } catch (e) {
-      console.error('[SCHED] workflow failed:', (e as Error).message);
+      logger.error(`[SCHED] workflow failed: ${(e as Error).message}`);
     } finally {
       state.lastRunByTime[runTimeKey] = runDateKey;
       delete state.pendingRunByTime[runTimeKey];
@@ -316,7 +294,7 @@ const startScheduler = async (): Promise<void> => {
       saveSchedulerState(state);
 
       if (isJobRunning) {
-        console.log(`[SCHED] ${dateTimeLabel} queued: ${timeKey}`);
+        logger.info(`[SCHED] ${dateTimeLabel} queued: ${timeKey}`);
       } else {
         void runWorkflow(timeKey, dateKey);
       }
@@ -337,10 +315,7 @@ const startScheduler = async (): Promise<void> => {
       if (nextTimeKey) {
         const runDateKey = state.pendingRunByTime[nextTimeKey];
         if (runDateKey === dateKey) {
-          log.box('SCHEDULER CATCH-UP', [
-            `대상: ${nextTimeKey}`,
-            `현재: ${dateTimeLabel}`,
-          ]);
+          logger.box('SCHEDULER CATCH-UP', [`대상: ${nextTimeKey}`, `현재: ${dateTimeLabel}`], 'yellow');
           void runWorkflow(nextTimeKey, runDateKey);
         }
       }
@@ -351,6 +326,6 @@ const startScheduler = async (): Promise<void> => {
 };
 
 startScheduler().catch((error) => {
-  console.error('❌ 스케줄러 오류:', error);
+  logger.error(`스케줄러 오류: ${(error as Error).message}`);
   process.exit(1);
 });

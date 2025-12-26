@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { ExposureResult } from './matcher';
+import { logger } from './lib/logger';
 
 export const saveToCSV = (
   results: ExposureResult[],
@@ -42,5 +43,5 @@ export const saveToCSV = (
 
   fs.writeFileSync(filePath, '\uFEFF' + csvContent, 'utf8');
 
-  console.log(`✅ CSV 저장 완료: ${filePath}`);
+  logger.success(`CSV 저장 완료: ${filePath}`);
 };

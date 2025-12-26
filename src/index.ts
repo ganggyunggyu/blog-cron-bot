@@ -4,6 +4,7 @@ import { saveToCSV } from './csv-writer';
 import { getSheetOptions } from './sheet-config';
 import { createDetailedLogBuilder, saveDetailedLogs } from './logs';
 import { processKeywords } from './lib/keyword-processor';
+import { logger } from './lib/logger';
 
 dotenv.config();
 
@@ -12,7 +13,7 @@ export async function main() {
 
   const mongoUri = process.env.MONGODB_URI;
   if (!mongoUri) {
-    console.error('❌ MONGODB_URI 환경 변수가 설정되지 않았습니다.');
+    logger.error('MONGODB_URI 환경 변수가 설정되지 않았습니다.');
     process.exit(1);
   }
 
@@ -55,16 +56,14 @@ export async function main() {
     : 0;
 
   const keywords = filtered.slice(startIndex);
-  console.log(
-    `📋 검색어 ${keywords.length}개 처리 예정 (필터 applied, start=${startIndex})\n`
+  logger.info(
+    `📋 검색어 ${keywords.length}개 처리 예정 (필터 applied, start=${startIndex})`
   );
+  logger.blank();
 
   const logBuilder = createDetailedLogBuilder();
 
-  // 1️⃣~8️⃣ 키워드 처리 (크롤링, 필터링, 결과 저장)
   const allResults = await processKeywords(keywords, logBuilder);
-
-  // 🔟 최종 결과 저장
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   const filterSheet = (process.env.ONLY_SHEET_TYPE || '').trim();
@@ -86,41 +85,33 @@ export async function main() {
       ? `${minutes}분 ${seconds}초`
       : `${seconds}초`;
 
-  console.log('\n' + '='.repeat(50));
-  console.log('📊 크롤링 완료 요약');
-  console.log('='.repeat(50));
-  console.log(`✅ 총 검색어: ${keywords.length}개`);
-  console.log(`✅ 총 노출 발견: ${allResults.length}개`);
-  console.log(
-    `✅ 인기글: ${
-      allResults.filter((r) => r.exposureType === '인기글').length
-    }개`
-  );
-  console.log(
-    `✅ 스블: ${allResults.filter((r) => r.exposureType === '스블').length}개`
-  );
-  console.log(`✅ 처리 시간: ${elapsedTimeStr}`);
-  console.log('='.repeat(50) + '\n');
+  const popularCount = allResults.filter((r) => r.exposureType === '인기글').length;
+  const sblCount = allResults.filter((r) => r.exposureType === '스블').length;
 
-  // 상세 로그 저장
+  logger.summary.complete('크롤링 완료 요약', [
+    { label: '총 검색어', value: `${keywords.length}개` },
+    { label: '총 노출 발견', value: `${allResults.length}개` },
+    { label: '인기글', value: `${popularCount}개` },
+    { label: '스블', value: `${sblCount}개` },
+    { label: '처리 시간', value: elapsedTimeStr },
+  ]);
+
   const logs = logBuilder.getLogs();
   saveDetailedLogs(logs, timestamp, elapsedTimeStr);
 
-  console.log('\n' + '='.repeat(50));
-  console.log('📝 상세 로그 저장 완료');
-  console.log('='.repeat(50));
   const stats = logBuilder.getStats();
-  console.log(`✅ 총 로그 엔트리: ${stats.total}개`);
-  console.log(`✅ 성공: ${stats.success}개`);
-  console.log(`✅ 실패: ${stats.failed}개`);
-  console.log('='.repeat(50) + '\n');
+  logger.summary.complete('상세 로그 저장 완료', [
+    { label: '총 로그 엔트리', value: `${stats.total}개` },
+    { label: '성공', value: `${stats.success}개` },
+    { label: '실패', value: `${stats.failed}개` },
+  ]);
 
   await disconnectDB();
 }
 
 if (require.main === module) {
   main().catch((error) => {
-    console.error('❌ 프로그램 오류:', error);
+    logger.error(`프로그램 오류: ${(error as Error).message}`);
     process.exit(1);
   });
 }
