@@ -42,6 +42,7 @@ export const processKeywords = async (
 ): Promise<ExposureResult[]> => {
   const updateFunction: UpdateFunction =
     options?.updateFunction ?? updateKeywordResult;
+  const isLoggedIn = options?.isLoggedIn ?? false;
   const allResults: ExposureResult[] = [];
 
   // 1️⃣ 크롤링 캐시 및 매칭 큐 (searchQuery별)
@@ -54,6 +55,7 @@ export const processKeywords = async (
       { isPopular: boolean; uniqueGroups: number; topicNames: string[] }
     >(),
     guestAddedLinksCache: new Map<string, Set<string>>(),
+    usedLinksCache: new Map<string, Set<string>>(),
   };
 
   logger.info(`🔍 총 ${keywords.length}개 키워드 처리`);
@@ -127,8 +129,9 @@ export const processKeywords = async (
 
     // 5️⃣ 큐가 비었으면 비로그인 재시도 후 실패 처리
     if (matchQueue.length === 0) {
-      // 비로그인 재시도
+      // 비로그인 재시도 (이미 비로그인 모드면 스킵)
       let queueEmptyRetrySuccess = false;
+      if (isLoggedIn) {
       try {
         progressLogger.retry(`비로그인 재시도`);
 
@@ -155,12 +158,13 @@ export const processKeywords = async (
 
         const guestMatches = matchBlogs(query, guestItems, { allowAnyBlog });
 
-        // 기존 아이템 + 이미 추가된 비로그인 포스트 기준 중복 제거
+        // 기존 아이템 + 이미 추가된 비로그인 포스트 + 이미 사용된 포스트 기준 중복 제거
         const originalItems = caches.itemsCache.get(searchQuery) || [];
         const existingLinks = new Set(originalItems.map((item: any) => item.link));
         const guestAddedLinks = caches.guestAddedLinksCache.get(searchQuery) || new Set();
+        const usedLinks = caches.usedLinksCache.get(searchQuery) || new Set();
         const newMatches = guestMatches.filter(
-          (m) => !existingLinks.has(m.postLink) && !guestAddedLinks.has(m.postLink)
+          (m) => !existingLinks.has(m.postLink) && !guestAddedLinks.has(m.postLink) && !usedLinks.has(m.postLink)
         );
 
         // 비교 결과 시각화
@@ -224,6 +228,12 @@ export const processKeywords = async (
               })),
             };
 
+            // 사용된 포스트 링크 기록 (같은 키워드 중복 방지)
+            if (!caches.usedLinksCache.has(searchQuery)) {
+              caches.usedLinksCache.set(searchQuery, new Set());
+            }
+            caches.usedLinksCache.get(searchQuery)!.add(retryResult.match.postLink);
+
             await handleSuccess({
               keyword: keywordCtx,
               html: htmlCtx,
@@ -248,6 +258,7 @@ export const processKeywords = async (
       } catch (err) {
         progressLogger.retry(`재시도 실패: ${(err as Error).message.slice(0, 30)}`);
       }
+      } // isLoggedIn
 
       if (!queueEmptyRetrySuccess) {
         await handleQueueEmpty({
@@ -316,6 +327,12 @@ export const processKeywords = async (
     };
 
     if (passed && nextMatch) {
+      // 사용된 포스트 링크 기록 (같은 키워드 중복 방지)
+      if (!caches.usedLinksCache.has(searchQuery)) {
+        caches.usedLinksCache.set(searchQuery, new Set());
+      }
+      caches.usedLinksCache.get(searchQuery)!.add(nextMatch.postLink);
+
       await handleSuccess({
         keyword: keywordCtx,
         html: htmlCtx,
@@ -332,10 +349,10 @@ export const processKeywords = async (
         updateFunction,
       });
     } else {
-      // 🔄 미노출 시 비로그인으로 재시도
+      // 🔄 미노출 시 비로그인으로 재시도 (이미 비로그인 모드면 스킵)
       let retrySuccess = false;
       let guestRetryInfo: GuestRetryComparison | undefined;
-
+      if (isLoggedIn) {
       try {
         progressLogger.retry(`비로그인 재시도`);
 
@@ -362,13 +379,14 @@ export const processKeywords = async (
 
         const guestMatches = matchBlogs(query, guestItems, { allowAnyBlog });
 
-        // 기존 큐 + 이미 추가된 비로그인 포스트 기준 중복 제거
+        // 기존 큐 + 이미 추가된 비로그인 포스트 + 이미 사용된 포스트 기준 중복 제거
         const existingLinks = new Set(matchQueue.map((m) => m.postLink));
         const guestAddedLinks = caches.guestAddedLinksCache.get(searchQuery) || new Set();
+        const usedLinks = caches.usedLinksCache.get(searchQuery) || new Set();
 
         // 새로운 매칭만 필터링해서 큐에 추가
         const newMatches = guestMatches.filter(
-          (m) => !existingLinks.has(m.postLink) && !guestAddedLinks.has(m.postLink)
+          (m) => !existingLinks.has(m.postLink) && !guestAddedLinks.has(m.postLink) && !usedLinks.has(m.postLink)
         );
 
         // 비교 결과 시각화
@@ -435,6 +453,12 @@ export const processKeywords = async (
 
             guestRetryInfo.recovered = true;
 
+            // 사용된 포스트 링크 기록 (같은 키워드 중복 방지)
+            if (!caches.usedLinksCache.has(searchQuery)) {
+              caches.usedLinksCache.set(searchQuery, new Set());
+            }
+            caches.usedLinksCache.get(searchQuery)!.add(retryResult.match.postLink);
+
             await handleSuccess({
               keyword: keywordCtx,
               html: htmlCtx,
@@ -459,6 +483,7 @@ export const processKeywords = async (
       } catch (err) {
         progressLogger.retry(`재시도 실패: ${(err as Error).message.slice(0, 30)}`);
       }
+      } // isLoggedIn
 
       // 재시도에서도 실패한 경우
       if (!retrySuccess) {

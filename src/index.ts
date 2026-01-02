@@ -4,12 +4,22 @@ import { saveToCSV } from './csv-writer';
 import { getSheetOptions } from './sheet-config';
 import { createDetailedLogBuilder, saveDetailedLogs } from './logs';
 import { processKeywords } from './lib/keyword-processor';
+import { checkNaverLogin } from './lib/check-naver-login';
 import { logger } from './lib/logger';
 
 dotenv.config();
 
 export async function main() {
   const startTime = Date.now();
+
+  const loginStatus = await checkNaverLogin();
+  logger.divider('로그인 상태');
+  if (loginStatus.isLoggedIn) {
+    logger.success(`🔐 로그인 모드: ${loginStatus.userName} (${loginStatus.email})`);
+  } else {
+    logger.info('🌐 비로그인 모드');
+  }
+  logger.blank();
 
   const mongoUri = process.env.MONGODB_URI;
   if (!mongoUri) {
@@ -63,7 +73,9 @@ export async function main() {
 
   const logBuilder = createDetailedLogBuilder();
 
-  const allResults = await processKeywords(keywords, logBuilder);
+  const allResults = await processKeywords(keywords, logBuilder, {
+    isLoggedIn: loginStatus.isLoggedIn,
+  });
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   const filterSheet = (process.env.ONLY_SHEET_TYPE || '').trim();

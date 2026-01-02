@@ -23,6 +23,8 @@ export type UpdateFunction = (
 /** processKeywords 옵션 */
 export interface ProcessKeywordsOptions {
   updateFunction?: UpdateFunction;
+  /** 로그인 모드 여부 (비로그인이면 게스트 재시도 스킵) */
+  isLoggedIn?: boolean;
 }
 
 /** 키워드 문서 정보 */
@@ -72,6 +74,8 @@ export interface CrawlCaches {
   }>;
   /** 비로그인 재시도에서 이미 추가된 포스트 링크 (중복 방지) */
   guestAddedLinksCache: Map<string, Set<string>>;
+  /** 이미 노출 성공으로 사용된 포스트 링크 (같은 키워드 중복 방지) */
+  usedLinksCache: Map<string, Set<string>>;
 }
 
 /** 매칭 결과 정보 */

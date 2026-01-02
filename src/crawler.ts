@@ -4,7 +4,7 @@ import { logger } from './lib/logger';
 
 type GotScrapingClient = typeof import('got-scraping').gotScraping;
 
-const buildNaverCookie = (): string | undefined => {
+export const buildNaverCookie = (): string | undefined => {
   const nidAut = process.env.NAVER_NID_AUT;
   const nidSes = process.env.NAVER_NID_SES;
   const mLoc = process.env.NAVER_M_LOC;

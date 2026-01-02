@@ -93,6 +93,7 @@ export async function main() {
 
   const allResults = await processKeywords(keywords, logBuilder, {
     updateFunction: updateRootKeywordResult,
+    isLoggedIn: loginStatus.isLoggedIn,
   });
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
