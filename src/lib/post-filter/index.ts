@@ -5,6 +5,19 @@ import {
   fetchResolvedPostHtml,
 } from '../vendor-extractor';
 
+/** 도그마루 전용 블로그 ID - 이 블로그면 바로 노출 인정 */
+const DOGMARU_BLOG_IDS = ['alien8118', 'disadvantage6171', 'weddindg1218'];
+
+/** 서리펫 전용 블로그 ID - 이 블로그면 바로 노출 인정 */
+const SEORIPET_BLOG_IDS: string[] = [];
+
+/** 블로그 링크에서 블로그 ID 추출 */
+const extractBlogId = (postLink: string): string | null => {
+  // https://blog.naver.com/blogId/postNo 형식
+  const match = postLink.match(/blog\.naver\.com\/([^\/]+)/);
+  return match ? match[1] : null;
+};
+
 interface FilterResult {
   matchedIndex: number;
   match: ExposureResult | undefined;
@@ -37,39 +50,61 @@ export const findMatchingPost = async (
     let candidateVendorDetails: VendorMatchDetails | undefined;
 
     if (vendorTarget) {
+      // 도그마루 전용 블로그 체크 - 바로 노출 인정
+      if (vendorTarget === '도그마루') {
+        const blogId = extractBlogId(candidate.postLink);
+        if (blogId && DOGMARU_BLOG_IDS.includes(blogId)) {
+          candidatePassed = true;
+          candidateSource = 'VENDOR';
+          candidateVendor = '도그마루(전용블로그)';
+        }
+      }
+
+      // 서리펫 전용 블로그 체크 - 바로 노출 인정
+      if (vendorTarget === '서리펫') {
+        const blogId = extractBlogId(candidate.postLink);
+        if (blogId && SEORIPET_BLOG_IDS.includes(blogId)) {
+          candidatePassed = true;
+          candidateSource = 'VENDOR';
+          candidateVendor = '서리펫(전용블로그)';
+        }
+      }
+
       // VENDOR 체크
-      try {
-        const candidateHtml = await fetchResolvedPostHtml(candidate.postLink);
-        const candidateVendors = extractPostVendorNames(candidateHtml);
+      if (!candidatePassed) {
+        try {
+          const candidateHtml = await fetchResolvedPostHtml(candidate.postLink);
+          const candidateVendors = extractPostVendorNames(candidateHtml);
 
-        // 모든 업체명에 대해 매칭 체크
-        for (const vendor of candidateVendors) {
-          if (!vendor) continue;
+          // 모든 업체명에 대해 매칭 체크
+          for (const vendor of candidateVendors) {
+            if (!vendor) continue;
 
-          const result = checkVendorMatch(
-            vendor,
-            vendorTarget,
-            restaurantName,
-            queueIdx
-          );
+            const result = checkVendorMatch(
+              vendor,
+              vendorTarget,
+              restaurantName,
+              queueIdx
+            );
 
-          if (result.matched) {
-            candidatePassed = true;
-            candidateSource = 'VENDOR';
-            candidateVendor = vendor;
-            candidateVendorDetails = result.details;
-            break;
+            if (result.matched) {
+              candidatePassed = true;
+              candidateSource = 'VENDOR';
+              candidateVendor = vendor;
+              candidateVendorDetails = result.details;
+              break;
+            }
           }
-        }
 
-        // 매칭 안 됐어도 첫 번째 업체명은 기록
-        if (!candidateVendor && candidateVendors.length > 0) {
-          candidateVendor = candidateVendors[0];
+          // 매칭 안 됐어도 첫 번째 업체명은 기록
+          if (!candidateVendor && candidateVendors.length > 0) {
+            candidateVendor = candidateVendors[0];
+          }
+        } catch (err) {
+          console.warn(
+            `  [VENDOR 체크 실패 (큐 ${queueIdx})] ${(err as Error).message}`
+          );
         }
-      } catch (err) {
-        console.warn(
-          `  [VENDOR 체크 실패 (큐 ${queueIdx})] ${(err as Error).message}`
-        );
       }
 
       // VENDOR 실패 시 TITLE 체크
