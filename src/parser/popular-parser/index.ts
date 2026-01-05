@@ -13,6 +13,8 @@ export interface PopularItem {
   blogName: string;
   positionWithCafe?: number;
   isNewLogic?: boolean;
+  /** 크롤링된 페이지 번호 (다중 페이지 크롤링 시) */
+  page?: number;
 }
 
 const SELECTORS = DEFAULT_SELECTORS;
