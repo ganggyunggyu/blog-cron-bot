@@ -1,5 +1,13 @@
 # Purpose
 - TypeScript(CommonJS) 크롤러 프로젝트. `src/index.ts` → `processKeywords` → `crawlWithRetry` → `parser` → `matcher` → `csv-writer`/MongoDB 흐름을 유지한다.
+- 키워드 처리 로직은 `src/lib/keyword-processor` 모듈 단위로 분리되어 있다.
+
+# Keyword Processor Map
+- `lib/keyword-processor/index.ts`: 키워드 순회/매칭/결과 저장 오케스트레이션
+- `lib/keyword-processor/crawl-manager.ts`: 크롤링 + 캐시/큐 구성
+- `lib/keyword-processor/guest-retry.ts`: 비로그인 재시도 및 큐 확장
+- `lib/keyword-processor/allow-any-blog.ts`: `ALLOW_ANY_BLOG` 우선순위 계산
+- `lib/keyword-processor/handlers.ts`: 성공/실패/예외 처리 분기
 
 # Commands
 - 설치: `pnpm install`
@@ -7,6 +15,8 @@
 - 빌드/프로덕션: `pnpm build` 후 `pnpm start`
 - 스모크: `pnpm test` (네트워크/DB 사용)
 - 웹 실험 서버: `pnpm web` (요청 있을 때만 실행)
+- UI 개발: `pnpm ui:dev` (Vite, API는 `pnpm web`)
+- UI 빌드: `pnpm ui:build` (출력: `ui/dist`)
 - Ubuntu EC2 배포: `docs/ec2-ubuntu.md`
 
 # Code & HTTP Rules
@@ -17,6 +27,7 @@
 
 # Data & Output
 - CSV는 `output/`, 빌드 결과는 `dist/`, 임시 로그는 `debug/`/`logs/`. 생성물은 커밋하지 않는다.
+- UI 빌드 산출물은 `ui/dist/` (커밋하지 않는다).
 - MongoDB URI는 `.env`의 `MONGODB_URI`; 실제 값이나 `.env` 파일은 커밋 금지.
 
 # Testing & Safety
