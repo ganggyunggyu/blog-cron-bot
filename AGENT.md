@@ -33,3 +33,6 @@
 # Testing & Safety
 - 네트워크 타격 코드 수정 시 `pnpm test` 또는 부분 모듈 테스트로 스모크 확인. 가능하면 실제 서비스 도메인에 과도한 요청을 보내지 않는다.
 - 셀렉터 변경 시 `selector-analyzer` 참고 기록 남기기.
+
+# UI (React) Rules
+- `<React.Fragment>` 또는 `<></>` 는 꼭 필요한 경우에만 사용한다. 불필요한 Fragment 래핑 금지.
