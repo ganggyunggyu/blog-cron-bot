@@ -22,17 +22,20 @@ ui/
       header/
       test-panel/
       batch-panel/
+      cron-panel/
     features/
       test-keyword/
         api/
       batch-runner/
+        api/
+      cron-runner/
         api/
     shared/
       api/
       hooks/
       lib/
       store/
-      ui/w
+      ui/
 ```
 
 ## 실행 흐름
@@ -99,12 +102,21 @@ export interface BatchResponse {
 }
 ```
 
+### `/api/cron/stream`
+
+크론 실행 로그 스트리밍 (SSE)
+
+```
+GET /api/cron/stream?mode=cron-test|cron-root|cron-pet
+```
+
 ## 환경/설정
 
 - API Base URL은 UI 상단 입력에서 설정 가능
 - 값은 `localStorage`에 `api_base`로 저장
 - 기본값은 현재 `window.location.origin`
 - `pnpm web` 포트가 5178이 아니면 UI에서 Base URL을 맞춰야 함
+- 크론 실행은 서버에서 `pnpm cron:test | cron:root | cron:pet`을 실행
 
 ## 스타일링
 

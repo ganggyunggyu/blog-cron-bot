@@ -19,6 +19,14 @@
 - UI 빌드: `pnpm ui:build` (출력: `ui/dist`)
 - Ubuntu EC2 배포: `docs/ec2-ubuntu.md`
 
+# Entrypoints & Jobs
+- `src/index.ts`: 메인 크롤러 오케스트레이션
+- `src/cron.ts`, `src/cron-root.ts`, `src/cron-pet.ts`: 주기 실행 엔트리
+- `src/pm2-scheduler.ts`, `src/pm2-scheduler-root.ts`: PM2 스케줄러
+- `src/web/server/index.ts`: 내부 웹 서버
+- `src/tools/update-popular-selectors/index.ts`, `src/tools/update-popular-selectors-local.ts`: 인기 탭 셀렉터 동기화
+- `src/migrations/*`: 데이터 마이그레이션
+
 # Code & HTTP Rules
 - Strict TS, 2-space indent, CJS module. 기존 상대 경로 패턴 유지(별도 경로 alias 없음).
 - 네이버 검색은 `crawler.fetchWithChromeTLS`(got-scraping)로 TLS 우회, 결과 파싱/셀렉터는 `parser`에만 추가한다. 일반 페이지 fetch는 `fetchHtml` + 헤더(`constants/naver-header`)로 처리.
@@ -35,4 +43,4 @@
 - 셀렉터 변경 시 `selector-analyzer` 참고 기록 남기기.
 
 # UI (React) Rules
-- `<React.Fragment>` 또는 `<></>` 는 꼭 필요한 경우에만 사용한다. 불필요한 Fragment 래핑 금지.
+- `<React.Fragment>`는 꼭 필요한 경우에만 사용한다. 단축 문법(`<>`) 금지.

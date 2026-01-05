@@ -27,6 +27,9 @@
 - HTTP parsing via Cheerio; keep selectors centralized in `parser.ts`. Avoid inline magic strings.
 - Prefer small, pure functions; log actionable info only (see recent refactors reducing verbosity).
 
+## UI Notes
+- React에서는 `<React.Fragment>`를 꼭 필요한 경우에만 사용하고, 단축 문법은 쓰지 않는다.
+
 ## Testing Guidelines
 - Use `src/test.ts` for end-to-end smoke. Add focused checks near modules as `*.spec.ts` if needed (executed with `ts-node`).
 - Keep test data deterministic; mock network where feasible; avoid hitting production endpoints in CI.
@@ -41,4 +44,3 @@
 - Never commit `.env` or credentials. Validate `MONGODB_URI` at startup.
 - Respect rate limits and add delays between queries; keep `User-Agent` set.
 - When selectors break, document diffs in `selector-analyzer.ts` and update `parser.ts` accordingly.
-
