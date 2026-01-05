@@ -1,5 +1,4 @@
 export interface PopularSelectorConfig {
-  // Single Intention (인기글)
   singleIntentionList: string;
   intentionItem: string;
   intentionTitle: string;
@@ -8,7 +7,6 @@ export interface PopularSelectorConfig {
   intentionProfile: string;
   intentionImage: string;
 
-  // Snippet Paragraph (스블)
   snippetParagraphList: string;
   snippetItem: string;
   snippetTitle: string;
@@ -17,7 +15,6 @@ export interface PopularSelectorConfig {
   snippetProfile: string;
   snippetImage: string;
 
-  // Snippet Image (스이)
   snippetImageList: string;
   snippetImageItem: string;
   snippetImageTitle: string;
@@ -26,7 +23,6 @@ export interface PopularSelectorConfig {
 }
 
 export const DEFAULT_SELECTORS: PopularSelectorConfig = {
-  // Single Intention (인기글)
   singleIntentionList:
     '.fds-ugc-single-intention-item-list, .fds-ugc-single-intention-item-list-rra',
   intentionItem: '[data-template-id="ugcItem"]',
@@ -37,7 +33,6 @@ export const DEFAULT_SELECTORS: PopularSelectorConfig = {
   intentionProfile: '.sds-comps-profile-info-title-text a',
   intentionImage: '.sds-comps-image img',
 
-  // Snippet Paragraph (스블)
   snippetParagraphList: '.fds-ugc-snippet-paragraph-item-list',
   snippetItem: '[data-template-type="snippetParagraph"]',
   snippetTitle: 'a:has(.sds-comps-text-type-headline1)',
@@ -46,7 +41,6 @@ export const DEFAULT_SELECTORS: PopularSelectorConfig = {
   snippetProfile: '.sds-comps-profile-info-title-text a',
   snippetImage: '.sds-comps-image img',
 
-  // Snippet Image (스이)
   snippetImageList: '.fds-ugc-snippet-image-item-list',
   snippetImageItem: '[data-template-type="snippetImage"]',
   snippetImageTitle: 'a:has(.sds-comps-text-type-headline1)',

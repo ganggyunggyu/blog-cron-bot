@@ -13,7 +13,6 @@ export interface PopularItem {
   blogName: string;
   positionWithCafe?: number;
   isNewLogic?: boolean;
-  /** 크롤링된 페이지 번호 (다중 페이지 크롤링 시) */
   page?: number;
 }
 
@@ -27,7 +26,6 @@ export const extractPopularItems = (html: string): PopularItem[] => {
   const items: PopularItem[] = [];
   let globalPosition = 0;
 
-  // Single Intention (인기글) 섹션
   const $singleIntentionSections = $(SELECTORS.singleIntentionList);
   if ($singleIntentionSections.length > 0) {
     $singleIntentionSections.each((_, section) => {
@@ -92,7 +90,6 @@ export const extractPopularItems = (html: string): PopularItem[] => {
     });
   }
 
-  // Snippet Paragraph (스블) 섹션
   const $snippetParagraphSections = $(SELECTORS.snippetParagraphList);
   if ($snippetParagraphSections.length > 0) {
     $snippetParagraphSections.each((_, section) => {
@@ -156,7 +153,6 @@ export const extractPopularItems = (html: string): PopularItem[] => {
     });
   }
 
-  // Snippet Image (스이) 섹션
   const $snippetImageSections = $(SELECTORS.snippetImageList);
   if ($snippetImageSections.length > 0) {
     $snippetImageSections.each((_, section) => {

@@ -3,9 +3,6 @@ import chalk from 'chalk';
 
 const { format, transports, createLogger } = winston;
 
-// ═══════════════════════════════════════════════════════════════════════════
-// 타임스탬프 포맷
-// ═══════════════════════════════════════════════════════════════════════════
 const getTimestamp = () => {
   const now = new Date();
   return now.toLocaleTimeString('ko-KR', {
@@ -16,9 +13,6 @@ const getTimestamp = () => {
   });
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
-// 로그 레벨 설정
-// ═══════════════════════════════════════════════════════════════════════════
 const levels = {
   error: 0,
   warn: 1,
@@ -43,9 +37,6 @@ const levelIcons: Record<string, string> = {
   debug: '·',
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
-// 커스텀 포맷
-// ═══════════════════════════════════════════════════════════════════════════
 const customFormat = format.printf(({ level, message }) => {
   const timestamp = chalk.gray(getTimestamp());
   const icon = levelIcons[level] || '·';
@@ -55,9 +46,6 @@ const customFormat = format.printf(({ level, message }) => {
   return `${timestamp} │ ${levelStr} │ ${message}`;
 });
 
-// ═══════════════════════════════════════════════════════════════════════════
-// winston 인스턴스 생성
-// ═══════════════════════════════════════════════════════════════════════════
 const winstonLogger = createLogger({
   levels,
   level: process.env.LOG_LEVEL || 'debug',
@@ -65,9 +53,6 @@ const winstonLogger = createLogger({
   transports: [new transports.Console()],
 });
 
-// ═══════════════════════════════════════════════════════════════════════════
-// 박스 그리기
-// ═══════════════════════════════════════════════════════════════════════════
 const BOX_WIDTH = 54;
 
 const drawBox = (
@@ -90,9 +75,6 @@ const drawBox = (
   console.log('');
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
-// 진행률 바 (문자열 반환)
-// ═══════════════════════════════════════════════════════════════════════════
 const progressBar = (current: number, total: number, width = 30) => {
   const percent = Math.round((current / total) * 100);
   const filled = Math.round((current / total) * width);
@@ -104,9 +86,6 @@ const progressBar = (current: number, total: number, width = 30) => {
   return `${bar} ${current}/${total} (${percentStr})`;
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
-// 하단 고정 진행 상태 (한 줄 덮어쓰기)
-// ═══════════════════════════════════════════════════════════════════════════
 let lastProgressLine = '';
 let statusState: { current: number; total: number; message: string } | null = null;
 
@@ -136,7 +115,6 @@ const clearStatusLine = () => {
   }
 };
 
-// 로그 출력 시 진행바 유지하면서 출력
 const printLine = (text: string) => {
   clearStatusLine();
   console.log(text);
@@ -163,13 +141,9 @@ const statusLine = {
     statusState = null;
   },
 
-  // 외부에서 사용할 수 있도록 export
   print: printLine,
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
-// 스텝 로깅 (단계별 진행)
-// ═══════════════════════════════════════════════════════════════════════════
 const step = (
   num: number,
   total: number,
@@ -187,14 +161,10 @@ const step = (
   }
 };
 
-// 결과 출력 (들여쓰기)
 const result = (label: string, value: string | number) => {
   console.log(`     ${chalk.gray('└─')} ${label}: ${chalk.yellow(String(value))}`);
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
-// 키워드 진행 로깅
-// ═══════════════════════════════════════════════════════════════════════════
 const keyword = {
   start: (idx: number, total: number, query: string) => {
     const progress = chalk.gray(`[${String(idx).padStart(3)}/${total}]`);
@@ -223,9 +193,6 @@ const keyword = {
   },
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
-// 섹션 구분선
-// ═══════════════════════════════════════════════════════════════════════════
 const divider = (title?: string) => {
   if (title) {
     const line = '─'.repeat(20);
@@ -235,9 +202,6 @@ const divider = (title?: string) => {
   }
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
-// 요약 박스 (완료 시)
-// ═══════════════════════════════════════════════════════════════════════════
 const summary = {
   start: (title: string, items: Array<{ label: string; value: string }>) => {
     const content = items.map((i) => `${i.label}: ${i.value}`);
@@ -255,27 +219,19 @@ const summary = {
   },
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
-// 로그 출력 함수 (진행바 유지)
-// ═══════════════════════════════════════════════════════════════════════════
 const logWithStatusLine = (level: string, msg: string) => {
   clearStatusLine();
   winstonLogger.log(level, msg);
   renderStatusLine();
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
-// 로거 객체 export
-// ═══════════════════════════════════════════════════════════════════════════
 export const logger = {
-  // 기본 로그 레벨
   debug: (msg: string) => logWithStatusLine('debug', msg),
   info: (msg: string) => logWithStatusLine('info', msg),
   success: (msg: string) => logWithStatusLine('success', msg),
   warn: (msg: string) => logWithStatusLine('warn', msg),
   error: (msg: string) => logWithStatusLine('error', msg),
 
-  // UI 헬퍼
   box: drawBox,
   progress: progressBar,
   step,
@@ -285,7 +241,6 @@ export const logger = {
   summary,
   statusLine,
 
-  // 빈 줄
   blank: () => printLine(''),
 };
 

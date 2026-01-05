@@ -3,7 +3,6 @@ export const SHEET_APP_URL =
 
 export const PRODUCT_SHEET_ID = '1vrN5gvtokWxPs8CNaNcvZQLWyIMBOIcteYXQbyfiZl0';
 
-// Sheet Type 상수
 export const SHEET_TYPE = {
   PACKAGE: 'package',
   DOGMARU_EXCLUDE: 'dogmaru-exclude',
@@ -12,7 +11,6 @@ export const SHEET_TYPE = {
 
 export type SheetType = (typeof SHEET_TYPE)[keyof typeof SHEET_TYPE];
 
-// 공통 타입 정의
 export interface SyncRequest {
   sheetId: string;
   sheetName: string;
@@ -23,7 +21,6 @@ export interface ImportRequest extends SyncRequest {
   mode: 'rewrite' | 'append';
 }
 
-// 시트 설정
 interface SheetConfig {
   sheetId: string;
   sheetName: string;
@@ -52,20 +49,6 @@ const SHEET_CONFIGS: SheetConfig[] = [
   },
 ];
 
-// 테스트 설정
-// export const TEST_CONFIG = {
-//   SHEET_ID: '1T9PHu-fH6HPmyYA9dtfXaDLm20XAPN-9mzlE2QTPkF0',
-//   SHEET_NAMES: {
-//     PACKAGE: '패키지',
-//     DOGMARU_EXCLUDE: '일반건',
-//     DOGMARU: '도그마루',
-//   },
-//   LABELS: {
-//     PACKAGE: '패키지',
-//     DOGMARU_EXCLUDE: '일반건',
-//     DOGMARU: '도그마루',
-//   },
-// } as const;
 export const TEST_CONFIG = {
   SHEET_ID: '1T9PHu-fH6HPmyYA9dtfXaDLm20XAPN-9mzlE2QTPkF0',
   SHEET_NAMES: {
@@ -91,7 +74,6 @@ export const ROOT_CONFIG = {
   },
 };
 
-// SyncRequest 배열 생성
 export const requests: SyncRequest[] = SHEET_CONFIGS.map(
   ({ sheetId, sheetName, sheetType }) => ({
     sheetId,
@@ -100,7 +82,6 @@ export const requests: SyncRequest[] = SHEET_CONFIGS.map(
   })
 );
 
-// ImportRequest 배열 생성 (테스트용)
 export const importRes: ImportRequest[] = [
   {
     sheetId: TEST_CONFIG.SHEET_ID,

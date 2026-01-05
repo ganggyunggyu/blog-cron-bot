@@ -8,8 +8,6 @@ import { matchBlogs, ExposureResult, extractBlogId } from './matcher';
 import { connectDB, disconnectDB, getAllKeywords } from './database';
 
 dotenv.config();
-
-// 테스트 실행 진입점: 키워드 인자 있으면 노출체크 단일 실행, 없으면 DB 연결 스모크
 (async () => {
   const args = process.argv.slice(2);
   const hasKeywordArg = args.length > 0 && !args[0].startsWith('-');
@@ -57,7 +55,6 @@ async function runExposureCheck(queryRaw: string) {
       return;
     }
 
-    // 업장명이 제공된 경우: 포스트 내부에서 벤더명 확인
     if (restaurantName) {
       const rn = restaurantName.toLowerCase();
       const rnNorm = normalize(restaurantName);
@@ -109,7 +106,6 @@ async function runExposureCheck(queryRaw: string) {
         return;
       }
 
-      // 벤더매칭 실패 시 타이틀 매칭 폴백
       const titleFiltered = matches.filter((m) => {
         const titleRaw = m.postTitle || '';
         const title = titleRaw.toLowerCase();
@@ -143,7 +139,6 @@ async function runExposureCheck(queryRaw: string) {
       return;
     }
 
-    // 업장명 미지정: 첫 매치만 리포트
     const first = matches[0];
     let vendorName = '';
     try {
@@ -161,7 +156,6 @@ async function runExposureCheck(queryRaw: string) {
   }
 }
 
-// 기존 DB 스모크 (키워드 없을 때만 수행)
 async function testMongoDBFetch() {
   console.log('🚀 MongoDB 데이터 가져오기 테스트\n');
 
@@ -203,7 +197,6 @@ async function testMongoDBFetch() {
   }
 }
 
-// 내부 포스트 HTML에서 업장명 추출 (index.ts와 동일 로직 복사)
 function extractPostVendorName(html: string): string {
   if (!html) return '';
   try {

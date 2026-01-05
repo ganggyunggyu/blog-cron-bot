@@ -8,15 +8,15 @@ export interface IKeyword extends Document {
   popularTopic: string;
   url: string;
   sheetType: string;
-  keywordType: 'restaurant' | 'pet' | 'basic'; // 키워드 타입 구분
+  keywordType: 'restaurant' | 'pet' | 'basic';
   lastChecked: Date;
   restaurantName?: string;
   matchedTitle?: string;
   postVendorName?: string;
   rank?: number;
-  rankWithCafe?: number; // 인기글인 경우 카페 포함 순위
-  isUpdateRequired?: boolean; // 포스트 수정 필요 여부 (식당 키워드만)
-  isNewLogic?: boolean; // 네이버 새 로직 여부
+  rankWithCafe?: number;
+  isUpdateRequired?: boolean;
+  isNewLogic?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -35,9 +35,9 @@ const KeywordSchema: Schema = new Schema(
     matchedTitle: { type: String, default: '' },
     postVendorName: { type: String, default: '' },
     rank: { type: Number, default: 0 },
-    rankWithCafe: { type: Number, default: 0 }, // 인기글인 경우 카페 포함 순위
-    isUpdateRequired: { type: Boolean, default: false }, // 포스트 수정 필요 여부
-    isNewLogic: { type: Boolean, default: false }, // 네이버 새 로직 여부
+    rankWithCafe: { type: Number, default: 0 },
+    isUpdateRequired: { type: Boolean, default: false },
+    isNewLogic: { type: Boolean, default: false },
   },
   {
     timestamps: true,

@@ -51,7 +51,6 @@ export const buildNaverSearchUrl = (query: string): string => {
   )}&ackey=${generateAckey()}`;
 };
 
-/** 페이지 번호를 포함한 네이버 검색 URL 생성 (2페이지 이상용) */
 export const buildNaverSearchUrlWithPage = (query: string, page: number): string => {
   const q = getSearchQuery(query);
   if (page <= 1) {
@@ -99,7 +98,6 @@ export const fetchHtml = async (url: string): Promise<string> => {
   return response.body;
 };
 
-/** 비로그인 상태로 크롤링 (쿠키 없이) */
 export const fetchHtmlWithoutCookie = async (url: string): Promise<string> => {
   const client = await getGotScrapingClient();
 
@@ -171,7 +169,6 @@ export const crawlWithRetry = async (
   throw new Error('크롤링 실패');
 };
 
-/** 비로그인 상태로 크롤링 (재시도 포함) */
 export const crawlWithRetryWithoutCookie = async (
   query: string,
   maxRetries: number = 2
@@ -206,7 +203,6 @@ export const crawlWithRetryWithoutCookie = async (
   throw new Error('비로그인 크롤링 실패');
 };
 
-/** 다중 페이지 크롤링 (1~maxPages 페이지) - HTML 배열 반환 */
 export const crawlMultiPagesWithRetry = async (
   query: string,
   maxPages: number = 4,
