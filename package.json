@@ -20,6 +20,7 @@
     "scheduler:root": "ts-node src/pm2-scheduler-root.ts",
     "scheduler:root:test": "cross-env TEST_DELAY_MINUTES=1 ts-node src/pm2-scheduler-root.ts",
     "cron:root": "ts-node src/cron-root.ts",
+    "cron:pet": "ts-node src/cron-pet.ts",
     "check-login": "npx tsx check-login.ts"
   },
   "dependencies": {
