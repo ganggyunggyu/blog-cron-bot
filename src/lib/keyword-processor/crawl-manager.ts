@@ -1,4 +1,4 @@
-import { crawlWithRetry, randomDelay } from '../../crawler';
+import { crawlWithRetry, crawlMultiPagesWithRetry, randomDelay } from '../../crawler';
 import { extractPopularItems } from '../../parser';
 import { matchBlogs } from '../../matcher';
 import { getSheetOptions } from '../../sheet-config';
@@ -26,7 +26,8 @@ export const getCrawlResult = async (
   keywordType: KeywordType,
   caches: CrawlCaches,
   logBuilder: DetailedLogBuilder,
-  updateFunction: UpdateFunction
+  updateFunction: UpdateFunction,
+  maxPages: number = 1
 ): Promise<CrawlResult | null> => {
   const { crawlCache, itemsCache, matchQueueMap, htmlStructureCache } = caches;
 
@@ -40,8 +41,35 @@ export const getCrawlResult = async (
     const sheetOpts = getSheetOptions((keywordDoc as any).sheetType);
 
     try {
-      const html = await crawlWithRetry(searchQuery, CRAWL_CONFIG.maxRetries);
-      items = extractPopularItems(html);
+      let html: string;
+
+      if (maxPages > 1) {
+        // 다중 페이지 크롤링 (펫 키워드용)
+        const htmls = await crawlMultiPagesWithRetry(searchQuery, maxPages, CRAWL_CONFIG.maxRetries);
+        html = htmls[0]; // 첫 페이지 HTML은 캐시용
+
+        // 모든 페이지에서 아이템 추출 후 중복 제거 + 페이지 번호 기록
+        const allItems: any[] = [];
+        const seenLinks = new Set<string>();
+
+        htmls.forEach((pageHtml, pageIndex) => {
+          const pageNumber = pageIndex + 1;
+          const pageItems = extractPopularItems(pageHtml);
+          for (const item of pageItems) {
+            if (!seenLinks.has(item.link)) {
+              seenLinks.add(item.link);
+              allItems.push({ ...item, page: pageNumber });
+            }
+          }
+        });
+
+        items = allItems;
+        logger.info(`📄 ${maxPages}페이지 크롤링 완료: ${items.length}개 아이템`);
+      } else {
+        // 기존 단일 페이지 크롤링
+        html = await crawlWithRetry(searchQuery, CRAWL_CONFIG.maxRetries);
+        items = extractPopularItems(html);
+      }
 
       const allowAnyEnv = String(
         process.env.ALLOW_ANY_BLOG || ''

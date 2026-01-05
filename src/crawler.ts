@@ -51,6 +51,17 @@ export const buildNaverSearchUrl = (query: string): string => {
   )}&ackey=${generateAckey()}`;
 };
 
+/** 페이지 번호를 포함한 네이버 검색 URL 생성 (2페이지 이상용) */
+export const buildNaverSearchUrlWithPage = (query: string, page: number): string => {
+  const q = getSearchQuery(query);
+  if (page <= 1) {
+    return buildNaverSearchUrl(query);
+  }
+  return `https://search.naver.com/search.naver?nso=&page=${page}&query=${encodeURIComponent(
+    q
+  )}&sm=tab_pge&ssc=tab.ur.all&start=1`;
+};
+
 export const fetchHtml = async (url: string): Promise<string> => {
   const client = await getGotScrapingClient();
   const cookie = buildNaverCookie();
@@ -193,4 +204,53 @@ export const crawlWithRetryWithoutCookie = async (
   }
 
   throw new Error('비로그인 크롤링 실패');
+};
+
+/** 다중 페이지 크롤링 (1~maxPages 페이지) - HTML 배열 반환 */
+export const crawlMultiPagesWithRetry = async (
+  query: string,
+  maxPages: number = 4,
+  maxRetries: number = 3
+): Promise<string[]> => {
+  const htmls: string[] = [];
+
+  for (let page = 1; page <= maxPages; page++) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const url = buildNaverSearchUrlWithPage(query, page);
+        const html = await fetchHtml(url);
+        htmls.push(html);
+
+        if (page < maxPages) {
+          await randomDelay(500, 1000);
+        }
+        break;
+      } catch (error) {
+        const err = error as Error & { status?: number };
+        const is403 = err.status === 403;
+
+        if (attempt < maxRetries) {
+          const baseDelay = is403 ? 60000 : 30000;
+          const backoff = baseDelay * attempt;
+          const jitter = Math.floor(Math.random() * 1000);
+
+          logger.warn(
+            `[페이지${page}] ${err.message} - ${attempt}/${maxRetries} 재시도 (${Math.round(
+              (backoff + jitter) / 1000
+            )}초 대기)`
+          );
+
+          await delay(backoff + jitter);
+        } else {
+          logger.warn(`[페이지${page}] 크롤링 실패, 스킵`);
+        }
+      }
+    }
+  }
+
+  if (htmls.length === 0) {
+    throw new Error('다중 페이지 크롤링 실패');
+  }
+
+  return htmls;
 };

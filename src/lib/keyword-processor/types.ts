@@ -25,6 +25,8 @@ export interface ProcessKeywordsOptions {
   updateFunction?: UpdateFunction;
   /** 로그인 모드 여부 (비로그인이면 게스트 재시도 스킵) */
   isLoggedIn?: boolean;
+  /** 크롤링할 최대 페이지 수 (기본값 1, 펫 키워드는 4) */
+  maxPages?: number;
 }
 
 /** 키워드 문서 정보 */

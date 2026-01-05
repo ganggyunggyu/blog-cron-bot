@@ -43,6 +43,7 @@ export const processKeywords = async (
   const updateFunction: UpdateFunction =
     options?.updateFunction ?? updateKeywordResult;
   const isLoggedIn = options?.isLoggedIn ?? false;
+  const maxPages = options?.maxPages ?? 1;
   const allResults: ExposureResult[] = [];
 
   // 1️⃣ 크롤링 캐시 및 매칭 큐 (searchQuery별)
@@ -88,7 +89,8 @@ export const processKeywords = async (
       keywordType,
       caches,
       logBuilder,
-      updateFunction
+      updateFunction,
+      maxPages
     );
 
     if (!crawlResult) continue;
