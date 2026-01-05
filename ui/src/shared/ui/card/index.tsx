@@ -8,13 +8,15 @@ interface CardProps {
 
 export const Card = ({ className, children }: CardProps) => {
   return (
-    <div
-      className={cn(
-        'rounded-3xl border border-[var(--border)] bg-[var(--surface-1)] shadow-[var(--shadow)]',
-        className
-      )}
-    >
-      {children}
-    </div>
+    <React.Fragment>
+      <div
+        className={cn(
+          'rounded-3xl border border-[var(--border)] bg-[var(--surface-1)] shadow-[var(--shadow)]',
+          className
+        )}
+      >
+        {children}
+      </div>
+    </React.Fragment>
   );
 };

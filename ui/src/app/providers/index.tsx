@@ -18,8 +18,10 @@ interface AppProvidersProps {
 
 export const AppProviders = ({ children }: AppProvidersProps) => {
   return (
-    <JotaiProvider>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    </JotaiProvider>
+    <React.Fragment>
+      <JotaiProvider>
+        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      </JotaiProvider>
+    </React.Fragment>
   );
 };

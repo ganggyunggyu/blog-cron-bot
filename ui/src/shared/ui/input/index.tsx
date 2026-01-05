@@ -14,25 +14,27 @@ export const Input = ({
   ...props
 }: InputProps) => {
   return (
-    <div
-      className={cn(
-        'flex items-center gap-2 rounded-2xl border border-[var(--border)] bg-white/80 px-4 py-2.5',
-        'transition focus-within:border-[var(--accent-1)] focus-within:ring-2 focus-within:ring-[var(--ring)]',
-        className
-      )}
-    >
-      {startIcon ? (
-        <span className={cn('text-[var(--ink-2)]')}>{startIcon}</span>
-      ) : null}
-      <input
-        type={type}
+    <React.Fragment>
+      <div
         className={cn(
-          'w-full bg-transparent text-sm text-[var(--ink-1)] placeholder:text-[var(--ink-2)]',
-          'focus:outline-none'
+          'flex items-center gap-2 rounded-2xl border border-[var(--border)] bg-white/80 px-4 py-2.5',
+          'transition focus-within:border-[var(--accent-1)] focus-within:ring-2 focus-within:ring-[var(--ring)]',
+          className
         )}
-        {...props}
-      />
-      {endSlot ? <span>{endSlot}</span> : null}
-    </div>
+      >
+        {startIcon ? (
+          <span className={cn('text-[var(--ink-2)]')}>{startIcon}</span>
+        ) : null}
+        <input
+          type={type}
+          className={cn(
+            'w-full bg-transparent text-sm text-[var(--ink-1)] placeholder:text-[var(--ink-2)]',
+            'focus:outline-none'
+          )}
+          {...props}
+        />
+        {endSlot ? <span>{endSlot}</span> : null}
+      </div>
+    </React.Fragment>
   );
 };
