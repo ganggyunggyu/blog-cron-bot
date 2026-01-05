@@ -4,6 +4,7 @@ import fs from 'fs';
 import bodyParser from 'body-parser';
 import { testKeyword } from '../tester';
 import { runBatch } from '../batch-runner';
+import { getCronStatus, streamCronRun } from '../cron-runner';
 import { connectDB, disconnectDB } from '../../database';
 import * as dotenv from 'dotenv';
 
@@ -11,6 +12,12 @@ dotenv.config();
 
 const app = express();
 const PORT = Number(process.env.PORT || 5178);
+
+const isCronMode = (
+  value: string
+): value is 'cron-test' | 'cron-root' | 'cron-pet' => {
+  return value === 'cron-test' || value === 'cron-root' || value === 'cron-pet';
+};
 
 app.use(bodyParser.json({ limit: '1mb' }));
 
@@ -22,6 +29,35 @@ app.use(express.static(staticDir));
 
 app.get('/health', (_req, res) => {
   res.json({ ok: true });
+});
+
+app.get('/api/cron/status', (_req, res) => {
+  res.json({ ok: true, ...getCronStatus() });
+});
+
+app.get('/api/cron/stream', (req, res) => {
+  const modeRaw = String(req.query.mode || '');
+  const mode = isCronMode(modeRaw) ? modeRaw : null;
+
+  if (!mode) {
+    res.status(400).json({ ok: false, error: 'invalid mode' });
+    return;
+  }
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders?.();
+
+  const status = getCronStatus();
+  if (status.running) {
+    res.write(`event: status\n`);
+    res.write(`data: ${JSON.stringify({ status: 'busy', mode: status.mode })}\n\n`);
+    res.end();
+    return;
+  }
+
+  streamCronRun(mode, res);
 });
 
 app.post('/api/test', async (req, res) => {
