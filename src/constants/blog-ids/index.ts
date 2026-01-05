@@ -84,4 +84,7 @@ export const BLOG_IDS = [
   'disadvantage6171',
   'weddindg1218',
   'ikc9036',
+  'compare14310',
+  'fail5644',
+  'loand3324',
 ];
