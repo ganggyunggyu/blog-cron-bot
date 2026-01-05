@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import bodyParser from 'body-parser';
 import { testKeyword } from '../tester';
 import { runBatch } from '../batch-runner';
@@ -13,8 +14,11 @@ const PORT = Number(process.env.PORT || 5178);
 
 app.use(bodyParser.json({ limit: '1mb' }));
 
+const uiDistDir = path.join(__dirname, '../../../ui/dist');
 const publicDir = path.join(__dirname, '../../../public');
-app.use(express.static(publicDir));
+const staticDir = fs.existsSync(uiDistDir) ? uiDistDir : publicDir;
+
+app.use(express.static(staticDir));
 
 app.get('/health', (_req, res) => {
   res.json({ ok: true });
@@ -22,11 +26,20 @@ app.get('/health', (_req, res) => {
 
 app.post('/api/test', async (req, res) => {
   try {
-    const { keyword, allowAnyBlog = false, fetchHtml = false } = req.body || {};
+    const {
+      keyword,
+      allowAnyBlog = false,
+      fetchHtml = false,
+      maxContentChecks,
+      contentCheckDelay,
+    } = req.body || {};
     if (!keyword || typeof keyword !== 'string') {
       return res.status(400).json({ ok: false, error: 'keyword is required' });
     }
-    const result = await testKeyword({ keyword }, { allowAnyBlog, fetchHtml });
+    const result = await testKeyword(
+      { keyword },
+      { allowAnyBlog, fetchHtml, maxContentChecks, contentCheckDelay }
+    );
     res.json(result);
   } catch (e: any) {
     res.status(500).json({ ok: false, error: e?.message || 'internal error' });
@@ -34,7 +47,11 @@ app.post('/api/test', async (req, res) => {
 });
 
 app.get('/batch', (_req, res) => {
-  res.sendFile(path.join(publicDir, 'batch.html'));
+  res.sendFile(path.join(staticDir, 'index.html'));
+});
+
+app.get('/', (_req, res) => {
+  res.sendFile(path.join(staticDir, 'index.html'));
 });
 
 app.post('/api/run', async (req, res) => {

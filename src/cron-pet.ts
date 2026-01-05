@@ -17,7 +17,6 @@ import { logger } from './lib/logger';
 
 dotenv.config();
 
-/** 펫 전용 업체명 (도그마루, 서리펫) */
 const PET_COMPANIES = ['도그마루', '서리펫'];
 
 export async function main() {
@@ -40,7 +39,6 @@ export async function main() {
     process.exit(1);
   }
 
-  // 도그마루 시트 동기화
   try {
     const syncResult = await syncKeywords({
       sheetId: PRODUCT_SHEET_ID,
@@ -56,7 +54,6 @@ export async function main() {
 
   const allKeywords = await getAllKeywords();
 
-  // 펫 전용 필터: 도그마루, 서리펫만
   const normalize = (s: unknown) =>
     String(s ?? '')
       .toLowerCase()
@@ -66,7 +63,6 @@ export async function main() {
     PET_COMPANIES.some((pet) => normalize(k.company) === normalize(pet))
   );
 
-  // 추가 필터 옵션 (선택적)
   const onlyCompany = (process.env.ONLY_COMPANY || '').trim();
   const onlyKeywordRegex = (process.env.ONLY_KEYWORD_REGEX || '').trim();
   const onlyId = (process.env.ONLY_ID || '').trim();
@@ -92,7 +88,6 @@ export async function main() {
 
   const keywords = filtered.slice(startIndex);
 
-  // 업체별 개수 표시
   const dogmaruCount = keywords.filter((k) => normalize(k.company) === '도그마루').length;
   const seoripetCount = keywords.filter((k) => normalize(k.company) === '서리펫').length;
 
@@ -112,7 +107,7 @@ export async function main() {
   const allResults = await processKeywords(keywords, logBuilder, {
     updateFunction: updateKeywordResult,
     isLoggedIn: loginStatus.isLoggedIn,
-    maxPages: 4, // 펫 키워드는 4페이지까지 크롤링
+    maxPages: 4,
   });
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
@@ -141,7 +136,6 @@ export async function main() {
     { label: '처리 시간', value: elapsedTimeStr },
   ]);
 
-  // 펫 시트에 결과 반영 (서리펫, 도그마루 전용)
   try {
     const importResult = await axios.post(`${SHEET_APP_URL}/api/keywords/pet`, {
       sheetId: TEST_CONFIG.SHEET_ID,

@@ -109,7 +109,6 @@ export async function runBatch(
       const vendorTarget = vendorBrand === '서리펫' ? '서리펫' : restaurantName || vendorBrand;
       const effectiveName = vendorTarget || restaurantName;
 
-      // keywordType 계산
       const keywordType: 'restaurant' | 'pet' | 'basic' = restaurantName
         ? 'restaurant'
         : companyNorm.includes(normalize('서리펫')) || sheetTypeCanon === 'dogmaru'
@@ -277,7 +276,6 @@ export async function runBatch(
       }
       if (idx < keywords.length - 1) await delay(500);
     } catch (e) {
-      // keywordType 계산 (error case)
       const companyRaw = String((doc as AnyObj).company || '').trim();
       const sheetTypeCanon = normalizeSheetType(String((doc as AnyObj).sheetType || ''));
       const companyNorm = normalize(companyRaw);

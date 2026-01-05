@@ -1,7 +1,6 @@
 const express = require('express');
 const path = require('path');
 
-// 빌드된 TypeScript 모듈 import
 const {
   extractPostVendorName,
   fetchResolvedPostHtml,
@@ -26,17 +25,14 @@ app.post('/api/test', async (req, res) => {
   try {
     const startTime = Date.now();
 
-    // 1️⃣ 크롤링
     const crawlStart = Date.now();
     const html = await crawlWithRetry(searchQuery, 3);
     const crawlTime = Date.now() - crawlStart;
 
-    // 2️⃣ 파싱
     const parseStart = Date.now();
     const items = extractPopularItems(html);
     const parseTime = Date.now() - parseStart;
 
-    // 3️⃣ 블로그 ID 매칭
     const matchStart = Date.now();
     const allMatches = matchBlogs(searchQuery, items, { allowAnyBlog: true });
     const matchTime = Date.now() - matchStart;
@@ -47,7 +43,6 @@ app.post('/api/test', async (req, res) => {
       { name: '매칭', time: matchTime, count: allMatches.length },
     ];
 
-    // 4️⃣ vendorTarget 있으면 VENDOR 필터링, 없으면 TITLE 토큰 필터링
     const vendorChecks = [];
     let passedCount = 0;
 
@@ -62,7 +57,6 @@ app.post('/api/test', async (req, res) => {
 
       try {
         if (vendorTarget) {
-          // VENDOR 매칭 로직
           const fetchStart = Date.now();
           const postHtml = await fetchResolvedPostHtml(match.postLink);
           fetchTime = Date.now() - fetchStart;
@@ -92,7 +86,6 @@ app.post('/api/test', async (req, res) => {
             }
           }
 
-          // VENDOR 실패 시 TITLE 체크
           if (!passed) {
             const normalize = (s) => s.toLowerCase().replace(/\s+/g, '');
             const titleRaw = match.postTitle || '';
@@ -120,7 +113,6 @@ app.post('/api/test', async (req, res) => {
             }
           }
         } else {
-          // vendorTarget 없는 경우: TITLE 토큰 매칭
           const normalize = (s) => s.toLowerCase().replace(/\s+/g, '');
           const tokens = searchQuery
             .split(/\s+/)
@@ -162,7 +154,6 @@ app.post('/api/test', async (req, res) => {
       });
     }
 
-    // 5️⃣ 필터 조건 계산
     const filterConditions = vendorTarget
       ? {
           restaurantName: vendorTarget,
