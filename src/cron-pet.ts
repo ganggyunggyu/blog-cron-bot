@@ -14,6 +14,7 @@ import { syncKeywords } from './api';
 import axios from 'axios';
 import { checkNaverLogin } from './lib/check-naver-login';
 import { logger } from './lib/logger';
+import { closeBrowser } from './lib/playwright-crawler';
 
 dotenv.config();
 
@@ -107,7 +108,7 @@ export async function main() {
   const allResults = await processKeywords(keywords, logBuilder, {
     updateFunction: updateKeywordResult,
     isLoggedIn: loginStatus.isLoggedIn,
-    maxPages: 4,
+    maxPages: 9,
   });
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
@@ -156,6 +157,7 @@ export async function main() {
     { label: '실패', value: `${stats.failed}개` },
   ]);
 
+  await closeBrowser();
   await disconnectDB();
 }
 

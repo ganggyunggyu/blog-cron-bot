@@ -1,4 +1,4 @@
-import { crawlWithRetry, crawlMultiPagesWithRetry, randomDelay } from '../../crawler';
+import { crawlWithRetry, randomDelay } from '../../crawler';
 import { extractPopularItems } from '../../parser';
 import { matchBlogs } from '../../matcher';
 import { DetailedLogBuilder } from '../../logs/detailed-log';
@@ -8,6 +8,7 @@ import { logger } from '../logger';
 import { getAllowAnyBlog } from './allow-any-blog';
 import { KeywordDoc, KeywordType, CrawlCaches, UpdateFunction } from './types';
 import { extractRestaurantName } from './keyword-classifier';
+import { crawlMultiPagesPlaywright } from '../playwright-crawler';
 
 interface CrawlResult {
   items: any[];
@@ -41,7 +42,7 @@ export const getCrawlResult = async (
       let html: string;
 
       if (maxPages > 1) {
-        const htmls = await crawlMultiPagesWithRetry(searchQuery, maxPages, CRAWL_CONFIG.maxRetries);
+        const htmls = await crawlMultiPagesPlaywright(searchQuery, maxPages);
         html = htmls[0];
 
         const allItems: any[] = [];
