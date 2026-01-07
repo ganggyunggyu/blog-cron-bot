@@ -58,7 +58,7 @@ export const buildNaverSearchUrlWithPage = (query: string, page: number): string
   }
   return `https://search.naver.com/search.naver?nso=&page=${page}&query=${encodeURIComponent(
     q
-  )}&sm=tab_pge&ssc=tab.ur.all&start=1`;
+  )}&sm=tab_pge&ssc=tab.nx.all&start=1`;
 };
 
 export const fetchHtml = async (url: string): Promise<string> => {
