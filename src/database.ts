@@ -17,6 +17,7 @@ export interface IKeyword extends Document {
   rankWithCafe?: number;
   isUpdateRequired?: boolean;
   isNewLogic?: boolean;
+  foundPage?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -38,6 +39,7 @@ const KeywordSchema: Schema = new Schema(
     rankWithCafe: { type: Number, default: 0 },
     isUpdateRequired: { type: Boolean, default: false },
     isNewLogic: { type: Boolean, default: false },
+    foundPage: { type: Number, default: 0 },
   },
   {
     timestamps: true,
@@ -61,6 +63,7 @@ export interface IRootKeyword extends Document {
   rankWithCafe?: number;
   isUpdateRequired?: boolean;
   isNewLogic?: boolean;
+  foundPage?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -81,6 +84,7 @@ const RootKeywordSchema: Schema = new Schema(
     rankWithCafe: { type: Number, default: 0 },
     isUpdateRequired: { type: Boolean, default: false },
     isNewLogic: { type: Boolean, default: false },
+    foundPage: { type: Number, default: 0 },
   },
   {
     timestamps: true,
@@ -142,7 +146,8 @@ export const updateKeywordResult = async (
   postVendorName?: string,
   rankWithCafe?: number,
   isUpdateRequired?: boolean,
-  isNewLogic?: boolean
+  isNewLogic?: boolean,
+  foundPage?: number
 ): Promise<void> => {
   try {
     const update: Partial<IKeyword> = {
@@ -163,6 +168,7 @@ export const updateKeywordResult = async (
     if (typeof isUpdateRequired !== 'undefined')
       update.isUpdateRequired = isUpdateRequired;
     if (typeof isNewLogic !== 'undefined') update.isNewLogic = isNewLogic;
+    if (typeof foundPage !== 'undefined') update.foundPage = foundPage;
 
     await Keyword.findByIdAndUpdate(keywordId, update);
   } catch (error) {
@@ -183,7 +189,8 @@ export const updateRootKeywordResult = async (
   postVendorName?: string,
   rankWithCafe?: number,
   isUpdateRequired?: boolean,
-  isNewLogic?: boolean
+  isNewLogic?: boolean,
+  foundPage?: number
 ): Promise<void> => {
   try {
     const update: Partial<IRootKeyword> = {
@@ -204,6 +211,7 @@ export const updateRootKeywordResult = async (
     if (typeof isUpdateRequired !== 'undefined')
       update.isUpdateRequired = isUpdateRequired;
     if (typeof isNewLogic !== 'undefined') update.isNewLogic = isNewLogic;
+    if (typeof foundPage !== 'undefined') update.foundPage = foundPage;
 
     await RootKeyword.findByIdAndUpdate(keywordId, update);
   } catch (error) {
