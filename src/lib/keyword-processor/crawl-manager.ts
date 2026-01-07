@@ -1,5 +1,5 @@
 import { crawlWithRetry, randomDelay } from '../../crawler';
-import { extractPopularItems } from '../../parser';
+import { extractPopularItems, PopularItem } from '../../parser';
 import { matchBlogs } from '../../matcher';
 import { DetailedLogBuilder } from '../../logs/detailed-log';
 import { progressLogger } from '../../logs/progress-logger';
@@ -9,6 +9,7 @@ import { getAllowAnyBlog } from './allow-any-blog';
 import { KeywordDoc, KeywordType, CrawlCaches, UpdateFunction } from './types';
 import { extractRestaurantName } from './keyword-classifier';
 import { crawlMultiPagesPlaywright } from '../playwright-crawler';
+import { extractAllBlogLinks } from '../playwright-crawler/blog-extractor';
 
 interface CrawlResult {
   items: any[];
@@ -45,16 +46,39 @@ export const getCrawlResult = async (
         const htmls = await crawlMultiPagesPlaywright(searchQuery, maxPages);
         html = htmls[0];
 
-        const allItems: any[] = [];
+        const allItems: PopularItem[] = [];
         const seenLinks = new Set<string>();
 
         htmls.forEach((pageHtml, pageIndex) => {
           const pageNumber = pageIndex + 1;
-          const pageItems = extractPopularItems(pageHtml);
-          for (const item of pageItems) {
-            if (!seenLinks.has(item.link)) {
-              seenLinks.add(item.link);
-              allItems.push({ ...item, page: pageNumber });
+
+          if (pageNumber === 1) {
+            const pageItems = extractPopularItems(pageHtml);
+            for (const item of pageItems) {
+              if (!seenLinks.has(item.link)) {
+                seenLinks.add(item.link);
+                allItems.push({ ...item, page: pageNumber });
+              }
+            }
+          } else {
+            const blogItems = extractAllBlogLinks(pageHtml, pageNumber);
+            for (const blogItem of blogItems) {
+              if (!seenLinks.has(blogItem.link)) {
+                seenLinks.add(blogItem.link);
+                allItems.push({
+                  title: blogItem.title,
+                  link: blogItem.link,
+                  snippet: '',
+                  image: '',
+                  badge: '',
+                  group: `검색결과 ${pageNumber}페이지`,
+                  blogLink: blogItem.link,
+                  blogName: blogItem.blogName,
+                  positionWithCafe: undefined,
+                  isNewLogic: false,
+                  page: pageNumber,
+                });
+              }
             }
           }
         });
