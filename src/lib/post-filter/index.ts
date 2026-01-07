@@ -1,13 +1,10 @@
+import { PET_BLOG_IDS } from '../../constants/blog-ids';
 import { ExposureResult } from '../../matcher';
 import { VendorMatchDetails } from '../../types';
 import {
   extractPostVendorNames,
   fetchResolvedPostHtml,
 } from '../vendor-extractor';
-
-const DOGMARU_BLOG_IDS = ['alien8118', 'disadvantage6171', 'weddindg1218', 'compare14310', 'tpeany'];
-
-const SEORIPET_BLOG_IDS = ['loand3324', 'fail5644', 'hotelelena'];
 
 const extractBlogId = (postLink: string): string | null => {
   const match = postLink.match(/blog\.naver\.com\/([^\/]+)/);
@@ -43,27 +40,15 @@ export const findMatchingPost = async (
     let candidateVendorDetails: VendorMatchDetails | undefined;
 
     if (vendorTarget) {
-      if (vendorTarget === '도그마루') {
+      if (vendorTarget === '도그마루' || vendorTarget === '서리펫') {
         const blogId = extractBlogId(candidate.postLink);
-        if (blogId && DOGMARU_BLOG_IDS.includes(blogId)) {
+        if (blogId && PET_BLOG_IDS.includes(blogId)) {
           candidatePassed = true;
           candidateSource = 'VENDOR';
-          candidateVendor = '도그마루(전용블로그)';
+          candidateVendor = `${vendorTarget}(전용블로그)`;
         }
         if (!candidatePassed) continue;
-      }
-
-      else if (vendorTarget === '서리펫') {
-        const blogId = extractBlogId(candidate.postLink);
-        if (blogId && SEORIPET_BLOG_IDS.includes(blogId)) {
-          candidatePassed = true;
-          candidateSource = 'VENDOR';
-          candidateVendor = '서리펫(전용블로그)';
-        }
-        if (!candidatePassed) continue;
-      }
-
-      else {
+      } else {
         try {
           const candidateHtml = await fetchResolvedPostHtml(candidate.postLink);
           const candidateVendors = extractPostVendorNames(candidateHtml);
@@ -192,7 +177,8 @@ const checkTitleMatch = (
   const baseBrandNorm = normalize(baseBrand);
 
   const hasFull = title.includes(rn) || titleNorm.includes(rnNorm);
-  const hasBrand = baseBrandNorm.length >= 2 && titleNorm.includes(baseBrandNorm);
+  const hasBrand =
+    baseBrandNorm.length >= 2 && titleNorm.includes(baseBrandNorm);
 
   return hasFull || hasBrand;
 };

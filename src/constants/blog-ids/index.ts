@@ -1,3 +1,14 @@
+export const PET_BLOG_IDS = [
+  'alien8118',
+  'disadvantage6171',
+  'weddindg1218',
+  'compare14310',
+  'tpeany',
+  'loand3324',
+  'fail5644',
+  'hotelelena',
+];
+
 export const BLOG_IDS = [
   'sarangchai_',
   'im_tang',
