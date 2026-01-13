@@ -8,7 +8,7 @@ export const launchBrowser = async (): Promise<BrowserContext> => {
   if (context) return context;
 
   browser = await chromium.launch({
-    headless: false,
+    headless: true,
   });
 
   const cookie = buildNaverCookie();

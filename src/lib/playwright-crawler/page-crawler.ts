@@ -19,12 +19,34 @@ const buildViewTabUrl = (query: string, page: number): string => {
 
 const waitForContent = async (page: Page): Promise<void> => {
   await page.waitForSelector('#main_pack', { timeout: 10000 }).catch(() => {});
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(800 + Math.random() * 500);
+};
+
+const checkBlocked = async (page: Page): Promise<boolean> => {
+  const content = await page.content();
+  return content.includes('검색 서비스 이용이 제한되었습니다') ||
+         content.includes('비정상적인 검색');
+};
+
+const handleBlocked = async (page: Page): Promise<void> => {
+  logger.warn('⚠️ 차단 감지! 제한 해제 버튼 클릭 시도...');
+
+  const releaseButton = page.locator('button.btn_open:has-text("제한 해제")');
+  if (await releaseButton.count() > 0) {
+    await releaseButton.click();
+    await page.waitForTimeout(2000);
+    logger.info('제한 해제 버튼 클릭 완료, 대기 중...');
+  }
+
+  await page.waitForTimeout(5000);
+  await page.reload();
+  await waitForContent(page);
 };
 
 export const crawlMultiPagesPlaywright = async (
   query: string,
-  maxPages: number = 9
+  maxPages: number = 9,
+  onPageCrawled?: (html: string, pageNum: number) => boolean
 ): Promise<string[]> => {
   const context = await launchBrowser();
   const page = await context.newPage();
@@ -36,11 +58,21 @@ export const crawlMultiPagesPlaywright = async (
     await page.goto(firstUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
     await waitForContent(page);
 
-    htmls.push(await page.content());
+    if (await checkBlocked(page)) {
+      await handleBlocked(page);
+    }
+
+    const firstHtml = await page.content();
+    htmls.push(firstHtml);
     logger.info(`📄 페이지 1/${maxPages} 크롤링 완료`);
 
+    if (onPageCrawled && onPageCrawled(firstHtml, 1)) {
+      logger.info(`✅ 1페이지에서 매칭 발견, 크롤링 종료`);
+      return htmls;
+    }
+
     for (let pageNum = 2; pageNum <= maxPages; pageNum++) {
-      await page.waitForTimeout(300 + Math.random() * 500);
+      await page.waitForTimeout(500 + Math.random() * 1000);
 
       const pageButton = page.locator(`.sc_page_inner a.btn:has-text("${pageNum}")`);
       const buttonExists = await pageButton.count() > 0;
@@ -54,8 +86,18 @@ export const crawlMultiPagesPlaywright = async (
       await page.waitForLoadState('domcontentloaded');
       await waitForContent(page);
 
-      htmls.push(await page.content());
+      if (await checkBlocked(page)) {
+        await handleBlocked(page);
+      }
+
+      const pageHtml = await page.content();
+      htmls.push(pageHtml);
       logger.info(`📄 페이지 ${pageNum}/${maxPages} 크롤링 완료 (버튼 클릭)`);
+
+      if (onPageCrawled && onPageCrawled(pageHtml, pageNum)) {
+        logger.info(`✅ ${pageNum}페이지에서 매칭 발견, 크롤링 종료`);
+        break;
+      }
     }
   } finally {
     await page.close();
