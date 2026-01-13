@@ -1,15 +1,9 @@
-import { PET_BLOG_IDS } from '../../constants/blog-ids';
 import { ExposureResult } from '../../matcher';
 import { VendorMatchDetails } from '../../types';
 import {
   extractPostVendorNames,
   fetchResolvedPostHtml,
 } from '../vendor-extractor';
-
-const extractBlogId = (postLink: string): string | null => {
-  const match = postLink.match(/blog\.naver\.com\/([^\/]+)/);
-  return match ? match[1] : null;
-};
 
 interface FilterResult {
   matchedIndex: number;
@@ -40,14 +34,11 @@ export const findMatchingPost = async (
     let candidateVendorDetails: VendorMatchDetails | undefined;
 
     if (vendorTarget) {
-      if (vendorTarget === '도그마루' || vendorTarget === '서리펫') {
-        const blogId = extractBlogId(candidate.postLink);
-        if (blogId && PET_BLOG_IDS.includes(blogId)) {
-          candidatePassed = true;
-          candidateSource = 'VENDOR';
-          candidateVendor = `${vendorTarget}(전용블로그)`;
-        }
-        if (!candidatePassed) continue;
+      const isPetKeyword = vendorTarget === '도그마루' || vendorTarget === '서리펫';
+
+      if (isPetKeyword) {
+        candidatePassed = true;
+        candidateSource = 'VENDOR';
       } else {
         try {
           const candidateHtml = await fetchResolvedPostHtml(candidate.postLink);
