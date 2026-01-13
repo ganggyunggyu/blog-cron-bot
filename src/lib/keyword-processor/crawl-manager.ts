@@ -4,6 +4,7 @@ import { matchBlogs } from '../../matcher';
 import { DetailedLogBuilder } from '../../logs/detailed-log';
 import { progressLogger } from '../../logs/progress-logger';
 import { CRAWL_CONFIG } from '../../constants';
+import { BLOG_IDS } from '../../constants/blog-ids';
 import { logger } from '../logger';
 import { getAllowAnyBlog } from './allow-any-blog';
 import { KeywordDoc, KeywordType, CrawlCaches, UpdateFunction } from './types';
@@ -43,7 +44,17 @@ export const getCrawlResult = async (
       let html: string;
 
       if (maxPages > 1) {
-        const htmls = await crawlMultiPagesPlaywright(searchQuery, maxPages);
+        const checkBlogMatch = (pageHtml: string): boolean => {
+          for (const blogId of BLOG_IDS) {
+            if (pageHtml.includes(`blog.naver.com/${blogId}/`) ||
+                pageHtml.includes(`blog.naver.com/${blogId}"`)) {
+              return true;
+            }
+          }
+          return false;
+        };
+
+        const htmls = await crawlMultiPagesPlaywright(searchQuery, maxPages, checkBlogMatch);
         html = htmls[0];
 
         const allItems: PopularItem[] = [];

@@ -164,10 +164,14 @@ export const handleSuccess = async (params: SuccessParams): Promise<void> => {
 
   const isNewLogic = getIsNewLogic(topicNamesArray);
 
+  const popularTopic = keywordType === 'pet'
+    ? nextMatch.exposureType
+    : nextMatch.topicName || nextMatch.exposureType;
+
   await updateFunction(
     String(keywordDoc._id),
     true,
-    nextMatch.topicName || nextMatch.exposureType,
+    popularTopic,
     nextMatch.postLink,
     keywordType,
     restaurantName,
@@ -180,7 +184,10 @@ export const handleSuccess = async (params: SuccessParams): Promise<void> => {
     nextMatch.page ?? 1
   );
 
-  allResults.push(nextMatch);
+  allResults.push({
+    ...nextMatch,
+    company: String(keywordDoc.company || ''),
+  });
 
   const successLog = logBuilder.createSuccess({
     index: globalIndex,

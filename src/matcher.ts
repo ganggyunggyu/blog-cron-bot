@@ -13,6 +13,7 @@ export interface ExposureResult {
   positionWithCafe?: number;
   isNewLogic?: boolean;
   page?: number;
+  company?: string;
 }
 
 export const extractBlogId = (blogUrl: string): string => {
@@ -60,7 +61,12 @@ export const matchBlogs = (
 
     const accept = allowAnyBlog ? !!blogId : blogId && allowedIds.has(blogId);
     if (accept) {
-      const exposureType = isPopular ? '인기글' : '스블';
+      let exposureType: string;
+      if (item.page && item.page > 1) {
+        exposureType = `검색결과 ${item.page}페이지`;
+      } else {
+        exposureType = isPopular ? '인기글' : '스블';
+      }
       const topicName = item.group;
 
       const position = isPopular
