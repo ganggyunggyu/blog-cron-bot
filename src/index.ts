@@ -1,11 +1,12 @@
 import * as dotenv from 'dotenv';
 import { connectDB, disconnectDB, getAllKeywords } from './database';
-import { saveToCSV } from './csv-writer';
+import { saveToCSV, saveToSheetCSV } from './csv-writer';
 import { getSheetOptions } from './sheet-config';
 import { createDetailedLogBuilder, saveDetailedLogs } from './logs';
 import { processKeywords } from './lib/keyword-processor';
 import { checkNaverLogin } from './lib/check-naver-login';
 import { logger } from './lib/logger';
+import { getKSTTimestamp } from './utils';
 
 dotenv.config();
 
@@ -77,7 +78,7 @@ export async function main() {
     isLoggedIn: loginStatus.isLoggedIn,
   });
 
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  const timestamp = getKSTTimestamp();
   const filterSheet = (process.env.ONLY_SHEET_TYPE || '').trim();
   const csvPrefix = filterSheet
     ? getSheetOptions(filterSheet).csvFilePrefix
@@ -85,6 +86,11 @@ export async function main() {
   const filename = `${csvPrefix}_${timestamp}.csv`;
 
   saveToCSV(allResults, filename);
+  saveToSheetCSV(
+    keywords.map((k: any) => ({ keyword: k.keyword, company: k.company })),
+    allResults,
+    `${csvPrefix}_sheet_${timestamp}.csv`
+  );
 
   const elapsedMs = Date.now() - startTime;
   const hours = Math.floor(elapsedMs / (1000 * 60 * 60));
