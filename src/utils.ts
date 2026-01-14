@@ -1,7 +1,7 @@
 export const getKSTTimestamp = (): string => {
   const now = new Date();
-  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  const kst = now.toLocaleString('sv-SE', { timeZone: 'Asia/Seoul' });
+  return kst.replace(/[: ]/g, '-');
 };
 
 export const getSearchQuery = (query: string): string => {
