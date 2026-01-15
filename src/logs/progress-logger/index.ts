@@ -52,7 +52,11 @@ export const progressLogger = {
     const kw = chalk.white(`"${keyword}"`);
     const arrow = chalk.gray('→');
     const rest = restaurantName ? chalk.cyan(restaurantName.slice(0, 15)) : chalk.gray('-');
-    const topicType = topic === '인기글' ? chalk.magenta('인기') : chalk.blue('스블');
+    const topicType = topic === '인기글'
+      ? chalk.magenta('인기')
+      : topic === '스블'
+        ? chalk.blue('스블')
+        : chalk.blue(topic.slice(0, 20));
     const rankStr = chalk.yellow(`${rank}위`);
     const time = isCache
       ? chalk.gray('캐시')
