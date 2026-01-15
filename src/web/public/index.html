@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>블로그 크론 대시보드</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #4ecca3;
+    }
+    .buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 15px 30px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: bold;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .btn-test {
+      background: #3498db;
+      color: white;
+    }
+    .btn-test:hover:not(:disabled) {
+      background: #2980b9;
+    }
+    .btn-pet {
+      background: #9b59b6;
+      color: white;
+    }
+    .btn-pet:hover:not(:disabled) {
+      background: #8e44ad;
+    }
+    .btn-root {
+      background: #e74c3c;
+      color: white;
+    }
+    .btn-root:hover:not(:disabled) {
+      background: #c0392b;
+    }
+    .btn-stop {
+      background: #e74c3c;
+      color: white;
+    }
+    .btn-stop:hover:not(:disabled) {
+      background: #c0392b;
+    }
+    .btn-clear {
+      background: #7f8c8d;
+      color: white;
+    }
+    .btn-clear:hover:not(:disabled) {
+      background: #636e72;
+    }
+    .status {
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 10px;
+      border-radius: 8px;
+      background: #16213e;
+    }
+    .status.running {
+      background: #2ecc71;
+      color: #000;
+    }
+    .log-container {
+      background: #0f0f23;
+      border-radius: 8px;
+      padding: 20px;
+      height: 60vh;
+      overflow-y: auto;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      border: 1px solid #333;
+    }
+    .log-line {
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .log-line.error {
+      color: #e74c3c;
+    }
+    .log-line.success {
+      color: #2ecc71;
+    }
+    .log-line.info {
+      color: #3498db;
+    }
+    .log-line.warning {
+      color: #f39c12;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .stat-card {
+      background: #16213e;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .stat-card h3 {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 10px;
+    }
+    .stat-card .value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #4ecca3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>블로그 크론 대시보드</h1>
+
+    <div class="status" id="status">대기 중</div>
+
+    <div class="buttons">
+      <button class="btn-test" onclick="startJob('test')">테스트 크론</button>
+      <button class="btn-pet" onclick="startJob('pet')">애견 크론</button>
+      <button class="btn-root" onclick="startJob('root')">루트 크론</button>
+      <button class="btn-stop" onclick="stopJob()" id="stopBtn" disabled>중지</button>
+      <button class="btn-clear" onclick="clearLog()">로그 지우기</button>
+    </div>
+
+    <div class="log-container" id="log"></div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <h3>마지막 실행</h3>
+        <div class="value" id="lastRun">-</div>
+      </div>
+      <div class="stat-card">
+        <h3>실행 시간</h3>
+        <div class="value" id="duration">-</div>
+      </div>
+      <div class="stat-card">
+        <h3>상태</h3>
+        <div class="value" id="resultStatus">-</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const socket = io();
+    const logEl = document.getElementById('log');
+    const statusEl = document.getElementById('status');
+    const stopBtn = document.getElementById('stopBtn');
+    const buttons = document.querySelectorAll('.btn-test, .btn-pet, .btn-root');
+
+    let startTime = null;
+    let timerInterval = null;
+
+    socket.on('connect', () => {
+      addLog('시스템: 서버 연결됨', 'info');
+    });
+
+    socket.on('disconnect', () => {
+      addLog('시스템: 서버 연결 끊김', 'error');
+    });
+
+    socket.on('status', (data) => {
+      updateStatus(data.running, data.job);
+    });
+
+    socket.on('log', (text) => {
+      addLog(text);
+    });
+
+    socket.on('error', (msg) => {
+      addLog(`에러: ${msg}`, 'error');
+    });
+
+    socket.on('done', (data) => {
+      const elapsed = startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
+      document.getElementById('duration').textContent = formatDuration(elapsed);
+      document.getElementById('resultStatus').textContent = data.code === 0 ? '성공' : '실패';
+      document.getElementById('resultStatus').style.color = data.code === 0 ? '#2ecc71' : '#e74c3c';
+
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    });
+
+    function startJob(type) {
+      socket.emit('start', type);
+      startTime = Date.now();
+      document.getElementById('lastRun').textContent = new Date().toLocaleTimeString('ko-KR');
+      document.getElementById('resultStatus').textContent = '실행 중';
+      document.getElementById('resultStatus').style.color = '#f39c12';
+
+      timerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        document.getElementById('duration').textContent = formatDuration(elapsed);
+      }, 1000);
+    }
+
+    function stopJob() {
+      socket.emit('stop');
+    }
+
+    function clearLog() {
+      logEl.innerHTML = '';
+    }
+
+    function addLog(text, type = '') {
+      const line = document.createElement('div');
+      line.className = 'log-line';
+
+      if (type) {
+        line.classList.add(type);
+      } else if (text.includes('✅') || text.includes('성공') || text.includes('완료')) {
+        line.classList.add('success');
+      } else if (text.includes('❌') || text.includes('에러') || text.includes('실패')) {
+        line.classList.add('error');
+      } else if (text.includes('⚠️') || text.includes('경고')) {
+        line.classList.add('warning');
+      } else if (text.includes('🔍') || text.includes('📄') || text.includes('📊')) {
+        line.classList.add('info');
+      }
+
+      line.textContent = text;
+      logEl.appendChild(line);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function updateStatus(running, job) {
+      if (running) {
+        statusEl.textContent = `실행 중: ${job?.toUpperCase()} 크론`;
+        statusEl.classList.add('running');
+        stopBtn.disabled = false;
+        buttons.forEach(btn => btn.disabled = true);
+      } else {
+        statusEl.textContent = '대기 중';
+        statusEl.classList.remove('running');
+        stopBtn.disabled = true;
+        buttons.forEach(btn => btn.disabled = false);
+      }
+    }
+
+    function formatDuration(seconds) {
+      const h = Math.floor(seconds / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = seconds % 60;
+
+      if (h > 0) {
+        return `${h}시간 ${m}분 ${s}초`;
+      } else if (m > 0) {
+        return `${m}분 ${s}초`;
+      } else {
+        return `${s}초`;
+      }
+    }
+  </script>
+</body>
+</html>
