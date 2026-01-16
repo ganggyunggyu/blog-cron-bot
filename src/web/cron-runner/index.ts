@@ -2,7 +2,7 @@ import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
 import path from 'path';
 import { Response } from 'express';
 
-export type CronMode = 'cron-test' | 'cron-root' | 'cron-pet';
+export type CronMode = 'cron-test' | 'cron-root' | 'cron-pages';
 
 interface CronRunStatus {
   running: boolean;
@@ -20,7 +20,7 @@ const PNPM_COMMAND = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
 const CRON_CONFIGS: Record<CronMode, CronRunConfig> = {
   'cron-test': { command: PNPM_COMMAND, args: ['cron:test'] },
   'cron-root': { command: PNPM_COMMAND, args: ['cron:root'] },
-  'cron-pet': { command: PNPM_COMMAND, args: ['cron:pet'] },
+  'cron-pages': { command: PNPM_COMMAND, args: ['cron:pages'] },
 };
 
 let activeProcess: ChildProcessWithoutNullStreams | null = null;

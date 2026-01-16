@@ -15,8 +15,8 @@ const PORT = Number(process.env.PORT || 5178);
 
 const isCronMode = (
   value: string
-): value is 'cron-test' | 'cron-root' | 'cron-pet' => {
-  return value === 'cron-test' || value === 'cron-root' || value === 'cron-pet';
+): value is 'cron-test' | 'cron-root' | 'cron-pages' => {
+  return value === 'cron-test' || value === 'cron-root' || value === 'cron-pages';
 };
 
 app.use(bodyParser.json({ limit: '1mb' }));

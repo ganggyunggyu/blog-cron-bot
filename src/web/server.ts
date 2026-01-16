@@ -33,7 +33,7 @@ io.on('connection', (socket) => {
 
     const scriptMap: Record<string, string> = {
       test: 'cron:test',
-      pet: 'cron:pet',
+      pages: 'cron:pages',
       root: 'cron:root',
     };
 
