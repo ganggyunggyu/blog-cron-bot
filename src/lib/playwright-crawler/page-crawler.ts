@@ -1,5 +1,5 @@
 import { Page } from 'playwright';
-import { launchBrowser } from './browser';
+import { launchBrowser, launchBrowserInstance } from './browser';
 import { getSearchQuery } from '../../utils';
 import { logger } from '../logger';
 
@@ -29,16 +29,17 @@ const checkBlocked = async (page: Page): Promise<boolean> => {
 };
 
 const handleBlocked = async (page: Page): Promise<void> => {
-  logger.warn('⚠️ 차단 감지! 제한 해제 버튼 클릭 시도...');
+  logger.warn('⚠️ 차단 감지! 30초 대기 후 재시도...');
 
   const releaseButton = page.locator('button.btn_open:has-text("제한 해제")');
   if (await releaseButton.count() > 0) {
     await releaseButton.click();
-    await page.waitForTimeout(2000);
-    logger.info('제한 해제 버튼 클릭 완료, 대기 중...');
+    await page.waitForTimeout(3000);
+    logger.info('제한 해제 버튼 클릭 완료');
   }
 
-  await page.waitForTimeout(5000);
+  await page.waitForTimeout(30000);
+  logger.info('30초 대기 완료, 페이지 새로고침...');
   await page.reload();
   await waitForContent(page);
 };
@@ -96,6 +97,64 @@ export const crawlMultiPagesPlaywright = async (
 
       if (onPageCrawled && onPageCrawled(pageHtml, pageNum)) {
         logger.info(`✅ ${pageNum}페이지에서 매칭 발견, 크롤링 종료`);
+        break;
+      }
+    }
+  } finally {
+    await page.close();
+  }
+
+  return htmls;
+};
+
+export const crawlMultiPagesWithInstance = async (
+  instanceId: string,
+  query: string,
+  maxPages: number = 9,
+  onPageCrawled?: (html: string, pageNum: number) => boolean
+): Promise<string[]> => {
+  const context = await launchBrowserInstance(instanceId);
+  const page = await context.newPage();
+  const htmls: string[] = [];
+
+  try {
+    const firstUrl = buildSearchUrl(query, 1);
+    await page.goto(firstUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await waitForContent(page);
+
+    if (await checkBlocked(page)) {
+      await handleBlocked(page);
+    }
+
+    const firstHtml = await page.content();
+    htmls.push(firstHtml);
+
+    if (onPageCrawled && onPageCrawled(firstHtml, 1)) {
+      return htmls;
+    }
+
+    for (let pageNum = 2; pageNum <= maxPages; pageNum++) {
+      await page.waitForTimeout(500 + Math.random() * 1000);
+
+      const pageButton = page.locator(`.sc_page_inner a.btn:has-text("${pageNum}")`);
+      const buttonExists = await pageButton.count() > 0;
+
+      if (!buttonExists) {
+        break;
+      }
+
+      await pageButton.click();
+      await page.waitForLoadState('domcontentloaded');
+      await waitForContent(page);
+
+      if (await checkBlocked(page)) {
+        await handleBlocked(page);
+      }
+
+      const pageHtml = await page.content();
+      htmls.push(pageHtml);
+
+      if (onPageCrawled && onPageCrawled(pageHtml, pageNum)) {
         break;
       }
     }
