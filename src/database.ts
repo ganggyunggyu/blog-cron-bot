@@ -219,3 +219,166 @@ export const updateRootKeywordResult = async (
     throw error;
   }
 };
+
+// ===== Page Check 컬렉션 (eye-clinic, diet, health-food, pet) =====
+
+export interface IPageCheckKeyword extends Document {
+  company: string;
+  keyword: string;
+  visibility: boolean;
+  popularTopic: string;
+  url: string;
+  keywordType: 'restaurant' | 'pet' | 'basic';
+  lastChecked: Date;
+  restaurantName?: string;
+  matchedTitle?: string;
+  postVendorName?: string;
+  rank?: number;
+  rankWithCafe?: number;
+  isUpdateRequired?: boolean;
+  isNewLogic?: boolean;
+  foundPage?: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const PageCheckKeywordSchema: Schema = new Schema(
+  {
+    company: { type: String, required: true },
+    keyword: { type: String, required: true },
+    visibility: { type: Boolean, default: false },
+    popularTopic: { type: String, default: '' },
+    url: { type: String, default: '' },
+    keywordType: {
+      type: String,
+      enum: ['restaurant', 'pet', 'basic'],
+      default: 'basic',
+    },
+    lastChecked: { type: Date, default: Date.now },
+    restaurantName: { type: String, default: '' },
+    matchedTitle: { type: String, default: '' },
+    postVendorName: { type: String, default: '' },
+    rank: { type: Number, default: 0 },
+    rankWithCafe: { type: Number, default: 0 },
+    isUpdateRequired: { type: Boolean, default: false },
+    isNewLogic: { type: Boolean, default: false },
+    foundPage: { type: Number, default: 0 },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+export type PageCheckSheetType =
+  | 'black-goat'
+  | 'herb-effect'
+  | 'diet-supplement'
+  | 'skin-procedure'
+  | 'prescription'
+  | 'dental'
+  | 'eye-clinic'
+  | 'pet';
+
+const pageCheckModels: Record<
+  PageCheckSheetType,
+  mongoose.Model<IPageCheckKeyword>
+> = {
+  'black-goat': mongoose.model<IPageCheckKeyword>(
+    'blackgoats',
+    PageCheckKeywordSchema,
+    'blackgoats'
+  ),
+  'herb-effect': mongoose.model<IPageCheckKeyword>(
+    'herbeffects',
+    PageCheckKeywordSchema,
+    'herbeffects'
+  ),
+  'diet-supplement': mongoose.model<IPageCheckKeyword>(
+    'dietsupplements',
+    PageCheckKeywordSchema,
+    'dietsupplements'
+  ),
+  'skin-procedure': mongoose.model<IPageCheckKeyword>(
+    'skinprocedures',
+    PageCheckKeywordSchema,
+    'skinprocedures'
+  ),
+  prescription: mongoose.model<IPageCheckKeyword>(
+    'prescriptions',
+    PageCheckKeywordSchema,
+    'prescriptions'
+  ),
+  dental: mongoose.model<IPageCheckKeyword>(
+    'dentals',
+    PageCheckKeywordSchema,
+    'dentals'
+  ),
+  'eye-clinic': mongoose.model<IPageCheckKeyword>(
+    'eyeclinics',
+    PageCheckKeywordSchema,
+    'eyeclinics'
+  ),
+  pet: mongoose.model<IPageCheckKeyword>('pets', PageCheckKeywordSchema, 'pets'),
+};
+
+export const getPageCheckKeywords = async (
+  sheetType: PageCheckSheetType
+): Promise<IPageCheckKeyword[]> => {
+  try {
+    const model = pageCheckModels[sheetType];
+    const keywords = await model.find({});
+    return keywords;
+  } catch (error) {
+    logger.error(
+      `${sheetType} 키워드 로드 실패: ${(error as Error).message}`
+    );
+    throw error;
+  }
+};
+
+export const updatePageCheckKeywordResult = async (
+  sheetType: PageCheckSheetType,
+  keywordId: string,
+  visibility: boolean,
+  popularTopic: string,
+  url: string,
+  keywordType: 'restaurant' | 'pet' | 'basic',
+  restaurantName?: string,
+  matchedTitle?: string,
+  rank?: number,
+  postVendorName?: string,
+  rankWithCafe?: number,
+  isUpdateRequired?: boolean,
+  isNewLogic?: boolean,
+  foundPage?: number
+): Promise<void> => {
+  try {
+    const model = pageCheckModels[sheetType];
+    const update: Partial<IPageCheckKeyword> = {
+      visibility,
+      popularTopic,
+      url,
+      keywordType,
+      lastChecked: new Date(),
+    } as Partial<IPageCheckKeyword>;
+
+    if (typeof restaurantName !== 'undefined')
+      update.restaurantName = restaurantName;
+    if (typeof matchedTitle !== 'undefined') update.matchedTitle = matchedTitle;
+    if (typeof rank !== 'undefined') update.rank = rank;
+    if (typeof postVendorName !== 'undefined')
+      update.postVendorName = postVendorName;
+    if (typeof rankWithCafe !== 'undefined') update.rankWithCafe = rankWithCafe;
+    if (typeof isUpdateRequired !== 'undefined')
+      update.isUpdateRequired = isUpdateRequired;
+    if (typeof isNewLogic !== 'undefined') update.isNewLogic = isNewLogic;
+    if (typeof foundPage !== 'undefined') update.foundPage = foundPage;
+
+    await model.findByIdAndUpdate(keywordId, update);
+  } catch (error) {
+    logger.error(
+      `${sheetType} 키워드 업데이트 실패: ${(error as Error).message}`
+    );
+    throw error;
+  }
+};
