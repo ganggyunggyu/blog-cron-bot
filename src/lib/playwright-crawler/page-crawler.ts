@@ -2,51 +2,59 @@ import { Page } from 'playwright';
 import { launchBrowser, launchBrowserInstance } from './browser';
 import { getSearchQuery } from '../../utils';
 import { logger } from '../logger';
+import {
+  TIMEOUT,
+  DELAY,
+  PAGINATION,
+  SELECTORS,
+  BLOCKED_INDICATORS,
+  buildNaverSearchUrl,
+  buildViewTabUrl,
+  getContentLoadDelay,
+  getPageNavigationDelay,
+  getViewTabDelay,
+} from '../../constants/crawl-config';
 
-const buildSearchUrl = (query: string, page: number): string => {
-  const q = getSearchQuery(query);
-  if (page <= 1) {
-    return `https://search.naver.com/search.naver?where=nexearch&query=${encodeURIComponent(q)}`;
-  }
-  return `https://search.naver.com/search.naver?nso=&page=${page}&query=${encodeURIComponent(q)}&sm=tab_pge&ssc=tab.ur.all&start=1`;
-};
+const buildSearchUrl = (query: string, page: number): string =>
+  buildNaverSearchUrl(getSearchQuery(query), page);
 
-const buildViewTabUrl = (query: string, page: number): string => {
-  const q = getSearchQuery(query);
-  const start = (page - 1) * 30 + 1;
-  return `https://search.naver.com/search.naver?ssc=tab.blog.all&where=blog&query=${encodeURIComponent(q)}&start=${start}`;
-};
+const buildViewTabSearchUrl = (query: string, page: number): string =>
+  buildViewTabUrl(getSearchQuery(query), page);
 
 const waitForContent = async (page: Page): Promise<void> => {
-  await page.waitForSelector('#main_pack', { timeout: 10000 }).catch(() => {});
-  await page.waitForTimeout(800 + Math.random() * 500);
+  await page
+    .waitForSelector(SELECTORS.MAIN_PACK, { timeout: TIMEOUT.SELECTOR_WAIT })
+    .catch(() => {});
+  await page.waitForTimeout(getContentLoadDelay());
 };
 
 const checkBlocked = async (page: Page): Promise<boolean> => {
   const content = await page.content();
-  return content.includes('검색 서비스 이용이 제한되었습니다') ||
-         content.includes('비정상적인 검색');
+  return BLOCKED_INDICATORS.some((indicator) => content.includes(indicator));
 };
 
 const handleBlocked = async (page: Page): Promise<void> => {
-  logger.warn('⚠️ 차단 감지! 30초 대기 후 재시도...');
+  logger.warn('⚠️ 차단 감지! 5초 대기 후 재시도...');
 
-  const releaseButton = page.locator('button.btn_open:has-text("제한 해제")');
-  if (await releaseButton.count() > 0) {
+  const releaseButton = page.locator(SELECTORS.RELEASE_BUTTON);
+  if ((await releaseButton.count()) > 0) {
     await releaseButton.click();
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(DELAY.BUTTON_CLICK);
     logger.info('제한 해제 버튼 클릭 완료');
   }
 
-  await page.waitForTimeout(30000);
-  logger.info('30초 대기 완료, 페이지 새로고침...');
+  await page.waitForTimeout(DELAY.BLOCKED_WAIT);
+  logger.info('5초 대기 완료, 페이지 새로고침...');
   await page.reload();
   await waitForContent(page);
 };
 
+const getPageButtonSelector = (pageNum: number): string =>
+  `${SELECTORS.PAGE_BUTTON_CONTAINER}:has-text("${pageNum}")`;
+
 export const crawlMultiPagesPlaywright = async (
   query: string,
-  maxPages: number = 9,
+  maxPages: number = PAGINATION.DEFAULT_MAX_PAGES,
   onPageCrawled?: (html: string, pageNum: number) => boolean
 ): Promise<string[]> => {
   const context = await launchBrowser();
@@ -56,7 +64,10 @@ export const crawlMultiPagesPlaywright = async (
   try {
     const firstUrl = buildSearchUrl(query, 1);
     logger.info(`1페이지 URL: ${firstUrl}`);
-    await page.goto(firstUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.goto(firstUrl, {
+      waitUntil: 'domcontentloaded',
+      timeout: TIMEOUT.PAGE_LOAD,
+    });
     await waitForContent(page);
 
     if (await checkBlocked(page)) {
@@ -73,10 +84,10 @@ export const crawlMultiPagesPlaywright = async (
     }
 
     for (let pageNum = 2; pageNum <= maxPages; pageNum++) {
-      await page.waitForTimeout(500 + Math.random() * 1000);
+      await page.waitForTimeout(getPageNavigationDelay());
 
-      const pageButton = page.locator(`.sc_page_inner a.btn:has-text("${pageNum}")`);
-      const buttonExists = await pageButton.count() > 0;
+      const pageButton = page.locator(getPageButtonSelector(pageNum));
+      const buttonExists = (await pageButton.count()) > 0;
 
       if (!buttonExists) {
         logger.info(`페이지 ${pageNum} 버튼 없음, 크롤링 종료`);
@@ -110,7 +121,7 @@ export const crawlMultiPagesPlaywright = async (
 export const crawlMultiPagesWithInstance = async (
   instanceId: string,
   query: string,
-  maxPages: number = 9,
+  maxPages: number = PAGINATION.DEFAULT_MAX_PAGES,
   onPageCrawled?: (html: string, pageNum: number) => boolean
 ): Promise<string[]> => {
   const context = await launchBrowserInstance(instanceId);
@@ -119,7 +130,10 @@ export const crawlMultiPagesWithInstance = async (
 
   try {
     const firstUrl = buildSearchUrl(query, 1);
-    await page.goto(firstUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.goto(firstUrl, {
+      waitUntil: 'domcontentloaded',
+      timeout: TIMEOUT.PAGE_LOAD,
+    });
     await waitForContent(page);
 
     if (await checkBlocked(page)) {
@@ -134,10 +148,10 @@ export const crawlMultiPagesWithInstance = async (
     }
 
     for (let pageNum = 2; pageNum <= maxPages; pageNum++) {
-      await page.waitForTimeout(500 + Math.random() * 1000);
+      await page.waitForTimeout(getPageNavigationDelay());
 
-      const pageButton = page.locator(`.sc_page_inner a.btn:has-text("${pageNum}")`);
-      const buttonExists = await pageButton.count() > 0;
+      const pageButton = page.locator(getPageButtonSelector(pageNum));
+      const buttonExists = (await pageButton.count()) > 0;
 
       if (!buttonExists) {
         break;
@@ -174,7 +188,7 @@ export const crawlSinglePagePlaywright = async (
 
 export const crawlViewTabPlaywright = async (
   query: string,
-  maxPages: number = 9
+  maxPages: number = PAGINATION.DEFAULT_MAX_PAGES
 ): Promise<string[]> => {
   const context = await launchBrowser();
   const page = await context.newPage();
@@ -182,9 +196,12 @@ export const crawlViewTabPlaywright = async (
 
   try {
     for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
-      const url = buildViewTabUrl(query, pageNum);
+      const url = buildViewTabSearchUrl(query, pageNum);
 
-      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await page.goto(url, {
+        waitUntil: 'domcontentloaded',
+        timeout: TIMEOUT.PAGE_LOAD,
+      });
       await waitForContent(page);
 
       const html = await page.content();
@@ -193,7 +210,7 @@ export const crawlViewTabPlaywright = async (
       logger.info(`📄 VIEW 탭 페이지 ${pageNum}/${maxPages} 크롤링 완료`);
 
       if (pageNum < maxPages) {
-        await page.waitForTimeout(300 + Math.random() * 500);
+        await page.waitForTimeout(getViewTabDelay());
       }
     }
   } finally {
