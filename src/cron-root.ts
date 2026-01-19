@@ -14,6 +14,7 @@ import { checkNaverLogin } from './lib/check-naver-login';
 import { logger } from './lib/logger';
 import axios from 'axios';
 import { getKSTTimestamp } from './utils';
+import { sendDoorayExposureResult } from './lib/dooray';
 
 dotenv.config();
 
@@ -23,7 +24,9 @@ export async function main() {
   const loginStatus = await checkNaverLogin();
   logger.divider('로그인 상태');
   if (loginStatus.isLoggedIn) {
-    logger.success(`🔐 로그인 모드: ${loginStatus.userName} (${loginStatus.email})`);
+    logger.success(
+      `🔐 로그인 모드: ${loginStatus.userName} (${loginStatus.email})`
+    );
   } else {
     logger.info('🌐 비로그인 모드');
   }
@@ -46,7 +49,9 @@ export async function main() {
     });
 
     const result = (await response.json()) as RootResponseType;
-    logger.success(`DB 동기화 완료! (삭제: ${result.deleted}, 삽입: ${result.inserted})`);
+    logger.success(
+      `DB 동기화 완료! (삭제: ${result.deleted}, 삽입: ${result.inserted})`
+    );
   } catch (error) {
     logger.error(`동기화 에러: ${(error as Error).message}`);
   }
@@ -114,10 +119,12 @@ export async function main() {
     hours > 0
       ? `${hours}시간 ${minutes}분 ${seconds}초`
       : minutes > 0
-      ? `${minutes}분 ${seconds}초`
-      : `${seconds}초`;
+        ? `${minutes}분 ${seconds}초`
+        : `${seconds}초`;
 
-  const popularCount = allResults.filter((r) => r.exposureType === '인기글').length;
+  const popularCount = allResults.filter(
+    (r) => r.exposureType === '인기글'
+  ).length;
   const sblCount = allResults.filter((r) => r.exposureType === '스블').length;
 
   logger.summary.complete('루트 키워드 크롤링 완료 요약', [
@@ -127,6 +134,22 @@ export async function main() {
     { label: '스블', value: `${sblCount}개` },
     { label: '처리 시간', value: elapsedTimeStr },
   ]);
+
+  // 미노출 키워드 (변경=false인 것만)
+  const exposedKeywords = new Set(allResults.map((r) => r.query));
+  const missingKeywords = keywords
+    .filter((k) => !exposedKeywords.has(k.keyword) && !k.isUpdateRequired)
+    .map((k) => k.keyword);
+
+  await sendDoorayExposureResult({
+    cronType: '루트 키워드',
+    totalKeywords: keywords.length,
+    exposureCount: allResults.length,
+    popularCount,
+    sblCount,
+    elapsedTime: elapsedTimeStr,
+    missingKeywords,
+  });
 
   const result = await axios.post(`${SHEET_APP_URL}/api/root-keywords/import`);
   logger.info(`시트 반영 결과: ${JSON.stringify(result.data)}`);

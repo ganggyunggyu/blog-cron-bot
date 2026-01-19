@@ -7,6 +7,7 @@ import { processKeywords } from './lib/keyword-processor';
 import { checkNaverLogin } from './lib/check-naver-login';
 import { logger } from './lib/logger';
 import { getKSTTimestamp } from './utils';
+import { sendDoorayExposureResult } from './lib/dooray';
 
 dotenv.config();
 
@@ -16,7 +17,9 @@ export async function main() {
   const loginStatus = await checkNaverLogin();
   logger.divider('로그인 상태');
   if (loginStatus.isLoggedIn) {
-    logger.success(`🔐 로그인 모드: ${loginStatus.userName} (${loginStatus.email})`);
+    logger.success(
+      `🔐 로그인 모드: ${loginStatus.userName} (${loginStatus.email})`
+    );
   } else {
     logger.info('🌐 비로그인 모드');
   }
@@ -103,7 +106,9 @@ export async function main() {
       ? `${minutes}분 ${seconds}초`
       : `${seconds}초`;
 
-  const popularCount = allResults.filter((r) => r.exposureType === '인기글').length;
+  const popularCount = allResults.filter(
+    (r) => r.exposureType === '인기글'
+  ).length;
   const sblCount = allResults.filter((r) => r.exposureType === '스블').length;
 
   logger.summary.complete('크롤링 완료 요약', [
@@ -113,6 +118,23 @@ export async function main() {
     { label: '스블', value: `${sblCount}개` },
     { label: '처리 시간', value: elapsedTimeStr },
   ]);
+
+  // 미노출 키워드 (변경=false인 것만)
+  const exposedKeywords = new Set(allResults.map((r) => r.query));
+  const missingKeywords = keywords
+    .filter((k: any) => !exposedKeywords.has(k.keyword) && !k.isUpdateRequired)
+    .map((k: any) => k.keyword);
+
+  // Dooray 메시지 전송
+  await sendDoorayExposureResult({
+    cronType: '패키지 일반건 노출체크',
+    totalKeywords: keywords.length,
+    exposureCount: allResults.length,
+    popularCount,
+    sblCount,
+    elapsedTime: elapsedTimeStr,
+    missingKeywords,
+  });
 
   const logs = logBuilder.getLogs();
   saveDetailedLogs(logs, timestamp, elapsedTimeStr);
