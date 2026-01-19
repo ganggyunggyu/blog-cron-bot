@@ -1,3 +1,4 @@
+// 기존 블로그 (패키지/일반건용)
 export const BLOG_IDS = [
   'sarangchai_',
   'im_tang',
@@ -95,4 +96,35 @@ export const BLOG_IDS = [
   'mixxut',
   'ynattg',
   'k54382000',
+];
+
+// cron:pages용 블로그
+export const PAGES_BLOG_IDS = [
+  'ecjroe6558',
+  'dhtksk1p',
+  'eqsdxv2863',
+  'ags2oigb',
+  'mixxut',
+  'ynattg',
+  'cookie4931',
+  'wound12567',
+  'precede1451',
+  'dyulp',
+  'lesyt',
+  'aryunt',
+  'loand3324',
+  'fail5644',
+  'compare14310',
+  'gmezz',
+  'zhuwl',
+  'enugii',
+  'nnhha',
+  'selzze',
+  'bjwuo',
+  'ebbte',
+  'yenalk',
+  'dyust',
+  'ganir',
+  'shcint',
+  'aqahdp5252',
 ];
