@@ -24,6 +24,7 @@ export interface ProcessKeywordsOptions {
   updateFunction?: UpdateFunction;
   isLoggedIn?: boolean;
   maxPages?: number;
+  blogIds?: string[];
 }
 
 export interface KeywordDoc {

@@ -39,6 +39,7 @@ export const processKeywords = async (
     options?.updateFunction ?? updateKeywordResult;
   const isLoggedIn = options?.isLoggedIn ?? false;
   const maxPages = options?.maxPages ?? 1;
+  const blogIds = options?.blogIds;
   const allResults: ExposureResult[] = [];
 
   const caches: CrawlCaches = {
@@ -81,7 +82,8 @@ export const processKeywords = async (
       caches,
       logBuilder,
       updateFunction,
-      maxPages
+      maxPages,
+      blogIds
     );
 
     if (!crawlResult) continue;

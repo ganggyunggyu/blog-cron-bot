@@ -30,7 +30,8 @@ export const getCrawlResult = async (
   caches: CrawlCaches,
   logBuilder: DetailedLogBuilder,
   updateFunction: UpdateFunction,
-  maxPages: number = 1
+  maxPages: number = 1,
+  blogIds: string[] = BLOG_IDS
 ): Promise<CrawlResult | null> => {
   const { crawlCache, itemsCache, matchQueueMap, htmlStructureCache } = caches;
 
@@ -45,7 +46,7 @@ export const getCrawlResult = async (
 
       if (maxPages > 1) {
         const checkBlogMatch = (pageHtml: string): boolean => {
-          for (const blogId of BLOG_IDS) {
+          for (const blogId of blogIds) {
             if (pageHtml.includes(`blog.naver.com/${blogId}/`) ||
                 pageHtml.includes(`blog.naver.com/${blogId}"`)) {
               return true;
@@ -57,6 +58,11 @@ export const getCrawlResult = async (
         const htmls = await crawlMultiPagesPlaywright(searchQuery, maxPages, checkBlogMatch);
         html = htmls[0];
 
+        // 1페이지에서 신규로직 여부 먼저 판단
+        const firstPageItems = extractPopularItems(html);
+        const firstPageGroups = new Set(firstPageItems.map((item: any) => item.group));
+        topicNamesArray = Array.from(firstPageGroups);
+
         const allItems: PopularItem[] = [];
         const seenLinks = new Set<string>();
 
@@ -64,8 +70,7 @@ export const getCrawlResult = async (
           const pageNumber = pageIndex + 1;
 
           if (pageNumber === 1) {
-            const pageItems = extractPopularItems(pageHtml);
-            for (const item of pageItems) {
+            for (const item of firstPageItems) {
               if (!seenLinks.has(item.link)) {
                 seenLinks.add(item.link);
                 allItems.push({ ...item, page: pageNumber });
@@ -105,10 +110,16 @@ export const getCrawlResult = async (
 
       const allMatches = matchBlogs(query, items, { allowAnyBlog });
 
-      const uniqueGroups = new Set(items.map((item: any) => item.group));
-      isPopular = uniqueGroups.size === 1;
-      uniqueGroupsSize = uniqueGroups.size;
-      topicNamesArray = Array.from(uniqueGroups);
+      // 멀티페이지가 아닐 때만 topicNamesArray 계산 (멀티페이지는 1페이지에서 이미 설정됨)
+      if (maxPages <= 1) {
+        const uniqueGroups = new Set(items.map((item: any) => item.group));
+        topicNamesArray = Array.from(uniqueGroups);
+      }
+
+      // isPopular와 uniqueGroupsSize는 1페이지 기준으로 계산
+      const firstPageGroups = new Set(topicNamesArray);
+      isPopular = firstPageGroups.size === 1;
+      uniqueGroupsSize = firstPageGroups.size;
 
       const typeStr = isPopular ? '인기글' : '스블';
       progressLogger.newCrawl(searchQuery, items.length, allMatches.length, typeStr);
