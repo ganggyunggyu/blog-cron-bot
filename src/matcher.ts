@@ -36,10 +36,11 @@ export const extractBlogId = (blogUrl: string): string => {
 export const matchBlogs = (
   query: string,
   items: PopularItem[],
-  options?: { allowAnyBlog?: boolean }
+  options?: { allowAnyBlog?: boolean; blogIds?: string[] }
 ): ExposureResult[] => {
   const results: ExposureResult[] = [];
-  const allowedIds = new Set(BLOG_IDS.map((id) => id.toLowerCase()));
+  const targetBlogIds = options?.blogIds ?? BLOG_IDS;
+  const allowedIds = new Set(targetBlogIds.map((id) => id.toLowerCase()));
   const allowAnyBlog = !!(options && options.allowAnyBlog);
 
   const uniqueGroups = new Set(items.map((item) => item.group));

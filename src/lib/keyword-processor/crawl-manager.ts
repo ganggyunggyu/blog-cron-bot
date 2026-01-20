@@ -108,7 +108,7 @@ export const getCrawlResult = async (
 
       const allowAnyBlog = getAllowAnyBlog(keywordDoc.sheetType);
 
-      const allMatches = matchBlogs(query, items, { allowAnyBlog });
+      const allMatches = matchBlogs(query, items, { allowAnyBlog, blogIds });
 
       // 멀티페이지가 아닐 때만 topicNamesArray 계산 (멀티페이지는 1페이지에서 이미 설정됨)
       if (maxPages <= 1) {
