@@ -277,7 +277,8 @@ export type PageCheckSheetType =
   | 'prescription'
   | 'dental'
   | 'eye-clinic'
-  | 'pet';
+  | 'pet'
+  | 'hemorrhoid';
 
 const pageCheckModels: Record<
   PageCheckSheetType,
@@ -319,6 +320,11 @@ const pageCheckModels: Record<
     'eyeclinics'
   ),
   pet: mongoose.model<IPageCheckKeyword>('pets', PageCheckKeywordSchema, 'pets'),
+  hemorrhoid: mongoose.model<IPageCheckKeyword>(
+    'hemorrhoids',
+    PageCheckKeywordSchema,
+    'hemorrhoids'
+  ),
 };
 
 export const getPageCheckKeywords = async (

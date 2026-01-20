@@ -16,7 +16,7 @@ import { logger } from './lib/logger';
 import { closeBrowser } from './lib/playwright-crawler';
 import { getKSTTimestamp } from './utils';
 import { ExposureResult } from './matcher';
-import { sendDoorayExposureResult } from './lib/dooray';
+import { sendDoorayExposureResult, sendDoorayMessage } from './lib/dooray';
 import { PAGES_BLOG_IDS } from './constants/blog-ids';
 
 dotenv.config();
@@ -32,6 +32,7 @@ const SHEET_TYPES: PageCheckSheetType[] = [
   'dental',
   'eye-clinic',
   'pet',
+  'hemorrhoid',
 ];
 
 const SHEET_TYPE_NAMES: Record<PageCheckSheetType, string> = {
@@ -43,6 +44,7 @@ const SHEET_TYPE_NAMES: Record<PageCheckSheetType, string> = {
   dental: '치과',
   'eye-clinic': '안과',
   pet: '애견',
+  hemorrhoid: '치질',
 };
 
 // 시트별 최대 페이지 수 설정 (기본값: 1)
@@ -144,6 +146,16 @@ async function processSheetKeywords(
 
   logger.success(`[${typeName}] ✅ 완료: ${results.length}개 노출 발견`);
 
+  // 완료 즉시 시트 내보내기
+  await exportSheetAPI(sheetType);
+
+  // 시트별 Dooray 알림
+  const exposedCount = results.length;
+  const nonExposedCount = keywords.length - exposedCount;
+  await sendDoorayMessage(
+    `[${typeName}] 완료\n노출 ${exposedCount} / 미노출 ${nonExposedCount}`
+  );
+
   return results;
 }
 
@@ -187,6 +199,7 @@ export async function main() {
     dental: [],
     'eye-clinic': [],
     pet: [],
+    hemorrhoid: [],
   };
 
   logger.divider('키워드 조회');
@@ -239,12 +252,6 @@ export async function main() {
     `pages_sheet_${timestamp}.csv`
   );
 
-  // 5. 시트 반영 (외부 API)
-  logger.divider('시트 내보내기');
-  for (const sheetType of SHEET_TYPES) {
-    await exportSheetAPI(sheetType);
-  }
-  logger.blank();
 
   // 6. 결과 요약
   const elapsedMs = Date.now() - startTime;
