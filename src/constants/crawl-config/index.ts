@@ -73,7 +73,7 @@ export const RETRY = {
 // 페이지네이션 설정
 export const PAGINATION = {
   /** 기본 최대 페이지 수 */
-  DEFAULT_MAX_PAGES: 9,
+  DEFAULT_MAX_PAGES: 4,
   /** VIEW 탭 페이지당 결과 수 */
   VIEW_TAB_RESULTS_PER_PAGE: 30,
 } as const;
@@ -127,7 +127,10 @@ export const getViewTabDelay = (): number =>
 // ============================================================
 
 /** 통합검색 URL 생성 */
-export const buildNaverSearchUrl = (query: string, page: number = 1): string => {
+export const buildNaverSearchUrl = (
+  query: string,
+  page: number = 1
+): string => {
   const encodedQuery = encodeURIComponent(query);
   if (page <= 1) {
     return `${NAVER_SEARCH_BASE_URL}?where=nexearch&query=${encodedQuery}`;
