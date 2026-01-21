@@ -91,6 +91,22 @@ async function exportSheetAPI(sheetType: PageCheckSheetType): Promise<boolean> {
   }
 }
 
+async function importSheetAPI(sheetType: PageCheckSheetType): Promise<number> {
+  try {
+    const res = await axios.post(`${PAGE_CHECK_API}/api/page-check/import`, {
+      sheetType,
+    });
+    const { inserted } = res.data;
+    logger.success(`  ${SHEET_TYPE_NAMES[sheetType]}: ${inserted}개 동기화`);
+    return inserted;
+  } catch (error) {
+    logger.error(
+      `  ${SHEET_TYPE_NAMES[sheetType]} 불러오기 실패: ${(error as Error).message}`
+    );
+    return 0;
+  }
+}
+
 function createUpdateFunction(sheetType: PageCheckSheetType) {
   return async (
     keywordId: string,
@@ -159,10 +175,15 @@ async function processSheetKeywords(
   return results;
 }
 
-export async function main() {
+export async function main(targetSheetTypes?: PageCheckSheetType[]) {
   const startTime = Date.now();
+  const activeSheetTypes = targetSheetTypes ?? SHEET_TYPES;
+  const isSingleSheet = activeSheetTypes.length === 1;
+  const sheetLabel = isSingleSheet
+    ? SHEET_TYPE_NAMES[activeSheetTypes[0]]
+    : '전체';
 
-  logger.divider('📄 멀티페이지 크론 (1-9페이지)');
+  logger.divider(`📄 멀티페이지 크론 [${sheetLabel}]`);
 
   const loginStatus = await checkNaverLogin();
   logger.divider('로그인 상태');
@@ -183,8 +204,13 @@ export async function main() {
 
   // 1. 시트 → DB 동기화 (외부 API)
   logger.divider('시트 동기화');
-  const totalSynced = await syncAllSheetsAPI();
-  logger.info(`📥 총 ${totalSynced}개 키워드 동기화 완료`);
+  if (isSingleSheet) {
+    const synced = await importSheetAPI(activeSheetTypes[0]);
+    logger.info(`📥 ${synced}개 키워드 동기화 완료`);
+  } else {
+    const totalSynced = await syncAllSheetsAPI();
+    logger.info(`📥 총 ${totalSynced}개 키워드 동기화 완료`);
+  }
   logger.blank();
 
   // 2. DB 연결 및 키워드 조회
@@ -203,7 +229,7 @@ export async function main() {
   };
 
   logger.divider('키워드 조회');
-  for (const sheetType of SHEET_TYPES) {
+  for (const sheetType of activeSheetTypes) {
     const keywords = await getPageCheckKeywords(sheetType);
     keywordsBySheet[sheetType] = keywords;
     logger.info(`  ${SHEET_TYPE_NAMES[sheetType]}: ${keywords.length}개`);
@@ -222,10 +248,10 @@ export async function main() {
     return;
   }
 
-  // 3. 4개 시트 병렬 노출체크
-  logger.divider('노출체크 시작 (4개 시트 병렬)');
+  // 3. 시트 병렬 노출체크
+  logger.divider(`노출체크 시작 (${activeSheetTypes.length}개 시트 병렬)`);
 
-  const crawlPromises = SHEET_TYPES.filter(
+  const crawlPromises = activeSheetTypes.filter(
     (st) => keywordsBySheet[st].length > 0
   ).map((sheetType) =>
     processSheetKeywords(
@@ -272,7 +298,7 @@ export async function main() {
   const newLogicCount = allResults.filter((r) => r.isNewLogic === true).length;
   const oldLogicCount = allResults.filter((r) => r.isNewLogic === false).length;
 
-  logger.summary.complete('📄 멀티페이지 크론 완료 요약', [
+  logger.summary.complete(`📄 멀티페이지 크론 [${sheetLabel}] 완료 요약`, [
     { label: '총 검색어', value: `${totalKeywords}개` },
     { label: '총 노출 발견', value: `${allResults.length}개` },
     { label: '인기글', value: `${popularCount}개` },
@@ -283,7 +309,7 @@ export async function main() {
   ]);
 
   // 7. Dooray 메시지 전송
-  const sheetStats = SHEET_TYPES.map((st) => ({
+  const sheetStats = activeSheetTypes.map((st) => ({
     name: SHEET_TYPE_NAMES[st],
     count: keywordsBySheet[st].filter((k) =>
       allResults.some((r) => r.query === k.keyword)
@@ -292,13 +318,13 @@ export async function main() {
 
   // 미노출 키워드 (변경=false인 것만)
   const exposedKeywords = new Set(allResults.map((r) => r.query));
-  const allKeywords = SHEET_TYPES.flatMap((st) => keywordsBySheet[st]);
+  const allKeywords = activeSheetTypes.flatMap((st) => keywordsBySheet[st]);
   const missingKeywords = allKeywords
     .filter((k) => !exposedKeywords.has(k.keyword) && !k.isUpdateRequired)
     .map((k) => k.keyword);
 
   await sendDoorayExposureResult({
-    cronType: '멀티페이지 크론',
+    cronType: `멀티페이지 크론 [${sheetLabel}]`,
     totalKeywords,
     exposureCount: allResults.length,
     popularCount,
@@ -319,7 +345,36 @@ export async function main() {
 }
 
 if (require.main === module) {
-  main().catch((error) => {
+  const args = process.argv.slice(2);
+
+  let targetSheetTypes: PageCheckSheetType[] | undefined;
+
+  // --exclude 옵션 처리
+  const excludeIndex = args.indexOf('--exclude');
+  if (excludeIndex !== -1 && args[excludeIndex + 1]) {
+    const excludeType = args[excludeIndex + 1] as PageCheckSheetType;
+    if (SHEET_TYPES.includes(excludeType)) {
+      targetSheetTypes = SHEET_TYPES.filter((st) => st !== excludeType);
+      logger.info(`🚫 제외 모드: ${SHEET_TYPE_NAMES[excludeType]} 제외`);
+    } else {
+      logger.error(`❌ 유효하지 않은 sheetType: ${excludeType}`);
+      logger.info(`사용 가능: ${SHEET_TYPES.join(', ')}`);
+      process.exit(1);
+    }
+  } else {
+    const sheetTypeArg = args[0] as PageCheckSheetType | undefined;
+
+    if (sheetTypeArg && SHEET_TYPES.includes(sheetTypeArg)) {
+      targetSheetTypes = [sheetTypeArg];
+      logger.info(`🎯 단일 시트 모드: ${SHEET_TYPE_NAMES[sheetTypeArg]}`);
+    } else if (sheetTypeArg) {
+      logger.error(`❌ 유효하지 않은 sheetType: ${sheetTypeArg}`);
+      logger.info(`사용 가능: ${SHEET_TYPES.join(', ')}`);
+      process.exit(1);
+    }
+  }
+
+  main(targetSheetTypes).catch((error) => {
     logger.error(`프로그램 오류: ${(error as Error).message}`);
     process.exit(1);
   });
