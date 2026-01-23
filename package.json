@@ -23,6 +23,7 @@
     "scheduler:root": "ts-node src/pm2-scheduler-root.ts",
     "scheduler:root:test": "cross-env TEST_DELAY_MINUTES=1 ts-node src/pm2-scheduler-root.ts",
     "cron:root": "ts-node src/cron-root.ts",
+    "cron:2am": "ts-node src/cron-test-2am.ts",
     "cron:pages": "ts-node src/cron-pages.ts",
     "check-login": "npx tsx check-login.ts",
     "dashboard": "npx tsx src/web/server.ts"
