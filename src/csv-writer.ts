@@ -11,7 +11,8 @@ interface KeywordInfo {
 export const saveToSheetCSV = (
   keywords: KeywordInfo[],
   results: ExposureResult[],
-  filename: string
+  filename: string,
+  keywordLogicMap?: Map<string, boolean>
 ): void => {
   const outputDir = path.join(__dirname, '../output');
 
@@ -31,7 +32,7 @@ export const saveToSheetCSV = (
     '인기글 순위',
     '이미지 매칭',
     '링크',
-    '변경',
+    '로직',
     '행',
   ].join(',');
 
@@ -47,32 +48,46 @@ export const saveToSheetCSV = (
     if (result) {
       const isPopular = result.exposureType === '인기글';
       const popularRank = isPopular ? result.position : '';
+      const logicType =
+        result.isNewLogic === true
+          ? 'o'
+          : result.isNewLogic === false
+            ? ''
+            : '';
 
       return [
         escape(kw.company || ''),
         escape(kw.keyword),
         escape(result.topicName || result.exposureType),
         result.position,
-        '노출',
+        'o',
         '',
         popularRank,
         '',
         result.postLink,
-        '',
+        logicType,
         index + 1,
       ].join(',');
     } else {
+      // 미노출인 경우에도 keywordLogicMap에서 로직 타입 가져오기
+      let logicType = '';
+      if (keywordLogicMap && keywordLogicMap.has(kw.keyword)) {
+        const isNewLogic = keywordLogicMap.get(kw.keyword);
+        logicType =
+          isNewLogic === true ? '신규' : isNewLogic === false ? '구' : '';
+      }
+
       return [
         escape(kw.company || ''),
         escape(kw.keyword),
         '',
         '',
-        '미노출',
         '',
         '',
         '',
         '',
         '',
+        logicType,
         index + 1,
       ].join(',');
     }
@@ -106,9 +121,16 @@ export const saveToCSV = (
     '인기주제',
     '스블주제명',
     '순위',
+    '로직',
   ].join(',');
 
   const rows = results.map((result) => {
+    const logicType =
+      result.isNewLogic === true
+        ? '신규'
+        : result.isNewLogic === false
+          ? '구'
+          : '';
     return [
       `"${result.query}"`,
       result.blogId,
@@ -118,6 +140,7 @@ export const saveToCSV = (
       result.exposureType,
       `"${result.topicName}"`,
       result.position,
+      logicType,
     ].join(',');
   });
 
