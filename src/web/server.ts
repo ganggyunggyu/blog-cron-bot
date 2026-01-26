@@ -31,13 +31,25 @@ io.on('connection', (socket) => {
       return;
     }
 
-    const scriptMap: Record<string, string> = {
-      test: 'cron:test',
-      pages: 'cron:pages',
-      root: 'cron:root',
+    const scriptMap: Record<string, { script: string; args?: string[] }> = {
+      test: { script: 'cron:test' },
+      pages: { script: 'cron:pages' },
+      root: { script: 'cron:root' },
+      // Pages 카테고리별
+      'pages-black-goat': { script: 'cron:pages', args: ['black-goat'] },
+      'pages-herb-effect': { script: 'cron:pages', args: ['herb-effect'] },
+      'pages-diet-supplement': { script: 'cron:pages', args: ['diet-supplement'] },
+      'pages-skin-procedure': { script: 'cron:pages', args: ['skin-procedure'] },
+      'pages-prescription': { script: 'cron:pages', args: ['prescription'] },
+      'pages-dental': { script: 'cron:pages', args: ['dental'] },
+      'pages-eye-clinic': { script: 'cron:pages', args: ['eye-clinic'] },
+      'pages-pet': { script: 'cron:pages', args: ['pet'] },
+      'pages-hemorrhoid': { script: 'cron:pages', args: ['hemorrhoid'] },
+      'pages-suripet': { script: 'cron:pages', args: ['suripet'] },
     };
 
-    const script = scriptMap[jobType];
+    const config = scriptMap[jobType];
+    const script = config?.script;
     if (!script) {
       socket.emit('error', '알 수 없는 작업 유형입니다.');
       return;
@@ -47,7 +59,8 @@ io.on('connection', (socket) => {
     io.emit('status', { running: true, job: currentJob });
     io.emit('log', `\n========== ${jobType.toUpperCase()} 크론 시작 ==========\n`);
 
-    runningProcess = spawn('pnpm', [script], {
+    const spawnArgs = config.args ? [script, ...config.args] : [script];
+    runningProcess = spawn('pnpm', spawnArgs, {
       cwd: path.join(__dirname, '../..'),
       shell: true,
       env: { ...process.env, FORCE_COLOR: '1' },

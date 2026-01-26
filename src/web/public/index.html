@@ -3,274 +3,897 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>블로그 크론 대시보드</title>
+  <title>크론 대시보드</title>
   <script src="/socket.io/socket.io.js"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    :root {
+      --bg-primary: #f5f5f7;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #fafafa;
+      --text-primary: #1d1d1f;
+      --text-secondary: #86868b;
+      --text-tertiary: #6e6e73;
+      --accent: #0071e3;
+      --success: #34c759;
+      --warning: #ff9500;
+      --danger: #ff3b30;
+      --border: rgba(0, 0, 0, 0.08);
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
     }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #1a1a2e;
-      color: #eee;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
       min-height: 100vh;
-      padding: 20px;
+      -webkit-font-smoothing: antialiased;
     }
+
     .container {
       max-width: 1200px;
       margin: 0 auto;
+      padding: 40px 24px;
     }
-    h1 {
+
+    .header {
       text-align: center;
-      margin-bottom: 30px;
-      color: #4ecca3;
+      margin-bottom: 40px;
     }
-    .buttons {
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+
+    .header p {
+      font-size: 15px;
+      color: var(--text-secondary);
+    }
+
+    /* Status Badge */
+    .status-bar {
       display: flex;
-      gap: 15px;
       justify-content: center;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
+      margin-bottom: 32px;
     }
-    button {
-      padding: 15px 30px;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: var(--bg-secondary);
+      border-radius: 100px;
+      box-shadow: var(--shadow-sm);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .status-badge.running {
+      background: var(--success);
+      color: white;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-tertiary);
+    }
+
+    .status-badge.running .status-dot {
+      background: white;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Section */
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      padding-left: 4px;
+    }
+
+    /* Job Grid */
+    .job-section { margin-bottom: 24px; }
+
+    .job-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+    }
+
+    .job-card {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      padding: 16px;
       cursor: pointer;
-      transition: all 0.3s;
-      font-weight: bold;
+      transition: all 0.2s ease;
+      border: 1px solid var(--border);
+      text-align: center;
     }
-    button:disabled {
+
+    .job-card:hover:not(.disabled) {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .job-card.disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
-    .btn-test {
-      background: #3498db;
-      color: white;
+
+    .job-card .icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 10px;
+      font-size: 18px;
     }
-    .btn-test:hover:not(:disabled) {
-      background: #2980b9;
-    }
-    .btn-pet {
-      background: #9b59b6;
-      color: white;
-    }
-    .btn-pet:hover:not(:disabled) {
-      background: #8e44ad;
-    }
-    .btn-root {
-      background: #e74c3c;
-      color: white;
-    }
-    .btn-root:hover:not(:disabled) {
-      background: #c0392b;
-    }
-    .btn-stop {
-      background: #e74c3c;
-      color: white;
-    }
-    .btn-stop:hover:not(:disabled) {
-      background: #c0392b;
-    }
-    .btn-clear {
-      background: #7f8c8d;
-      color: white;
-    }
-    .btn-clear:hover:not(:disabled) {
-      background: #636e72;
-    }
-    .status {
-      text-align: center;
-      margin-bottom: 20px;
-      padding: 10px;
-      border-radius: 8px;
-      background: #16213e;
-    }
-    .status.running {
-      background: #2ecc71;
-      color: #000;
-    }
-    .log-container {
-      background: #0f0f23;
-      border-radius: 8px;
-      padding: 20px;
-      height: 60vh;
-      overflow-y: auto;
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+
+    .job-card .title {
       font-size: 13px;
-      line-height: 1.5;
-      border: 1px solid #333;
+      font-weight: 600;
+      color: var(--text-primary);
     }
-    .log-line {
-      white-space: pre-wrap;
-      word-break: break-all;
+
+    .job-card .subtitle {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 2px;
     }
-    .log-line.error {
-      color: #e74c3c;
+
+    .icon-blue { background: rgba(0, 113, 227, 0.1); }
+    .icon-purple { background: rgba(175, 82, 222, 0.1); }
+    .icon-orange { background: rgba(255, 149, 0, 0.1); }
+    .icon-green { background: rgba(52, 199, 89, 0.1); }
+    .icon-pink { background: rgba(255, 45, 85, 0.1); }
+    .icon-teal { background: rgba(90, 200, 250, 0.1); }
+    .icon-indigo { background: rgba(88, 86, 214, 0.1); }
+    .icon-red { background: rgba(255, 59, 48, 0.1); }
+    .icon-yellow { background: rgba(255, 204, 0, 0.1); }
+    .icon-mint { background: rgba(0, 199, 190, 0.1); }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 24px;
     }
-    .log-line.success {
-      color: #2ecc71;
+
+    .btn {
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 500;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
-    .log-line.info {
-      color: #3498db;
+
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-stop { background: var(--danger); color: white; }
+    .btn-secondary { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); }
+
+    /* Progress Section */
+    .progress-section {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
     }
-    .log-line.warning {
-      color: #f39c12;
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
     }
-    .stats {
+
+    .progress-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .progress-percent {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .progress-bar-bg {
+      height: 8px;
+      background: var(--bg-primary);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+      width: 0%;
+    }
+
+    .progress-info {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 15px;
-      margin-top: 20px;
-    }
-    .stat-card {
-      background: #16213e;
-      padding: 20px;
-      border-radius: 8px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
       text-align: center;
     }
-    .stat-card h3 {
-      font-size: 14px;
-      color: #888;
-      margin-bottom: 10px;
+
+    .progress-stat {
+      padding: 12px;
+      background: var(--bg-primary);
+      border-radius: var(--radius-sm);
     }
+
+    .progress-stat .num {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .progress-stat .label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+
+    .progress-stat.success .num { color: var(--success); }
+    .progress-stat.warning .num { color: var(--warning); }
+
+    .current-keyword {
+      margin-top: 16px;
+      padding: 12px 16px;
+      background: var(--bg-primary);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+    }
+
+    .current-keyword .label {
+      color: var(--text-secondary);
+      font-size: 11px;
+      margin-bottom: 4px;
+    }
+
+    .current-keyword .value {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* Activity Feed */
+    .activity-section {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .activity-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .activity-header h2 {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .activity-list {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .activity-item {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .activity-item:last-child { border-bottom: none; }
+
+    .activity-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .activity-icon.success { background: rgba(52, 199, 89, 0.15); }
+    .activity-icon.info { background: rgba(0, 113, 227, 0.15); }
+    .activity-icon.warning { background: rgba(255, 149, 0, 0.15); }
+    .activity-icon.error { background: rgba(255, 59, 48, 0.15); }
+
+    .activity-content { flex: 1; min-width: 0; }
+
+    .activity-content .title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .activity-content .desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .activity-time {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      flex-shrink: 0;
+    }
+
+    .empty-state {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+
+    /* Stats Footer */
+    .stats-footer {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .stat-card {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+
+    .stat-card .label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
     .stat-card .value {
-      font-size: 24px;
-      font-weight: bold;
-      color: #4ecca3;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      width: 90%;
+      max-width: 340px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
+
+    .modal-header {
+      margin-bottom: 12px;
+    }
+
+    .modal-icon {
+      font-size: 40px;
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    .modal-header h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .modal-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+
+    .modal-login-status {
+      margin-bottom: 20px;
+    }
+
+    .login-badge {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .login-badge.logged-in {
+      background: rgba(52, 199, 89, 0.15);
+      color: #28a745;
+    }
+
+    .login-badge.logged-out {
+      background: rgba(255, 149, 0, 0.15);
+      color: #e67e00;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .modal-actions .btn {
+      flex: 1;
+      justify-content: center;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #0062cc;
+    }
+
+    /* Login Status in Progress */
+    .login-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-left: 12px;
+    }
+
+    .login-indicator.logged-in {
+      background: rgba(52, 199, 89, 0.15);
+      color: #28a745;
+    }
+
+    .login-indicator.logged-out {
+      background: rgba(255, 149, 0, 0.15);
+      color: #e67e00;
+    }
+
+    @media (max-width: 768px) {
+      .container { padding: 20px 16px; }
+      .job-grid { grid-template-columns: repeat(3, 1fr); }
+      .progress-info { grid-template-columns: repeat(2, 1fr); }
+      .stats-footer { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>블로그 크론 대시보드</h1>
-
-    <div class="status" id="status">대기 중</div>
-
-    <div class="buttons">
-      <button class="btn-test" onclick="startJob('test')">테스트 크론</button>
-      <button class="btn-pet" onclick="startJob('pet')">애견 크론</button>
-      <button class="btn-root" onclick="startJob('root')">루트 크론</button>
-      <button class="btn-stop" onclick="stopJob()" id="stopBtn" disabled>중지</button>
-      <button class="btn-clear" onclick="clearLog()">로그 지우기</button>
+    <div class="header">
+      <h1>크론 대시보드</h1>
+      <p>블로그 노출체크 자동화</p>
     </div>
 
-    <div class="log-container" id="log"></div>
+    <div class="status-bar">
+      <div class="status-badge" id="status">
+        <span class="status-dot"></span>
+        <span class="status-text">대기 중</span>
+      </div>
+    </div>
 
-    <div class="stats">
+    <div class="job-section">
+      <div class="section-title">기본</div>
+      <div class="job-grid">
+        <div class="job-card" onclick="startJob('test')" data-job>
+          <div class="icon icon-blue">🧪</div>
+          <div class="title">테스트</div>
+        </div>
+        <div class="job-card" onclick="startJob('pages')" data-job>
+          <div class="icon icon-purple">📄</div>
+          <div class="title">Pages 전체</div>
+        </div>
+        <div class="job-card" onclick="startJob('root')" data-job>
+          <div class="icon icon-orange">🏠</div>
+          <div class="title">루트</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="job-section">
+      <div class="section-title">Pages 카테고리</div>
+      <div class="job-grid">
+        <div class="job-card" onclick="startJob('pages-black-goat')" data-job>
+          <div class="icon icon-green">🐐</div>
+          <div class="title">흑염소</div>
+        </div>
+        <div class="job-card" onclick="startJob('pages-herb-effect')" data-job>
+          <div class="icon icon-mint">🌿</div>
+          <div class="title">약재효능</div>
+        </div>
+        <div class="job-card" onclick="startJob('pages-diet-supplement')" data-job>
+          <div class="icon icon-pink">💊</div>
+          <div class="title">다이어트</div>
+        </div>
+        <div class="job-card" onclick="startJob('pages-skin-procedure')" data-job>
+          <div class="icon icon-teal">✨</div>
+          <div class="title">피부시술</div>
+        </div>
+        <div class="job-card" onclick="startJob('pages-prescription')" data-job>
+          <div class="icon icon-indigo">📋</div>
+          <div class="title">약처방</div>
+        </div>
+        <div class="job-card" onclick="startJob('pages-dental')" data-job>
+          <div class="icon icon-blue">🦷</div>
+          <div class="title">치과</div>
+        </div>
+        <div class="job-card" onclick="startJob('pages-eye-clinic')" data-job>
+          <div class="icon icon-purple">👁️</div>
+          <div class="title">안과</div>
+        </div>
+        <div class="job-card" onclick="startJob('pages-pet')" data-job>
+          <div class="icon icon-orange">🐕</div>
+          <div class="title">애견</div>
+        </div>
+        <div class="job-card" onclick="startJob('pages-hemorrhoid')" data-job>
+          <div class="icon icon-red">🩺</div>
+          <div class="title">치질</div>
+        </div>
+        <div class="job-card" onclick="startJob('pages-suripet')" data-job>
+          <div class="icon icon-yellow">🐾</div>
+          <div class="title">서리펫</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-stop" onclick="stopJob()" id="stopBtn" disabled>⏹ 중지</button>
+      <button class="btn btn-secondary" onclick="clearActivity()">🗑 초기화</button>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-section" id="progressSection" style="display: none;">
+      <div class="progress-header">
+        <span class="progress-title">진행 중<span class="login-indicator" id="loginIndicator" style="display: none;">-</span></span>
+        <span class="progress-percent" id="progressPercent">0%</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressBar"></div>
+      </div>
+      <div class="progress-info">
+        <div class="progress-stat">
+          <div class="num" id="statTotal">0</div>
+          <div class="label">전체</div>
+        </div>
+        <div class="progress-stat">
+          <div class="num" id="statCurrent">0</div>
+          <div class="label">처리</div>
+        </div>
+        <div class="progress-stat success">
+          <div class="num" id="statExposed">0</div>
+          <div class="label">노출</div>
+        </div>
+        <div class="progress-stat warning">
+          <div class="num" id="statPopular">0</div>
+          <div class="label">인기글</div>
+        </div>
+      </div>
+      <div class="current-keyword" id="currentKeyword" style="display: none;">
+        <div class="label">현재 처리 중</div>
+        <div class="value" id="currentKeywordText">-</div>
+      </div>
+    </div>
+
+    <!-- Activity Feed -->
+    <div class="activity-section">
+      <div class="activity-header">
+        <h2>활동 로그</h2>
+        <span id="activityCount" style="font-size: 12px; color: var(--text-secondary);">0개</span>
+      </div>
+      <div class="activity-list" id="activityList">
+        <div class="empty-state">아직 활동이 없습니다</div>
+      </div>
+    </div>
+
+    <div class="stats-footer">
       <div class="stat-card">
-        <h3>마지막 실행</h3>
+        <div class="label">마지막 실행</div>
         <div class="value" id="lastRun">-</div>
       </div>
       <div class="stat-card">
-        <h3>실행 시간</h3>
+        <div class="label">실행 시간</div>
         <div class="value" id="duration">-</div>
       </div>
       <div class="stat-card">
-        <h3>상태</h3>
+        <div class="label">상태</div>
         <div class="value" id="resultStatus">-</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 확인 모달 -->
+  <div class="modal-overlay" id="confirmModal" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-icon" id="modalIcon">📄</span>
+        <h3 id="modalTitle">작업 확인</h3>
+      </div>
+      <p class="modal-desc" id="modalDesc">이 작업을 실행할까요?</p>
+      <div class="modal-login-status" id="modalLoginStatus">
+        <span class="login-badge" id="loginBadge">🌐 비로그인</span>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal()">취소</button>
+        <button class="btn btn-primary" onclick="confirmStart()">실행</button>
       </div>
     </div>
   </div>
 
   <script>
     const socket = io();
-    const logEl = document.getElementById('log');
     const statusEl = document.getElementById('status');
     const stopBtn = document.getElementById('stopBtn');
-    const buttons = document.querySelectorAll('.btn-test, .btn-pet, .btn-root');
+    const jobCards = document.querySelectorAll('[data-job]');
+    const activityList = document.getElementById('activityList');
+    const progressSection = document.getElementById('progressSection');
 
     let startTime = null;
     let timerInterval = null;
+    let activityCount = 0;
+    let stats = { total: 0, current: 0, exposed: 0, popular: 0 };
+    let pendingJob = null;
+    let isLoggedIn = false;
 
-    socket.on('connect', () => {
-      addLog('시스템: 서버 연결됨', 'info');
-    });
+    const jobInfo = {
+      'test': { icon: '🧪', name: '테스트' },
+      'pages': { icon: '📄', name: 'Pages 전체' },
+      'root': { icon: '🏠', name: '루트' },
+      'pages-black-goat': { icon: '🐐', name: '흑염소' },
+      'pages-herb-effect': { icon: '🌿', name: '약재효능' },
+      'pages-diet-supplement': { icon: '💊', name: '다이어트' },
+      'pages-skin-procedure': { icon: '✨', name: '피부시술' },
+      'pages-prescription': { icon: '📋', name: '약처방' },
+      'pages-dental': { icon: '🦷', name: '치과' },
+      'pages-eye-clinic': { icon: '👁️', name: '안과' },
+      'pages-pet': { icon: '🐕', name: '애견' },
+      'pages-hemorrhoid': { icon: '🩺', name: '치질' },
+      'pages-suripet': { icon: '🐾', name: '서리펫' },
+    };
 
-    socket.on('disconnect', () => {
-      addLog('시스템: 서버 연결 끊김', 'error');
-    });
-
-    socket.on('status', (data) => {
-      updateStatus(data.running, data.job);
-    });
-
-    socket.on('log', (text) => {
-      addLog(text);
-    });
-
-    socket.on('error', (msg) => {
-      addLog(`에러: ${msg}`, 'error');
-    });
+    socket.on('connect', () => addActivity('info', '서버 연결됨', '대시보드 준비 완료'));
+    socket.on('disconnect', () => addActivity('error', '서버 연결 끊김', '재연결 시도 중...'));
+    socket.on('status', (data) => updateStatus(data.running, data.job));
+    socket.on('log', (text) => parseLog(text));
+    socket.on('error', (msg) => addActivity('error', '오류 발생', msg));
 
     socket.on('done', (data) => {
       const elapsed = startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
       document.getElementById('duration').textContent = formatDuration(elapsed);
-      document.getElementById('resultStatus').textContent = data.code === 0 ? '성공' : '실패';
-      document.getElementById('resultStatus').style.color = data.code === 0 ? '#2ecc71' : '#e74c3c';
-
-      if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-      }
+      const resultEl = document.getElementById('resultStatus');
+      resultEl.textContent = data.code === 0 ? '성공' : '실패';
+      resultEl.style.color = data.code === 0 ? 'var(--success)' : 'var(--danger)';
+      addActivity(data.code === 0 ? 'success' : 'error', '작업 완료', `${formatDuration(elapsed)} 소요`);
+      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+      progressSection.style.display = 'none';
     });
 
     function startJob(type) {
+      pendingJob = type;
+      const info = jobInfo[type] || { icon: '📄', name: type };
+
+      document.getElementById('modalIcon').textContent = info.icon;
+      document.getElementById('modalTitle').textContent = info.name + ' 실행';
+      document.getElementById('modalDesc').textContent = `"${info.name}" 작업을 실행할까요?`;
+
+      const loginBadge = document.getElementById('loginBadge');
+      loginBadge.textContent = isLoggedIn ? '🔐 로그인 모드' : '🌐 비로그인 모드';
+      loginBadge.className = 'login-badge ' + (isLoggedIn ? 'logged-in' : 'logged-out');
+
+      document.getElementById('confirmModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('confirmModal').style.display = 'none';
+      pendingJob = null;
+    }
+
+    function confirmStart() {
+      if (!pendingJob) return;
+
+      const type = pendingJob;
+      closeModal();
+
       socket.emit('start', type);
       startTime = Date.now();
+      stats = { total: 0, current: 0, exposed: 0, popular: 0 };
+      updateStats();
       document.getElementById('lastRun').textContent = new Date().toLocaleTimeString('ko-KR');
       document.getElementById('resultStatus').textContent = '실행 중';
-      document.getElementById('resultStatus').style.color = '#f39c12';
+      document.getElementById('resultStatus').style.color = 'var(--warning)';
+      progressSection.style.display = 'block';
 
+      const loginIndicator = document.getElementById('loginIndicator');
+      loginIndicator.style.display = 'none';
+
+      addActivity('info', '작업 시작', type.toUpperCase());
       timerInterval = setInterval(() => {
         const elapsed = Math.floor((Date.now() - startTime) / 1000);
         document.getElementById('duration').textContent = formatDuration(elapsed);
       }, 1000);
     }
 
-    function stopJob() {
-      socket.emit('stop');
+    function stopJob() { socket.emit('stop'); }
+
+    function clearActivity() {
+      activityList.innerHTML = '<div class="empty-state">아직 활동이 없습니다</div>';
+      activityCount = 0;
+      document.getElementById('activityCount').textContent = '0개';
     }
 
-    function clearLog() {
-      logEl.innerHTML = '';
-    }
+    function parseLog(text) {
+      const clean = text.replace(/\x1b\[[0-9;]*m/g, '').replace(/\[[\d;]*m/g, '');
 
-    function addLog(text, type = '') {
-      const line = document.createElement('div');
-      line.className = 'log-line';
-
-      if (type) {
-        line.classList.add(type);
-      } else if (text.includes('✅') || text.includes('성공') || text.includes('완료')) {
-        line.classList.add('success');
-      } else if (text.includes('❌') || text.includes('에러') || text.includes('실패')) {
-        line.classList.add('error');
-      } else if (text.includes('⚠️') || text.includes('경고')) {
-        line.classList.add('warning');
-      } else if (text.includes('🔍') || text.includes('📄') || text.includes('📊')) {
-        line.classList.add('info');
+      // 로그인 상태 파싱
+      if (clean.includes('🔐') || clean.includes('로그인 모드')) {
+        isLoggedIn = true;
+        updateLoginIndicator(true);
+        addActivity('info', '로그인 모드', '네이버 로그인 상태로 크롤링');
+      }
+      if (clean.includes('🌐') || clean.includes('비로그인 모드')) {
+        isLoggedIn = false;
+        updateLoginIndicator(false);
+        addActivity('info', '비로그인 모드', '게스트 상태로 크롤링');
       }
 
-      line.textContent = text;
-      logEl.appendChild(line);
-      logEl.scrollTop = logEl.scrollHeight;
+      // 진행률 파싱: [  1/316]
+      const progressMatch = clean.match(/\[\s*(\d+)\/(\d+)\]/);
+      if (progressMatch) {
+        stats.current = parseInt(progressMatch[1]);
+        stats.total = parseInt(progressMatch[2]);
+        updateStats();
+      }
+
+      // 키워드 파싱: 🔍 키워드 (9→3 스블)
+      const keywordMatch = clean.match(/🔍\s*(.+?)\s*\(/);
+      if (keywordMatch) {
+        document.getElementById('currentKeyword').style.display = 'block';
+        document.getElementById('currentKeywordText').textContent = keywordMatch[1].trim();
+      }
+
+      // 노출 발견: ✓ "키워드" → 블로그
+      const exposedMatch = clean.match(/✓\s*"(.+?)"\s*→\s*(.+?)\s/);
+      if (exposedMatch) {
+        stats.exposed++;
+        updateStats();
+        addActivity('success', exposedMatch[1], exposedMatch[2]);
+      }
+
+      // 인기글 체크
+      if (clean.includes('인기글') || clean.includes('인기)')) {
+        stats.popular++;
+        updateStats();
+      }
+
+      // 완료 메시지
+      if (clean.includes('완료') && clean.includes('노출')) {
+        const completeMatch = clean.match(/(\d+)개\s*노출/);
+        if (completeMatch) {
+          addActivity('success', '시트 완료', `${completeMatch[1]}개 노출 발견`);
+        }
+      }
+
+      // 에러
+      if (clean.includes('에러') || clean.includes('실패')) {
+        addActivity('error', '오류', clean.substring(0, 50));
+      }
+    }
+
+    function updateLoginIndicator(loggedIn) {
+      const indicator = document.getElementById('loginIndicator');
+      indicator.style.display = 'inline-flex';
+      indicator.textContent = loggedIn ? '🔐 로그인' : '🌐 비로그인';
+      indicator.className = 'login-indicator ' + (loggedIn ? 'logged-in' : 'logged-out');
+    }
+
+    function updateStats() {
+      document.getElementById('statTotal').textContent = stats.total;
+      document.getElementById('statCurrent').textContent = stats.current;
+      document.getElementById('statExposed').textContent = stats.exposed;
+      document.getElementById('statPopular').textContent = stats.popular;
+
+      const percent = stats.total > 0 ? Math.round((stats.current / stats.total) * 100) : 0;
+      document.getElementById('progressPercent').textContent = percent + '%';
+      document.getElementById('progressBar').style.width = percent + '%';
+    }
+
+    function addActivity(type, title, desc) {
+      if (activityList.querySelector('.empty-state')) {
+        activityList.innerHTML = '';
+      }
+
+      const icons = { success: '✓', info: 'ℹ', warning: '⚠', error: '✕' };
+      const item = document.createElement('div');
+      item.className = 'activity-item';
+      item.innerHTML = `
+        <div class="activity-icon ${type}">${icons[type] || '•'}</div>
+        <div class="activity-content">
+          <div class="title">${title}</div>
+          <div class="desc">${desc}</div>
+        </div>
+        <div class="activity-time">${new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
+      `;
+
+      activityList.insertBefore(item, activityList.firstChild);
+      activityCount++;
+      document.getElementById('activityCount').textContent = activityCount + '개';
+
+      // 최대 50개 유지
+      while (activityList.children.length > 50) {
+        activityList.removeChild(activityList.lastChild);
+      }
     }
 
     function updateStatus(running, job) {
+      const statusText = statusEl.querySelector('.status-text');
       if (running) {
-        statusEl.textContent = `실행 중: ${job?.toUpperCase()} 크론`;
+        statusText.textContent = `실행 중: ${job?.toUpperCase()}`;
         statusEl.classList.add('running');
         stopBtn.disabled = false;
-        buttons.forEach(btn => btn.disabled = true);
+        jobCards.forEach(card => card.classList.add('disabled'));
       } else {
-        statusEl.textContent = '대기 중';
+        statusText.textContent = '대기 중';
         statusEl.classList.remove('running');
         stopBtn.disabled = true;
-        buttons.forEach(btn => btn.disabled = false);
+        jobCards.forEach(card => card.classList.remove('disabled'));
       }
     }
 
@@ -278,14 +901,9 @@
       const h = Math.floor(seconds / 3600);
       const m = Math.floor((seconds % 3600) / 60);
       const s = seconds % 60;
-
-      if (h > 0) {
-        return `${h}시간 ${m}분 ${s}초`;
-      } else if (m > 0) {
-        return `${m}분 ${s}초`;
-      } else {
-        return `${s}초`;
-      }
+      if (h > 0) return `${h}시간 ${m}분`;
+      if (m > 0) return `${m}분 ${s}초`;
+      return `${s}초`;
     }
   </script>
 </body>
