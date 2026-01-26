@@ -40,6 +40,7 @@ export const processKeywords = async (
   const isLoggedIn = options?.isLoggedIn ?? false;
   const maxPages = options?.maxPages ?? 1;
   const blogIds = options?.blogIds;
+  const keywordLogicMap = options?.keywordLogicMap;
   const allResults: ExposureResult[] = [];
 
   const caches: CrawlCaches = {
@@ -90,6 +91,11 @@ export const processKeywords = async (
 
     const { items, isPopular, uniqueGroupsSize, topicNamesArray } = crawlResult;
     const isNewLogic = getIsNewLogic(topicNamesArray);
+
+    // 모든 키워드의 로직 타입을 추적
+    if (keywordLogicMap) {
+      keywordLogicMap.set(query, isNewLogic);
+    }
 
     if (shouldExclude(company, query)) {
       await handleExcluded({

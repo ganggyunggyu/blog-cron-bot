@@ -25,6 +25,7 @@ export interface ProcessKeywordsOptions {
   isLoggedIn?: boolean;
   maxPages?: number;
   blogIds?: string[];
+  keywordLogicMap?: Map<string, boolean>;
 }
 
 export interface KeywordDoc {
