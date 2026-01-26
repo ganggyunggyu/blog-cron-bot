@@ -278,7 +278,8 @@ export type PageCheckSheetType =
   | 'dental'
   | 'eye-clinic'
   | 'pet'
-  | 'hemorrhoid';
+  | 'hemorrhoid'
+  | 'suripet';
 
 const pageCheckModels: Record<
   PageCheckSheetType,
@@ -324,6 +325,11 @@ const pageCheckModels: Record<
     'hemorrhoids',
     PageCheckKeywordSchema,
     'hemorrhoids'
+  ),
+  suripet: mongoose.model<IPageCheckKeyword>(
+    'suripets',
+    PageCheckKeywordSchema,
+    'suripets'
   ),
 };
 

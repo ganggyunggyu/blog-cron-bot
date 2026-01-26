@@ -16,8 +16,8 @@ import { logger } from './lib/logger';
 import { closeBrowser } from './lib/playwright-crawler';
 import { getKSTTimestamp } from './utils';
 import { ExposureResult } from './matcher';
-import { sendDoorayExposureResult, sendDoorayMessage } from './lib/dooray';
-import { PAGES_BLOG_IDS } from './constants/blog-ids';
+import { sendDoorayExposureResult } from './lib/dooray';
+import { PAGES_BLOG_IDS, SURI_PET_BLOG_IDS } from './constants/blog-ids';
 
 dotenv.config();
 
@@ -33,6 +33,7 @@ const SHEET_TYPES: PageCheckSheetType[] = [
   'eye-clinic',
   'pet',
   'hemorrhoid',
+  'suripet',
 ];
 
 const SHEET_TYPE_NAMES: Record<PageCheckSheetType, string> = {
@@ -45,11 +46,13 @@ const SHEET_TYPE_NAMES: Record<PageCheckSheetType, string> = {
   'eye-clinic': '안과',
   pet: '애견',
   hemorrhoid: '치질',
+  suripet: '서리펫',
 };
 
 // 시트별 최대 페이지 수 설정 (기본값: 1)
 const MAX_PAGES_BY_SHEET: Partial<Record<PageCheckSheetType, number>> = {
-  pet: 9, // 애견만 9페이지
+  pet: 9,
+  suripet: 9,
 };
 
 const DEFAULT_MAX_PAGES = 1;
@@ -75,12 +78,17 @@ async function syncAllSheetsAPI(): Promise<number> {
 
 async function exportSheetAPI(sheetType: PageCheckSheetType): Promise<boolean> {
   try {
-    const res = await axios.post(`${PAGE_CHECK_API}/api/page-check/export`, {
-      sheetType,
-    });
-    const { totalRows, updatedCells } = res.data;
+    // suripet은 전용 API 사용
+    const url = sheetType === 'suripet'
+      ? `${PAGE_CHECK_API}/api/suripet/export`
+      : `${PAGE_CHECK_API}/api/page-check/export`;
+    const body = sheetType === 'suripet' ? {} : { sheetType };
+
+    const res = await axios.post(url, body);
+    const totalRows = res.data.totalRows ?? res.data.count ?? 0;
+    const updatedCells = res.data.updatedCells ?? '';
     logger.success(
-      `  ${SHEET_TYPE_NAMES[sheetType]}: ${totalRows}개 내보내기 (${updatedCells}셀)`
+      `  ${SHEET_TYPE_NAMES[sheetType]}: ${totalRows}개 내보내기${updatedCells ? ` (${updatedCells}셀)` : ''}`
     );
     return true;
   } catch (error) {
@@ -91,12 +99,31 @@ async function exportSheetAPI(sheetType: PageCheckSheetType): Promise<boolean> {
   }
 }
 
+async function getSuripetKeywordsAPI(): Promise<IPageCheckKeyword[]> {
+  try {
+    const res = await axios.get(`${PAGE_CHECK_API}/api/suripet`);
+    const data = res.data.data ?? res.data.keywords ?? res.data ?? [];
+    // company 필드 추가 (없으면 '서리펫'으로 기본값)
+    return data.map((item: any) => ({
+      ...item,
+      company: item.company ?? '서리펫',
+    }));
+  } catch (error) {
+    logger.error(`서리펫 키워드 조회 실패: ${(error as Error).message}`);
+    return [];
+  }
+}
+
 async function importSheetAPI(sheetType: PageCheckSheetType): Promise<number> {
   try {
-    const res = await axios.post(`${PAGE_CHECK_API}/api/page-check/import`, {
-      sheetType,
-    });
-    const { inserted } = res.data;
+    // suripet은 전용 API 사용
+    const url = sheetType === 'suripet'
+      ? `${PAGE_CHECK_API}/api/suripet`
+      : `${PAGE_CHECK_API}/api/page-check/import`;
+    const body = sheetType === 'suripet' ? {} : { sheetType };
+
+    const res = await axios.post(url, body);
+    const inserted = res.data.inserted ?? res.data.count ?? 0;
     logger.success(`  ${SHEET_TYPE_NAMES[sheetType]}: ${inserted}개 동기화`);
     return inserted;
   } catch (error) {
@@ -151,26 +178,22 @@ async function processSheetKeywords(
   const maxPages = getMaxPagesForSheet(sheetType);
   const logBuilder = createDetailedLogBuilder();
 
+  // suripet은 전용 블로그 ID 사용
+  const blogIds = sheetType === 'suripet' ? SURI_PET_BLOG_IDS : PAGES_BLOG_IDS;
+
   logger.info(`[${typeName}] 🚀 ${keywords.length}개 키워드 처리 시작 (${maxPages}페이지)`);
 
   const results = await processKeywords(keywords as any, logBuilder, {
     updateFunction: createUpdateFunction(sheetType),
     isLoggedIn,
     maxPages,
-    blogIds: PAGES_BLOG_IDS,
+    blogIds,
   });
 
   logger.success(`[${typeName}] ✅ 완료: ${results.length}개 노출 발견`);
 
   // 완료 즉시 시트 내보내기
   await exportSheetAPI(sheetType);
-
-  // 시트별 Dooray 알림
-  const exposedCount = results.length;
-  const nonExposedCount = keywords.length - exposedCount;
-  await sendDoorayMessage(
-    `[${typeName}] 완료\n노출 ${exposedCount} / 미노출 ${nonExposedCount}`
-  );
 
   return results;
 }
@@ -226,11 +249,15 @@ export async function main(targetSheetTypes?: PageCheckSheetType[]) {
     'eye-clinic': [],
     pet: [],
     hemorrhoid: [],
+    suripet: [],
   };
 
   logger.divider('키워드 조회');
   for (const sheetType of activeSheetTypes) {
-    const keywords = await getPageCheckKeywords(sheetType);
+    // suripet은 API로 키워드 조회
+    const keywords = sheetType === 'suripet'
+      ? await getSuripetKeywordsAPI()
+      : await getPageCheckKeywords(sheetType);
     keywordsBySheet[sheetType] = keywords;
     logger.info(`  ${SHEET_TYPE_NAMES[sheetType]}: ${keywords.length}개`);
   }
