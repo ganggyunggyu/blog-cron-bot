@@ -28,7 +28,9 @@ export async function main() {
       `🔐 로그인 모드: ${loginStatus.userName} (${loginStatus.email})`
     );
   } else {
-    logger.info('🌐 비로그인 모드');
+    logger.error('❌ 로그인이 필요합니다. 먼저 로그인 후 다시 실행해주세요.');
+    logger.info('💡 pnpm cookie:auto 명령어로 로그인 쿠키를 설정하세요.');
+    process.exit(1);
   }
   logger.blank();
 
