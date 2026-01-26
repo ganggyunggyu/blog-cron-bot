@@ -8,6 +8,7 @@
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
     "test": "ts-node src/test.ts",
+    "test:pet": "ts-node src/test-pet-keywords.ts",
     "naver:popular:update": "ts-node src/tools/update-popular-selectors/index.ts",
     "naver:popular:update:local": "ts-node src/tools/update-popular-selectors-local.ts",
     "migrate:rank": "ts-node src/migrations/migrate-rank/index.ts",
@@ -26,6 +27,9 @@
     "cron:2am": "ts-node src/cron-test-2am.ts",
     "cron:pages": "ts-node src/cron-pages.ts",
     "check-login": "npx tsx check-login.ts",
+    "cookie:update": "ts-node src/tools/update-cookie.ts",
+    "cookie:login": "ts-node src/tools/login-and-get-cookie.ts",
+    "cookie:auto": "ts-node src/tools/auto-login.ts",
     "dashboard": "npx tsx src/web/server.ts"
   },
   "dependencies": {
