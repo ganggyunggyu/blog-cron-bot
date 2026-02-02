@@ -1,14 +1,34 @@
+# Dependencies
 node_modules/
-dist/
 ui/node_modules/
+
+# Build
+dist/
 ui/dist/
 ui/.vite/
-output/*.csv
+
+# Output
+output/
+*.csv
+*.txt
+
+# Test files
+src/test-*.ts
+src/lib/check-new-logic.ts
+
+# Tools (login/cookie)
+src/tools/
+
+# Logs & Debug
+logs/
 debug/
+*.log
+
+# Environment & System
 .env
 .DS_Store
-*.log
+*.pem
 .scheduler-state*.json
 
-*.pem
-logs/
+# Local docs
+COMMANDS.md
