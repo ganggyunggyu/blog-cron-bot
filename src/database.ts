@@ -327,9 +327,9 @@ const pageCheckModels: Record<
     'hemorrhoids'
   ),
   suripet: mongoose.model<IPageCheckKeyword>(
-    'suripets',
+    'suripetKeywords',
     PageCheckKeywordSchema,
-    'suripets'
+    'suripetKeywords'
   ),
 };
 
