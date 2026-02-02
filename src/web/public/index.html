@@ -831,9 +831,38 @@
         }
       }
 
-      // 에러
-      if (clean.includes('에러') || clean.includes('실패')) {
-        addActivity('error', '오류', clean.substring(0, 50));
+      // 미노출 (매칭 실패) - 에러가 아님
+      if (clean.includes('매칭 실패') || clean.includes('미노출')) {
+        // 미노출은 별도 처리하지 않음 (정상 동작)
+      }
+      // 진짜 에러만 감지
+      else if (
+        clean.includes('❌') ||
+        clean.includes('Error:') ||
+        clean.includes('에러:') ||
+        clean.includes('ECONNREFUSED') ||
+        clean.includes('ETIMEDOUT') ||
+        clean.includes('크롤링 실패') ||
+        clean.includes('연결 실패') ||
+        clean.includes('타임아웃')
+      ) {
+        // 에러 메시지에서 의미있는 부분 추출
+        let errorTitle = '크롤링 오류';
+        let errorDesc = clean.substring(0, 80);
+
+        if (clean.includes('ECONNREFUSED')) {
+          errorTitle = '연결 거부';
+          errorDesc = '서버에 연결할 수 없습니다';
+        } else if (clean.includes('ETIMEDOUT')) {
+          errorTitle = '연결 시간 초과';
+          errorDesc = '응답 대기 시간이 초과되었습니다';
+        } else if (clean.includes('크롤링 실패')) {
+          errorTitle = '크롤링 실패';
+          const keywordMatch = clean.match(/"(.+?)"/);
+          errorDesc = keywordMatch ? keywordMatch[1] : '페이지 로드 실패';
+        }
+
+        addActivity('error', errorTitle, errorDesc);
       }
     }
 
