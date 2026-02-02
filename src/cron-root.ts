@@ -15,21 +15,31 @@ import { logger } from './lib/logger';
 import axios from 'axios';
 import { getKSTTimestamp } from './utils';
 import { sendDoorayExposureResult } from './lib/dooray';
+import { autoLogin } from './tools/auto-login';
 
 dotenv.config();
 
 export async function main() {
   const startTime = Date.now();
 
-  const loginStatus = await checkNaverLogin();
+  let loginStatus = await checkNaverLogin();
   logger.divider('로그인 상태');
+  if (!loginStatus.isLoggedIn) {
+    logger.warn('🔑 로그인 필요, 자동 로그인 시도...');
+    const loginSuccess = await autoLogin();
+    if (!loginSuccess) {
+      logger.error('❌ 자동 로그인 실패');
+      process.exit(1);
+    }
+    loginStatus = await checkNaverLogin();
+  }
+
   if (loginStatus.isLoggedIn) {
     logger.success(
       `🔐 로그인 모드: ${loginStatus.userName} (${loginStatus.email})`
     );
   } else {
-    logger.error('❌ 로그인이 필요합니다. 먼저 로그인 후 다시 실행해주세요.');
-    logger.info('💡 pnpm cookie:auto 명령어로 로그인 쿠키를 설정하세요.');
+    logger.error('❌ 로그인 확인 실패');
     process.exit(1);
   }
   logger.blank();
