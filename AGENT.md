@@ -22,10 +22,43 @@
 # Entrypoints & Jobs
 - `src/index.ts`: 메인 크롤러 오케스트레이션
 - `src/cron.ts`, `src/cron-root.ts`, `src/cron-pet.ts`: 주기 실행 엔트리
+- `src/cron-pages.ts`: 페이지 체크 크롤러 (시트별 키워드 순위 체크)
 - `src/pm2-scheduler.ts`, `src/pm2-scheduler-root.ts`: PM2 스케줄러
 - `src/web/server/index.ts`: 내부 웹 서버
 - `src/tools/update-popular-selectors/index.ts`, `src/tools/update-popular-selectors-local.ts`: 인기 탭 셀렉터 동기화
 - `src/migrations/*`: 데이터 마이그레이션
+
+# cron:pages 명령어
+페이지 체크 크롤러 실행 명령어.
+
+```bash
+# 전체 시트 실행
+pnpm cron:pages
+
+# 특정 시트만 실행
+pnpm cron:pages <시트타입>
+```
+
+**시트 타입 목록:**
+| 타입 | 설명 | 최대 페이지 |
+|------|------|-------------|
+| `black-goat` | 흑염소 | 1 |
+| `herb-effect` | 약재효능 | 1 |
+| `diet-supplement` | 다이어트보조제 | 1 |
+| `skin-procedure` | 피부시술 | 1 |
+| `prescription` | 약처방 | 1 |
+| `dental` | 치과 | 1 |
+| `eye-clinic` | 안과 | 1 |
+| `pet` | 애견 | 9 |
+| `hemorrhoid` | 치질 | 1 |
+| `suripet` | 서리펫 | 9 |
+
+**예시:**
+```bash
+pnpm cron:pages suripet    # 서리펫만
+pnpm cron:pages pet        # 애견만
+pnpm cron:pages hemorrhoid # 치질만
+```
 
 # Code & HTTP Rules
 - Strict TS, 2-space indent, CJS module. 기존 상대 경로 패턴 유지(별도 경로 alias 없음).
