@@ -99,8 +99,8 @@ if (testDelayMinutes > 0) {
     { hour: '2-digit', minute: '2-digit' }
   )})`;
 } else {
-  cronSchedule = '01 09 * * *';
-  scheduleDescription = '매일 오전 9시 10분';
+  cronSchedule = '02 13 * * *';
+  scheduleDescription = '매일 오후 1시 2분';
 }
 
 const startupItems = [

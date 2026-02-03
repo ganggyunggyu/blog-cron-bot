@@ -8,9 +8,9 @@ export const SEARCH_PARTIAL_SELECTORS = [
   '.sds-comps-text-type-headline1',
 ];
 
-export const WORKFLOW_RUN_TIME_LIST = ['09:10'] as const;
+export const WORKFLOW_RUN_TIME_LIST = ['13:02'] as const;
 
-export const ROOT_RUN_TIME_LIST = ['08:45'] as const;
+export const ROOT_RUN_TIME_LIST = ['13:03'] as const;
 
 export const SCHEDULER_TICK_INTERVAL_MS = 15_000;
 

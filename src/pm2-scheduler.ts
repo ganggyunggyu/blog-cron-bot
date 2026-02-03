@@ -200,8 +200,8 @@ const getRunScheduleConfig = (): RunScheduleConfig => {
   }
 
   return {
-    runTimeList: [...WORKFLOW_RUN_TIME_LIST],
-    scheduleDescription: `DEFAULT=${WORKFLOW_RUN_TIME_LIST.join(',')}`,
+    runTimeList: ['13:02'],
+    scheduleDescription: `DEFAULT=13:02`,
   };
 };
 
