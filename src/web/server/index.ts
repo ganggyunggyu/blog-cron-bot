@@ -5,6 +5,7 @@ import bodyParser from 'body-parser';
 import { testKeyword } from '../tester';
 import { runBatch } from '../batch-runner';
 import { getCronStatus, streamCronRun } from '../cron-runner';
+import { checkNewLogic } from '../../lib/check-new-logic';
 import { connectDB, disconnectDB } from '../../database';
 import * as dotenv from 'dotenv';
 
@@ -77,6 +78,19 @@ app.post('/api/test', async (req, res) => {
       { allowAnyBlog, fetchHtml, maxContentChecks, contentCheckDelay }
     );
     res.json(result);
+  } catch (e: any) {
+    res.status(500).json({ ok: false, error: e?.message || 'internal error' });
+  }
+});
+
+app.post('/api/check-logic', async (req, res) => {
+  try {
+    const { keyword } = req.body || {};
+    if (!keyword || typeof keyword !== 'string') {
+      return res.status(400).json({ ok: false, error: 'keyword is required' });
+    }
+    const result = await checkNewLogic(keyword);
+    res.json({ ok: true, ...result });
   } catch (e: any) {
     res.status(500).json({ ok: false, error: e?.message || 'internal error' });
   }
