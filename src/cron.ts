@@ -130,3 +130,6 @@ cron.schedule(
     timezone: 'Asia/Seoul',
   }
 );
+export async function main() {
+  await runFullWorkflow();
+} 
