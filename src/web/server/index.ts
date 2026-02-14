@@ -22,6 +22,17 @@ const isCronMode = (
 
 app.use(bodyParser.json({ limit: '1mb' }));
 
+// CORS 설정
+app.use((_req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  if (_req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 const uiDistDir = path.join(__dirname, '../../../ui/dist');
 const publicDir = path.join(__dirname, '../../../public');
 const staticDir = fs.existsSync(uiDistDir) ? uiDistDir : publicDir;
