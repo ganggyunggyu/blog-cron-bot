@@ -28,28 +28,26 @@ dotenv.config();
 const PAGE_CHECK_API = process.env.PAGE_CHECK_API || 'http://localhost:3000';
 
 const SHEET_TYPES: PageCheckSheetType[] = [
-  'black-goat',
-  'herb-effect',
+  'black-goat-new',
+  'black-goat-old',
   'diet-supplement',
   'skin-procedure',
   'prescription',
   'dental',
   'eye-clinic',
   'pet',
-  'hemorrhoid',
   'suripet',
 ];
 
 const SHEET_TYPE_NAMES: Record<PageCheckSheetType, string> = {
-  'black-goat': '흑염소',
-  'herb-effect': '약재효능',
+  'black-goat-new': '흑염소 신규',
+  'black-goat-old': '흑염소 구',
   'diet-supplement': '다이어트보조제',
   'skin-procedure': '피부시술',
   prescription: '약처방',
   dental: '치과',
   'eye-clinic': '안과',
   pet: '애견',
-  hemorrhoid: '치질',
   suripet: '서리펫',
 };
 
@@ -250,15 +248,14 @@ export async function main(targetSheetTypes?: PageCheckSheetType[]) {
   await connectDB(mongoUri);
 
   const keywordsBySheet: Record<PageCheckSheetType, IPageCheckKeyword[]> = {
-    'black-goat': [],
-    'herb-effect': [],
+    'black-goat-new': [],
+    'black-goat-old': [],
     'diet-supplement': [],
     'skin-procedure': [],
     prescription: [],
     dental: [],
     'eye-clinic': [],
     pet: [],
-    hemorrhoid: [],
     suripet: [],
   };
 

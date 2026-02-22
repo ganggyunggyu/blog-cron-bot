@@ -270,30 +270,29 @@ const PageCheckKeywordSchema: Schema = new Schema(
 );
 
 export type PageCheckSheetType =
-  | 'black-goat'
-  | 'herb-effect'
+  | 'black-goat-new'
+  | 'black-goat-old'
   | 'diet-supplement'
   | 'skin-procedure'
   | 'prescription'
   | 'dental'
   | 'eye-clinic'
   | 'pet'
-  | 'hemorrhoid'
   | 'suripet';
 
 const pageCheckModels: Record<
   PageCheckSheetType,
   mongoose.Model<IPageCheckKeyword>
 > = {
-  'black-goat': mongoose.model<IPageCheckKeyword>(
-    'blackgoats',
+  'black-goat-new': mongoose.model<IPageCheckKeyword>(
+    'blackgoatnews',
     PageCheckKeywordSchema,
-    'blackgoats'
+    'blackgoatnews'
   ),
-  'herb-effect': mongoose.model<IPageCheckKeyword>(
-    'herbeffects',
+  'black-goat-old': mongoose.model<IPageCheckKeyword>(
+    'blackgoatolds',
     PageCheckKeywordSchema,
-    'herbeffects'
+    'blackgoatolds'
   ),
   'diet-supplement': mongoose.model<IPageCheckKeyword>(
     'dietsupplements',
@@ -321,11 +320,6 @@ const pageCheckModels: Record<
     'eyeclinics'
   ),
   pet: mongoose.model<IPageCheckKeyword>('pets', PageCheckKeywordSchema, 'pets'),
-  hemorrhoid: mongoose.model<IPageCheckKeyword>(
-    'hemorrhoids',
-    PageCheckKeywordSchema,
-    'hemorrhoids'
-  ),
   suripet: mongoose.model<IPageCheckKeyword>(
     'suripetKeywords',
     PageCheckKeywordSchema,

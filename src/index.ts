@@ -8,6 +8,8 @@ import { checkNaverLogin } from './lib/check-naver-login';
 import { logger } from './lib/logger';
 import { getKSTTimestamp } from './utils';
 import { sendDoorayExposureResult } from './lib/dooray';
+import { DOGMARU_BLOG_IDS } from './constants/blog-ids';
+import { ExposureResult } from './matcher';
 
 dotenv.config();
 
@@ -77,9 +79,27 @@ export async function main() {
 
   const logBuilder = createDetailedLogBuilder();
 
-  const allResults = await processKeywords(keywords, logBuilder, {
-    isLoggedIn: loginStatus.isLoggedIn,
-  });
+  const dogmaruKeywords = keywords.filter((k: any) => k.sheetType === 'dogmaru');
+  const otherKeywords = keywords.filter((k: any) => k.sheetType !== 'dogmaru');
+
+  const allResults: ExposureResult[] = [];
+
+  if (otherKeywords.length > 0) {
+    logger.info(`📦 패키지/일반건 ${otherKeywords.length}개 처리`);
+    const results = await processKeywords(otherKeywords, logBuilder, {
+      isLoggedIn: loginStatus.isLoggedIn,
+    });
+    allResults.push(...results);
+  }
+
+  if (dogmaruKeywords.length > 0) {
+    logger.info(`🐕 도그마루 ${dogmaruKeywords.length}개 처리 (도그마루 계정 전용)`);
+    const results = await processKeywords(dogmaruKeywords, logBuilder, {
+      isLoggedIn: loginStatus.isLoggedIn,
+      blogIds: DOGMARU_BLOG_IDS,
+    });
+    allResults.push(...results);
+  }
 
   const timestamp = getKSTTimestamp();
   const filterSheet = (process.env.ONLY_SHEET_TYPE || '').trim();

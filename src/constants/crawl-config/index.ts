@@ -31,13 +31,13 @@ export const TIMEOUT = {
 // 딜레이 설정 (ms)
 export const DELAY = {
   /** 콘텐츠 로드 후 기본 대기 */
-  CONTENT_LOAD_BASE: 1500,
+  CONTENT_LOAD_BASE: 800,
   /** 콘텐츠 로드 후 랜덤 추가 대기 (0 ~ 값) */
-  CONTENT_LOAD_RANDOM: 1000,
+  CONTENT_LOAD_RANDOM: 500,
   /** 페이지 간 이동 기본 대기 */
-  PAGE_NAVIGATION_BASE: 1500,
+  PAGE_NAVIGATION_BASE: 800,
   /** 페이지 간 이동 랜덤 추가 대기 */
-  PAGE_NAVIGATION_RANDOM: 1500,
+  PAGE_NAVIGATION_RANDOM: 700,
   /** VIEW 탭 페이지 간 기본 대기 */
   VIEW_TAB_BASE: 300,
   /** VIEW 탭 페이지 간 랜덤 추가 대기 */
@@ -47,7 +47,7 @@ export const DELAY = {
   /** 차단 감지 시 대기 */
   BLOCKED_WAIT: 5000,
   /** 쿼리 간 대기 */
-  BETWEEN_QUERIES: 1500,
+  BETWEEN_QUERIES: 1000,
   /** 멀티페이지 크롤링 페이지 간 최소 대기 */
   MULTI_PAGE_MIN: 500,
   /** 멀티페이지 크롤링 페이지 간 최대 대기 */

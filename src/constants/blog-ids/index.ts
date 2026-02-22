@@ -112,6 +112,8 @@ export const BLOG_IDS = [
   'hagyga',
   'geenl',
   'ghhoy',
+  'janaggena',
+  'queen9336',
 ];
 
 // cron:pages용 블로그
@@ -152,6 +154,22 @@ export const PAGES_BLOG_IDS = [
   'ghhoy',
 ];
 
+// 도그마루 전용 블로그
+export const DOGMARU_BLOG_IDS = [
+  'dyulp',
+  'lesyt',
+  'aryunt',
+  'loand3324',
+  'fail5644',
+  'compare14310',
+  'gmezz',
+  'youngtae0510',
+  'yakooroo',
+  'minjin90310',
+  'bright0248',
+  'tpeany',
+];
+
 // 서리펫 전용 블로그
 export const SURI_PET_BLOG_IDS = [
   'zhuwl',
@@ -160,4 +178,7 @@ export const SURI_PET_BLOG_IDS = [
   'aqahdp5252',
   'kwen1030',
   'k54382000',
+  'umle1203',
+  'k54382000',
+  '',
 ];
