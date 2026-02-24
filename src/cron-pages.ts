@@ -54,7 +54,7 @@ const SHEET_TYPE_NAMES: Record<PageCheckSheetType, string> = {
 // 시트별 최대 페이지 수 설정 (기본값: 4)
 const MAX_PAGES_BY_SHEET: Partial<Record<PageCheckSheetType, number>> = {};
 
-const DEFAULT_MAX_PAGES = 4;
+const DEFAULT_MAX_PAGES = 9;
 
 const getMaxPagesForSheet = (sheetType: PageCheckSheetType): number =>
   MAX_PAGES_BY_SHEET[sheetType] ?? DEFAULT_MAX_PAGES;
