@@ -20,7 +20,8 @@
     "migrate:rank": "ts-node src/migrations/migrate-rank/index.ts",
     "cookie:update": "ts-node src/tools/update-cookie.ts",
     "cookie:login": "ts-node src/tools/login-and-get-cookie.ts",
-    "cookie:auto": "ts-node src/tools/auto-login.ts"
+    "cookie:auto": "ts-node src/tools/auto-login.ts",
+    "keyword:report": "ts-node src/tools/keyword-report.ts"
   },
   "dependencies": {
     "axios": "^1.13.2",

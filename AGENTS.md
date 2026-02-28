@@ -105,6 +105,8 @@ cron.ts
 - Cheerio 셀렉터는 `parser/selectors/`에 집중. 인라인 매직 스트링 금지.
 - 시트타입별 분기는 `sheet-config.ts` 설정 기반 (OOP 상속이 아닌 함수형 분기).
 - Keyword/RootKeyword 이중 스키마 — 한쪽 변경 시 반드시 다른 쪽도 동기화.
+- 로그인/비로그인 모드는 검색 결과 변동 비교용 실행 모드이며, 노출체크 대상 계정 목록 정의와는 별개로 취급.
+- `BLOG_IDS` 계열 상수는 노출체크 대상 블로그 계정 목록이며, `cron-pages`에서 `suripet` 시트는 `SURI_PET_BLOG_IDS`를 사용.
 
 ## ANTI-PATTERNS (THIS PROJECT)
 
