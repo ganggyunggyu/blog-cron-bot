@@ -78,6 +78,7 @@ export interface GuestRetryParams {
   keywordDoc: KeywordDoc;
   topicNamesArray: string[];
   matchQueue: ExposureResult[];
+  blogIds?: string[];
   vendorTarget: string;
   restaurantName: string;
   caches: CrawlCaches;

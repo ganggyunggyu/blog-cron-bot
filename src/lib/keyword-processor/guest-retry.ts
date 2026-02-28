@@ -17,6 +17,7 @@ export const runGuestRetry = async (
     keywordDoc,
     topicNamesArray,
     matchQueue,
+    blogIds,
     vendorTarget,
     restaurantName,
     caches,
@@ -40,7 +41,10 @@ export const runGuestRetry = async (
     const commonTopics = topicNamesArray.filter((topic) => guestTopics.has(topic));
 
     const allowAnyBlog = getAllowAnyBlog(keywordDoc.sheetType);
-    const guestMatches = matchBlogs(query, guestItems, { allowAnyBlog });
+    const guestMatches = matchBlogs(query, guestItems, {
+      allowAnyBlog,
+      blogIds,
+    });
 
     const guestAddedLinks =
       caches.guestAddedLinksCache.get(searchQuery) || new Set<string>();

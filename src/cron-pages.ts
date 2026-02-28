@@ -54,7 +54,7 @@ const SHEET_TYPE_NAMES: Record<PageCheckSheetType, string> = {
 // 시트별 최대 페이지 수 설정 (기본값: 4)
 const MAX_PAGES_BY_SHEET: Partial<Record<PageCheckSheetType, number>> = {};
 
-const DEFAULT_MAX_PAGES = 9;
+const DEFAULT_MAX_PAGES = 1;
 
 const getMaxPagesForSheet = (sheetType: PageCheckSheetType): number =>
   MAX_PAGES_BY_SHEET[sheetType] ?? DEFAULT_MAX_PAGES;
@@ -179,7 +179,7 @@ async function processSheetKeywords(
   const maxPages = getMaxPagesForSheet(sheetType);
   const logBuilder = createDetailedLogBuilder();
 
-  // 시트별 블로그 ID 분기
+  // 시트별 노출체크 대상 블로그 ID 분기(suripet은 SURI_PET_BLOG_IDS만 사용)
   const getBlogIds = () => {
     if (sheetType === 'suripet') return SURI_PET_BLOG_IDS;
     if (sheetType === 'pet') return BLOG_IDS;
@@ -216,6 +216,7 @@ export async function main(targetSheetTypes?: PageCheckSheetType[]) {
 
   logger.divider(`📄 멀티페이지 크론 [${sheetLabel}]`);
 
+  // 로그인/비로그인 모드는 결과 비교용 실행 모드 구분임(대상 계정 목록 기준은 별도 blogIds 설정 사용)
   const loginStatus = await checkNaverLogin();
   logger.divider('로그인 상태');
   if (loginStatus.isLoggedIn) {

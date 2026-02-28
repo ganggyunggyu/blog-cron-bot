@@ -1,4 +1,5 @@
-// 기존 블로그 (패키지/일반건용)
+// 노출체크 대상 블로그 계정 목록(포스팅/노출 여부 판단 기준 계정)
+// 패키지/일반건 기본 목록
 export const BLOG_IDS = [
   'zhuwl',
   'enugii',
@@ -114,6 +115,10 @@ export const BLOG_IDS = [
   'ghhoy',
   'janaggena',
   'queen9336',
+  'skidrow762',
+  'sghjan',
+  'sunyzone2',
+  'na3997',
 ];
 
 // cron:pages용 블로그
@@ -179,6 +184,4 @@ export const SURI_PET_BLOG_IDS = [
   'kwen1030',
   'k54382000',
   'umle1203',
-  'k54382000',
-  '',
 ];
