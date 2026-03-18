@@ -18,9 +18,7 @@ import { getKSTTimestamp } from './utils';
 import { ExposureResult } from './matcher';
 import { sendDoorayExposureResult } from './lib/dooray';
 import {
-  BLOG_IDS,
-  PAGES_BLOG_IDS,
-  SURI_PET_BLOG_IDS,
+  PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE,
 } from './constants/blog-ids';
 
 dotenv.config();
@@ -52,7 +50,9 @@ const SHEET_TYPE_NAMES: Record<PageCheckSheetType, string> = {
 };
 
 // 시트별 최대 페이지 수 설정 (기본값: 4)
-const MAX_PAGES_BY_SHEET: Partial<Record<PageCheckSheetType, number>> = {};
+const MAX_PAGES_BY_SHEET: Partial<Record<PageCheckSheetType, number>> = {
+  'black-goat-old': 1,
+};
 
 const DEFAULT_MAX_PAGES = 4;
 
@@ -179,13 +179,7 @@ async function processSheetKeywords(
   const maxPages = getMaxPagesForSheet(sheetType);
   const logBuilder = createDetailedLogBuilder();
 
-  // 시트별 노출체크 대상 블로그 ID 분기(suripet은 SURI_PET_BLOG_IDS만 사용)
-  const getBlogIds = () => {
-    if (sheetType === 'suripet') return SURI_PET_BLOG_IDS;
-    if (sheetType === 'pet') return BLOG_IDS;
-    return BLOG_IDS;
-  };
-  const blogIds = getBlogIds();
+  const blogIds = PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE[sheetType];
 
   logger.info(
     `[${typeName}] 🚀 ${keywords.length}개 키워드 처리 시작 (${maxPages}페이지)`

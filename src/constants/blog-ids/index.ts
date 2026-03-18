@@ -1,187 +1,125 @@
-// 노출체크 대상 블로그 계정 목록(포스팅/노출 여부 판단 기준 계정)
-// 패키지/일반건 기본 목록
-export const BLOG_IDS = [
-  'zhuwl',
-  'enugii',
-  'nnhha',
-  'aqahdp5252',
-  'kwen1030',
-  'k54382000',
-  'sarangchai_',
-  'im_tang',
-  'solantoro',
-  'busansmart',
-  'mygury1',
-  'rscwsixrc',
-  'surreal805',
-  'dreamclock33',
-  'minpilates',
-  'dnation09',
-  'snk92789',
-  'i_thinkkkk',
-  'sw078',
-  'godqhr5528',
-  'alstjs9711',
-  'jjs216',
-  'megatattoo',
-  'odori2007',
-  'vegetable10517',
-  'rational4640',
-  'hugeda14713',
-  'boy848',
-  'ecjroe6558',
+import type { PageCheckSheetType } from '../../database';
+
+const dedupeBlogIds = (blogIds: readonly string[]): string[] =>
+  Array.from(new Set(blogIds.map((blogId) => blogId.toLowerCase())));
+
+const BLACK_GOAT_BLOG_IDS = [
+  'biggoose488',
   'dhtksk1p',
-  'dhfosk1p',
-  'dlfgydnjs1p',
-  'eqsdxv2863',
-  'ags2oigb',
-  'vocabulary1215',
-  'zoeofx5611',
-  'tjthtjs5p',
-  'wd6edn3b',
-  'ihut9094',
-  '3goc9xkq',
-  'tube24575',
-  'cookie4931',
-  'wound12567',
-  'precede1451',
-  '0902ab',
-  'by9996',
-  'ziniz77',
-  'taraswati',
-  'vividoasis',
-  'gray00jy',
-  'kainn',
-  'yaves0218',
-  'idoenzang',
-  'wsnarin',
-  'an970405',
-  'kangcs4162',
-  'skycomps',
-  'hotelelena',
-  'bullim91',
-  'hyzhengyin',
-  'kisemo777',
-  'mw_mj',
-  'ccgakoreains',
-  'sjyh86',
-  'guselvkvk',
-  'adorableash',
-  'yevencho',
-  'dlsdo9495',
-  'seowoo7603',
-  'ybs1224',
-  'tpeany',
-  'jkr1231',
-  'jambbojy',
-  'sssunz',
-  'sos0134',
-  'bright0248',
-  's901019s',
-  'minjin90310',
-  'canopus_72',
-  'youngtae0510',
-  'sasane',
-  'yakooroo',
-  'tangerine-e',
-  'sesrsoa',
-  'alien8118',
-  'disadvantage6171',
-  'weddindg1218',
-  'ikc9036',
-  'compare14310',
-  'fail5644',
-  'loand3324',
-  'umle1203',
-  'dyulp',
-  'lesyt',
-  'aryunt',
-  'gmezz',
-  'mixxut',
-  'ynattg',
-  'column13365',
-  'momenft5251',
+  'regular14631',
   'selzze',
-  'bjwuo',
+  '4giccokx',
   'ebbte',
-  'ganir',
-  'shcint',
+  'uqgidh2690',
+  'eytkgy5500',
   'yenalk',
   'dyust',
+] as const;
+
+const DIET_SUPPLEMENT_BLOG_IDS = ['ags2oigb'] as const;
+
+const EYE_CLINIC_BLOG_IDS = [
+  'mixxut',
+  'ynattg',
   'nahhjo',
   'mzuul',
   'hagyga',
   'geenl',
   'ghhoy',
-  'janaggena',
-  'queen9336',
+] as const;
+
+const SKIN_PROCEDURE_BLOG_IDS = ['cookie4931'] as const;
+
+const DENTAL_BLOG_IDS = ['wound12567'] as const;
+
+const PRESCRIPTION_BLOG_IDS = ['precede1451'] as const;
+
+const PAGE_PET_BLOG_IDS = [
+  'loand3324',
+  'fail5644',
+  'compare14310',
+  '8i2vlbym',
+  'dyulp',
+  'njmzdksm',
+  'e6yb5u4k',
+] as const;
+
+const PAGE_SURI_PET_BLOG_IDS = [
+  'suc4dce7',
+  'xzjmfn3f',
+  '8ua1womn',
+  '0ehz3cb2',
+  'br5rbg',
+  'beautifulelephant274',
+] as const;
+
+const GENERAL_ONLY_BLOG_IDS = [
+  'solantoro',
+  'mygury1',
+  'surreal805',
+  'ybs1224',
+  'minpilates',
+  'busansmart',
+  'dnation09',
+  'dreamclock33',
+  'sarangchai_',
+  'i_thinkkkk',
+  'sw078',
+  'seowoo7603',
+  'tpeany',
+  'hotelelena',
+  'ikc9036',
   'skidrow762',
   'sghjan',
   'sunyzone2',
   'na3997',
-];
+] as const;
 
-// cron:pages용 블로그
-export const PAGES_BLOG_IDS = [
-  'ecjroe6558',
-  'dhtksk1p',
-  'eqsdxv2863',
-  'ags2oigb',
-  'mixxut',
-  'ynattg',
-  'cookie4931',
-  'wound12567',
-  'precede1451',
-  'dyulp',
-  'lesyt',
-  'aryunt',
-  'loand3324',
-  'fail5644',
-  'compare14310',
-  'gmezz',
-  'zhuwl',
-  'enugii',
-  'nnhha',
-  'selzze',
-  'bjwuo',
-  'ebbte',
-  'yenalk',
-  'dyust',
-  'ganir',
-  'shcint',
-  'aqahdp5252',
-  'momenft5251',
-  'column13365',
-  'nahhjo',
-  'mzuul',
-  'hagyga',
-  'geenl',
-  'ghhoy',
-];
+const PAGE_ONLY_BLOG_IDS = dedupeBlogIds([
+  ...BLACK_GOAT_BLOG_IDS,
+  ...DIET_SUPPLEMENT_BLOG_IDS,
+  ...EYE_CLINIC_BLOG_IDS,
+  ...SKIN_PROCEDURE_BLOG_IDS,
+  ...DENTAL_BLOG_IDS,
+  ...PRESCRIPTION_BLOG_IDS,
+  ...PAGE_PET_BLOG_IDS,
+  ...PAGE_SURI_PET_BLOG_IDS,
+]);
+
+// 노출체크 대상 블로그 계정 목록(블로그 URL 기준 ID)
+export const BLOG_IDS = dedupeBlogIds([
+  ...PAGE_ONLY_BLOG_IDS,
+  ...GENERAL_ONLY_BLOG_IDS,
+]);
+
+// cron:pages용 전체 블로그
+export const PAGES_BLOG_IDS = [...PAGE_ONLY_BLOG_IDS];
 
 // 도그마루 전용 블로그
-export const DOGMARU_BLOG_IDS = [
-  'dyulp',
-  'lesyt',
-  'aryunt',
-  'loand3324',
-  'fail5644',
-  'compare14310',
-  'gmezz',
-  'youngtae0510',
-  'yakooroo',
-  'minjin90310',
-  'bright0248',
+export const DOGMARU_BLOG_IDS = dedupeBlogIds([
+  ...PAGE_PET_BLOG_IDS,
   'tpeany',
-];
+]);
 
 // 서리펫 전용 블로그
-export const SURI_PET_BLOG_IDS = [
-  'zhuwl',
-  'enugii',
-  'nnhha',
-  'aqahdp5252',
-  'kwen1030',
-  'k54382000',
-  'umle1203',
-];
+export const SURI_PET_BLOG_IDS = [...PAGE_SURI_PET_BLOG_IDS];
+
+export const PET_PAGE_CHECK_BLOG_IDS = dedupeBlogIds([
+  ...DOGMARU_BLOG_IDS,
+  ...SURI_PET_BLOG_IDS,
+]);
+
+export const PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE: Record<
+  PageCheckSheetType,
+  string[]
+> = {
+  'black-goat-new': [...BLACK_GOAT_BLOG_IDS],
+  'black-goat-old': [...BLOG_IDS],
+  'diet-supplement': [...DIET_SUPPLEMENT_BLOG_IDS],
+  'skin-procedure': [...SKIN_PROCEDURE_BLOG_IDS],
+  dental: [...DENTAL_BLOG_IDS],
+  prescription: [...PRESCRIPTION_BLOG_IDS],
+  'eye-clinic': [...EYE_CLINIC_BLOG_IDS],
+  pet: [...PET_PAGE_CHECK_BLOG_IDS],
+  suripet: [...PAGE_SURI_PET_BLOG_IDS],
+};
