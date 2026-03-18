@@ -20,6 +20,14 @@ export interface KeywordLogicRow {
   isNewLogic: boolean;
 }
 
+export interface CafeExposureCsvRow {
+  keyword: string;
+  exposureStatus: string;
+  rank: string;
+  cafeName: string;
+  link: string;
+}
+
 const OUTPUT_ROOT_DIR = path.join(__dirname, '../output');
 const TIMESTAMP_SUFFIX_REGEX =
   /(?:_|-)(\d{4})-(\d{2})-(\d{2})(?:T|-)\d{2}-\d{2}-\d{2}$/;
@@ -225,6 +233,63 @@ export const saveToCSV = (
   fs.writeFileSync(filePath, '\uFEFF' + csvContent, 'utf8');
 
   logger.success(`CSV 저장 완료: ${filePath}`);
+};
+
+export const saveCafeExposureCSV = (
+  rows: CafeExposureCsvRow[],
+  filename: string
+): string => {
+  const filePath = resolveOutputFilePath(filename);
+  const escape = (value: string): string =>
+    `"${String(value ?? '').replace(/"/g, '""')}"`;
+
+  const header = ['키워드', '노출여부', '순위', '카페명', '링크'].join(',');
+  const csvRows = rows.map((row) =>
+    [
+      escape(row.keyword),
+      escape(row.exposureStatus),
+      escape(row.rank),
+      escape(row.cafeName),
+      escape(row.link),
+    ].join(',')
+  );
+
+  const csvContent = [header, ...csvRows].join('\n');
+
+  fs.writeFileSync(filePath, '\uFEFF' + csvContent, 'utf8');
+
+  logger.success(`카페 노출체크 CSV 저장 완료: ${filePath}`);
+
+  return filePath;
+};
+
+export const saveCafeExposureSheetCSV = (
+  rows: CafeExposureCsvRow[],
+  filename: string
+): string => {
+  const filePath = resolveOutputFilePath(filename);
+  const escape = (value: string): string =>
+    `"${String(value ?? '').replace(/"/g, '""')}"`;
+
+  const header = ['키워드', '노출여부', '순위', '카페명', '링크', '행'].join(',');
+  const csvRows = rows.map((row, index) =>
+    [
+      escape(row.keyword),
+      row.exposureStatus === '노출' ? 'o' : '',
+      escape(row.rank),
+      escape(row.cafeName),
+      escape(row.link),
+      index + 1,
+    ].join(',')
+  );
+
+  const csvContent = [header, ...csvRows].join('\n');
+
+  fs.writeFileSync(filePath, '\uFEFF' + csvContent, 'utf8');
+
+  logger.success(`카페 노출체크 시트 CSV 저장 완료: ${filePath}`);
+
+  return filePath;
 };
 
 export const saveKeywordLogicCSV = (

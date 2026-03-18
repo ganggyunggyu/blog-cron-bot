@@ -11,6 +11,7 @@ ui/.vite/
 output/
 *.csv
 *.txt
+!docs/cafe-exposure-keywords-2026-03-09.txt
 
 # Test files
 src/test-*.ts
@@ -18,6 +19,10 @@ src/lib/check-new-logic.ts
 
 # Tools (login/cookie)
 src/tools/
+!src/tools/
+src/tools/*
+!src/tools/check-cafe-exposure.ts
+!src/tools/check-cafe-exposure.test.ts
 
 # Logs & Debug
 logs/

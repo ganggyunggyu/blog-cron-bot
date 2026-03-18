@@ -1,6 +1,11 @@
 import * as cheerio from 'cheerio';
 import { DEFAULT_SELECTORS } from '../selectors';
 import { fetchHtml } from '../../crawler';
+import {
+  detectNaverSource,
+  NaverSourceType,
+  resolveNaverSearchResultUrl,
+} from '../../lib/naver-source';
 
 export interface PopularItem {
   title: string;
@@ -14,14 +19,28 @@ export interface PopularItem {
   positionWithCafe?: number;
   isNewLogic?: boolean;
   page?: number;
+  sourceType?: NaverSourceType;
+  sourceId?: string;
+}
+
+export interface ExtractPopularItemsOptions {
+  includeCafe?: boolean;
 }
 
 const SELECTORS = DEFAULT_SELECTORS;
 
-const isExcludedLink = (href: string): boolean =>
-  href.includes('cafe.naver.com') || href.includes('ader.naver.com');
+const isAdLink = (href: string): boolean => href.includes('ader.naver.com');
 
-export const extractPopularItems = (html: string): PopularItem[] => {
+const getResolvedElementLink = ($element: cheerio.Cheerio<any>): string =>
+  resolveNaverSearchResultUrl(
+    $element.attr('href')?.trim() || '',
+    $element.attr('cru')?.trim() || undefined
+  );
+
+export const extractPopularItems = (
+  html: string,
+  options: ExtractPopularItemsOptions = {}
+): PopularItem[] => {
   const $ = cheerio.load(html);
   const items: PopularItem[] = [];
   let globalPosition = 0;
@@ -56,11 +75,12 @@ export const extractPopularItems = (html: string): PopularItem[] => {
 
         const $titleLink = $item.find(SELECTORS.intentionTitle).first();
         const title = $item.find(SELECTORS.intentionHeadline).text().trim();
-        const postHref = $titleLink.attr('href')?.trim() || '';
+        const postHref = getResolvedElementLink($titleLink);
 
         const $profile = $item.find(SELECTORS.intentionProfile).first();
         const blogName = $profile.text().trim();
-        const blogHref = $profile.attr('href')?.trim() || '';
+        const blogHref = getResolvedElementLink($profile) || postHref;
+        const source = detectNaverSource(blogHref || postHref);
 
         const snippet = $item
           .find(SELECTORS.intentionPreview)
@@ -72,7 +92,12 @@ export const extractPopularItems = (html: string): PopularItem[] => {
           $item.find(SELECTORS.intentionImage).first().attr('src')?.trim() ||
           '';
 
-        if (postHref && title && !isExcludedLink(postHref)) {
+        if (
+          postHref &&
+          title &&
+          !isAdLink(postHref) &&
+          (options.includeCafe || source.type !== 'cafe')
+        ) {
           items.push({
             title,
             link: postHref,
@@ -84,6 +109,8 @@ export const extractPopularItems = (html: string): PopularItem[] => {
             blogName,
             positionWithCafe: globalPosition,
             isNewLogic: isNewItem,
+            sourceType: source.type,
+            sourceId: source.id,
           });
         }
       });
@@ -120,11 +147,12 @@ export const extractPopularItems = (html: string): PopularItem[] => {
 
         const $titleLink = $item.find(SELECTORS.snippetTitle).first();
         const title = $titleLink.find(SELECTORS.snippetHeadline).text().trim();
-        const postHref = $titleLink.attr('href')?.trim() || '';
+        const postHref = getResolvedElementLink($titleLink);
 
         const $profile = $item.find(SELECTORS.snippetProfile).first();
         const blogName = $profile.text().trim();
-        const blogHref = $profile.attr('href')?.trim() || '';
+        const blogHref = getResolvedElementLink($profile) || postHref;
+        const source = detectNaverSource(blogHref || postHref);
 
         const snippet = $item
           .find(SELECTORS.snippetPreview)
@@ -135,7 +163,12 @@ export const extractPopularItems = (html: string): PopularItem[] => {
         const image =
           $item.find(SELECTORS.snippetImage).first().attr('src')?.trim() || '';
 
-        if (postHref && title && !isExcludedLink(postHref)) {
+        if (
+          postHref &&
+          title &&
+          !isAdLink(postHref) &&
+          (options.includeCafe || source.type !== 'cafe')
+        ) {
           items.push({
             title,
             link: postHref,
@@ -147,6 +180,8 @@ export const extractPopularItems = (html: string): PopularItem[] => {
             blogName,
             positionWithCafe: globalPosition,
             isNewLogic: isNewItem,
+            sourceType: source.type,
+            sourceId: source.id,
           });
         }
       });
@@ -186,16 +221,22 @@ export const extractPopularItems = (html: string): PopularItem[] => {
           .find(SELECTORS.snippetImageHeadline)
           .text()
           .trim();
-        const postHref = $titleLink.attr('href')?.trim() || '';
+        const postHref = getResolvedElementLink($titleLink);
 
         const $profile = $item.find(SELECTORS.snippetImageProfile).first();
         const blogName = $profile.text().trim();
-        const blogHref = $profile.attr('href')?.trim() || '';
+        const blogHref = getResolvedElementLink($profile) || postHref;
+        const source = detectNaverSource(blogHref || postHref);
 
         const image =
           $item.find('.sds-comps-image img').first().attr('src')?.trim() || '';
 
-        if (postHref && title && !isExcludedLink(postHref)) {
+        if (
+          postHref &&
+          title &&
+          !isAdLink(postHref) &&
+          (options.includeCafe || source.type !== 'cafe')
+        ) {
           items.push({
             title,
             link: postHref,
@@ -207,6 +248,8 @@ export const extractPopularItems = (html: string): PopularItem[] => {
             blogName,
             positionWithCafe: globalPosition,
             isNewLogic: isNewItem,
+            sourceType: source.type,
+            sourceId: source.id,
           });
         }
       });
