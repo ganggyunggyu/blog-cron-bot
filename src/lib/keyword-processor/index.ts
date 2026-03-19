@@ -40,6 +40,7 @@ export const processKeywords = async (
   const isLoggedIn = options?.isLoggedIn ?? false;
   const maxPages = options?.maxPages ?? 1;
   const blogIds = options?.blogIds;
+  const allowAnyBlog = options?.allowAnyBlog;
   const keywordLogicMap = options?.keywordLogicMap;
   const allResults: ExposureResult[] = [];
 
@@ -84,7 +85,8 @@ export const processKeywords = async (
       logBuilder,
       updateFunction,
       maxPages,
-      blogIds
+      blogIds,
+      allowAnyBlog
     );
 
     if (!crawlResult) continue;
@@ -157,6 +159,7 @@ export const processKeywords = async (
           topicNamesArray,
           matchQueue,
           blogIds,
+          allowAnyBlog,
           vendorTarget,
           restaurantName,
           caches,
@@ -256,6 +259,7 @@ export const processKeywords = async (
           topicNamesArray,
           matchQueue,
           blogIds,
+          allowAnyBlog,
           vendorTarget,
           restaurantName,
           caches,

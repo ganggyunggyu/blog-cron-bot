@@ -8,7 +8,6 @@ import { checkNaverLogin } from './lib/check-naver-login';
 import { logger } from './lib/logger';
 import { getKSTTimestamp } from './utils';
 import { sendDoorayExposureResult } from './lib/dooray';
-import { DOGMARU_BLOG_IDS } from './constants/blog-ids';
 import { ExposureResult } from './matcher';
 
 dotenv.config();
@@ -93,10 +92,9 @@ export async function main() {
   }
 
   if (dogmaruKeywords.length > 0) {
-    logger.info(`🐕 도그마루 ${dogmaruKeywords.length}개 처리 (도그마루 계정 전용)`);
+    logger.info(`🐕 도그마루 ${dogmaruKeywords.length}개 처리 (전체 블로그 기준)`);
     const results = await processKeywords(dogmaruKeywords, logBuilder, {
       isLoggedIn: loginStatus.isLoggedIn,
-      blogIds: DOGMARU_BLOG_IDS,
     });
     allResults.push(...results);
   }

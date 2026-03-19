@@ -31,7 +31,8 @@ export const getCrawlResult = async (
   logBuilder: DetailedLogBuilder,
   updateFunction: UpdateFunction,
   maxPages: number = 1,
-  blogIds: string[] = BLOG_IDS
+  blogIds: string[] = BLOG_IDS,
+  allowAnyBlogOverride?: boolean
 ): Promise<CrawlResult | null> => {
   const { crawlCache, itemsCache, matchQueueMap, htmlStructureCache } = caches;
 
@@ -106,7 +107,10 @@ export const getCrawlResult = async (
         items = extractPopularItems(html);
       }
 
-      const allowAnyBlog = getAllowAnyBlog(keywordDoc.sheetType);
+      const allowAnyBlog = getAllowAnyBlog(
+        keywordDoc.sheetType,
+        allowAnyBlogOverride
+      );
 
       const allMatches = matchBlogs(query, items, { allowAnyBlog, blogIds });
 

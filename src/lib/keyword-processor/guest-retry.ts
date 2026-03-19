@@ -18,6 +18,7 @@ export const runGuestRetry = async (
     topicNamesArray,
     matchQueue,
     blogIds,
+    allowAnyBlog: allowAnyBlogOverride,
     vendorTarget,
     restaurantName,
     caches,
@@ -40,7 +41,10 @@ export const runGuestRetry = async (
     const onlyInGuest = guestTopicsArray.filter((topic) => !loginTopics.has(topic));
     const commonTopics = topicNamesArray.filter((topic) => guestTopics.has(topic));
 
-    const allowAnyBlog = getAllowAnyBlog(keywordDoc.sheetType);
+    const allowAnyBlog = getAllowAnyBlog(
+      keywordDoc.sheetType,
+      allowAnyBlogOverride
+    );
     const guestMatches = matchBlogs(query, guestItems, {
       allowAnyBlog,
       blogIds,

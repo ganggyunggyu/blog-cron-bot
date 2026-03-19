@@ -25,6 +25,7 @@ export interface ProcessKeywordsOptions {
   isLoggedIn?: boolean;
   maxPages?: number;
   blogIds?: string[];
+  allowAnyBlog?: boolean;
   keywordLogicMap?: Map<string, boolean>;
 }
 
@@ -79,6 +80,7 @@ export interface GuestRetryParams {
   topicNamesArray: string[];
   matchQueue: ExposureResult[];
   blogIds?: string[];
+  allowAnyBlog?: boolean;
   vendorTarget: string;
   restaurantName: string;
   caches: CrawlCaches;
