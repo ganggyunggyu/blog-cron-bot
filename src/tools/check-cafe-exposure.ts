@@ -16,8 +16,10 @@ import { getKSTTimestamp } from '../utils';
 
 dotenv.config();
 
-const DEFAULT_CAFE_SHEET_ID = '1T9PHu-fH6HPmyYA9dtfXaDLm20XAPN-9mzlE2QTPkF0';
-const DEFAULT_CAFE_SHEET_NAME = '카페침투';
+const HANRYEODAMWON_CAFE_SHEET_ID =
+  '1gyipTIEogC9Qopj8w3ggBmD0k5KvAw6yNdIMXQDnwms';
+const HANRYEODAMWON_CAFE_SHEET_NAME = '한려담원 리뷰 원고';
+const HANRYEODAMWON_CAFE_SHEET_GID = 1022853831;
 
 interface KeywordLoadResult {
   rawCount: number;
@@ -165,9 +167,35 @@ const writeSummaryFile = (
   fs.writeFileSync(summaryPath, content, 'utf8');
 };
 
+const getHanryeodamwonCafeSheetConfig = () => {
+  const sheetId =
+    process.env.HANRYEODAMWON_CAFE_SHEET_ID ||
+    process.env.CAFE_SHEET_ID ||
+    HANRYEODAMWON_CAFE_SHEET_ID;
+
+  const sheetName =
+    process.env.HANRYEODAMWON_CAFE_SHEET_NAME ||
+    process.env.CAFE_SHEET_NAME ||
+    HANRYEODAMWON_CAFE_SHEET_NAME;
+
+  const rawSheetGid =
+    process.env.HANRYEODAMWON_CAFE_SHEET_GID ||
+    process.env.CAFE_SHEET_GID ||
+    String(HANRYEODAMWON_CAFE_SHEET_GID);
+
+  const sheetGid = Number(rawSheetGid);
+
+  return {
+    sheetId,
+    sheetName,
+    sheetGid: Number.isFinite(sheetGid)
+      ? sheetGid
+      : HANRYEODAMWON_CAFE_SHEET_GID,
+  };
+};
+
 const main = async (): Promise<void> => {
-  const cafeSheetId = process.env.CAFE_SHEET_ID || DEFAULT_CAFE_SHEET_ID;
-  const cafeSheetName = process.env.CAFE_SHEET_NAME || DEFAULT_CAFE_SHEET_NAME;
+  const hanryeodamwonCafeSheet = getHanryeodamwonCafeSheetConfig();
   const inputFile = process.env.CAFE_KEYWORD_FILE || DEFAULT_INPUT_FILE;
   const targets = getTargets();
   const { rawCount, duplicateCount, keywords } = loadKeywords(inputFile);
@@ -257,17 +285,27 @@ const main = async (): Promise<void> => {
   ).length;
 
   const isAppendMode = process.env.CAFE_EXPORT_MODE === 'append';
-  let sheetExportStatus = `${cafeSheetName} 시트 내보내기 실패`;
+  let sheetExportStatus = `${hanryeodamwonCafeSheet.sheetName} 시트 내보내기 실패`;
   try {
     if (isAppendMode) {
-      await appendCafeExposureToSheet(rows, cafeSheetId, cafeSheetName);
+      await appendCafeExposureToSheet(
+        rows,
+        hanryeodamwonCafeSheet.sheetId,
+        hanryeodamwonCafeSheet.sheetName,
+        hanryeodamwonCafeSheet.sheetGid
+      );
     } else {
-      await exportCafeExposureToSheet(rows, cafeSheetId, cafeSheetName);
+      await exportCafeExposureToSheet(
+        rows,
+        hanryeodamwonCafeSheet.sheetId,
+        hanryeodamwonCafeSheet.sheetName,
+        hanryeodamwonCafeSheet.sheetGid
+      );
     }
-    sheetExportStatus = `${cafeSheetName} 시트에 내보내기 완료`;
+    sheetExportStatus = `${hanryeodamwonCafeSheet.sheetName} 시트에 내보내기 완료`;
   } catch (error) {
     logger.error(`Google Sheets 내보내기 실패: ${(error as Error).message}`);
-    sheetExportStatus = `${cafeSheetName} 시트 내보내기 실패`;
+    sheetExportStatus = `${hanryeodamwonCafeSheet.sheetName} 시트 내보내기 실패`;
   }
 
   logger.summary.complete('카페 노출체크 완료', [

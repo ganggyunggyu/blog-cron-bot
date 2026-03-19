@@ -1,5 +1,6 @@
 import { BLOG_IDS } from './constants';
 import { PopularItem } from './parser';
+import { extractBlogIdFromUrl } from './lib/naver-source';
 
 export interface ExposureResult {
   query: string;
@@ -58,7 +59,10 @@ export const matchBlogs = (
   }
 
   items.forEach((item, index) => {
-    const blogId = extractBlogId(item.blogLink || item.link);
+    const blogId =
+      (item.sourceType === 'blog' ? item.sourceId || '' : '') ||
+      extractBlogIdFromUrl(item.blogLink || item.link) ||
+      extractBlogId(item.blogLink || item.link);
 
     const accept = allowAnyBlog ? !!blogId : blogId && allowedIds.has(blogId);
     if (accept) {

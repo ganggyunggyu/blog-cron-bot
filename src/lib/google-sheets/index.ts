@@ -26,13 +26,14 @@ const getAuth = (): JWT => {
 export const exportCafeExposureToSheet = async (
   rows: CafeExposureRow[],
   sheetId: string,
-  sheetName: string
+  sheetName: string,
+  sheetTabId?: number
 ): Promise<void> => {
   const auth = getAuth();
   const doc = new GoogleSpreadsheet(sheetId, auth);
   await doc.loadInfo();
 
-  const { sheet } = await getOrCreateSheet(doc, sheetName);
+  const { sheet } = await getOrCreateSheet(doc, sheetName, sheetTabId);
 
   await sheet.clear();
 
@@ -55,13 +56,14 @@ export const appendCafeExposureToSheet = async (
   rows: CafeExposureRow[],
   sheetId: string,
   sheetName: string,
+  sheetTabId?: number,
   separatorLabel?: string
 ): Promise<void> => {
   const auth = getAuth();
   const doc = new GoogleSpreadsheet(sheetId, auth);
   await doc.loadInfo();
 
-  const { sheet, created } = await getOrCreateSheet(doc, sheetName);
+  const { sheet, created } = await getOrCreateSheet(doc, sheetName, sheetTabId);
 
   if (created || sheet.headerValues.length === 0) {
     await sheet.setHeaderRow(CAFE_EXPOSURE_HEADERS);
@@ -87,11 +89,22 @@ export const appendCafeExposureToSheet = async (
 
 const getOrCreateSheet = async (
   doc: GoogleSpreadsheet,
-  sheetName: string
+  sheetName: string,
+  sheetTabId?: number
 ): Promise<{
   created: boolean;
   sheet: GoogleSpreadsheetWorksheet;
 }> => {
+  if (typeof sheetTabId === 'number') {
+    const existingSheetById = doc.sheetsById[sheetTabId];
+    if (existingSheetById) {
+      return {
+        created: false,
+        sheet: existingSheetById,
+      };
+    }
+  }
+
   const existingSheet = doc.sheetsByTitle[sheetName];
   if (existingSheet) {
     return {

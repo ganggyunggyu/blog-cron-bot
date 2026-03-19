@@ -222,10 +222,8 @@ const TAGGED_DOGMARU_BLOG_IDS = [
 
 const TAGGED_SURI_PET_BLOG_IDS = [
   'hotelelena',
-  'kwen1030',
   'k54382000',
   'bright0248',
-  'kisemo777',
 ] as const;
 
 const PAGE_GENERAL_BLOG_IDS = dedupeBlogIds([
@@ -271,7 +269,6 @@ export const PET_PAGE_CHECK_BLOG_IDS = dedupeBlogIds([
 ]);
 
 export const SURI_PET_PAGE_CHECK_BLOG_IDS = dedupeBlogIds([
-  ...BLOG_IDS,
   ...SURI_PET_BLOG_IDS,
 ]);
 
