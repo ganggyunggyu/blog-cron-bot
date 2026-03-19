@@ -17,9 +17,7 @@ import { closeBrowser } from './lib/playwright-crawler';
 import { getKSTTimestamp } from './utils';
 import { ExposureResult } from './matcher';
 import { sendDoorayExposureResult } from './lib/dooray';
-import {
-  PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE,
-} from './constants/blog-ids';
+import { PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE } from './constants/blog-ids';
 
 dotenv.config();
 
@@ -54,7 +52,7 @@ const MAX_PAGES_BY_SHEET: Partial<Record<PageCheckSheetType, number>> = {
   'black-goat-old': 1,
 };
 
-const DEFAULT_MAX_PAGES = 4;
+const DEFAULT_MAX_PAGES = 9;
 
 const getMaxPagesForSheet = (sheetType: PageCheckSheetType): number =>
   MAX_PAGES_BY_SHEET[sheetType] ?? DEFAULT_MAX_PAGES;
