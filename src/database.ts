@@ -242,6 +242,23 @@ export interface IPageCheckKeyword extends Document {
   updatedAt: Date;
 }
 
+export interface PageCheckKeywordInput {
+  company: string;
+  keyword: string;
+  visibility?: boolean;
+  popularTopic?: string;
+  url?: string;
+  keywordType?: 'restaurant' | 'pet' | 'basic';
+  restaurantName?: string;
+  matchedTitle?: string;
+  postVendorName?: string;
+  rank?: number;
+  rankWithCafe?: number;
+  isUpdateRequired?: boolean;
+  isNewLogic?: boolean;
+  foundPage?: number;
+}
+
 const PageCheckKeywordSchema: Schema = new Schema(
   {
     company: { type: String, required: true },
@@ -337,6 +354,75 @@ export const getPageCheckKeywords = async (
   } catch (error) {
     logger.error(
       `${sheetType} 키워드 로드 실패: ${(error as Error).message}`
+    );
+    throw error;
+  }
+};
+
+export const replacePageCheckKeywords = async (
+  sheetType: PageCheckSheetType,
+  keywords: PageCheckKeywordInput[]
+): Promise<number> => {
+  try {
+    const model = pageCheckModels[sheetType];
+    const existingKeywords = await model
+      .find({})
+      .lean<PageCheckKeywordInput[]>();
+
+    const restoreKeywords = existingKeywords.map(
+      ({
+        company,
+        keyword,
+        visibility,
+        popularTopic,
+        url,
+        keywordType,
+        restaurantName,
+        matchedTitle,
+        postVendorName,
+        rank,
+        rankWithCafe,
+        isUpdateRequired,
+        isNewLogic,
+        foundPage,
+      }) => ({
+        company,
+        keyword,
+        visibility,
+        popularTopic,
+        url,
+        keywordType,
+        restaurantName,
+        matchedTitle,
+        postVendorName,
+        rank,
+        rankWithCafe,
+        isUpdateRequired,
+        isNewLogic,
+        foundPage,
+      })
+    );
+
+    await model.deleteMany({});
+
+    if (keywords.length === 0) {
+      return 0;
+    }
+
+    try {
+      await model.insertMany(keywords);
+    } catch (error) {
+      if (restoreKeywords.length > 0) {
+        await model.insertMany(restoreKeywords);
+      }
+
+      throw error;
+    }
+
+    return keywords.length;
+  } catch (error) {
+    logger.error(
+      `${sheetType} 키워드 동기화 실패: ${(error as Error).message}`
     );
     throw error;
   }

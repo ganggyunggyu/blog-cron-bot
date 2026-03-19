@@ -4,6 +4,7 @@ import {
   connectDB,
   disconnectDB,
   getPageCheckKeywords,
+  replacePageCheckKeywords,
   updatePageCheckKeywordResult,
   IPageCheckKeyword,
   PageCheckSheetType,
@@ -18,6 +19,7 @@ import { getKSTTimestamp } from './utils';
 import { ExposureResult } from './matcher';
 import { sendDoorayExposureResult } from './lib/dooray';
 import { PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE } from './constants/blog-ids';
+import { loadSuripetKeywordsFromSheet } from './lib/google-sheets/suripet-page-check';
 
 dotenv.config();
 
@@ -52,7 +54,7 @@ const MAX_PAGES_BY_SHEET: Partial<Record<PageCheckSheetType, number>> = {
   'black-goat-old': 1,
 };
 
-const DEFAULT_MAX_PAGES = 9;
+const DEFAULT_MAX_PAGES = 4;
 
 const getMaxPagesForSheet = (sheetType: PageCheckSheetType): number =>
   MAX_PAGES_BY_SHEET[sheetType] ?? DEFAULT_MAX_PAGES;
@@ -97,29 +99,24 @@ async function exportSheetAPI(sheetType: PageCheckSheetType): Promise<boolean> {
   }
 }
 
-async function getSuripetKeywordsAPI(): Promise<IPageCheckKeyword[]> {
-  try {
-    const res = await axios.get(`${PAGE_CHECK_API}/api/suripet`);
-    const data = res.data.data ?? res.data.keywords ?? res.data ?? [];
-    // company 필드 추가 (없으면 '서리펫'으로 기본값)
-    return data.map((item: any) => ({
-      ...item,
-      company: item.company ?? '서리펫',
-    }));
-  } catch (error) {
-    logger.error(`서리펫 키워드 조회 실패: ${(error as Error).message}`);
-    return [];
-  }
-}
+export const syncSuripetKeywordsFromSheetToDB = async (): Promise<number> => {
+  const keywords = await loadSuripetKeywordsFromSheet();
+  const synced = await replacePageCheckKeywords('suripet', keywords);
+
+  logger.success(`  ${SHEET_TYPE_NAMES.suripet}: ${synced}개 직접 동기화`);
+
+  return synced;
+};
 
 async function importSheetAPI(sheetType: PageCheckSheetType): Promise<number> {
   try {
+    if (sheetType === 'suripet') {
+      return await syncSuripetKeywordsFromSheetToDB();
+    }
+
     // suripet은 전용 API 사용
-    const url =
-      sheetType === 'suripet'
-        ? `${PAGE_CHECK_API}/api/suripet`
-        : `${PAGE_CHECK_API}/api/page-check/import`;
-    const body = sheetType === 'suripet' ? {} : { sheetType };
+    const url = `${PAGE_CHECK_API}/api/page-check/import`;
+    const body = { sheetType };
 
     const res = await axios.post(url, body);
     const inserted = res.data.inserted ?? res.data.count ?? 0;
@@ -226,6 +223,8 @@ export async function main(targetSheetTypes?: PageCheckSheetType[]) {
     process.exit(1);
   }
 
+  await connectDB(mongoUri);
+
   // 1. 시트 → DB 동기화 (외부 API)
   logger.divider('시트 동기화');
   if (isSingleSheet) {
@@ -233,13 +232,18 @@ export async function main(targetSheetTypes?: PageCheckSheetType[]) {
     logger.info(`📥 ${synced}개 키워드 동기화 완료`);
   } else {
     const totalSynced = await syncAllSheetsAPI();
-    logger.info(`📥 총 ${totalSynced}개 키워드 동기화 완료`);
+    if (activeSheetTypes.includes('suripet')) {
+      const suripetSynced = await syncSuripetKeywordsFromSheetToDB();
+      logger.info(
+        `📥 총 ${totalSynced}개 키워드 동기화 완료 + 서리펫 ${suripetSynced}개 직접 동기화`
+      );
+    } else {
+      logger.info(`📥 총 ${totalSynced}개 키워드 동기화 완료`);
+    }
   }
   logger.blank();
 
   // 2. DB 연결 및 키워드 조회
-  await connectDB(mongoUri);
-
   const keywordsBySheet: Record<PageCheckSheetType, IPageCheckKeyword[]> = {
     'black-goat-new': [],
     'black-goat-old': [],
@@ -254,11 +258,7 @@ export async function main(targetSheetTypes?: PageCheckSheetType[]) {
 
   logger.divider('키워드 조회');
   for (const sheetType of activeSheetTypes) {
-    // suripet은 API로 키워드 조회
-    const keywords =
-      sheetType === 'suripet'
-        ? await getSuripetKeywordsAPI()
-        : await getPageCheckKeywords(sheetType);
+    const keywords = await getPageCheckKeywords(sheetType);
     keywordsBySheet[sheetType] = keywords;
     logger.info(`  ${SHEET_TYPE_NAMES[sheetType]}: ${keywords.length}개`);
   }
