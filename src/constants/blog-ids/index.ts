@@ -1,9 +1,83 @@
 import type { PageCheckSheetType } from '../../database';
 
-const dedupeBlogIds = (blogIds: readonly string[]): string[] =>
-  Array.from(new Set(blogIds.map((blogId) => blogId.toLowerCase())));
+export const EXCLUDED_BLOG_IDS = [
+  'csoheon',
+  'su37un',
+  'sasane',
+  'wsnarin',
+  'ordinarysoo',
+  'mh528sk417',
+  'lim_seeun',
+  's901019s',
+  'kangcs4162',
+  'skycomps',
+  'ccgakoreains',
+  'ej8984',
+  'beatmebiteme',
+  'coolwogml',
+  'dcba7516',
+  'viperjy',
+  '0924yim',
+  'godqhr5528',
+  'parks_park',
+  'ds4fgy',
+  'quitedu11',
+  'jjin2188',
+  'a380hl7611',
+  'young_man70',
+  'thisdk',
+  'in00904',
+  'servent77',
+  'ari06050605',
+  'yhn956',
+  'mybombom',
+  'cera96',
+  'namggang',
+  'woochulssa',
+  'dudldus',
+  'bookier',
+  'hyuklove_3',
+  'momoronica',
+  'qorgksthf777',
+  'soolbong25',
+  'grimvit',
+  'annyeong88',
+  'jinhee139',
+  'defie',
+  'newspring247',
+  'pink_rady_',
+  'ssukizone',
+  'uniquehanceo',
+  'amormio-',
+  'denis98',
+  'daisy6072',
+  'yjoh8615',
+  'sjyh86',
+  'guselvkvk',
+  'adorableash',
+  'yevencho',
+  'kainn',
+  'shinsujin7',
+  'haein6256',
+  '07lovelybaby',
+  'bullim91',
+  'hyzhengyin',
+] as const;
 
-const BLACK_GOAT_BLOG_IDS = [
+const EXCLUDED_BLOG_ID_SET = new Set(
+  EXCLUDED_BLOG_IDS.map((blogId) => blogId.toLowerCase())
+);
+
+const dedupeBlogIds = (blogIds: readonly string[]): string[] =>
+  Array.from(
+    new Set(
+      blogIds
+        .map((blogId) => blogId.toLowerCase())
+        .filter((blogId) => !EXCLUDED_BLOG_ID_SET.has(blogId))
+    )
+  );
+
+const BLACK_GOAT_BLOG_IDS = dedupeBlogIds([
   'biggoose488',
   'dhtksk1p',
   'regular14631',
@@ -14,11 +88,11 @@ const BLACK_GOAT_BLOG_IDS = [
   'eytkgy5500',
   'yenalk',
   'dyust',
-] as const;
+] as const);
 
-const DIET_SUPPLEMENT_BLOG_IDS = ['ags2oigb'] as const;
+const DIET_SUPPLEMENT_BLOG_IDS = dedupeBlogIds(['ags2oigb'] as const);
 
-const EYE_CLINIC_BLOG_IDS = [
+const EYE_CLINIC_BLOG_IDS = dedupeBlogIds([
   'mixxut',
   'ynattg',
   'nahhjo',
@@ -26,15 +100,15 @@ const EYE_CLINIC_BLOG_IDS = [
   'hagyga',
   'geenl',
   'ghhoy',
-] as const;
+] as const);
 
-const SKIN_PROCEDURE_BLOG_IDS = ['cookie4931'] as const;
+const SKIN_PROCEDURE_BLOG_IDS = dedupeBlogIds(['cookie4931'] as const);
 
-const DENTAL_BLOG_IDS = ['wound12567'] as const;
+const DENTAL_BLOG_IDS = dedupeBlogIds(['wound12567'] as const);
 
-const PRESCRIPTION_BLOG_IDS = ['precede1451'] as const;
+const PRESCRIPTION_BLOG_IDS = dedupeBlogIds(['precede1451'] as const);
 
-const PAGE_PET_BLOG_IDS = [
+const PAGE_PET_BLOG_IDS = dedupeBlogIds([
   'loand3324',
   'fail5644',
   'compare14310',
@@ -42,18 +116,18 @@ const PAGE_PET_BLOG_IDS = [
   'dyulp',
   'njmzdksm',
   'e6yb5u4k',
-] as const;
+] as const);
 
-const PAGE_SURI_PET_BLOG_IDS = [
+const PAGE_SURI_PET_BLOG_IDS = dedupeBlogIds([
   'suc4dce7',
   'xzjmfn3f',
   '8ua1womn',
   '0ehz3cb2',
   'br5rbg',
   'beautifulelephant274',
-] as const;
+] as const);
 
-const GENERAL_ONLY_BLOG_IDS = [
+const GENERAL_ONLY_BLOG_IDS = dedupeBlogIds([
   'solantoro',
   'mygury1',
   'surreal805',
@@ -71,9 +145,9 @@ const GENERAL_ONLY_BLOG_IDS = [
   'sghjan',
   'sunyzone2',
   'na3997',
-] as const;
+] as const);
 
-const VIRAL_TEAM_SCHEDULE_BLOG_IDS = [
+const VIRAL_TEAM_SCHEDULE_BLOG_IDS = dedupeBlogIds([
   '0902ab',
   'by9996',
   'ziniz77',
@@ -200,9 +274,9 @@ const VIRAL_TEAM_SCHEDULE_BLOG_IDS = [
   'viva0',
   'rughrt293',
   'jambbojy',
-] as const;
+] as const);
 
-const TAGGED_DOGMARU_BLOG_IDS = [
+const TAGGED_DOGMARU_BLOG_IDS = dedupeBlogIds([
   'tpeany',
   'yakooroo',
   'umle1203',
@@ -218,13 +292,13 @@ const TAGGED_DOGMARU_BLOG_IDS = [
   'skidrow5246',
   'annyeong88',
   'haein6256',
-] as const;
+] as const);
 
-const TAGGED_SURI_PET_BLOG_IDS = [
+const TAGGED_SURI_PET_BLOG_IDS = dedupeBlogIds([
   'hotelelena',
   'k54382000',
   'bright0248',
-] as const;
+] as const);
 
 const PAGE_GENERAL_BLOG_IDS = dedupeBlogIds([
   ...BLACK_GOAT_BLOG_IDS,
@@ -257,18 +331,28 @@ export const DOGMARU_BLOG_IDS = dedupeBlogIds([
   ...TAGGED_DOGMARU_BLOG_IDS,
 ]);
 
+// 도그마루 노출체크용 전체 블로그 + 도그마루 전용 블로그
+export const DOGMARU_PAGE_CHECK_BLOG_IDS = dedupeBlogIds([
+  ...BLOG_IDS,
+  ...DOGMARU_BLOG_IDS,
+]);
+
 // 서리펫 전용 블로그
 export const SURI_PET_BLOG_IDS = dedupeBlogIds([
   ...PAGE_SURI_PET_BLOG_IDS,
   ...TAGGED_SURI_PET_BLOG_IDS,
 ]);
 
+// 페이지 애견 노출체크용 전체 블로그 + 도그마루 전용 + 서리펫 전용 블로그
 export const PET_PAGE_CHECK_BLOG_IDS = dedupeBlogIds([
+  ...BLOG_IDS,
   ...DOGMARU_BLOG_IDS,
   ...SURI_PET_BLOG_IDS,
 ]);
 
+// 서리펫 노출체크용 전체 블로그 + 서리펫 전용 블로그
 export const SURI_PET_PAGE_CHECK_BLOG_IDS = dedupeBlogIds([
+  ...BLOG_IDS,
   ...SURI_PET_BLOG_IDS,
 ]);
 

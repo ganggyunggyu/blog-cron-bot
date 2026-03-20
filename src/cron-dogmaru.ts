@@ -8,7 +8,7 @@ import { checkNaverLogin } from './lib/check-naver-login';
 import { logger } from './lib/logger';
 import { getKSTTimestamp } from './utils';
 import { sendDoorayExposureResult } from './lib/dooray';
-import { DOGMARU_BLOG_IDS } from './constants/blog-ids';
+import { DOGMARU_PAGE_CHECK_BLOG_IDS } from './constants/blog-ids';
 import { syncKeywords, importKeywords } from './api';
 import { requests, importRes } from './constants';
 import { ExposureResult } from './matcher';
@@ -77,7 +77,7 @@ const runDogmaruWorkflow = async () => {
     logBuilder,
     {
       isLoggedIn: loginStatus.isLoggedIn,
-      blogIds: DOGMARU_BLOG_IDS,
+      blogIds: DOGMARU_PAGE_CHECK_BLOG_IDS,
     }
   );
   logger.step(2, 3, '도그마루 노출 체크', 'done');
