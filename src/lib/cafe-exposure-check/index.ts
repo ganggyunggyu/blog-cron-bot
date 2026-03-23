@@ -22,6 +22,7 @@ export interface CafeExposureRow {
   rank: string;
   cafeName: string;
   link: string;
+  viewCount: string;
 }
 
 const getUniqueStrings = (values: string[]): string[] =>
@@ -134,12 +135,13 @@ export const buildCafeExposureRow = (
       rank: '',
       cafeName: errorMessage,
       link: '',
+      viewCount: '',
     };
   }
 
   const ranks = matches.map((match) => String(match.cafeRank));
   const cafeNames = getUniqueStrings(
-    matches.map((match) => match.actualCafeName || match.targetName)
+    matches.map((match) => match.targetName)
   );
   const links = getUniqueStrings(matches.map((match) => match.link));
 
@@ -149,5 +151,6 @@ export const buildCafeExposureRow = (
     rank: ranks.join(' | '),
     cafeName: cafeNames.join(' | '),
     link: links.join(' | '),
+    viewCount: '',
   };
 };

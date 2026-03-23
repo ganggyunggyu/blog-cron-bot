@@ -26,6 +26,7 @@ export interface CafeExposureCsvRow {
   rank: string;
   cafeName: string;
   link: string;
+  viewCount: string;
 }
 
 const OUTPUT_ROOT_DIR = path.join(__dirname, '../output');
@@ -243,13 +244,14 @@ export const saveCafeExposureCSV = (
   const escape = (value: string): string =>
     `"${String(value ?? '').replace(/"/g, '""')}"`;
 
-  const header = ['키워드', '노출여부', '순위', '카페명', '링크'].join(',');
+  const header = ['키워드', '노출여부', '순위', '카페명', '조회수', '링크'].join(',');
   const csvRows = rows.map((row) =>
     [
       escape(row.keyword),
       escape(row.exposureStatus),
       escape(row.rank),
       escape(row.cafeName),
+      escape(row.viewCount || ''),
       escape(row.link),
     ].join(',')
   );
@@ -271,13 +273,14 @@ export const saveCafeExposureSheetCSV = (
   const escape = (value: string): string =>
     `"${String(value ?? '').replace(/"/g, '""')}"`;
 
-  const header = ['키워드', '노출여부', '순위', '카페명', '링크', '행'].join(',');
+  const header = ['키워드', '노출여부', '순위', '카페명', '조회수', '링크', '행'].join(',');
   const csvRows = rows.map((row, index) =>
     [
       escape(row.keyword),
       row.exposureStatus === '노출' ? 'o' : '',
       escape(row.rank),
       escape(row.cafeName),
+      escape(row.viewCount || ''),
       escape(row.link),
       index + 1,
     ].join(',')

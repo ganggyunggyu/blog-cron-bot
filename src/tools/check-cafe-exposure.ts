@@ -10,6 +10,7 @@ import {
   matchCafeTargets,
   extractCafeItems,
 } from '../lib/cafe-exposure-check';
+import { fetchCafeViewCount } from '../lib/cafe-exposure-check/fetch-view-count';
 import { exportCafeExposureToSheet, appendCafeExposureToSheet } from '../lib/google-sheets';
 import { logger } from '../lib/logger';
 import { getKSTTimestamp } from '../utils';
@@ -18,8 +19,8 @@ dotenv.config();
 
 const HANRYEODAMWON_CAFE_SHEET_ID =
   '1gyipTIEogC9Qopj8w3ggBmD0k5KvAw6yNdIMXQDnwms';
-const HANRYEODAMWON_CAFE_SHEET_NAME = '한려담원 리뷰 원고';
-const HANRYEODAMWON_CAFE_SHEET_GID = 1022853831;
+const HANRYEODAMWON_CAFE_SHEET_NAME = '카페 노출여부';
+const HANRYEODAMWON_CAFE_SHEET_GID = 957886908;
 
 interface KeywordLoadResult {
   rawCount: number;
@@ -261,6 +262,30 @@ const main = async (): Promise<void> => {
   }
 
   logger.statusLine.done();
+
+  const exposedRows = rows.filter((row) => row.exposureStatus === '노출' && row.link);
+  if (exposedRows.length > 0) {
+    logger.info(`노출 키워드 ${exposedRows.length}개 조회수 수집 시작`);
+
+    for (let i = 0; i < exposedRows.length; i++) {
+      const row = exposedRows[i];
+      const links = row.link.split(' | ').filter((l) => l.length > 0);
+      const viewCounts: string[] = [];
+
+      for (const link of links) {
+        const vc = await fetchCafeViewCount(link);
+        viewCounts.push(vc);
+        await randomDelay(300, 600);
+      }
+
+      row.viewCount = viewCounts.filter((v) => v.length > 0).join(' | ');
+      logger.statusLine.print(
+        `[${i + 1}/${exposedRows.length}] ${row.keyword} -> 조회수 ${row.viewCount}`
+      );
+    }
+
+    logger.info('조회수 수집 완료');
+  }
 
   const timestamp = getKSTTimestamp();
   const filename = `cafe-exposure-check_${timestamp}.csv`;
