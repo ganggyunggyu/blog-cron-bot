@@ -145,6 +145,7 @@ const GENERAL_ONLY_BLOG_IDS = dedupeBlogIds([
   'sghjan',
   'sunyzone2',
   'na3997',
+  'bright0248',
 ] as const);
 
 const VIRAL_TEAM_SCHEDULE_BLOG_IDS = dedupeBlogIds([
@@ -297,7 +298,6 @@ const TAGGED_DOGMARU_BLOG_IDS = dedupeBlogIds([
 const TAGGED_SURI_PET_BLOG_IDS = dedupeBlogIds([
   'hotelelena',
   'k54382000',
-  'bright0248',
 ] as const);
 
 const PAGE_GENERAL_BLOG_IDS = dedupeBlogIds([
