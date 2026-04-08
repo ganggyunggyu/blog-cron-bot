@@ -1,4 +1,6 @@
 import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
 import { logger } from './logger';
 
 interface DoorayWebhookMessage {
@@ -15,7 +17,76 @@ interface DoorayAttachment {
   color?: string;
 }
 
+interface ExposureSnapshot {
+  cronType: string;
+  totalKeywords: number;
+  exposureCount: number;
+  popularCount: number;
+  sblCount: number;
+  newLogicCount?: number;
+  oldLogicCount?: number;
+  sheetStats?: { name: string; count: number }[];
+  timestamp: string;
+}
+
 const DOORAY_WEBHOOK_URL = process.env.DOORAY_WEBHOOK_URL;
+const SNAPSHOT_DIR = path.resolve(__dirname, '../../data');
+const SNAPSHOT_FILE = path.join(SNAPSHOT_DIR, 'last-exposure-results.json');
+
+// ── 스냅샷 저장/로드 ──
+
+const loadSnapshots = (): Record<string, ExposureSnapshot> => {
+  try {
+    if (fs.existsSync(SNAPSHOT_FILE)) {
+      return JSON.parse(fs.readFileSync(SNAPSHOT_FILE, 'utf-8'));
+    }
+  } catch {
+    logger.warn('이전 노출 스냅샷 로드 실패, 새로 시작합니다.');
+  }
+  return {};
+};
+
+const saveSnapshot = (key: string, snapshot: ExposureSnapshot): void => {
+  try {
+    if (!fs.existsSync(SNAPSHOT_DIR)) {
+      fs.mkdirSync(SNAPSHOT_DIR, { recursive: true });
+    }
+    const all = loadSnapshots();
+    all[key] = snapshot;
+    fs.writeFileSync(SNAPSHOT_FILE, JSON.stringify(all, null, 2), 'utf-8');
+  } catch (error) {
+    logger.warn(`스냅샷 저장 실패: ${(error as Error).message}`);
+  }
+};
+
+// ── 비교 헬퍼 ──
+
+const diffIndicator = (current: number, previous: number | undefined): string => {
+  if (previous === undefined) return '';
+  const diff = current - previous;
+  if (diff > 0) return ` ▲ +${diff}`;
+  if (diff < 0) return ` ▼ ${diff}`;
+  return ' ─';
+};
+
+const formatRate = (count: number, total: number): string => {
+  if (total === 0) return '0%';
+  return `${((count / total) * 100).toFixed(1)}%`;
+};
+
+const getKSTDateString = (): string => {
+  const now = new Date();
+  return now.toLocaleString('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+// ── 메시지 전송 ──
 
 export const sendDoorayMessage = async (
   text: string,
@@ -60,27 +131,74 @@ export const sendDoorayExposureResult = async (params: {
     sblCount,
     elapsedTime,
     sheetStats,
+    missingKeywords,
     newLogicCount,
     oldLogicCount,
   } = params;
 
   const nonExposedCount = totalKeywords - exposureCount;
+  const exposureRate = formatRate(exposureCount, totalKeywords);
 
-  let text = `${cronType}\n`;
-  text += `노출 ${exposureCount} / 미노출 ${nonExposedCount}\n`;
+  // 이전 결과 로드
+  const prev = loadSnapshots()[cronType];
+
+  // 비교 지표
+  const expDiff = diffIndicator(exposureCount, prev?.exposureCount);
+  const popDiff = diffIndicator(popularCount, prev?.popularCount);
+  const sblDiff = diffIndicator(sblCount, prev?.sblCount);
+  const nonExpDiff = diffIndicator(nonExposedCount, prev ? prev.totalKeywords - prev.exposureCount : undefined);
+
+  let text = '';
+  text += `[${cronType}] ${getKSTDateString()}\n`;
+  text += `노출 ${exposureCount}/${totalKeywords} (${exposureRate})${expDiff} | 인기 ${popularCount}${popDiff} | 스블 ${sblCount}${sblDiff}\n`;
 
   if (typeof newLogicCount === 'number' && typeof oldLogicCount === 'number') {
-    text += `신규로직 ${newLogicCount} / 구로직 ${oldLogicCount}\n`;
+    const newDiff = diffIndicator(newLogicCount, prev?.newLogicCount);
+    const oldDiff = diffIndicator(oldLogicCount, prev?.oldLogicCount);
+    text += `신규로직 ${newLogicCount}${newDiff} | 구로직 ${oldLogicCount}${oldDiff}\n`;
   }
 
-  text += `소요시간: ${elapsedTime}\n`;
+  text += `소요 ${elapsedTime}\n`;
 
   if (sheetStats && sheetStats.length > 0) {
-    text += `\n[시트별]\n`;
-    for (const stat of sheetStats) {
-      text += `${stat.name}: ${stat.count}\n`;
+    const statParts = sheetStats.map((stat) => {
+      const prevStat = prev?.sheetStats?.find((s) => s.name === stat.name);
+      const statDiff = diffIndicator(stat.count, prevStat?.count);
+      return `${stat.name} ${stat.count}${statDiff}`;
+    });
+    text += `시트별: ${statParts.join(' | ')}\n`;
+  }
+
+  if (prev) {
+    const totalDiff = exposureCount - prev.exposureCount;
+    const sign = totalDiff > 0 ? '+' : '';
+    if (totalDiff !== 0) {
+      text += `전회 대비: ${prev.exposureCount} → ${exposureCount} (${sign}${totalDiff})\n`;
     }
   }
 
-  return sendDoorayMessage(text);
+  if (missingKeywords && missingKeywords.length > 0) {
+    const showCount = Math.min(missingKeywords.length, 5);
+    const remaining = missingKeywords.length - showCount;
+    text += `\n미노출 ${missingKeywords.length}건: ${missingKeywords.slice(0, showCount).join(', ')}`;
+    if (remaining > 0) text += ` 외 ${remaining}건`;
+    text += `\n`;
+  }
+
+  const result = await sendDoorayMessage(text);
+
+  // 현재 결과 스냅샷 저장
+  saveSnapshot(cronType, {
+    cronType,
+    totalKeywords,
+    exposureCount,
+    popularCount,
+    sblCount,
+    newLogicCount,
+    oldLogicCount,
+    sheetStats,
+    timestamp: new Date().toISOString(),
+  });
+
+  return result;
 };

@@ -1,6 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import dotenv from 'dotenv';
+import { GoogleSpreadsheet, GoogleSpreadsheetWorksheet } from 'google-spreadsheet';
+import { JWT } from 'google-auth-library';
 import { crawlWithRetry, randomDelay } from '../crawler';
 import { saveCafeExposureCSV, saveCafeExposureSheetCSV } from '../csv-writer';
 import {
@@ -10,7 +12,7 @@ import {
   matchCafeTargets,
   extractCafeItems,
 } from '../lib/cafe-exposure-check';
-import { fetchCafeViewCount } from '../lib/cafe-exposure-check/fetch-view-count';
+import { fetchCafeArticleInfo } from '../lib/cafe-exposure-check/fetch-view-count';
 import { exportCafeExposureToSheet, appendCafeExposureToSheet } from '../lib/google-sheets';
 import { logger } from '../lib/logger';
 import { getKSTTimestamp } from '../utils';
@@ -19,13 +21,14 @@ dotenv.config();
 
 const HANRYEODAMWON_CAFE_SHEET_ID =
   '1gyipTIEogC9Qopj8w3ggBmD0k5KvAw6yNdIMXQDnwms';
-const HANRYEODAMWON_CAFE_SHEET_NAME = '카페 노출여부';
-const HANRYEODAMWON_CAFE_SHEET_GID = 957886908;
+const HANRYEODAMWON_CAFE_SHEET_NAME = '카페키워드';
+const HANRYEODAMWON_CAFE_SHEET_GID = 1923976827;
 
 interface KeywordLoadResult {
   rawCount: number;
   duplicateCount: number;
   keywords: string[];
+  sourceLabel: string;
 }
 
 interface CafeTargetStat {
@@ -90,7 +93,161 @@ const loadKeywords = (inputFile: string): KeywordLoadResult => {
     rawCount: rawKeywords.length,
     duplicateCount,
     keywords,
+    sourceLabel: inputFile,
   };
+};
+
+const normalizeCell = (value: unknown): string => String(value ?? '').trim();
+
+const normalizeHeader = (value: unknown): string =>
+  normalizeCell(value).replace(/\s+/g, '');
+
+const getGoogleAuth = (): JWT => {
+  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+  const key = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+
+  if (!email || !key) {
+    throw new Error('GOOGLE_SERVICE_ACCOUNT_EMAIL 또는 GOOGLE_PRIVATE_KEY 환경변수가 없음');
+  }
+
+  return new JWT({
+    email,
+    key,
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  });
+};
+
+const parseSheetIdFromUrl = (sheetUrl: string): string => {
+  const match = sheetUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  return match?.[1] ?? '';
+};
+
+const getSourceSheetConfig = () => {
+  const sheetUrl = String(process.env.CAFE_SOURCE_SHEET_URL ?? '').trim();
+  const sheetId =
+    String(process.env.CAFE_SOURCE_SHEET_ID ?? '').trim() ||
+    (sheetUrl ? parseSheetIdFromUrl(sheetUrl) : '');
+  const sheetName = String(process.env.CAFE_SOURCE_SHEET_NAME ?? '').trim();
+  const rawSheetGid = String(process.env.CAFE_SOURCE_SHEET_GID ?? '').trim();
+  const sheetGid = rawSheetGid ? Number(rawSheetGid) : undefined;
+
+  if (!sheetId) {
+    return null;
+  }
+
+  return {
+    sheetId,
+    sheetName,
+    sheetGid: Number.isFinite(sheetGid) ? sheetGid : undefined,
+    sheetUrl,
+  };
+};
+
+const getSourceSheet = (
+  doc: GoogleSpreadsheet,
+  sheetName?: string,
+  sheetGid?: number
+): GoogleSpreadsheetWorksheet => {
+  if (sheetName) {
+    const sheetByTitle = doc.sheetsByTitle[sheetName];
+    if (sheetByTitle) {
+      return sheetByTitle;
+    }
+  }
+
+  if (typeof sheetGid === 'number') {
+    const sheetById = doc.sheetsById[sheetGid];
+    if (sheetById) {
+      return sheetById;
+    }
+  }
+
+  throw new Error('카페 키워드 소스 시트를 찾을 수 없음');
+};
+
+const loadKeywordsFromSheet = async (): Promise<KeywordLoadResult> => {
+  const sourceSheetConfig = getSourceSheetConfig();
+
+  if (!sourceSheetConfig) {
+    throw new Error('CAFE_SOURCE_SHEET_ID 또는 CAFE_SOURCE_SHEET_URL 환경변수가 필요함');
+  }
+
+  const auth = getGoogleAuth();
+  const doc = new GoogleSpreadsheet(sourceSheetConfig.sheetId, auth);
+  await doc.loadInfo();
+
+  const sheet = getSourceSheet(
+    doc,
+    sourceSheetConfig.sheetName,
+    sourceSheetConfig.sheetGid
+  );
+
+  await sheet.loadCells();
+
+  let headerRowIndex = -1;
+  let keywordColumnIndex = -1;
+
+  for (
+    let rowIndex = 0;
+    rowIndex < Math.min(sheet.rowCount, 10) && keywordColumnIndex === -1;
+    rowIndex += 1
+  ) {
+    for (let columnIndex = 0; columnIndex < sheet.columnCount; columnIndex += 1) {
+      const headerCell = sheet.getCell(rowIndex, columnIndex);
+      const header = normalizeHeader(headerCell.value);
+
+      if (header === '키워드' || header.includes('키워드')) {
+        headerRowIndex = rowIndex;
+        keywordColumnIndex = columnIndex;
+        break;
+      }
+    }
+  }
+
+  if (keywordColumnIndex === -1) {
+    throw new Error(`"${sheet.title}" 시트에서 키워드 컬럼을 찾을 수 없음`);
+  }
+
+  const rawKeywords: string[] = [];
+
+  for (let rowIndex = headerRowIndex + 1; rowIndex < sheet.rowCount; rowIndex += 1) {
+    const keyword = normalizeCell(sheet.getCell(rowIndex, keywordColumnIndex).value);
+
+    if (keyword.length > 0) {
+      rawKeywords.push(keyword);
+    }
+  }
+
+  const seenKeywords = new Set<string>();
+  const keywords: string[] = [];
+  let duplicateCount = 0;
+
+  rawKeywords.forEach((keyword) => {
+    if (seenKeywords.has(keyword)) {
+      duplicateCount += 1;
+      return;
+    }
+
+    seenKeywords.add(keyword);
+    keywords.push(keyword);
+  });
+
+  return {
+    rawCount: rawKeywords.length,
+    duplicateCount,
+    keywords,
+    sourceLabel: `${sourceSheetConfig.sheetId} / ${sheet.title}`,
+  };
+};
+
+const loadKeywordsFromSource = async (inputFile: string): Promise<KeywordLoadResult> => {
+  const sourceSheetConfig = getSourceSheetConfig();
+
+  if (sourceSheetConfig) {
+    return loadKeywordsFromSheet();
+  }
+
+  return loadKeywords(inputFile);
 };
 
 const createTargetStats = (targets: CafeTarget[]): Map<string, CafeTargetStat> =>
@@ -199,11 +356,13 @@ const main = async (): Promise<void> => {
   const hanryeodamwonCafeSheet = getHanryeodamwonCafeSheetConfig();
   const inputFile = process.env.CAFE_KEYWORD_FILE || DEFAULT_INPUT_FILE;
   const targets = getTargets();
-  const { rawCount, duplicateCount, keywords } = loadKeywords(inputFile);
+  const { rawCount, duplicateCount, keywords, sourceLabel } =
+    await loadKeywordsFromSource(inputFile);
 
   logger.summary.start('카페 노출체크 시작', [
     { label: '대상 키워드', value: `${keywords.length}개` },
     { label: '중복 제거', value: `${duplicateCount}개` },
+    { label: '키워드 소스', value: sourceLabel },
     { label: '대상 카페', value: targets.map((target) => target.name).join(', ') },
   ]);
 
@@ -265,26 +424,29 @@ const main = async (): Promise<void> => {
 
   const exposedRows = rows.filter((row) => row.exposureStatus === '노출' && row.link);
   if (exposedRows.length > 0) {
-    logger.info(`노출 키워드 ${exposedRows.length}개 조회수 수집 시작`);
+    logger.info(`노출 키워드 ${exposedRows.length}개 조회수/작성일 수집 시작`);
 
     for (let i = 0; i < exposedRows.length; i++) {
       const row = exposedRows[i];
       const links = row.link.split(' | ').filter((l) => l.length > 0);
       const viewCounts: string[] = [];
+      const writeDates: string[] = [];
 
       for (const link of links) {
-        const vc = await fetchCafeViewCount(link);
-        viewCounts.push(vc);
+        const info = await fetchCafeArticleInfo(link);
+        viewCounts.push(info.viewCount);
+        writeDates.push(info.writeDate);
         await randomDelay(300, 600);
       }
 
       row.viewCount = viewCounts.filter((v) => v.length > 0).join(' | ');
+      row.writeDate = writeDates.filter((v) => v.length > 0).join(' | ');
       logger.statusLine.print(
-        `[${i + 1}/${exposedRows.length}] ${row.keyword} -> 조회수 ${row.viewCount}`
+        `[${i + 1}/${exposedRows.length}] ${row.keyword} -> 조회수 ${row.viewCount} 작성일 ${row.writeDate}`
       );
     }
 
-    logger.info('조회수 수집 완료');
+    logger.info('조회수/작성일 수집 완료');
   }
 
   const timestamp = getKSTTimestamp();
@@ -295,13 +457,13 @@ const main = async (): Promise<void> => {
 
   writeSummaryFile(
     SUMMARY_FILE,
-    rows,
-    targets,
-    targetStats,
-    inputFile,
-    rawCount,
-    duplicateCount,
-    csvPath
+      rows,
+      targets,
+      targetStats,
+      sourceLabel,
+      rawCount,
+      duplicateCount,
+      csvPath
   );
 
   const exposedCount = rows.filter((row) => row.exposureStatus === '노출').length;

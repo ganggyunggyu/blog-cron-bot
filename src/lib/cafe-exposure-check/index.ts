@@ -23,6 +23,7 @@ export interface CafeExposureRow {
   cafeName: string;
   link: string;
   viewCount: string;
+  writeDate: string;
 }
 
 const getUniqueStrings = (values: string[]): string[] =>
@@ -136,6 +137,7 @@ export const buildCafeExposureRow = (
       cafeName: errorMessage,
       link: '',
       viewCount: '',
+      writeDate: '',
     };
   }
 
@@ -152,5 +154,6 @@ export const buildCafeExposureRow = (
     cafeName: cafeNames.join(' | '),
     link: links.join(' | '),
     viewCount: '',
+    writeDate: '',
   };
 };

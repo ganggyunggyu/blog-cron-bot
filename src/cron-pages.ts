@@ -52,6 +52,8 @@ const SHEET_TYPE_NAMES: Record<PageCheckSheetType, string> = {
 // 시트별 최대 페이지 수 설정 (기본값: 4)
 const MAX_PAGES_BY_SHEET: Partial<Record<PageCheckSheetType, number>> = {
   'black-goat-old': 1,
+  suripet: 9,
+  pet: 9,
 };
 
 const DEFAULT_MAX_PAGES = 4;
@@ -168,7 +170,8 @@ function createUpdateFunction(sheetType: PageCheckSheetType) {
 async function processSheetKeywords(
   sheetType: PageCheckSheetType,
   keywords: IPageCheckKeyword[],
-  isLoggedIn: boolean
+  isLoggedIn: boolean,
+  keywordLogicMap?: Map<string, boolean>
 ): Promise<ExposureResult[]> {
   const typeName = SHEET_TYPE_NAMES[sheetType];
   const maxPages = getMaxPagesForSheet(sheetType);
@@ -185,6 +188,7 @@ async function processSheetKeywords(
     isLoggedIn,
     maxPages,
     blogIds,
+    keywordLogicMap,
   });
 
   logger.success(`[${typeName}] ✅ 완료: ${results.length}개 노출 발견`);
@@ -279,13 +283,16 @@ export async function main(targetSheetTypes?: PageCheckSheetType[]) {
   // 3. 시트 병렬 노출체크
   logger.divider(`노출체크 시작 (${activeSheetTypes.length}개 시트 병렬)`);
 
+  const keywordLogicMap = new Map<string, boolean>();
+
   const crawlPromises = activeSheetTypes
     .filter((st) => keywordsBySheet[st].length > 0)
     .map((sheetType) =>
       processSheetKeywords(
         sheetType,
         keywordsBySheet[sheetType],
-        loginStatus.isLoggedIn
+        loginStatus.isLoggedIn,
+        keywordLogicMap
       )
     );
 
@@ -303,7 +310,8 @@ export async function main(targetSheetTypes?: PageCheckSheetType[]) {
   saveToSheetCSV(
     flatKeywords.map((k) => ({ keyword: k.keyword, company: k.company })),
     allResults,
-    `pages_sheet_${timestamp}.csv`
+    `pages_sheet_${timestamp}.csv`,
+    keywordLogicMap
   );
 
   // 5. 전체 내보내기 (안전장치)

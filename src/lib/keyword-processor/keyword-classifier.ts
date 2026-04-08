@@ -69,6 +69,6 @@ export const getKeywordType = (
 const DEFAULT_TOPICS = ['인기글', '스니펫', '스니펫 이미지'];
 
 export const getIsNewLogic = (topicNames: string[]): boolean => {
-  if (topicNames.length === 0) return false;
+  if (topicNames.length === 0) return true;
   return topicNames.every((topic) => DEFAULT_TOPICS.includes(topic));
 };

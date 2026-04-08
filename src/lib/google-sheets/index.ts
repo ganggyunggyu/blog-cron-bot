@@ -6,7 +6,7 @@ import { JWT } from 'google-auth-library';
 import { CafeExposureRow } from '../cafe-exposure-check';
 import { logger } from '../logger';
 
-const CAFE_EXPOSURE_HEADERS = ['키워드', '노출여부', '순위', '카페명', '조회수', '링크'];
+const CAFE_EXPOSURE_HEADERS = ['키워드', '노출여부', '순위', '카페명', '조회수', '작성일', '링크'];
 
 const COLOR = {
   headerBg: { red: 0.24, green: 0.52, blue: 0.78 },
@@ -16,9 +16,9 @@ const COLOR = {
   white: { red: 1, green: 1, blue: 1 },
 };
 
-const COLUMN_WIDTHS = [180, 70, 50, 140, 70, 400];
+const COLUMN_WIDTHS = [180, 70, 50, 140, 70, 100, 400];
 
-const CENTER_COLUMNS = [1, 2, 4];
+const CENTER_COLUMNS = [1, 2, 4, 5];
 
 const getAuth = (): JWT => {
   const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
@@ -126,6 +126,7 @@ export const exportCafeExposureToSheet = async (
     '순위': row.rank,
     '카페명': row.cafeName,
     '조회수': row.viewCount || '',
+    '작성일': row.writeDate || '',
     '링크': row.link,
   }));
 
@@ -162,7 +163,7 @@ export const appendCafeExposureToSheet = async (
 
   const label = separatorLabel || new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false });
   await sheet.addRows([
-    { '키워드': `── ${label} ──`, '노출여부': '', '순위': '', '카페명': '', '조회수': '', '링크': '' },
+    { '키워드': `── ${label} ──`, '노출여부': '', '순위': '', '카페명': '', '조회수': '', '작성일': '', '링크': '' },
   ]);
 
   const sheetRows = rows.map((row) => ({
@@ -171,6 +172,7 @@ export const appendCafeExposureToSheet = async (
     '순위': row.rank,
     '카페명': row.cafeName,
     '조회수': row.viewCount || '',
+    '작성일': row.writeDate || '',
     '링크': row.link,
   }));
 

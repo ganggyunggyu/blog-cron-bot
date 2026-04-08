@@ -62,6 +62,10 @@ export const EXCLUDED_BLOG_IDS = [
   '07lovelybaby',
   'bullim91',
   'hyzhengyin',
+  'mcm2922',
+  'antique2013',
+  'mintto02',
+  'sundays0411',
 ] as const;
 
 const EXCLUDED_BLOG_ID_SET = new Set(
@@ -78,7 +82,6 @@ const dedupeBlogIds = (blogIds: readonly string[]): string[] =>
   );
 
 const BLACK_GOAT_BLOG_IDS = dedupeBlogIds([
-  'biggoose488',
   'dhtksk1p',
   'regular14631',
   'selzze',
@@ -88,6 +91,9 @@ const BLACK_GOAT_BLOG_IDS = dedupeBlogIds([
   'eytkgy5500',
   'yenalk',
   'dyust',
+  'umhu0m83',
+  'olgdmp9921',
+  'orangeswan630',
 ] as const);
 
 const DIET_SUPPLEMENT_BLOG_IDS = dedupeBlogIds(['ags2oigb'] as const);
@@ -100,6 +106,10 @@ const EYE_CLINIC_BLOG_IDS = dedupeBlogIds([
   'hagyga',
   'geenl',
   'ghhoy',
+  'nes1p2kx',
+  'mh8j62wm',
+  'h9ag469z',
+  'dq1h3bjy',
 ] as const);
 
 const SKIN_PROCEDURE_BLOG_IDS = dedupeBlogIds(['cookie4931'] as const);
@@ -116,6 +126,7 @@ const PAGE_PET_BLOG_IDS = dedupeBlogIds([
   'dyulp',
   'njmzdksm',
   'e6yb5u4k',
+  'heavyzebra240',
 ] as const);
 
 const PAGE_SURI_PET_BLOG_IDS = dedupeBlogIds([
@@ -275,6 +286,9 @@ const VIRAL_TEAM_SCHEDULE_BLOG_IDS = dedupeBlogIds([
   'viva0',
   'rughrt293',
   'jambbojy',
+  'jw96306',
+  'kgshon',
+  'olpark4455',
 ] as const);
 
 const TAGGED_DOGMARU_BLOG_IDS = dedupeBlogIds([
@@ -293,6 +307,9 @@ const TAGGED_DOGMARU_BLOG_IDS = dedupeBlogIds([
   'skidrow5246',
   'annyeong88',
   'haein6256',
+  'iealpx8p',
+  'angrykoala270',
+  'tinyfish183',
 ] as const);
 
 const TAGGED_SURI_PET_BLOG_IDS = dedupeBlogIds([

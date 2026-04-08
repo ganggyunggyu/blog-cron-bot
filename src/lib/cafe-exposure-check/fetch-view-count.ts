@@ -15,25 +15,46 @@ const parseCafeLink = (link: string): { cafeUrl: string; articleId: string } | n
 const buildArticleApiUrl = (cafeUrl: string, articleId: string): string =>
   `${CAFE_ARTICLE_API_BASE}/${cafeUrl}/articles/${articleId}?useCafeId=false`;
 
-export const fetchCafeViewCount = async (link: string): Promise<string> => {
-  if (!link) {
-    return '';
-  }
+export interface CafeArticleInfo {
+  viewCount: string;
+  writeDate: string;
+}
+
+const formatWriteDate = (raw: unknown): string => {
+  if (!raw) return '';
+  const ts = typeof raw === 'number' ? raw : Number(raw);
+  if (!Number.isFinite(ts) || ts <= 0) return String(raw);
+  const d = new Date(ts);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+const extractArticleInfo = (data: Record<string, unknown>): CafeArticleInfo => {
+  const article = (data as any)?.result?.article;
+  const readCount = article?.readCount;
+  const writeDate = article?.writeDateTimestamp ?? article?.writeDate ?? '';
+  return {
+    viewCount: readCount != null ? String(readCount) : '',
+    writeDate: formatWriteDate(writeDate),
+  };
+};
+
+export const fetchCafeArticleInfo = async (link: string): Promise<CafeArticleInfo> => {
+  const empty: CafeArticleInfo = { viewCount: '', writeDate: '' };
+  if (!link) return empty;
 
   const parsed = parseCafeLink(link);
-  if (!parsed) {
-    return '';
-  }
+  if (!parsed) return empty;
 
   const apiUrl = buildArticleApiUrl(parsed.cafeUrl, parsed.articleId);
 
   try {
     const json = await fetchHtml(apiUrl);
     const data = JSON.parse(json);
-    const readCount = data?.result?.article?.readCount;
-    if (readCount != null) {
-      return String(readCount);
-    }
+    const info = extractArticleInfo(data);
+    if (info.viewCount) return info;
   } catch {
     // 로그인 쿠키 실패 시 비로그인으로 재시도
   }
@@ -41,12 +62,16 @@ export const fetchCafeViewCount = async (link: string): Promise<string> => {
   try {
     const json = await fetchHtmlWithoutCookie(apiUrl);
     const data = JSON.parse(json);
-    const readCount = data?.result?.article?.readCount;
-    return readCount != null ? String(readCount) : '';
+    return extractArticleInfo(data);
   } catch (error) {
     logger.warn(`조회수 수집 실패 (${link}): ${(error as Error).message}`);
-    return '';
+    return empty;
   }
+};
+
+export const fetchCafeViewCount = async (link: string): Promise<string> => {
+  const { viewCount } = await fetchCafeArticleInfo(link);
+  return viewCount;
 };
 
 export const fetchViewCountsForLinks = async (

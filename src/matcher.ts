@@ -1,6 +1,10 @@
-import { BLOG_IDS } from './constants';
+import { BLOG_IDS, EXCLUDED_BLOG_IDS } from './constants';
 import { PopularItem } from './parser';
 import { extractBlogIdFromUrl } from './lib/naver-source';
+
+const EXCLUDED_SET = new Set(
+  EXCLUDED_BLOG_IDS.map((id) => id.toLowerCase())
+);
 
 export interface ExposureResult {
   query: string;
@@ -64,7 +68,9 @@ export const matchBlogs = (
       extractBlogIdFromUrl(item.blogLink || item.link) ||
       extractBlogId(item.blogLink || item.link);
 
-    const accept = allowAnyBlog ? !!blogId : blogId && allowedIds.has(blogId);
+    const accept = allowAnyBlog
+      ? !!blogId && !EXCLUDED_SET.has(blogId)
+      : blogId && allowedIds.has(blogId);
     if (accept) {
       let exposureType: string;
       if (item.page && item.page > 1) {

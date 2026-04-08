@@ -9,6 +9,7 @@ import { logger } from './lib/logger';
 import { getKSTTimestamp } from './utils';
 import { sendDoorayExposureResult } from './lib/dooray';
 import { ExposureResult } from './matcher';
+import { DOGMARU_PAGE_CHECK_BLOG_IDS } from './constants/blog-ids';
 
 dotenv.config();
 
@@ -77,6 +78,7 @@ export async function main() {
   logger.blank();
 
   const logBuilder = createDetailedLogBuilder();
+  const keywordLogicMap = new Map<string, boolean>();
 
   const dogmaruKeywords = keywords.filter((k: any) => k.sheetType === 'dogmaru');
   const otherKeywords = keywords.filter((k: any) => k.sheetType !== 'dogmaru');
@@ -87,6 +89,7 @@ export async function main() {
     logger.info(`📦 패키지/일반건 ${otherKeywords.length}개 처리`);
     const results = await processKeywords(otherKeywords, logBuilder, {
       isLoggedIn: loginStatus.isLoggedIn,
+      keywordLogicMap,
     });
     allResults.push(...results);
   }
@@ -95,6 +98,8 @@ export async function main() {
     logger.info(`🐕 도그마루 ${dogmaruKeywords.length}개 처리 (전체 블로그 기준)`);
     const results = await processKeywords(dogmaruKeywords, logBuilder, {
       isLoggedIn: loginStatus.isLoggedIn,
+      blogIds: DOGMARU_PAGE_CHECK_BLOG_IDS,
+      keywordLogicMap,
     });
     allResults.push(...results);
   }
@@ -110,7 +115,8 @@ export async function main() {
   saveToSheetCSV(
     keywords.map((k: any) => ({ keyword: k.keyword, company: k.company })),
     allResults,
-    `${csvPrefix}_sheet_${timestamp}.csv`
+    `${csvPrefix}_sheet_${timestamp}.csv`,
+    keywordLogicMap
   );
 
   const elapsedMs = Date.now() - startTime;
@@ -128,12 +134,16 @@ export async function main() {
     (r) => r.exposureType === '인기글'
   ).length;
   const sblCount = allResults.filter((r) => r.exposureType === '스블').length;
+  const newLogicCount = allResults.filter((r) => r.isNewLogic === true).length;
+  const oldLogicCount = allResults.filter((r) => r.isNewLogic === false).length;
 
   logger.summary.complete('크롤링 완료 요약', [
     { label: '총 검색어', value: `${keywords.length}개` },
     { label: '총 노출 발견', value: `${allResults.length}개` },
     { label: '인기글', value: `${popularCount}개` },
     { label: '스블', value: `${sblCount}개` },
+    { label: '신규로직', value: `${newLogicCount}개` },
+    { label: '구로직', value: `${oldLogicCount}개` },
     { label: '처리 시간', value: elapsedTimeStr },
   ]);
 
@@ -144,14 +154,23 @@ export async function main() {
     .map((k: any) => k.keyword);
 
   // Dooray 메시지 전송
+  const SHEET_TYPE_LABELS: Record<string, string> = {
+    package: '패키지 노출체크',
+    'dogmaru-exclude': '일반건 노출체크',
+    dogmaru: '도그마루 노출체크',
+  };
+  const cronTypeLabel = SHEET_TYPE_LABELS[onlySheetType] ?? '패키지 일반건 노출체크';
+
   await sendDoorayExposureResult({
-    cronType: '패키지 일반건 노출체크',
+    cronType: cronTypeLabel,
     totalKeywords: keywords.length,
     exposureCount: allResults.length,
     popularCount,
     sblCount,
     elapsedTime: elapsedTimeStr,
     missingKeywords,
+    newLogicCount,
+    oldLogicCount,
   });
 
   const logs = logBuilder.getLogs();
