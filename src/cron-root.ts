@@ -112,7 +112,7 @@ export async function main() {
   const allResults = await processKeywords(keywords, logBuilder, {
     updateFunction: updateRootKeywordResult,
     isLoggedIn: loginStatus.isLoggedIn,
-    allowAnyBlog: true,
+    allowAnyBlog: false,
   });
 
   const timestamp = getKSTTimestamp();

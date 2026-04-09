@@ -2,18 +2,18 @@
   "멀티페이지 크론 [흑염소 구]": {
     "cronType": "멀티페이지 크론 [흑염소 구]",
     "totalKeywords": 314,
-    "exposureCount": 241,
-    "popularCount": 128,
+    "exposureCount": 235,
+    "popularCount": 122,
     "sblCount": 113,
     "newLogicCount": 0,
-    "oldLogicCount": 241,
+    "oldLogicCount": 235,
     "sheetStats": [
       {
         "name": "흑염소 구",
-        "count": 267
+        "count": 260
       }
     ],
-    "timestamp": "2026-04-08T01:44:08.513Z"
+    "timestamp": "2026-04-09T03:14:59.998Z"
   },
   "일반건 노출체크": {
     "cronType": "일반건 노출체크",
@@ -47,38 +47,43 @@
   },
   "루트 키워드": {
     "cronType": "루트 키워드",
-    "totalKeywords": 215,
-    "exposureCount": 148,
+    "totalKeywords": 213,
+    "exposureCount": 157,
     "popularCount": 6,
-    "sblCount": 142,
-    "timestamp": "2026-04-08T01:26:59.852Z"
+    "sblCount": 151,
+    "timestamp": "2026-04-09T00:40:47.308Z"
   },
   "멀티페이지 크론 [애견]": {
     "cronType": "멀티페이지 크론 [애견]",
     "totalKeywords": 300,
-    "exposureCount": 4,
-    "popularCount": 4,
-    "sblCount": 0,
-    "newLogicCount": 2,
-    "oldLogicCount": 2,
+    "exposureCount": 193,
+    "popularCount": 120,
+    "sblCount": 25,
+    "newLogicCount": 88,
+    "oldLogicCount": 105,
     "sheetStats": [
       {
         "name": "애견",
-        "count": 5
+        "count": 228
       }
     ],
-    "timestamp": "2026-04-07T07:17:35.426Z"
+    "timestamp": "2026-04-08T02:37:35.969Z"
   },
   "멀티페이지 크론 [서리펫]": {
     "cronType": "멀티페이지 크론 [서리펫]",
     "totalKeywords": 123,
-    "exposureCount": 0,
-    "popularCount": 0,
-    "sblCount": 0,
-    "newLogicCount": 0,
-    "oldLogicCount": 0,
-    "sheetStats": [],
-    "timestamp": "2026-04-07T07:17:31.433Z"
+    "exposureCount": 54,
+    "popularCount": 25,
+    "sblCount": 5,
+    "newLogicCount": 23,
+    "oldLogicCount": 31,
+    "sheetStats": [
+      {
+        "name": "서리펫",
+        "count": 54
+      }
+    ],
+    "timestamp": "2026-04-08T02:43:24.822Z"
   },
   "멀티페이지 크론 [흑염소 신규]": {
     "cronType": "멀티페이지 크론 [흑염소 신규]",
@@ -94,7 +99,7 @@
         "count": 7
       }
     ],
-    "timestamp": "2026-04-07T06:54:18.312Z"
+    "timestamp": "2026-04-08T03:22:54.464Z"
   },
   "멀티페이지 크론 [안과]": {
     "cronType": "멀티페이지 크론 [안과]",
@@ -106,5 +111,39 @@
     "oldLogicCount": 0,
     "sheetStats": [],
     "timestamp": "2026-03-27T03:14:47.737Z"
+  },
+  "패키지 일반건 노출체크": {
+    "cronType": "패키지 일반건 노출체크",
+    "totalKeywords": 644,
+    "exposureCount": 261,
+    "popularCount": 140,
+    "sblCount": 121,
+    "newLogicCount": 73,
+    "oldLogicCount": 188,
+    "timestamp": "2026-04-09T01:26:06.399Z"
+  },
+  "멀티페이지 크론 [전체]": {
+    "cronType": "멀티페이지 크론 [전체]",
+    "totalKeywords": 791,
+    "exposureCount": 265,
+    "popularCount": 155,
+    "sblCount": 31,
+    "newLogicCount": 118,
+    "oldLogicCount": 147,
+    "sheetStats": [
+      {
+        "name": "서리펫",
+        "count": 102
+      },
+      {
+        "name": "애견",
+        "count": 250
+      },
+      {
+        "name": "흑염소 신규",
+        "count": 6
+      }
+    ],
+    "timestamp": "2026-04-09T05:48:35.115Z"
   }
 }

@@ -55,11 +55,13 @@ export const TEST_CONFIG = {
     PACKAGE: '패키지',
     DOGMARU_EXCLUDE: '일반건',
     DOGMARU: '도그마루',
+    ROOT: '루트',
   },
   LABELS: {
     PACKAGE: '패키지',
     DOGMARU_EXCLUDE: '일반건',
     DOGMARU: '도그마루',
+    ROOT: '루트',
   },
 } as const;
 

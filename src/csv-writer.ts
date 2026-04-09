@@ -128,14 +128,22 @@ export const saveToSheetCSV = (
     '행',
   ].join(',');
 
-  const resultMap = new Map<string, ExposureResult>();
+  const resultMap = new Map<string, ExposureResult[]>();
   for (const result of results) {
-    resultMap.set(result.query, result);
+    const existingQueue = resultMap.get(result.query);
+
+    if (existingQueue) {
+      existingQueue.push(result);
+      continue;
+    }
+
+    resultMap.set(result.query, [result]);
   }
 
   const rows = keywords.map((kw, index) => {
     const escape = (s: string) => `"${(s || '').replace(/"/g, '""')}"`;
-    const result = resultMap.get(kw.keyword);
+    const resultQueue = resultMap.get(kw.keyword);
+    const result = resultQueue?.shift();
 
     if (result) {
       const isPopular = result.exposureType === '인기글';

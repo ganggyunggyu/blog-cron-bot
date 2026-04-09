@@ -474,3 +474,171 @@ export const updatePageCheckKeywordResult = async (
     throw error;
   }
 };
+
+export interface IExposureHistorySnapshot extends Document {
+  runId: string;
+  source: string;
+  sheetId: string;
+  tabName: string;
+  targetType: string;
+  sheetType: string;
+  sheetRowNumber: number;
+  orderIndex: number;
+  company: string;
+  keyword: string;
+  visibility: boolean;
+  popularTopic: string;
+  url: string;
+  keywordType: 'restaurant' | 'pet' | 'basic';
+  restaurantName?: string;
+  matchedTitle?: string;
+  postVendorName?: string;
+  rank?: number;
+  rankWithCafe?: number;
+  isUpdateRequired?: boolean;
+  isNewLogic?: boolean;
+  foundPage?: number;
+  checkedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ExposureHistorySnapshotInput {
+  runId: string;
+  source: string;
+  sheetId: string;
+  tabName: string;
+  targetType: string;
+  sheetType: string;
+  sheetRowNumber: number;
+  orderIndex: number;
+  company: string;
+  keyword: string;
+  visibility: boolean;
+  popularTopic: string;
+  url: string;
+  keywordType: 'restaurant' | 'pet' | 'basic';
+  restaurantName?: string;
+  matchedTitle?: string;
+  postVendorName?: string;
+  rank?: number;
+  rankWithCafe?: number;
+  isUpdateRequired?: boolean;
+  isNewLogic?: boolean;
+  foundPage?: number;
+}
+
+const ExposureHistorySnapshotSchema: Schema = new Schema(
+  {
+    runId: { type: String, required: true },
+    source: { type: String, required: true },
+    sheetId: { type: String, required: true },
+    tabName: { type: String, required: true },
+    targetType: { type: String, required: true },
+    sheetType: { type: String, required: true },
+    sheetRowNumber: { type: Number, required: true },
+    orderIndex: { type: Number, required: true },
+    company: { type: String, default: '' },
+    keyword: { type: String, required: true },
+    visibility: { type: Boolean, default: false },
+    popularTopic: { type: String, default: '' },
+    url: { type: String, default: '' },
+    keywordType: {
+      type: String,
+      enum: ['restaurant', 'pet', 'basic'],
+      default: 'basic',
+    },
+    restaurantName: { type: String, default: '' },
+    matchedTitle: { type: String, default: '' },
+    postVendorName: { type: String, default: '' },
+    rank: { type: Number, default: 0 },
+    rankWithCafe: { type: Number, default: 0 },
+    isUpdateRequired: { type: Boolean, default: false },
+    isNewLogic: { type: Boolean, default: false },
+    foundPage: { type: Number, default: 0 },
+    checkedAt: { type: Date, required: true },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+const getHistoryCollectionParts = (
+  checkedAt: Date
+): { collectionName: string; modelName: string } => {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+
+  const parts = formatter
+    .formatToParts(checkedAt)
+    .reduce<Record<string, string>>((acc, part) => {
+      if (part.type !== 'literal') {
+        acc[part.type] = part.value;
+      }
+
+      return acc;
+    }, {});
+
+  const dateKey = `${parts.year}_${parts.month}_${parts.day}`;
+
+  return {
+    collectionName: `exposure_history_${dateKey}`,
+    modelName: `ExposureHistory_${dateKey}`,
+  };
+};
+
+const getExposureHistoryModel = (
+  checkedAt: Date
+): mongoose.Model<IExposureHistorySnapshot> => {
+  const { collectionName, modelName } = getHistoryCollectionParts(checkedAt);
+
+  if (mongoose.models[modelName]) {
+    return mongoose.models[modelName] as mongoose.Model<IExposureHistorySnapshot>;
+  }
+
+  return mongoose.model<IExposureHistorySnapshot>(
+    modelName,
+    ExposureHistorySnapshotSchema,
+    collectionName
+  );
+};
+
+export const saveExposureHistorySnapshots = async (
+  checkedAt: Date,
+  snapshots: ExposureHistorySnapshotInput[]
+): Promise<{ inserted: number; collectionName: string }> => {
+  if (snapshots.length === 0) {
+    const { collectionName } = getHistoryCollectionParts(checkedAt);
+
+    return {
+      inserted: 0,
+      collectionName,
+    };
+  }
+
+  try {
+    const model = getExposureHistoryModel(checkedAt);
+    const docs = snapshots.map((snapshot) => ({
+      ...snapshot,
+      checkedAt,
+    }));
+
+    await model.insertMany(docs, {
+      ordered: false,
+    });
+
+    return {
+      inserted: docs.length,
+      collectionName: model.collection.collectionName,
+    };
+  } catch (error) {
+    logger.error(
+      `노출 히스토리 저장 실패: ${(error as Error).message}`
+    );
+    throw error;
+  }
+};

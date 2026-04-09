@@ -1,4 +1,3 @@
-import { ExposureResult } from '../../matcher';
 import { progressLogger } from '../../logs/progress-logger';
 import { fetchResolvedPostHtml } from '../vendor-extractor';
 import { checkConsecutiveImages } from '../post-quality-checker';
@@ -108,7 +107,15 @@ export const handleQueueEmpty = async (
 };
 
 export const handleSuccess = async (params: SuccessParams): Promise<void> => {
-  const { keyword, html, match, processing, allResults, updateFunction, guestRetryComparison } = params;
+  const {
+    keyword,
+    html,
+    match,
+    processing,
+    allResults,
+    updateFunction,
+    guestRetryComparison,
+  } = params;
   const {
     keywordDoc,
     query,
@@ -164,9 +171,10 @@ export const handleSuccess = async (params: SuccessParams): Promise<void> => {
 
   const isNewLogic = getIsNewLogic(topicNamesArray);
 
-  const popularTopic = keywordType === 'pet'
-    ? nextMatch.exposureType
-    : nextMatch.topicName || nextMatch.exposureType;
+  const popularTopic =
+    keywordType === 'pet'
+      ? nextMatch.exposureType
+      : nextMatch.topicName || nextMatch.exposureType;
 
   await updateFunction(
     String(keywordDoc._id),
@@ -185,8 +193,11 @@ export const handleSuccess = async (params: SuccessParams): Promise<void> => {
   );
 
   allResults.push({
-    ...nextMatch,
-    company: String(keywordDoc.company || ''),
+    globalIndex,
+    result: {
+      ...nextMatch,
+      company: String(keywordDoc.company || ''),
+    },
   });
 
   const successLog = logBuilder.createSuccess({

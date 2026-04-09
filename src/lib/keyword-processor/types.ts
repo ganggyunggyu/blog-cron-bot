@@ -24,6 +24,7 @@ export interface ProcessKeywordsOptions {
   updateFunction?: UpdateFunction;
   isLoggedIn?: boolean;
   maxPages?: number;
+  concurrency?: number;
   blogIds?: string[];
   allowAnyBlog?: boolean;
   keywordLogicMap?: Map<string, boolean>;
@@ -113,6 +114,11 @@ export interface MatchResult {
   remainingQueueCount: number;
 }
 
+export interface OrderedExposureResult {
+  globalIndex: number;
+  result: ExposureResult;
+}
+
 export interface CrawlParams {
   searchQuery: string;
   keywordDoc: KeywordDoc;
@@ -142,7 +148,7 @@ export interface SuccessParams {
   html: HtmlStructure;
   match: MatchResult;
   processing: ProcessingContext;
-  allResults: ExposureResult[];
+  allResults: OrderedExposureResult[];
   updateFunction: UpdateFunction;
   guestRetryComparison?: GuestRetryComparison;
 }

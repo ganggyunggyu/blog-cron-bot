@@ -23,6 +23,7 @@
     "cookie:update": "ts-node src/tools/update-cookie.ts",
     "cookie:login": "ts-node src/tools/login-and-get-cookie.ts",
     "cookie:auto": "ts-node src/tools/auto-login.ts",
+    "parallel:check": "ts-node src/tools/run-parallel-direct-sheet-check.ts",
     "keyword:report": "ts-node src/tools/keyword-report.ts",
     "cafe:check": "ts-node src/tools/check-cafe-exposure.ts",
     "cafe:check:test": "ts-node src/tools/check-cafe-exposure.test.ts"
