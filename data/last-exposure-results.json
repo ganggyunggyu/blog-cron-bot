@@ -2,18 +2,18 @@
   "멀티페이지 크론 [흑염소 구]": {
     "cronType": "멀티페이지 크론 [흑염소 구]",
     "totalKeywords": 314,
-    "exposureCount": 235,
-    "popularCount": 122,
-    "sblCount": 113,
+    "exposureCount": 242,
+    "popularCount": 125,
+    "sblCount": 117,
     "newLogicCount": 0,
-    "oldLogicCount": 235,
+    "oldLogicCount": 242,
     "sheetStats": [
       {
         "name": "흑염소 구",
-        "count": 260
+        "count": 265
       }
     ],
-    "timestamp": "2026-04-09T03:14:59.998Z"
+    "timestamp": "2026-04-10T01:57:15.222Z"
   },
   "일반건 노출체크": {
     "cronType": "일반건 노출체크",
@@ -47,43 +47,43 @@
   },
   "루트 키워드": {
     "cronType": "루트 키워드",
-    "totalKeywords": 213,
-    "exposureCount": 157,
+    "totalKeywords": 216,
+    "exposureCount": 154,
     "popularCount": 6,
-    "sblCount": 151,
-    "timestamp": "2026-04-09T00:40:47.308Z"
+    "sblCount": 148,
+    "timestamp": "2026-04-10T00:51:24.504Z"
   },
   "멀티페이지 크론 [애견]": {
     "cronType": "멀티페이지 크론 [애견]",
     "totalKeywords": 300,
-    "exposureCount": 193,
-    "popularCount": 120,
+    "exposureCount": 199,
+    "popularCount": 121,
     "sblCount": 25,
     "newLogicCount": 88,
-    "oldLogicCount": 105,
+    "oldLogicCount": 111,
     "sheetStats": [
       {
         "name": "애견",
-        "count": 228
+        "count": 245
       }
     ],
-    "timestamp": "2026-04-08T02:37:35.969Z"
+    "timestamp": "2026-04-10T02:45:18.186Z"
   },
   "멀티페이지 크론 [서리펫]": {
     "cronType": "멀티페이지 크론 [서리펫]",
     "totalKeywords": 123,
-    "exposureCount": 54,
-    "popularCount": 25,
+    "exposureCount": 57,
+    "popularCount": 27,
     "sblCount": 5,
-    "newLogicCount": 23,
-    "oldLogicCount": 31,
+    "newLogicCount": 25,
+    "oldLogicCount": 32,
     "sheetStats": [
       {
         "name": "서리펫",
-        "count": 54
+        "count": 57
       }
     ],
-    "timestamp": "2026-04-08T02:43:24.822Z"
+    "timestamp": "2026-04-10T03:26:22.947Z"
   },
   "멀티페이지 크론 [흑염소 신규]": {
     "cronType": "멀티페이지 크론 [흑염소 신규]",
@@ -104,23 +104,28 @@
   "멀티페이지 크론 [안과]": {
     "cronType": "멀티페이지 크론 [안과]",
     "totalKeywords": 82,
-    "exposureCount": 0,
-    "popularCount": 0,
+    "exposureCount": 6,
+    "popularCount": 4,
     "sblCount": 0,
-    "newLogicCount": 0,
-    "oldLogicCount": 0,
-    "sheetStats": [],
-    "timestamp": "2026-03-27T03:14:47.737Z"
+    "newLogicCount": 4,
+    "oldLogicCount": 2,
+    "sheetStats": [
+      {
+        "name": "안과",
+        "count": 6
+      }
+    ],
+    "timestamp": "2026-04-10T02:02:17.236Z"
   },
   "패키지 일반건 노출체크": {
     "cronType": "패키지 일반건 노출체크",
     "totalKeywords": 644,
-    "exposureCount": 261,
-    "popularCount": 140,
-    "sblCount": 121,
-    "newLogicCount": 73,
-    "oldLogicCount": 188,
-    "timestamp": "2026-04-09T01:26:06.399Z"
+    "exposureCount": 260,
+    "popularCount": 138,
+    "sblCount": 122,
+    "newLogicCount": 70,
+    "oldLogicCount": 190,
+    "timestamp": "2026-04-10T01:09:05.952Z"
   },
   "멀티페이지 크론 [전체]": {
     "cronType": "멀티페이지 크론 [전체]",
