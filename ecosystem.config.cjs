@@ -24,5 +24,20 @@ module.exports = {
       time: true,
       max_memory_restart: '512M',
     },
+    {
+      name: 'blog-cron-bot-all-sheets',
+      cwd: __dirname,
+      script: 'dist/pm2-scheduler-all-sheets.js',
+      instances: 1,
+      exec_mode: 'fork',
+      env_file: '.env',
+      env: {
+        WORKFLOW_RUN_TIMES: '08:00',
+      },
+      autorestart: true,
+      watch: false,
+      time: true,
+      max_memory_restart: '512M',
+    },
   ],
 };

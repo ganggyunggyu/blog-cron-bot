@@ -17,6 +17,8 @@
     "scheduler:test": "cross-env TEST_DELAY_MINUTES=1 ts-node src/pm2-scheduler.ts",
     "scheduler:root": "ts-node src/pm2-scheduler-root.ts",
     "scheduler:root:test": "cross-env TEST_DELAY_MINUTES=1 ts-node src/pm2-scheduler-root.ts",
+    "scheduler:all-sheets": "cross-env WORKFLOW_RUN_TIMES=09:00 ts-node src/pm2-scheduler-all-sheets.ts",
+    "scheduler:all-sheets:test": "cross-env TEST_DELAY_MINUTES=1 WORKFLOW_RUN_TIMES=09:00 ts-node src/pm2-scheduler-all-sheets.ts",
     "naver:popular:update": "ts-node src/tools/update-popular-selectors/index.ts",
     "naver:popular:update:local": "ts-node src/tools/update-popular-selectors-local.ts",
     "migrate:rank": "ts-node src/migrations/migrate-rank/index.ts",

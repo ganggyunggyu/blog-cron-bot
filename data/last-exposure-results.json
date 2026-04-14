@@ -47,11 +47,11 @@
   },
   "루트 키워드": {
     "cronType": "루트 키워드",
-    "totalKeywords": 214,
-    "exposureCount": 144,
+    "totalKeywords": 220,
+    "exposureCount": 158,
     "popularCount": 8,
-    "sblCount": 136,
-    "timestamp": "2026-04-13T00:41:11.560Z"
+    "sblCount": 150,
+    "timestamp": "2026-04-14T00:22:31.060Z"
   },
   "멀티페이지 크론 [애견]": {
     "cronType": "멀티페이지 크론 [애견]",
@@ -119,36 +119,44 @@
   },
   "패키지 일반건 노출체크": {
     "cronType": "패키지 일반건 노출체크",
-    "totalKeywords": 643,
-    "exposureCount": 248,
-    "popularCount": 136,
-    "sblCount": 112,
-    "newLogicCount": 69,
-    "oldLogicCount": 179,
-    "timestamp": "2026-04-13T01:00:46.226Z"
+    "totalKeywords": 640,
+    "exposureCount": 242,
+    "popularCount": 133,
+    "sblCount": 109,
+    "newLogicCount": 65,
+    "oldLogicCount": 177,
+    "timestamp": "2026-04-14T05:48:12.844Z"
   },
   "멀티페이지 크론 [전체]": {
     "cronType": "멀티페이지 크론 [전체]",
-    "totalKeywords": 791,
-    "exposureCount": 265,
-    "popularCount": 155,
-    "sblCount": 31,
-    "newLogicCount": 118,
-    "oldLogicCount": 147,
+    "totalKeywords": 1310,
+    "exposureCount": 499,
+    "popularCount": 291,
+    "sblCount": 142,
+    "newLogicCount": 137,
+    "oldLogicCount": 362,
     "sheetStats": [
       {
-        "name": "서리펫",
-        "count": 102
+        "name": "흑염소 신규",
+        "count": 16
+      },
+      {
+        "name": "흑염소 구",
+        "count": 254
+      },
+      {
+        "name": "안과",
+        "count": 4
       },
       {
         "name": "애견",
-        "count": 250
+        "count": 245
       },
       {
-        "name": "흑염소 신규",
-        "count": 6
+        "name": "서리펫",
+        "count": 103
       }
     ],
-    "timestamp": "2026-04-09T05:48:35.115Z"
+    "timestamp": "2026-04-14T03:52:58.904Z"
   }
 }
