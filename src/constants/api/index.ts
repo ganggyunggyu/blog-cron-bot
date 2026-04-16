@@ -65,6 +65,18 @@ export const TEST_CONFIG = {
   },
 } as const;
 
+export const ALIBABA_CONFIG = {
+  SHEET_ID: '1T9PHu-fH6HPmyYA9dtfXaDLm20XAPN-9mzlE2QTPkF0',
+  TAB_NAME: '알리바바',
+  KEYWORD_COL: 1,
+  RESULT_COLS: {
+    EXPOSED: 2,
+    RANK: 3,
+    TOPIC: 4,
+    LINK: 5,
+  },
+} as const;
+
 export const ROOT_CONFIG = {
   SHEET_ID: '1CsO-R1LMrsQdUw7T1KEL2I4bMxAeYnZIklOgr8e_DPY',
 

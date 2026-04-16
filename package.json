@@ -28,7 +28,8 @@
     "parallel:check": "ts-node src/tools/run-parallel-direct-sheet-check.ts",
     "keyword:report": "ts-node src/tools/keyword-report.ts",
     "cafe:check": "ts-node src/tools/check-cafe-exposure.ts",
-    "cafe:check:test": "ts-node src/tools/check-cafe-exposure.test.ts"
+    "cafe:check:test": "ts-node src/tools/check-cafe-exposure.test.ts",
+    "alibaba:check": "ts-node src/tools/run-alibaba-check.ts"
   },
   "dependencies": {
     "axios": "^1.13.2",
