@@ -159,6 +159,7 @@ const GENERAL_ONLY_BLOG_IDS = dedupeBlogIds([
   'sunyzone2',
   'na3997',
   'bright0248',
+  'kwen1030',
 ] as const);
 
 const VIRAL_TEAM_SCHEDULE_BLOG_IDS = dedupeBlogIds([
