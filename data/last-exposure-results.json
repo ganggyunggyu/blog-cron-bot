@@ -2,18 +2,18 @@
   "멀티페이지 크론 [흑염소 구]": {
     "cronType": "멀티페이지 크론 [흑염소 구]",
     "totalKeywords": 314,
-    "exposureCount": 225,
-    "popularCount": 114,
-    "sblCount": 111,
+    "exposureCount": 221,
+    "popularCount": 112,
+    "sblCount": 109,
     "newLogicCount": 0,
-    "oldLogicCount": 225,
+    "oldLogicCount": 221,
     "sheetStats": [
       {
         "name": "흑염소 구",
-        "count": 252
+        "count": 250
       }
     ],
-    "timestamp": "2026-04-21T00:43:34.609Z"
+    "timestamp": "2026-04-22T00:54:09.263Z"
   },
   "일반건 노출체크": {
     "cronType": "일반건 노출체크",
@@ -43,11 +43,11 @@
   },
   "루트 키워드": {
     "cronType": "루트 키워드",
-    "totalKeywords": 223,
-    "exposureCount": 138,
+    "totalKeywords": 222,
+    "exposureCount": 134,
     "popularCount": 5,
-    "sblCount": 133,
-    "timestamp": "2026-04-21T01:08:48.072Z"
+    "sblCount": 129,
+    "timestamp": "2026-04-22T00:45:38.514Z"
   },
   "멀티페이지 크론 [애견]": {
     "cronType": "멀티페이지 크론 [애견]",
@@ -116,43 +116,39 @@
   "패키지 일반건 노출체크": {
     "cronType": "패키지 일반건 노출체크",
     "totalKeywords": 647,
-    "exposureCount": 249,
+    "exposureCount": 250,
     "popularCount": 135,
-    "sblCount": 114,
-    "newLogicCount": 54,
-    "oldLogicCount": 195,
-    "timestamp": "2026-04-21T01:00:42.382Z"
+    "sblCount": 115,
+    "newLogicCount": 52,
+    "oldLogicCount": 198,
+    "timestamp": "2026-04-22T01:05:46.156Z"
   },
   "멀티페이지 크론 [전체]": {
     "cronType": "멀티페이지 크론 [전체]",
     "totalKeywords": 1310,
-    "exposureCount": 497,
-    "popularCount": 279,
-    "sblCount": 141,
-    "newLogicCount": 124,
-    "oldLogicCount": 373,
+    "exposureCount": 222,
+    "popularCount": 113,
+    "sblCount": 109,
+    "newLogicCount": 1,
+    "oldLogicCount": 221,
     "sheetStats": [
       {
         "name": "흑염소 신규",
-        "count": 14
+        "count": 11
       },
       {
         "name": "흑염소 구",
-        "count": 252
-      },
-      {
-        "name": "안과",
-        "count": 4
+        "count": 249
       },
       {
         "name": "애견",
-        "count": 240
+        "count": 2
       },
       {
         "name": "서리펫",
-        "count": 98
+        "count": 1
       }
     ],
-    "timestamp": "2026-04-21T03:18:27.924Z"
+    "timestamp": "2026-04-22T00:53:18.044Z"
   }
 }
