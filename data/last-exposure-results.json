@@ -2,18 +2,18 @@
   "멀티페이지 크론 [흑염소 구]": {
     "cronType": "멀티페이지 크론 [흑염소 구]",
     "totalKeywords": 314,
-    "exposureCount": 221,
-    "popularCount": 112,
-    "sblCount": 109,
+    "exposureCount": 229,
+    "popularCount": 119,
+    "sblCount": 110,
     "newLogicCount": 0,
-    "oldLogicCount": 221,
+    "oldLogicCount": 229,
     "sheetStats": [
       {
         "name": "흑염소 구",
-        "count": 250
+        "count": 255
       }
     ],
-    "timestamp": "2026-04-22T00:54:09.263Z"
+    "timestamp": "2026-04-23T00:43:52.836Z"
   },
   "일반건 노출체크": {
     "cronType": "일반건 노출체크",
@@ -115,13 +115,13 @@
   },
   "패키지 일반건 노출체크": {
     "cronType": "패키지 일반건 노출체크",
-    "totalKeywords": 647,
-    "exposureCount": 250,
-    "popularCount": 135,
-    "sblCount": 115,
+    "totalKeywords": 645,
+    "exposureCount": 246,
+    "popularCount": 134,
+    "sblCount": 112,
     "newLogicCount": 52,
-    "oldLogicCount": 198,
-    "timestamp": "2026-04-22T01:05:46.156Z"
+    "oldLogicCount": 194,
+    "timestamp": "2026-04-23T00:59:43.620Z"
   },
   "멀티페이지 크론 [전체]": {
     "cronType": "멀티페이지 크론 [전체]",
