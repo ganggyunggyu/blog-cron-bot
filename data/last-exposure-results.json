@@ -2,18 +2,18 @@
   "멀티페이지 크론 [흑염소 구]": {
     "cronType": "멀티페이지 크론 [흑염소 구]",
     "totalKeywords": 314,
-    "exposureCount": 209,
-    "popularCount": 106,
-    "sblCount": 103,
+    "exposureCount": 206,
+    "popularCount": 104,
+    "sblCount": 102,
     "newLogicCount": 0,
-    "oldLogicCount": 209,
+    "oldLogicCount": 206,
     "sheetStats": [
       {
         "name": "흑염소 구",
-        "count": 233
+        "count": 231
       }
     ],
-    "timestamp": "2026-04-25T01:41:49.900Z"
+    "timestamp": "2026-04-26T00:43:20.532Z"
   },
   "일반건 노출체크": {
     "cronType": "일반건 노출체크",
@@ -26,10 +26,10 @@
   "도그마루 노출체크": {
     "cronType": "도그마루 노출체크",
     "totalKeywords": 300,
-    "exposureCount": 110,
-    "popularCount": 87,
-    "sblCount": 23,
-    "timestamp": "2026-04-25T01:19:22.902Z"
+    "exposureCount": 107,
+    "popularCount": 85,
+    "sblCount": 22,
+    "timestamp": "2026-04-26T00:18:42.648Z"
   },
   "패키지 노출체크": {
     "cronType": "패키지 노출체크",
@@ -44,10 +44,10 @@
   "루트 키워드": {
     "cronType": "루트 키워드",
     "totalKeywords": 224,
-    "exposureCount": 140,
+    "exposureCount": 143,
     "popularCount": 6,
-    "sblCount": 134,
-    "timestamp": "2026-04-25T01:27:57.923Z"
+    "sblCount": 137,
+    "timestamp": "2026-04-26T00:27:34.086Z"
   },
   "멀티페이지 크론 [애견]": {
     "cronType": "멀티페이지 크론 [애견]",
@@ -116,12 +116,12 @@
   "패키지 일반건 노출체크": {
     "cronType": "패키지 일반건 노출체크",
     "totalKeywords": 645,
-    "exposureCount": 234,
-    "popularCount": 121,
-    "sblCount": 113,
-    "newLogicCount": 50,
-    "oldLogicCount": 184,
-    "timestamp": "2026-04-24T01:00:09.471Z"
+    "exposureCount": 232,
+    "popularCount": 122,
+    "sblCount": 110,
+    "newLogicCount": 51,
+    "oldLogicCount": 181,
+    "timestamp": "2026-04-26T00:58:02.230Z"
   },
   "멀티페이지 크론 [전체]": {
     "cronType": "멀티페이지 크론 [전체]",
