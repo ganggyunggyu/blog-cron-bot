@@ -1,18 +1,18 @@
 # 네이버 카페 노출체크 정리
 
-- 실행 시각: 2026. 4. 23. 11시 43분 27초
+- 실행 시각: 2026. 4. 27. 10시 41분 15초
 - 기준: 네이버 통합검색 1페이지 카페 카드 기준
 - 입력 파일: 1gyipTIEogC9Qopj8w3ggBmD0k5KvAw6yNdIMXQDnwms / 카페키워드
-- 원본 키워드 수: 464개
-- 중복 제거 수: 0개
-- 실제 조회 키워드 수: 464개
-- 노출 키워드 수: 132개
+- 원본 키워드 수: 481개
+- 중복 제거 수: 6개
+- 실제 조회 키워드 수: 475개
+- 노출 키워드 수: 138개
 - 확인 실패 키워드 수: 0개
-- 결과 CSV: /Users/ganggyunggyu/Programing/blog-cron-bot/output/2026-04월4주차/cafe-exposure-check/cafe-exposure-check_2026-04-23-11-43-27.csv
+- 결과 CSV: /Users/ganggyunggyu/Programing/blog-cron-bot/output/2026-04월5주차/cafe-exposure-check/cafe-exposure-check_2026-04-27-10-41-15.csv
 
 ## 카페명 체크 검토
-- 쇼핑지름신: 이름 매칭 101건, ID 매칭 0건, 확인된 카페명 쇼핑지름신 (구매대행, 공동구매, 해외직구, 체험단, 핫딜), 확인된 sourceId shopjirmsin
-- 샤넬오픈런: 이름 매칭 49건, ID 매칭 0건, 확인된 카페명 샤넬오픈런 - No. 1 명품 대표 커뮤니티, 확인된 sourceId shoppingtpw
+- 쇼핑지름신: 이름 매칭 112건, ID 매칭 0건, 확인된 카페명 쇼핑지름신 (구매대행, 공동구매, 해외직구, 체험단, 핫딜), 확인된 sourceId shopjirmsin
+- 샤넬오픈런: 이름 매칭 54건, ID 매칭 0건, 확인된 카페명 샤넬오픈런 - No. 1 명품 대표 커뮤니티, 확인된 sourceId shoppingtpw
 - 건강한노후준비: 이름 매칭 2건, ID 매칭 0건, 확인된 카페명 건강한노후준비, 확인된 sourceId freemapleafreecabj
 - 건강관리소: 이름 매칭 2건, ID 매칭 0건, 확인된 카페명 건강관리소 - 기력,건강,피로,질환,수면,컨디션, 확인된 sourceId minemh
 
