@@ -58,8 +58,20 @@ const MAX_PAGES_BY_SHEET: Partial<Record<PageCheckSheetType, number>> = {
 
 const DEFAULT_MAX_PAGES = 4;
 
+const parsePageCheckMaxPages = (): number | undefined => {
+  const rawMaxPages = process.env.PAGE_CHECK_MAX_PAGES?.trim();
+  if (!rawMaxPages) {
+    return undefined;
+  }
+
+  const maxPages = Number(rawMaxPages);
+  return Number.isInteger(maxPages) && maxPages > 0 ? maxPages : undefined;
+};
+
+const ENV_MAX_PAGES = parsePageCheckMaxPages();
+
 const getMaxPagesForSheet = (sheetType: PageCheckSheetType): number =>
-  MAX_PAGES_BY_SHEET[sheetType] ?? DEFAULT_MAX_PAGES;
+  ENV_MAX_PAGES ?? MAX_PAGES_BY_SHEET[sheetType] ?? DEFAULT_MAX_PAGES;
 
 async function syncAllSheetsAPI(): Promise<number> {
   try {
