@@ -3,7 +3,7 @@ import * as path from 'path';
 import dotenv from 'dotenv';
 import { GoogleSpreadsheet, GoogleSpreadsheetWorksheet } from 'google-spreadsheet';
 import { JWT } from 'google-auth-library';
-import { crawlWithRetry, randomDelay } from '../crawler';
+import { crawlWithRetry, crawlWithRetryWithoutCookie, randomDelay } from '../crawler';
 import { saveCafeExposureCSV, saveCafeExposureSheetCSV } from '../csv-writer';
 import {
   buildCafeExposureRow,
@@ -54,6 +54,9 @@ const DEFAULT_TARGETS: CafeTarget[] = [
   { name: '건강한노후준비' },
   { name: '건강관리소' },
 ];
+
+const shouldUseGuestMode = (): boolean =>
+  process.env.CAFE_GUEST_MODE === 'true' || process.env.CAFE_SKIP_LOGIN === 'true';
 
 const getTargets = (): CafeTarget[] => {
   const envTargets = String(process.env.CAFE_TARGET_NAMES ?? '')
@@ -364,6 +367,7 @@ const main = async (): Promise<void> => {
     { label: '중복 제거', value: `${duplicateCount}개` },
     { label: '키워드 소스', value: sourceLabel },
     { label: '대상 카페', value: targets.map((target) => target.name).join(', ') },
+    { label: '로그인', value: shouldUseGuestMode() ? 'guest' : 'cookie' },
   ]);
 
   const rows: CafeExposureRow[] = [];
@@ -375,7 +379,9 @@ const main = async (): Promise<void> => {
     logger.statusLine.update(index + 1, keywords.length, keyword);
 
     try {
-      const html = await crawlWithRetry(keyword);
+      const html = shouldUseGuestMode()
+        ? await crawlWithRetryWithoutCookie(keyword)
+        : await crawlWithRetry(keyword);
       const cafeItems = extractCafeItems(html);
       const matches = matchCafeTargets(cafeItems, targets);
 
