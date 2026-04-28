@@ -2,34 +2,34 @@
   "멀티페이지 크론 [흑염소 구]": {
     "cronType": "멀티페이지 크론 [흑염소 구]",
     "totalKeywords": 314,
-    "exposureCount": 196,
-    "popularCount": 95,
-    "sblCount": 101,
+    "exposureCount": 198,
+    "popularCount": 99,
+    "sblCount": 99,
     "newLogicCount": 0,
-    "oldLogicCount": 196,
+    "oldLogicCount": 198,
     "sheetStats": [
       {
         "name": "흑염소 구",
-        "count": 227
+        "count": 223
       }
     ],
-    "timestamp": "2026-04-27T02:31:12.753Z"
+    "timestamp": "2026-04-28T00:45:12.912Z"
   },
   "일반건 노출체크": {
     "cronType": "일반건 노출체크",
-    "totalKeywords": 119,
-    "exposureCount": 62,
-    "popularCount": 15,
-    "sblCount": 47,
-    "timestamp": "2026-04-27T01:38:07.887Z"
+    "totalKeywords": 106,
+    "exposureCount": 61,
+    "popularCount": 17,
+    "sblCount": 44,
+    "timestamp": "2026-04-28T00:32:02.888Z"
   },
   "도그마루 노출체크": {
     "cronType": "도그마루 노출체크",
     "totalKeywords": 300,
-    "exposureCount": 105,
-    "popularCount": 83,
+    "exposureCount": 101,
+    "popularCount": 79,
     "sblCount": 22,
-    "timestamp": "2026-04-27T02:05:23.180Z"
+    "timestamp": "2026-04-28T00:45:59.834Z"
   },
   "패키지 노출체크": {
     "cronType": "패키지 노출체크",
@@ -43,11 +43,11 @@
   },
   "루트 키워드": {
     "cronType": "루트 키워드",
-    "totalKeywords": 224,
-    "exposureCount": 139,
+    "totalKeywords": 222,
+    "exposureCount": 147,
     "popularCount": 6,
-    "sblCount": 133,
-    "timestamp": "2026-04-27T02:16:39.730Z"
+    "sblCount": 141,
+    "timestamp": "2026-04-28T01:00:21.092Z"
   },
   "멀티페이지 크론 [애견]": {
     "cronType": "멀티페이지 크론 [애견]",
@@ -115,13 +115,13 @@
   },
   "패키지 일반건 노출체크": {
     "cronType": "패키지 일반건 노출체크",
-    "totalKeywords": 645,
-    "exposureCount": 230,
-    "popularCount": 122,
-    "sblCount": 108,
+    "totalKeywords": 578,
+    "exposureCount": 225,
+    "popularCount": 124,
+    "sblCount": 101,
     "newLogicCount": 51,
-    "oldLogicCount": 179,
-    "timestamp": "2026-04-27T02:02:10.231Z"
+    "oldLogicCount": 174,
+    "timestamp": "2026-04-28T00:51:28.769Z"
   },
   "멀티페이지 크론 [전체]": {
     "cronType": "멀티페이지 크론 [전체]",
