@@ -2,34 +2,34 @@
   "멀티페이지 크론 [흑염소 구]": {
     "cronType": "멀티페이지 크론 [흑염소 구]",
     "totalKeywords": 314,
-    "exposureCount": 193,
-    "popularCount": 97,
-    "sblCount": 96,
+    "exposureCount": 202,
+    "popularCount": 99,
+    "sblCount": 103,
     "newLogicCount": 0,
-    "oldLogicCount": 193,
+    "oldLogicCount": 202,
     "sheetStats": [
       {
         "name": "흑염소 구",
-        "count": 219
+        "count": 229
       }
     ],
-    "timestamp": "2026-04-29T00:43:00.187Z"
+    "timestamp": "2026-04-30T00:47:20.240Z"
   },
   "일반건 노출체크": {
     "cronType": "일반건 노출체크",
-    "totalKeywords": 106,
+    "totalKeywords": 108,
     "exposureCount": 61,
-    "popularCount": 17,
-    "sblCount": 44,
-    "timestamp": "2026-04-28T00:32:02.888Z"
+    "popularCount": 16,
+    "sblCount": 45,
+    "timestamp": "2026-04-30T01:01:36.749Z"
   },
   "도그마루 노출체크": {
     "cronType": "도그마루 노출체크",
     "totalKeywords": 300,
     "exposureCount": 101,
-    "popularCount": 79,
-    "sblCount": 22,
-    "timestamp": "2026-04-28T00:45:59.834Z"
+    "popularCount": 78,
+    "sblCount": 23,
+    "timestamp": "2026-04-30T01:42:15.224Z"
   },
   "패키지 노출체크": {
     "cronType": "패키지 노출체크",
@@ -43,11 +43,11 @@
   },
   "루트 키워드": {
     "cronType": "루트 키워드",
-    "totalKeywords": 222,
-    "exposureCount": 141,
+    "totalKeywords": 224,
+    "exposureCount": 142,
     "popularCount": 6,
-    "sblCount": 135,
-    "timestamp": "2026-04-29T00:43:25.528Z"
+    "sblCount": 136,
+    "timestamp": "2026-04-30T00:44:16.591Z"
   },
   "멀티페이지 크론 [애견]": {
     "cronType": "멀티페이지 크론 [애견]",
@@ -115,13 +115,13 @@
   },
   "패키지 일반건 노출체크": {
     "cronType": "패키지 일반건 노출체크",
-    "totalKeywords": 578,
-    "exposureCount": 233,
-    "popularCount": 126,
+    "totalKeywords": 580,
+    "exposureCount": 232,
+    "popularCount": 125,
     "sblCount": 107,
-    "newLogicCount": 54,
+    "newLogicCount": 53,
     "oldLogicCount": 179,
-    "timestamp": "2026-04-29T00:52:05.945Z"
+    "timestamp": "2026-04-30T01:00:52.735Z"
   },
   "멀티페이지 크론 [전체]": {
     "cronType": "멀티페이지 크론 [전체]",
