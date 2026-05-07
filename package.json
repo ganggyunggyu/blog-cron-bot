@@ -26,6 +26,7 @@
     "cookie:login": "ts-node src/tools/login-and-get-cookie.ts",
     "cookie:auto": "ts-node src/tools/auto-login.ts",
     "parallel:check": "ts-node src/tools/run-parallel-direct-sheet-check.ts",
+    "root:individual:dry-run": "ts-node src/tools/dry-run-root-individual-exposure.ts --dry-run",
     "keyword:report": "ts-node src/tools/keyword-report.ts",
     "cafe:check": "ts-node src/tools/check-cafe-exposure.ts",
     "cafe:check:test": "ts-node src/tools/check-cafe-exposure.test.ts",
