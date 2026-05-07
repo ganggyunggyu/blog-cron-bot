@@ -27,6 +27,7 @@ export interface ProcessKeywordsOptions {
   concurrency?: number;
   blogIds?: string[];
   allowAnyBlog?: boolean;
+  consumeMatches?: boolean;
   keywordLogicMap?: Map<string, boolean>;
 }
 

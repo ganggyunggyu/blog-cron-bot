@@ -49,6 +49,7 @@ interface SharedProcessContext {
   maxPages: number;
   blogIds?: string[];
   allowAnyBlog?: boolean;
+  consumeMatches: boolean;
   keywordLogicMap?: Map<string, boolean>;
   caches: CrawlCaches;
   allResults: OrderedExposureResult[];
@@ -112,6 +113,7 @@ const processSingleKeyword = async (
     maxPages,
     blogIds,
     allowAnyBlog,
+    consumeMatches,
     keywordLogicMap,
     caches,
     allResults,
@@ -277,7 +279,7 @@ const processSingleKeyword = async (
     vendorDetails: vendorMatchDetails,
   } = filterResult;
 
-  if (matchedIndex >= 0) {
+  if (consumeMatches && matchedIndex >= 0) {
     matchQueue.splice(matchedIndex, 1);
   }
 
@@ -296,7 +298,9 @@ const processSingleKeyword = async (
         matchSource,
         vendorMatchDetails,
         allMatchesCount,
-        remainingQueueCount: matchQueue.length,
+        remainingQueueCount: consumeMatches
+          ? matchQueue.length
+          : Math.max(matchQueue.length - 1, 0),
       },
       processing: processingCtx,
       allResults,
@@ -413,6 +417,7 @@ export const processKeywords = async (
   const concurrency = getEffectiveConcurrency(options?.concurrency);
   const blogIds = options?.blogIds;
   const allowAnyBlog = options?.allowAnyBlog;
+  const consumeMatches = options?.consumeMatches ?? true;
   const keywordLogicMap = options?.keywordLogicMap;
   const allResults: OrderedExposureResult[] = [];
 
@@ -436,6 +441,7 @@ export const processKeywords = async (
     maxPages,
     blogIds,
     allowAnyBlog,
+    consumeMatches,
     keywordLogicMap,
     caches,
     allResults,

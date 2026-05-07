@@ -2,18 +2,18 @@
   "멀티페이지 크론 [흑염소 구]": {
     "cronType": "멀티페이지 크론 [흑염소 구]",
     "totalKeywords": 314,
-    "exposureCount": 197,
-    "popularCount": 97,
-    "sblCount": 100,
-    "newLogicCount": 0,
-    "oldLogicCount": 197,
+    "exposureCount": 146,
+    "popularCount": 68,
+    "sblCount": 78,
+    "newLogicCount": 4,
+    "oldLogicCount": 142,
     "sheetStats": [
       {
         "name": "흑염소 구",
-        "count": 223
+        "count": 164
       }
     ],
-    "timestamp": "2026-05-06T01:20:29.146Z"
+    "timestamp": "2026-05-07T01:26:54.784Z"
   },
   "일반건 노출체크": {
     "cronType": "일반건 노출체크",
@@ -43,11 +43,11 @@
   },
   "루트 키워드": {
     "cronType": "루트 키워드",
-    "totalKeywords": 233,
-    "exposureCount": 128,
-    "popularCount": 3,
-    "sblCount": 125,
-    "timestamp": "2026-05-06T02:28:43.789Z"
+    "totalKeywords": 231,
+    "exposureCount": 137,
+    "popularCount": 7,
+    "sblCount": 130,
+    "timestamp": "2026-05-07T01:09:13.167Z"
   },
   "멀티페이지 크론 [애견]": {
     "cronType": "멀티페이지 크론 [애견]",
