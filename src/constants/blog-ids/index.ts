@@ -86,16 +86,11 @@ const dedupeBlogIds = (blogIds: readonly string[]): string[] =>
 const BLACK_GOAT_BLOG_IDS = dedupeBlogIds([
   'dhtksk1p',
   'regular14631',
-  'selzze',
-  '4giccokx',
-  'ebbte',
-  'uqgidh2690',
-  'eytkgy5500',
-  'yenalk',
-  'dyust',
-  'umhu0m83',
-  'olgdmp9921',
-  'orangeswan630',
+  'ahffkekd12',
+  'q9v3m7a2',
+  'laghunter8',
+  'eghfsa5478',
+  'pixelninja3',
 ] as const);
 
 const DIET_SUPPLEMENT_BLOG_IDS = dedupeBlogIds(['ags2oigb'] as const);
@@ -121,23 +116,21 @@ const DENTAL_BLOG_IDS = dedupeBlogIds(['wound12567'] as const);
 const PRESCRIPTION_BLOG_IDS = dedupeBlogIds(['precede1451'] as const);
 
 const PAGE_PET_BLOG_IDS = dedupeBlogIds([
+  'k7d9x2m4',
   'loand3324',
   'fail5644',
   'compare14310',
-  '8i2vlbym',
-  'dyulp',
-  'njmzdksm',
-  'e6yb5u4k',
-  'heavyzebra240',
+  'ghostrush7',
+  'b6x2k9w3',
 ] as const);
 
 const PAGE_SURI_PET_BLOG_IDS = dedupeBlogIds([
-  'suc4dce7',
-  'xzjmfn3f',
+  'ahfflwl123',
+  'ahffkdlek12',
   '8ua1womn',
-  '0ehz3cb2',
-  'br5rbg',
-  'beautifulelephant274',
+  'ahsxkfldk12',
+  'n7c3w8z2',
+  'respawnking9',
 ] as const);
 
 const GENERAL_ONLY_BLOG_IDS = dedupeBlogIds([

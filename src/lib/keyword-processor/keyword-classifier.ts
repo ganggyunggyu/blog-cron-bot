@@ -1,4 +1,5 @@
 import { normalizeSheetType } from '../../sheet-config';
+import { PopularItem } from '../../parser';
 import { KeywordType } from './types';
 
 export const extractRestaurantName = (
@@ -66,9 +67,11 @@ export const getKeywordType = (
   return 'basic';
 };
 
-const DEFAULT_TOPICS = ['인기글', '스니펫', '스니펫 이미지'];
+export const getIsNewLogicFromItems = (items: PopularItem[]): boolean => {
+  const firstPageItems = items.filter((item) => !item.page || item.page === 1);
 
-export const getIsNewLogic = (topicNames: string[]): boolean => {
-  if (topicNames.length === 0) return true;
-  return topicNames.every((topic) => DEFAULT_TOPICS.includes(topic));
+  return (
+    firstPageItems.length > 0 &&
+    firstPageItems.every((item) => item.isNewLogic === true)
+  );
 };

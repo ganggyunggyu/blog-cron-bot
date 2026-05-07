@@ -2,18 +2,18 @@
   "멀티페이지 크론 [흑염소 구]": {
     "cronType": "멀티페이지 크론 [흑염소 구]",
     "totalKeywords": 314,
-    "exposureCount": 146,
-    "popularCount": 68,
-    "sblCount": 78,
+    "exposureCount": 148,
+    "popularCount": 66,
+    "sblCount": 82,
     "newLogicCount": 4,
-    "oldLogicCount": 142,
+    "oldLogicCount": 144,
     "sheetStats": [
       {
         "name": "흑염소 구",
-        "count": 164
+        "count": 166
       }
     ],
-    "timestamp": "2026-05-07T01:26:54.784Z"
+    "timestamp": "2026-05-07T02:31:32.596Z"
   },
   "일반건 노출체크": {
     "cronType": "일반건 노출체크",
@@ -29,7 +29,7 @@
     "exposureCount": 105,
     "popularCount": 75,
     "sblCount": 30,
-    "timestamp": "2026-05-07T00:55:27.554Z"
+    "timestamp": "2026-05-07T02:26:06.076Z"
   },
   "패키지 노출체크": {
     "cronType": "패키지 노출체크",

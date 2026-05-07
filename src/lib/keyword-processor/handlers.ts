@@ -7,7 +7,7 @@ import {
   SuccessParams,
   FilterFailureParams,
 } from './types';
-import { getIsNewLogic } from './keyword-classifier';
+import { getIsNewLogicFromItems } from './keyword-classifier';
 
 export const handleExcluded = async (params: ExcludedParams): Promise<void> => {
   const { keyword, company, processing, updateFunction, isNewLogic } = params;
@@ -62,11 +62,11 @@ export const handleQueueEmpty = async (
     vendorTarget,
     keywordType,
   } = keyword;
-  const { topicNamesArray } = html;
+  const { items } = html;
   const { globalIndex, totalKeywords, keywordStartTime, logBuilder } =
     processing;
 
-  const isNewLogic = getIsNewLogic(topicNamesArray);
+  const isNewLogic = getIsNewLogicFromItems(items);
 
   progressLogger.failure({
     index: globalIndex,
@@ -169,7 +169,7 @@ export const handleSuccess = async (params: SuccessParams): Promise<void> => {
     }
   }
 
-  const isNewLogic = getIsNewLogic(topicNamesArray);
+  const isNewLogic = getIsNewLogicFromItems(items);
 
   const popularTopic =
     keywordType === 'pet'
@@ -196,6 +196,7 @@ export const handleSuccess = async (params: SuccessParams): Promise<void> => {
     globalIndex,
     result: {
       ...nextMatch,
+      isNewLogic,
       company: String(keywordDoc.company || ''),
     },
   });
@@ -250,7 +251,7 @@ export const handleFilterFailure = async (
   const { globalIndex, totalKeywords, keywordStartTime, logBuilder } =
     processing;
 
-  const isNewLogic = getIsNewLogic(topicNamesArray);
+  const isNewLogic = getIsNewLogicFromItems(items);
 
   progressLogger.failure({
     index: globalIndex,

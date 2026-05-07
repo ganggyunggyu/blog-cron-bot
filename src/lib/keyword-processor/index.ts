@@ -26,7 +26,7 @@ import {
   shouldExclude,
   getKeywordType,
   getVendorTarget,
-  getIsNewLogic,
+  getIsNewLogicFromItems,
 } from './keyword-classifier';
 import { getCrawlResult } from './crawl-manager';
 import { runGuestRetry } from './guest-retry';
@@ -149,7 +149,7 @@ const processSingleKeyword = async (
   }
 
   const { items, isPopular, uniqueGroupsSize, topicNamesArray } = crawlResult;
-  const isNewLogic = getIsNewLogic(topicNamesArray);
+  const isNewLogic = getIsNewLogicFromItems(items);
 
   if (keywordLogicMap) {
     keywordLogicMap.set(query, isNewLogic);
