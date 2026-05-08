@@ -30,6 +30,7 @@ interface MonthlyRootRow {
 }
 
 interface IndividualWritePlan {
+  spreadsheetId: string;
   company: string;
   keyword: string;
   sourceRowNumber: number;
@@ -247,7 +248,7 @@ const parsePositiveInteger = (value: string): number => {
 const parseArgs = (): CliOptions => {
   const args = process.argv.slice(2);
   let date = getKstDate();
-  let dryRun = true;
+  let dryRun = false;
   let limit = 0;
   let concurrency = DEFAULT_CONCURRENCY;
 
@@ -401,6 +402,27 @@ const findKeywordRowIndex = (values: string[], keyword: string): number => {
   );
 };
 
+const buildKeywordRowIndexMap = (values: string[]): Map<string, number[]> => {
+  const rowIndexMap = new Map<string, number[]>();
+
+  values.forEach((value, index) => {
+    if (index === 0) {
+      return;
+    }
+
+    const normalizedKeyword = normalizeKeyword(value);
+
+    if (!normalizedKeyword) {
+      return;
+    }
+
+    const rowIndexes = rowIndexMap.get(normalizedKeyword) ?? [];
+    rowIndexMap.set(normalizedKeyword, [...rowIndexes, index]);
+  });
+
+  return rowIndexMap;
+};
+
 const parseDateHeader = (header: string): DateParts | null => {
   const normalized = normalizeCell(header);
   const koreanMatch = normalized.match(/^(\d{1,2})월\s*(\d{1,2})일$/);
@@ -446,9 +468,12 @@ const resolveDateColumn = (
 
     return parts ? [{ index, header, parts }] : [];
   });
-  const existingDateHeader = dateHeaders.find(
-    ({ parts }) => parts.month === targetParts.month && parts.day === targetParts.day
-  );
+  const existingDateHeader = [...dateHeaders]
+    .reverse()
+    .find(
+      ({ parts }) =>
+        parts.month === targetParts.month && parts.day === targetParts.day
+    );
 
   if (existingDateHeader) {
     return {
@@ -547,17 +572,23 @@ const buildIndividualWritePlansForSheet = async (
     const dateValues = dateColumn.shouldCreate
       ? []
       : await loadColumnValues(sheet, dateColumn.columnIndex);
+    const keywordRowIndexMap = buildKeywordRowIndexMap(keywordValues);
+    const usedKeywordCountMap = new Map<string, number>();
     const plans: IndividualWritePlan[] = [];
     const skips: IndividualSkip[] = [];
 
     for (const { programRow, monthlyRow } of group.pairs) {
-      const targetRowIndex = findKeywordRowIndex(keywordValues, programRow.baseKeyword);
+      const normalizedKeyword = normalizeKeyword(programRow.baseKeyword);
+      const candidateRowIndexes = keywordRowIndexMap.get(normalizedKeyword) ?? [];
+      const usedCount = usedKeywordCountMap.get(normalizedKeyword) ?? 0;
+      const targetRowIndex = candidateRowIndexes[usedCount] ?? -1;
+      usedKeywordCountMap.set(normalizedKeyword, usedCount + 1);
 
       if (targetRowIndex < 0) {
         skips.push({
           company: programRow.company,
           keyword: programRow.keyword,
-          reason: `개별시트 "${doc.title}"에서 키워드 행 못 찾음`,
+          reason: `개별시트 "${doc.title}"에서 ${usedCount + 1}번째 키워드 행 못 찾음`,
         });
         continue;
       }
@@ -566,6 +597,7 @@ const buildIndividualWritePlansForSheet = async (
       const nextValue = programRow.isExposed ? 'o' : '';
 
       plans.push({
+        spreadsheetId: group.sheetId,
         company: programRow.company,
         keyword: programRow.keyword,
         sourceRowNumber: programRow.rowNumber,
@@ -632,22 +664,56 @@ const writeIndividualPlans = async (
   const groupedPlans = new Map<string, IndividualWritePlan[]>();
 
   plans.forEach((plan) => {
-    const key = `${plan.spreadsheetTitle}::${plan.sheetTitle}`;
+    const key = `${plan.spreadsheetId}::${plan.sheetTitle}`;
     const existingPlans = groupedPlans.get(key) ?? [];
     groupedPlans.set(key, [...existingPlans, plan]);
   });
 
   for (const [, sheetPlans] of groupedPlans) {
     const firstPlan = sheetPlans[0];
-    const monthlyRows = sheetPlans.map(({ monthlyRowNumber }) => monthlyRowNumber).join(', ');
+    const doc = await openSpreadsheet(firstPlan.spreadsheetId, auth);
+    const sheet = doc.sheetsByTitle[firstPlan.sheetTitle] ?? chooseIndividualSheet(doc);
+    const maxColumnIndex = Math.max(
+      ...sheetPlans.map(({ targetColumnNumber }) => targetColumnNumber - 1)
+    );
+    const minColumnIndex = Math.min(
+      ...sheetPlans.map(({ targetColumnNumber }) => targetColumnNumber - 1)
+    );
+    const maxRowIndex = Math.max(
+      ...sheetPlans.map(({ targetRowNumber }) => targetRowNumber - 1)
+    );
 
-    logger.warn(
-      `write 모드는 아직 안전 잠금 상태임: ${firstPlan.spreadsheetTitle} (${monthlyRows})`
+    if (sheet.columnCount <= maxColumnIndex) {
+      await sheet.resize({
+        rowCount: sheet.rowCount,
+        columnCount: maxColumnIndex + 1,
+      });
+    }
+
+    await sheet.loadCells({
+      startRowIndex: 0,
+      endRowIndex: maxRowIndex + 1,
+      startColumnIndex: minColumnIndex,
+      endColumnIndex: maxColumnIndex + 1,
+    });
+
+    sheetPlans.forEach((plan) => {
+      const columnIndex = plan.targetColumnNumber - 1;
+      const rowIndex = plan.targetRowNumber - 1;
+
+      if (plan.shouldCreateDateColumn) {
+        sheet.getCell(0, columnIndex).value = plan.dateColumnLabel;
+      }
+
+      sheet.getCell(rowIndex, columnIndex).value = plan.nextValue;
+    });
+
+    await sheet.saveUpdatedCells();
+
+    logger.success(
+      `${firstPlan.spreadsheetTitle} / ${sheet.title}: ${sheetPlans.length}셀 기록 완료`
     );
   }
-
-  logger.warn('실제 쓰기는 dry-run 검증 후 별도 잠금 해제로 구현 예정');
-  void auth;
 };
 
 const main = async (): Promise<void> => {
@@ -655,9 +721,9 @@ const main = async (): Promise<void> => {
   const auth = getGoogleSheetAuth();
   const dateColumnLabel = formatKoreanDateLabel(options.date);
 
-  logger.summary.start('ROOT INDIVIDUAL EXPOSURE DRY RUN', [
+  logger.summary.start('ROOT INDIVIDUAL EXPOSURE SYNC', [
     { label: '날짜 컬럼', value: dateColumnLabel },
-    { label: '모드', value: options.dryRun ? 'dry-run' : 'write-locked' },
+    { label: '모드', value: options.dryRun ? 'dry-run' : 'write' },
     { label: '대상 제한', value: options.limit > 0 ? `${options.limit}개` : '전체' },
     { label: '동시성', value: `${options.concurrency}` },
   ]);
@@ -748,7 +814,7 @@ const main = async (): Promise<void> => {
     logger.warn(`...외 ${skips.length - 20}건`);
   }
 
-  logger.summary.complete('ROOT INDIVIDUAL EXPOSURE DRY RUN COMPLETE', [
+  logger.summary.complete('ROOT INDIVIDUAL EXPOSURE SYNC COMPLETE', [
     { label: '프로그램 루트 행', value: `${programRows.length}개` },
     { label: '월보장 매칭', value: `${matchedPairs.length}개` },
     { label: '중복 매칭', value: `${duplicateMatches.length}개` },
@@ -759,11 +825,11 @@ const main = async (): Promise<void> => {
     { label: '노출 o 예정', value: `${exposedPlans.length}개` },
     { label: '빈값 예정', value: `${clearPlans.length}개` },
     { label: '스킵', value: `${skips.length}개` },
-    { label: '실제 쓰기', value: options.dryRun ? '없음' : '잠금' },
+    { label: '실제 쓰기', value: options.dryRun ? '없음' : '완료' },
   ]);
 };
 
 main().catch((error) => {
-  logger.error(`루트 개별시트 노출여부 dry-run 실패: ${(error as Error).message}`);
+  logger.error(`루트 개별시트 노출여부 동기화 실패: ${(error as Error).message}`);
   process.exit(1);
 });

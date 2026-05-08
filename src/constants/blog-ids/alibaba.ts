@@ -1,15 +1,6 @@
 const dedupeAlibabaBlogIds = (blogIds: readonly string[]): string[] =>
   Array.from(new Set(blogIds.map((blogId) => blogId.toLowerCase())));
 
-// 알리바바 시트 내 블로그 섹션별 기존 노출체크 대상 ID
-export const ALIBABA_BLOG_IDS_BY_SECTION: Record<string, string[]> = {
-  '블로그 1': ['weed3122', 'mito308141'],
-  '블로그 2': ['mad1651', 'mito308141'],
-  '블로그 3': ['chemical12568', 'jito308141'],
-  '블로그 4': ['copy11525', 'jito308141'],
-  '블로그 5': ['individual14144', 'jito308141'],
-};
-
 export const ALIBABA_BLOG_IDS = dedupeAlibabaBlogIds([
   'weed3122',
   'mad1651',
@@ -28,5 +19,16 @@ export const ALIBABA_SECTION_NAMES = [
 ] as const;
 
 export type AlibabaSectionName = (typeof ALIBABA_SECTION_NAMES)[number];
+
+export const ALIBABA_BLOG_IDS_BY_SECTION: Record<
+  AlibabaSectionName,
+  string[]
+> = {
+  '블로그 1': [...ALIBABA_BLOG_IDS],
+  '블로그 2': [...ALIBABA_BLOG_IDS],
+  '블로그 3': [...ALIBABA_BLOG_IDS],
+  '블로그 4': [...ALIBABA_BLOG_IDS],
+  '블로그 5': [...ALIBABA_BLOG_IDS],
+};
 
 export const ALIBABA_TAB_NAME = '알리바바';

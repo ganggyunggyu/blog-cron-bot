@@ -23,6 +23,7 @@ src/tools/
 src/tools/*
 !src/tools/check-cafe-exposure.ts
 !src/tools/check-cafe-exposure.test.ts
+!src/tools/blog-ids.test.ts
 !src/tools/dry-run-root-individual-exposure.ts
 !src/tools/run-parallel-direct-sheet-check.ts
 
