@@ -68,6 +68,11 @@ interface SheetMatchedPairGroup {
   pairs: MatchedPair[];
 }
 
+interface IndividualSheetSnapshot {
+  headers: string[];
+  rows: string[][];
+}
+
 interface DateParts {
   month: number;
   day: number;
@@ -199,6 +204,31 @@ const loadColumnValues = async (
   return Array.from({ length: sheet.rowCount }, (_, rowIndex) =>
     getCellValue(sheet, rowIndex, columnIndex)
   );
+};
+
+const loadIndividualSheetSnapshot = async (
+  sheet: GoogleSpreadsheetWorksheet
+): Promise<IndividualSheetSnapshot> => {
+  const endRowIndex = sheet.rowCount;
+  const endColumnIndex = Math.min(sheet.columnCount, 600);
+
+  await sheet.loadCells({
+    startRowIndex: 0,
+    endRowIndex,
+    startColumnIndex: 0,
+    endColumnIndex,
+  });
+
+  const rows = Array.from({ length: endRowIndex }, (_, rowIndex) =>
+    Array.from({ length: endColumnIndex }, (_, columnIndex) =>
+      getCellValue(sheet, rowIndex, columnIndex)
+    )
+  );
+
+  return {
+    headers: rows[0] ?? [],
+    rows,
+  };
 };
 
 const getKstDate = (): Date => {
@@ -717,7 +747,7 @@ const buildIndividualWritePlansForSheet = async (
   try {
     const doc = await openSpreadsheet(group.sheetId, auth);
     const sheet = chooseIndividualSheet(doc);
-    const headers = await loadHeaderRow(sheet);
+    const { headers, rows } = await loadIndividualSheetSnapshot(sheet);
     const keywordColumnIndex = getHeaderIndex(headers, ['키워드']);
     const resolvedKeywordColumnIndex = keywordColumnIndex >= 0 ? keywordColumnIndex : 0;
     const cumulativeColumnIndex = getHeaderIndex(headers, [
@@ -727,17 +757,19 @@ const buildIndividualWritePlansForSheet = async (
     const extensionColumnIndex = getHeaderIndex(headers, ['연장']);
     const dateColumn = resolveDateColumn(headers, date);
 
-    const keywordValues = await loadColumnValues(sheet, resolvedKeywordColumnIndex);
+    const keywordValues = rows.map(
+      (row) => row[resolvedKeywordColumnIndex] ?? ''
+    );
     const dateValues = dateColumn.shouldCreate
       ? []
-      : await loadColumnValues(sheet, dateColumn.columnIndex);
+      : rows.map((row) => row[dateColumn.columnIndex] ?? '');
     const cumulativeValues =
       cumulativeColumnIndex >= 0
-        ? await loadColumnValues(sheet, cumulativeColumnIndex)
+        ? rows.map((row) => row[cumulativeColumnIndex] ?? '')
         : [];
     const extensionValues =
       extensionColumnIndex >= 0
-        ? await loadColumnValues(sheet, extensionColumnIndex)
+        ? rows.map((row) => row[extensionColumnIndex] ?? '')
         : [];
     const keywordRowIndexMap = buildKeywordRowIndexMap(keywordValues);
     const usedKeywordCountMap = new Map<string, number>();
@@ -774,17 +806,7 @@ const buildIndividualWritePlansForSheet = async (
             ? normalizeCell(extensionValues[targetRowIndex])
             : '';
 
-        await sheet.loadCells({
-          startRowIndex: targetRowIndex,
-          endRowIndex: targetRowIndex + 1,
-          startColumnIndex: 0,
-          endColumnIndex: Math.min(sheet.columnCount, 600),
-        });
-
-        const rowValues = Array.from(
-          { length: Math.min(sheet.columnCount, 600) },
-          (_, columnIndex) => getCellValue(sheet, targetRowIndex, columnIndex)
-        );
+        const rowValues = rows[targetRowIndex] ?? [];
         const cumulativeResult = calculateCumulativeValue(
           rowValues,
           headers,
