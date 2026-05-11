@@ -126,19 +126,19 @@
   "멀티페이지 크론 [전체]": {
     "cronType": "멀티페이지 크론 [전체]",
     "totalKeywords": 1310,
-    "exposureCount": 450,
-    "popularCount": 278,
-    "sblCount": 135,
-    "newLogicCount": 149,
-    "oldLogicCount": 301,
+    "exposureCount": 424,
+    "popularCount": 269,
+    "sblCount": 110,
+    "newLogicCount": 223,
+    "oldLogicCount": 201,
     "sheetStats": [
       {
         "name": "흑염소 신규",
-        "count": 10
+        "count": 5
       },
       {
         "name": "흑염소 구",
-        "count": 224
+        "count": 160
       },
       {
         "name": "안과",
@@ -146,13 +146,13 @@
       },
       {
         "name": "애견",
-        "count": 219
+        "count": 245
       },
       {
         "name": "서리펫",
-        "count": 88
+        "count": 101
       }
     ],
-    "timestamp": "2026-05-04T05:35:48.729Z"
+    "timestamp": "2026-05-11T03:15:02.113Z"
   }
 }
