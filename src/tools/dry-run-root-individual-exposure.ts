@@ -11,6 +11,7 @@ interface CliOptions {
   dryRun: boolean;
   limit: number;
   concurrency: number;
+  checkCumulative: boolean;
 }
 
 interface ProgramRootRow {
@@ -43,6 +44,11 @@ interface IndividualWritePlan {
   shouldCreateDateColumn: boolean;
   currentValue: string;
   nextValue: string;
+  cumulativeColumnNumber: number | null;
+  currentCumulativeValue: string;
+  nextCumulativeValue: string;
+  extensionValue: string;
+  cumulativeReason: string;
 }
 
 interface IndividualSkip {
@@ -245,12 +251,23 @@ const parsePositiveInteger = (value: string): number => {
   return parsed;
 };
 
+const parseIntegerCell = (value: string): number | null => {
+  const normalized = normalizeCell(value);
+
+  if (!/^\d+$/.test(normalized)) {
+    return null;
+  }
+
+  return Number(normalized);
+};
+
 const parseArgs = (): CliOptions => {
   const args = process.argv.slice(2);
   let date = getKstDate();
   let dryRun = false;
   let limit = 0;
   let concurrency = DEFAULT_CONCURRENCY;
+  let checkCumulative = false;
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -288,6 +305,12 @@ const parseArgs = (): CliOptions => {
       continue;
     }
 
+    if (arg === '--check-cumulative') {
+      checkCumulative = true;
+      dryRun = true;
+      continue;
+    }
+
     throw new Error(`알 수 없는 인자: ${arg}`);
   }
 
@@ -296,6 +319,7 @@ const parseArgs = (): CliOptions => {
     dryRun,
     limit,
     concurrency,
+    checkCumulative,
   };
 };
 
@@ -445,6 +469,30 @@ const parseDateHeader = (header: string): DateParts | null => {
   return null;
 };
 
+const getDateKey = (parts: DateParts): string => `${parts.month}/${parts.day}`;
+
+const parseExtensionDate = (value: string): DateParts | null => {
+  const normalized = normalizeCell(value);
+  const slashMatch = normalized.match(/^(\d{1,2})\/(\d{1,2})$/);
+  const koreanMatch = normalized.match(/^(\d{1,2})월\s*(\d{1,2})일$/);
+
+  if (slashMatch) {
+    return {
+      month: Number(slashMatch[1]),
+      day: Number(slashMatch[2]),
+    };
+  }
+
+  if (koreanMatch) {
+    return {
+      month: Number(koreanMatch[1]),
+      day: Number(koreanMatch[2]),
+    };
+  }
+
+  return null;
+};
+
 const formatDateLabelLikeHeader = (
   date: Date,
   sampleHeader: string
@@ -502,6 +550,112 @@ const resolveDateColumn = (
     columnIndex: lastDateHeader.index + 1,
     label: formatDateLabelLikeHeader(date, lastDateHeader.header),
     shouldCreate: true,
+  };
+};
+
+const findRightmostDateColumn = (
+  headers: string[],
+  targetParts: DateParts,
+  maxColumnIndex: number
+): number | null => {
+  const targetKey = getDateKey(targetParts);
+
+  for (
+    let columnIndex = Math.min(maxColumnIndex, headers.length - 1);
+    columnIndex >= 0;
+    columnIndex -= 1
+  ) {
+    const parts = parseDateHeader(headers[columnIndex]);
+
+    if (parts && getDateKey(parts) === targetKey) {
+      return columnIndex;
+    }
+  }
+
+  return null;
+};
+
+const calculateCumulativeValue = (
+  rowValues: string[],
+  headers: string[],
+  dateColumn: DateColumnResolution,
+  currentCumulativeValue: string,
+  currentDateValue: string,
+  nextDateValue: string,
+  extensionValue: string
+): { value: string; reason: string } => {
+  const extensionDate = parseExtensionDate(extensionValue);
+
+  if (normalizeKeyPart(extensionValue) === 'x') {
+    return {
+      value: currentCumulativeValue,
+      reason: '연장=x 유지',
+    };
+  }
+
+  if (extensionDate) {
+    const startColumnIndex = findRightmostDateColumn(
+      headers,
+      extensionDate,
+      dateColumn.columnIndex
+    );
+
+    if (startColumnIndex === null) {
+      return {
+        value: currentCumulativeValue,
+        reason: `연장 시작일 ${extensionValue} 컬럼 없음`,
+      };
+    }
+
+    let count = 0;
+
+    for (
+      let columnIndex = startColumnIndex;
+      columnIndex <= dateColumn.columnIndex;
+      columnIndex += 1
+    ) {
+      const value =
+        columnIndex === dateColumn.columnIndex
+          ? nextDateValue
+          : normalizeCell(rowValues[columnIndex]);
+
+      if (normalizeKeyPart(value) === 'o') {
+        count += 1;
+      }
+    }
+
+    return {
+      value: String(count),
+      reason: `연장 시작일 ${extensionValue}부터 계산`,
+    };
+  }
+
+  const currentCumulativeNumber = parseIntegerCell(currentCumulativeValue);
+
+  if (currentCumulativeNumber === null) {
+    return {
+      value: currentCumulativeValue,
+      reason: '기존 누적값 숫자 아님',
+    };
+  }
+
+  if (normalizeKeyPart(currentDateValue) !== 'o' && normalizeKeyPart(nextDateValue) === 'o') {
+    return {
+      value: String(currentCumulativeNumber + 1),
+      reason: '오늘 신규 노출 +1',
+    };
+  }
+
+  if (normalizeKeyPart(currentDateValue) === 'o' && normalizeKeyPart(nextDateValue) !== 'o') {
+    return {
+      value: String(Math.max(0, currentCumulativeNumber - 1)),
+      reason: '오늘 노출 제거 -1',
+    };
+  }
+
+  return {
+    value: currentCumulativeValue,
+    reason: '오늘 상태 변화 없음',
   };
 };
 
@@ -566,12 +720,25 @@ const buildIndividualWritePlansForSheet = async (
     const headers = await loadHeaderRow(sheet);
     const keywordColumnIndex = getHeaderIndex(headers, ['키워드']);
     const resolvedKeywordColumnIndex = keywordColumnIndex >= 0 ? keywordColumnIndex : 0;
+    const cumulativeColumnIndex = getHeaderIndex(headers, [
+      '누적노출일',
+      '누적 노출일',
+    ]);
+    const extensionColumnIndex = getHeaderIndex(headers, ['연장']);
     const dateColumn = resolveDateColumn(headers, date);
 
     const keywordValues = await loadColumnValues(sheet, resolvedKeywordColumnIndex);
     const dateValues = dateColumn.shouldCreate
       ? []
       : await loadColumnValues(sheet, dateColumn.columnIndex);
+    const cumulativeValues =
+      cumulativeColumnIndex >= 0
+        ? await loadColumnValues(sheet, cumulativeColumnIndex)
+        : [];
+    const extensionValues =
+      extensionColumnIndex >= 0
+        ? await loadColumnValues(sheet, extensionColumnIndex)
+        : [];
     const keywordRowIndexMap = buildKeywordRowIndexMap(keywordValues);
     const usedKeywordCountMap = new Map<string, number>();
     const plans: IndividualWritePlan[] = [];
@@ -595,6 +762,42 @@ const buildIndividualWritePlansForSheet = async (
 
       const currentValue = normalizeCell(dateValues[targetRowIndex]);
       const nextValue = programRow.isExposed ? 'o' : '';
+      let currentCumulativeValue = '';
+      let nextCumulativeValue = '';
+      let extensionValue = '';
+      let cumulativeReason = '누적 컬럼 없음';
+
+      if (cumulativeColumnIndex >= 0) {
+        currentCumulativeValue = normalizeCell(cumulativeValues[targetRowIndex]);
+        extensionValue =
+          extensionColumnIndex >= 0
+            ? normalizeCell(extensionValues[targetRowIndex])
+            : '';
+
+        await sheet.loadCells({
+          startRowIndex: targetRowIndex,
+          endRowIndex: targetRowIndex + 1,
+          startColumnIndex: 0,
+          endColumnIndex: Math.min(sheet.columnCount, 600),
+        });
+
+        const rowValues = Array.from(
+          { length: Math.min(sheet.columnCount, 600) },
+          (_, columnIndex) => getCellValue(sheet, targetRowIndex, columnIndex)
+        );
+        const cumulativeResult = calculateCumulativeValue(
+          rowValues,
+          headers,
+          dateColumn,
+          currentCumulativeValue,
+          currentValue,
+          nextValue,
+          extensionValue
+        );
+
+        nextCumulativeValue = cumulativeResult.value;
+        cumulativeReason = cumulativeResult.reason;
+      }
 
       plans.push({
         spreadsheetId: group.sheetId,
@@ -610,6 +813,12 @@ const buildIndividualWritePlansForSheet = async (
         shouldCreateDateColumn: dateColumn.shouldCreate,
         currentValue,
         nextValue,
+        cumulativeColumnNumber:
+          cumulativeColumnIndex >= 0 ? cumulativeColumnIndex + 1 : null,
+        currentCumulativeValue,
+        nextCumulativeValue,
+        extensionValue,
+        cumulativeReason,
       });
     }
 
@@ -785,6 +994,13 @@ const main = async (): Promise<void> => {
         `${spreadsheetTitle}::${sheetTitle}::${targetColumnNumber}`
     )
   ).size;
+  const cumulativePlans = plans.filter(
+    ({ cumulativeColumnNumber }) => cumulativeColumnNumber !== null
+  );
+  const changedCumulativePlans = cumulativePlans.filter(
+    ({ currentCumulativeValue, nextCumulativeValue }) =>
+      nextCumulativeValue !== '' && currentCumulativeValue !== nextCumulativeValue
+  );
 
   if (!options.dryRun) {
     await writeIndividualPlans(auth, changedPlans);
@@ -803,6 +1019,19 @@ const main = async (): Promise<void> => {
 
   if (changedPlans.length > 20) {
     logger.info(`...외 ${changedPlans.length - 20}건`);
+  }
+
+  if (options.checkCumulative) {
+    logger.divider('누적 노출일 계산 샘플');
+    changedCumulativePlans.slice(0, 30).forEach((plan) => {
+      logger.info(
+        `${plan.company} / ${plan.keyword}: ${plan.spreadsheetTitle} ${plan.sheetTitle}!C${plan.cumulativeColumnNumber} R${plan.targetRowNumber} "${plan.currentCumulativeValue}" -> "${plan.nextCumulativeValue}" (${plan.extensionValue || '연장 빈값'}, ${plan.cumulativeReason})`
+      );
+    });
+
+    if (changedCumulativePlans.length > 30) {
+      logger.info(`...외 ${changedCumulativePlans.length - 30}건`);
+    }
   }
 
   logger.divider('스킵 샘플');
@@ -824,6 +1053,8 @@ const main = async (): Promise<void> => {
     { label: '변경 예정', value: `${changedPlans.length}개` },
     { label: '노출 o 예정', value: `${exposedPlans.length}개` },
     { label: '빈값 예정', value: `${clearPlans.length}개` },
+    { label: '누적 계산 대상', value: `${cumulativePlans.length}개` },
+    { label: '누적 변경 후보', value: `${changedCumulativePlans.length}개` },
     { label: '스킵', value: `${skips.length}개` },
     { label: '실제 쓰기', value: options.dryRun ? '없음' : '완료' },
   ]);
