@@ -48,8 +48,12 @@ interface IndividualWritePlan {
   cumulativeColumnNumber: number | null;
   currentCumulativeValue: string;
   nextCumulativeValue: string;
+  nextCumulativeFormula: string;
+  extensionColumnNumber: number | null;
   extensionValue: string;
+  nextExtensionValue: string;
   cumulativeReason: string;
+  terminationNotice: boolean;
 }
 
 interface IndividualSkip {
@@ -83,6 +87,14 @@ interface DateColumnResolution {
   columnIndex: number;
   label: string;
   shouldCreate: boolean;
+}
+
+interface CumulativeCalculationResult {
+  value: string;
+  formula: string;
+  nextExtensionValue: string;
+  reason: string;
+  terminationNotice: boolean;
 }
 
 const DEFAULT_CONCURRENCY = 4;
@@ -290,6 +302,47 @@ const parseIntegerCell = (value: string): number | null => {
   }
 
   return Number(normalized);
+};
+
+const getA1ColumnName = (columnIndex: number): string => {
+  let currentIndex = columnIndex + 1;
+  let columnName = '';
+
+  while (currentIndex > 0) {
+    const remainder = (currentIndex - 1) % 26;
+    columnName = String.fromCharCode(65 + remainder) + columnName;
+    currentIndex = Math.floor((currentIndex - 1) / 26);
+  }
+
+  return columnName;
+};
+
+const buildCountifFormulaFromDateColumn = (
+  dateColumnIndex: number,
+  rowNumber: number
+): string => {
+  const columnName = getA1ColumnName(dateColumnIndex);
+
+  return `=COUNTIF(${columnName}${rowNumber}:${rowNumber},"o")`;
+};
+
+const calculateIncrementalCumulativeNumber = (
+  currentCumulativeNumber: number,
+  currentDateValue: string,
+  nextDateValue: string
+): number => {
+  const currentDateIsExposed = normalizeKeyPart(currentDateValue) === 'o';
+  const nextDateIsExposed = normalizeKeyPart(nextDateValue) === 'o';
+
+  if (!currentDateIsExposed && nextDateIsExposed) {
+    return currentCumulativeNumber + 1;
+  }
+
+  if (currentDateIsExposed && !nextDateIsExposed) {
+    return Math.max(0, currentCumulativeNumber - 1);
+  }
+
+  return currentCumulativeNumber;
 };
 
 const parseArgs = (): CliOptions => {
@@ -644,17 +697,30 @@ const calculateCumulativeValue = (
   rowValues: string[],
   headers: string[],
   dateColumn: DateColumnResolution,
+  targetRowNumber: number,
   currentCumulativeValue: string,
   currentDateValue: string,
   nextDateValue: string,
   extensionValue: string
-): { value: string; reason: string } => {
+): CumulativeCalculationResult => {
+  const normalizedExtensionValue = normalizeKeyPart(extensionValue);
   const extensionDate = parseExtensionDate(extensionValue);
+  const currentCumulativeNumber = parseIntegerCell(currentCumulativeValue);
 
-  if (normalizeKeyPart(extensionValue) === 'x') {
+  if (normalizedExtensionValue === 'x') {
     return {
       value: currentCumulativeValue,
+      formula: '',
+      nextExtensionValue: extensionValue,
       reason: '연장=x 유지',
+      terminationNotice:
+        currentCumulativeNumber !== null &&
+        currentCumulativeNumber < 25 &&
+        calculateIncrementalCumulativeNumber(
+          currentCumulativeNumber,
+          currentDateValue,
+          nextDateValue
+        ) >= 25,
     };
   }
 
@@ -668,7 +734,10 @@ const calculateCumulativeValue = (
     if (startColumnIndex === null) {
       return {
         value: currentCumulativeValue,
+        formula: '',
+        nextExtensionValue: extensionValue,
         reason: `연장 시작일 ${extensionValue} 컬럼 없음`,
+        terminationNotice: false,
       };
     }
 
@@ -691,36 +760,72 @@ const calculateCumulativeValue = (
 
     return {
       value: String(count),
+      formula: '',
+      nextExtensionValue: extensionValue,
       reason: `연장 시작일 ${extensionValue}부터 계산`,
+      terminationNotice: false,
     };
   }
-
-  const currentCumulativeNumber = parseIntegerCell(currentCumulativeValue);
 
   if (currentCumulativeNumber === null) {
     return {
       value: currentCumulativeValue,
+      formula: '',
+      nextExtensionValue: extensionValue,
       reason: '기존 누적값 숫자 아님',
+      terminationNotice: false,
+    };
+  }
+
+  const nextCumulativeNumber = calculateIncrementalCumulativeNumber(
+    currentCumulativeNumber,
+    currentDateValue,
+    nextDateValue
+  );
+
+  if (
+    normalizedExtensionValue === 'o' &&
+    currentCumulativeNumber < 26 &&
+    nextCumulativeNumber >= 26
+  ) {
+    return {
+      value: '',
+      formula: buildCountifFormulaFromDateColumn(
+        dateColumn.columnIndex,
+        targetRowNumber
+      ),
+      nextExtensionValue: dateColumn.label,
+      reason: '연장=o 26일 도달, 오늘부터 1일 재계산',
+      terminationNotice: false,
     };
   }
 
   if (normalizeKeyPart(currentDateValue) !== 'o' && normalizeKeyPart(nextDateValue) === 'o') {
     return {
-      value: String(currentCumulativeNumber + 1),
+      value: String(nextCumulativeNumber),
+      formula: '',
+      nextExtensionValue: extensionValue,
       reason: '오늘 신규 노출 +1',
+      terminationNotice: false,
     };
   }
 
   if (normalizeKeyPart(currentDateValue) === 'o' && normalizeKeyPart(nextDateValue) !== 'o') {
     return {
-      value: String(Math.max(0, currentCumulativeNumber - 1)),
+      value: String(nextCumulativeNumber),
+      formula: '',
+      nextExtensionValue: extensionValue,
       reason: '오늘 노출 제거 -1',
+      terminationNotice: false,
     };
   }
 
   return {
     value: currentCumulativeValue,
+    formula: '',
+    nextExtensionValue: extensionValue,
     reason: '오늘 상태 변화 없음',
+    terminationNotice: false,
   };
 };
 
@@ -831,8 +936,11 @@ const buildIndividualWritePlansForSheet = async (
       const nextValue = programRow.isExposed ? 'o' : '';
       let currentCumulativeValue = '';
       let nextCumulativeValue = '';
+      let nextCumulativeFormula = '';
       let extensionValue = '';
+      let nextExtensionValue = '';
       let cumulativeReason = '누적 컬럼 없음';
+      let terminationNotice = false;
 
       if (cumulativeColumnIndex >= 0) {
         currentCumulativeValue = normalizeCell(cumulativeValues[targetRowIndex]);
@@ -840,12 +948,14 @@ const buildIndividualWritePlansForSheet = async (
           extensionColumnIndex >= 0
             ? normalizeCell(extensionValues[targetRowIndex])
             : '';
+        nextExtensionValue = extensionValue;
 
         const rowValues = rows[targetRowIndex] ?? [];
         const cumulativeResult = calculateCumulativeValue(
           rowValues,
           headers,
           dateColumn,
+          targetRowIndex + 1,
           currentCumulativeValue,
           currentValue,
           nextValue,
@@ -853,7 +963,10 @@ const buildIndividualWritePlansForSheet = async (
         );
 
         nextCumulativeValue = cumulativeResult.value;
+        nextCumulativeFormula = cumulativeResult.formula;
+        nextExtensionValue = cumulativeResult.nextExtensionValue;
         cumulativeReason = cumulativeResult.reason;
+        terminationNotice = cumulativeResult.terminationNotice;
       }
 
       plans.push({
@@ -874,8 +987,13 @@ const buildIndividualWritePlansForSheet = async (
           cumulativeColumnIndex >= 0 ? cumulativeColumnIndex + 1 : null,
         currentCumulativeValue,
         nextCumulativeValue,
+        nextCumulativeFormula,
+        extensionColumnNumber:
+          extensionColumnIndex >= 0 ? extensionColumnIndex + 1 : null,
         extensionValue,
+        nextExtensionValue,
         cumulativeReason,
+        terminationNotice,
       });
     }
 
@@ -942,9 +1060,14 @@ const writeIndividualPlans = async (
     const writeColumnIndexes = sheetPlans.flatMap((plan) => [
       plan.targetColumnNumber - 1,
       ...(plan.cumulativeColumnNumber !== null &&
-      plan.nextCumulativeValue !== '' &&
-      plan.currentCumulativeValue !== plan.nextCumulativeValue
+      ((plan.nextCumulativeFormula !== '') ||
+        (plan.nextCumulativeValue !== '' &&
+          plan.currentCumulativeValue !== plan.nextCumulativeValue))
         ? [plan.cumulativeColumnNumber - 1]
+        : []),
+      ...(plan.extensionColumnNumber !== null &&
+      plan.nextExtensionValue !== plan.extensionValue
+        ? [plan.extensionColumnNumber - 1]
         : []),
     ]);
     const maxColumnIndex = Math.max(...writeColumnIndexes);
@@ -979,11 +1102,25 @@ const writeIndividualPlans = async (
 
       if (
         plan.cumulativeColumnNumber !== null &&
+        plan.nextCumulativeFormula !== ''
+      ) {
+        sheet.getCell(rowIndex, plan.cumulativeColumnNumber - 1).formula =
+          plan.nextCumulativeFormula;
+      } else if (
+        plan.cumulativeColumnNumber !== null &&
         plan.nextCumulativeValue !== '' &&
         plan.currentCumulativeValue !== plan.nextCumulativeValue
       ) {
         sheet.getCell(rowIndex, plan.cumulativeColumnNumber - 1).value =
           plan.nextCumulativeValue;
+      }
+
+      if (
+        plan.extensionColumnNumber !== null &&
+        plan.nextExtensionValue !== plan.extensionValue
+      ) {
+        sheet.getCell(rowIndex, plan.extensionColumnNumber - 1).value =
+          plan.nextExtensionValue;
       }
     });
 
@@ -1064,11 +1201,16 @@ const main = async (): Promise<void> => {
       shouldCreateDateColumn,
       currentCumulativeValue,
       nextCumulativeValue,
+      nextCumulativeFormula,
+      extensionValue,
+      nextExtensionValue,
     }) =>
       shouldCreateDateColumn ||
       currentValue !== nextValue ||
+      nextCumulativeFormula !== '' ||
       (nextCumulativeValue !== '' &&
-        currentCumulativeValue !== nextCumulativeValue)
+        currentCumulativeValue !== nextCumulativeValue) ||
+      extensionValue !== nextExtensionValue
   );
   const exposedPlans = plans.filter(({ nextValue }) => nextValue === 'o');
   const clearPlans = plans.filter(({ nextValue }) => nextValue === '');
@@ -1085,8 +1227,15 @@ const main = async (): Promise<void> => {
     ({ cumulativeColumnNumber }) => cumulativeColumnNumber !== null
   );
   const changedCumulativePlans = cumulativePlans.filter(
-    ({ currentCumulativeValue, nextCumulativeValue }) =>
-      nextCumulativeValue !== '' && currentCumulativeValue !== nextCumulativeValue
+    ({ currentCumulativeValue, nextCumulativeValue, nextCumulativeFormula }) =>
+      nextCumulativeFormula !== '' ||
+      (nextCumulativeValue !== '' && currentCumulativeValue !== nextCumulativeValue)
+  );
+  const changedExtensionPlans = plans.filter(
+    ({ extensionValue, nextExtensionValue }) => extensionValue !== nextExtensionValue
+  );
+  const terminationNoticePlans = plans.filter(
+    ({ terminationNotice }) => terminationNotice
   );
 
   if (!options.dryRun) {
@@ -1111,14 +1260,35 @@ const main = async (): Promise<void> => {
   if (options.checkCumulative) {
     logger.divider('누적 노출일 계산 샘플');
     changedCumulativePlans.slice(0, 30).forEach((plan) => {
+      const nextCumulativeDisplay =
+        plan.nextCumulativeFormula || plan.nextCumulativeValue;
+
       logger.info(
-        `${plan.company} / ${plan.keyword}: ${plan.spreadsheetTitle} ${plan.sheetTitle}!C${plan.cumulativeColumnNumber} R${plan.targetRowNumber} "${plan.currentCumulativeValue}" -> "${plan.nextCumulativeValue}" (${plan.extensionValue || '연장 빈값'}, ${plan.cumulativeReason})`
+        `${plan.company} / ${plan.keyword}: ${plan.spreadsheetTitle} ${plan.sheetTitle}!C${plan.cumulativeColumnNumber} R${plan.targetRowNumber} "${plan.currentCumulativeValue}" -> "${nextCumulativeDisplay}" (${plan.extensionValue || '연장 빈값'}, ${plan.cumulativeReason})`
       );
     });
 
     if (changedCumulativePlans.length > 30) {
       logger.info(`...외 ${changedCumulativePlans.length - 30}건`);
     }
+
+    logger.divider('연장 변경 샘플');
+    changedExtensionPlans.slice(0, 30).forEach((plan) => {
+      logger.info(
+        `${plan.company} / ${plan.keyword}: ${plan.spreadsheetTitle} ${plan.sheetTitle}!C${plan.extensionColumnNumber} R${plan.targetRowNumber} "${plan.extensionValue}" -> "${plan.nextExtensionValue}" (${plan.cumulativeReason})`
+      );
+    });
+
+    if (changedExtensionPlans.length > 30) {
+      logger.info(`...외 ${changedExtensionPlans.length - 30}건`);
+    }
+  }
+
+  if (terminationNoticePlans.length > 0) {
+    logger.divider('금일 종료건');
+    terminationNoticePlans.forEach((plan) => {
+      logger.warn(`${plan.company} - ${normalizeCell(plan.keyword.replace(/\([^)]*\)/g, ''))}`);
+    });
   }
 
   logger.divider('스킵 샘플');
@@ -1142,6 +1312,8 @@ const main = async (): Promise<void> => {
     { label: '빈값 예정', value: `${clearPlans.length}개` },
     { label: '누적 계산 대상', value: `${cumulativePlans.length}개` },
     { label: '누적 변경 후보', value: `${changedCumulativePlans.length}개` },
+    { label: '연장 변경 후보', value: `${changedExtensionPlans.length}개` },
+    { label: '금일 종료건', value: `${terminationNoticePlans.length}개` },
     { label: '스킵', value: `${skips.length}개` },
     { label: '실제 쓰기', value: options.dryRun ? '없음' : '완료' },
   ]);
