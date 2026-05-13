@@ -10,6 +10,7 @@ interface CliOptions {
   date: Date;
   dryRun: boolean;
   limit: number;
+  companyLimit: number;
   concurrency: number;
   checkCumulative: boolean;
 }
@@ -296,6 +297,7 @@ const parseArgs = (): CliOptions => {
   let date = getKstDate();
   let dryRun = false;
   let limit = 0;
+  let companyLimit = 0;
   let concurrency = DEFAULT_CONCURRENCY;
   let checkCumulative = false;
 
@@ -315,6 +317,12 @@ const parseArgs = (): CliOptions => {
 
     if (arg === '--limit' && nextArg) {
       limit = parsePositiveInteger(nextArg);
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--company-limit' && nextArg) {
+      companyLimit = parsePositiveInteger(nextArg);
       index += 1;
       continue;
     }
@@ -348,14 +356,39 @@ const parseArgs = (): CliOptions => {
     date,
     dryRun,
     limit,
+    companyLimit,
     concurrency,
     checkCumulative,
   };
 };
 
+const limitRowsByCompany = (
+  rows: ProgramRootRow[],
+  companyLimit: number
+): ProgramRootRow[] => {
+  if (companyLimit < 1) {
+    return rows;
+  }
+
+  const selectedCompanies = new Set<string>();
+
+  for (const row of rows) {
+    if (!selectedCompanies.has(row.company)) {
+      selectedCompanies.add(row.company);
+    }
+
+    if (selectedCompanies.size >= companyLimit) {
+      break;
+    }
+  }
+
+  return rows.filter((row) => selectedCompanies.has(row.company));
+};
+
 const loadProgramRootRows = async (
   auth: JWT,
-  limit: number
+  limit: number,
+  companyLimit: number
 ): Promise<ProgramRootRow[]> => {
   const doc = await openSpreadsheet(TEST_CONFIG.SHEET_ID, auth);
   const sheet = getRequiredSheet(doc, PROGRAM_ROOT_TAB);
@@ -383,7 +416,9 @@ const loadProgramRootRows = async (
       ];
     });
 
-  return limit > 0 ? loadedRows.slice(0, limit) : loadedRows;
+  const companyLimitedRows = limitRowsByCompany(loadedRows, companyLimit);
+
+  return limit > 0 ? companyLimitedRows.slice(0, limit) : companyLimitedRows;
 };
 
 const loadMonthlyRootRows = async (auth: JWT): Promise<MonthlyRootRow[]> => {
@@ -904,12 +939,16 @@ const writeIndividualPlans = async (
     const firstPlan = sheetPlans[0];
     const doc = await openSpreadsheet(firstPlan.spreadsheetId, auth);
     const sheet = doc.sheetsByTitle[firstPlan.sheetTitle] ?? chooseIndividualSheet(doc);
-    const maxColumnIndex = Math.max(
-      ...sheetPlans.map(({ targetColumnNumber }) => targetColumnNumber - 1)
-    );
-    const minColumnIndex = Math.min(
-      ...sheetPlans.map(({ targetColumnNumber }) => targetColumnNumber - 1)
-    );
+    const writeColumnIndexes = sheetPlans.flatMap((plan) => [
+      plan.targetColumnNumber - 1,
+      ...(plan.cumulativeColumnNumber !== null &&
+      plan.nextCumulativeValue !== '' &&
+      plan.currentCumulativeValue !== plan.nextCumulativeValue
+        ? [plan.cumulativeColumnNumber - 1]
+        : []),
+    ]);
+    const maxColumnIndex = Math.max(...writeColumnIndexes);
+    const minColumnIndex = Math.min(...writeColumnIndexes);
     const maxRowIndex = Math.max(
       ...sheetPlans.map(({ targetRowNumber }) => targetRowNumber - 1)
     );
@@ -937,6 +976,15 @@ const writeIndividualPlans = async (
       }
 
       sheet.getCell(rowIndex, columnIndex).value = plan.nextValue;
+
+      if (
+        plan.cumulativeColumnNumber !== null &&
+        plan.nextCumulativeValue !== '' &&
+        plan.currentCumulativeValue !== plan.nextCumulativeValue
+      ) {
+        sheet.getCell(rowIndex, plan.cumulativeColumnNumber - 1).value =
+          plan.nextCumulativeValue;
+      }
     });
 
     await sheet.saveUpdatedCells();
@@ -956,10 +1004,18 @@ const main = async (): Promise<void> => {
     { label: '날짜 컬럼', value: dateColumnLabel },
     { label: '모드', value: options.dryRun ? 'dry-run' : 'write' },
     { label: '대상 제한', value: options.limit > 0 ? `${options.limit}개` : '전체' },
+    {
+      label: '업체 제한',
+      value: options.companyLimit > 0 ? `상단 ${options.companyLimit}개 업체` : '전체',
+    },
     { label: '동시성', value: `${options.concurrency}` },
   ]);
 
-  const programRows = await loadProgramRootRows(auth, options.limit);
+  const programRows = await loadProgramRootRows(
+    auth,
+    options.limit,
+    options.companyLimit
+  );
   const monthlyRows = await loadMonthlyRootRows(auth);
   const monthlyRowMap = buildMonthlyRowMap(monthlyRows);
 
@@ -1002,8 +1058,17 @@ const main = async (): Promise<void> => {
     ...results.flatMap(({ skips: resultSkips }) => resultSkips),
   ];
   const changedPlans = plans.filter(
-    ({ currentValue, nextValue, shouldCreateDateColumn }) =>
-      shouldCreateDateColumn || currentValue !== nextValue
+    ({
+      currentValue,
+      nextValue,
+      shouldCreateDateColumn,
+      currentCumulativeValue,
+      nextCumulativeValue,
+    }) =>
+      shouldCreateDateColumn ||
+      currentValue !== nextValue ||
+      (nextCumulativeValue !== '' &&
+        currentCumulativeValue !== nextCumulativeValue)
   );
   const exposedPlans = plans.filter(({ nextValue }) => nextValue === 'o');
   const clearPlans = plans.filter(({ nextValue }) => nextValue === '');
