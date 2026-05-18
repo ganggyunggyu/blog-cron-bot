@@ -1,6 +1,8 @@
 import * as dotenv from 'dotenv';
 import os from 'os';
+import { GoogleSpreadsheetWorksheet } from 'google-spreadsheet';
 import { createDetailedLogBuilder, saveDetailedLogs } from '../logs';
+import { DetailedLogBuilder } from '../logs/detailed-log';
 import { processKeywords } from '../lib/keyword-processor';
 import { checkNaverLogin } from '../lib/check-naver-login';
 import { logger } from '../lib/logger';
@@ -9,6 +11,7 @@ import { getKSTTimestamp } from '../utils';
 import { saveToCSV, saveToSheetCSV } from '../csv-writer';
 import { TEST_CONFIG } from '../constants';
 import { DOGMARU_PAGE_CHECK_BLOG_IDS } from '../constants/blog-ids';
+import { ExposureResult } from '../matcher';
 import { autoLogin } from './auto-login';
 import {
   connectDB,
@@ -74,6 +77,13 @@ const ALL_TARGETS: TargetType[] = [
 ];
 
 const DEFAULT_TARGET_CONCURRENCY = 2;
+
+const TARGET_DEDUP_PRIORITY: Record<TargetType, number> = {
+  'dogmaru-exclude': 1,
+  package: 2,
+  dogmaru: 3,
+  root: 4,
+};
 
 const TARGET_CONFIGS: Record<TargetType, TargetConfig> = {
   package: {
@@ -315,12 +325,117 @@ const buildHistorySnapshots = (
     };
   });
 
-const runTargetWorkflow = async (
+interface TargetCrawlOutcome {
+  config: TargetConfig;
+  startedAt: number;
+  keywords: DirectSheetKeywordDoc[];
+  sheet: GoogleSpreadsheetWorksheet;
+  results: ExposureResult[];
+  updates: Map<string, DirectSheetUpdate>;
+  keywordLogicMap: Map<string, boolean>;
+  logBuilder: DetailedLogBuilder;
+}
+
+const normalizeDedupKeyword = (value: string): string =>
+  String(value ?? '').trim().toLowerCase();
+
+const normalizeDedupUrl = (value: string): string =>
+  String(value ?? '').trim();
+
+const buildDedupKey = (keyword: string, url: string): string =>
+  `${normalizeDedupKeyword(keyword)}::${normalizeDedupUrl(url)}`;
+
+const clearedDuplicateUpdate = (
+  update: DirectSheetUpdate
+): DirectSheetUpdate => ({
+  ...update,
+  visibility: false,
+  popularTopic: '',
+  url: '',
+  matchedTitle: '',
+  rank: 0,
+  rankWithCafe: 0,
+  postVendorName: '',
+  restaurantName: '',
+  foundPage: 0,
+});
+
+const applyCrossTargetDedup = (
+  outcomes: TargetCrawlOutcome[]
+): Map<TargetType, number> => {
+  const removedByTarget = new Map<TargetType, number>(
+    outcomes.map(({ config }) => [config.target, 0])
+  );
+
+  if (outcomes.length <= 1) {
+    return removedByTarget;
+  }
+
+  const winners = new Map<string, TargetType>();
+  const sortedOutcomes = [...outcomes].sort(
+    (left, right) =>
+      TARGET_DEDUP_PRIORITY[left.config.target] -
+      TARGET_DEDUP_PRIORITY[right.config.target]
+  );
+
+  sortedOutcomes.forEach((outcome) => {
+    outcome.keywords.forEach((keywordDoc) => {
+      const update = outcome.updates.get(keywordDoc._id);
+
+      if (!update?.visibility || !update.url) {
+        return;
+      }
+
+      const dedupKey = buildDedupKey(keywordDoc.keyword, update.url);
+
+      if (!winners.has(dedupKey)) {
+        winners.set(dedupKey, outcome.config.target);
+      }
+    });
+  });
+
+  outcomes.forEach((outcome) => {
+    let removed = 0;
+
+    outcome.keywords.forEach((keywordDoc) => {
+      const update = outcome.updates.get(keywordDoc._id);
+
+      if (!update?.visibility || !update.url) {
+        return;
+      }
+
+      const dedupKey = buildDedupKey(keywordDoc.keyword, update.url);
+      const owner = winners.get(dedupKey);
+
+      if (owner && owner !== outcome.config.target) {
+        outcome.updates.set(keywordDoc._id, clearedDuplicateUpdate(update));
+        removed += 1;
+      }
+    });
+
+    if (removed > 0) {
+      outcome.results = outcome.results.filter((result) => {
+        const dedupKey = buildDedupKey(result.query, result.postLink || '');
+        const owner = winners.get(dedupKey);
+        return !owner || owner === outcome.config.target;
+      });
+
+      logger.info(
+        `[${outcome.config.label}] 중복 노출 ${removed}건 제거 (다른 탭이 우선)`
+      );
+    }
+
+    removedByTarget.set(outcome.config.target, removed);
+  });
+
+  return removedByTarget;
+};
+
+const runTargetCrawl = async (
   options: CliOptions,
   target: TargetConfig,
-  context: RunContext,
   isLoggedIn: boolean
-): Promise<TargetRunResult> => {
+): Promise<TargetCrawlOutcome> => {
   const startedAt = Date.now();
   const auth = getGoogleSheetAuth();
   const doc = await openSpreadsheet(options.sheetId, auth);
@@ -331,6 +446,62 @@ const runTargetWorkflow = async (
   logger.divider(`${target.label} 직접 노출체크`);
   getTargetSummary(target.label, keywords);
   logger.info(`[${target.label}] 탭 내부 동시 처리: ${options.concurrency}개`);
+
+  const logBuilder = createDetailedLogBuilder();
+  const keywordLogicMap = new Map<string, boolean>();
+
+  if (options.printOnly) {
+    return {
+      config: target,
+      startedAt,
+      keywords,
+      sheet,
+      results: [],
+      updates: new Map<string, DirectSheetUpdate>(),
+      keywordLogicMap,
+      logBuilder,
+    };
+  }
+
+  const { updates, updateFunction } = createDirectUpdateCollector();
+
+  const results = await processKeywords(keywords, logBuilder, {
+    updateFunction,
+    isLoggedIn,
+    concurrency: options.concurrency,
+    blogIds: target.blogIds,
+    allowAnyBlog: target.allowAnyBlog,
+    keywordLogicMap,
+  });
+
+  return {
+    config: target,
+    startedAt,
+    keywords,
+    sheet,
+    results,
+    updates,
+    keywordLogicMap,
+    logBuilder,
+  };
+};
+
+const finalizeTarget = async (
+  options: CliOptions,
+  context: RunContext,
+  outcome: TargetCrawlOutcome,
+  removedCount: number
+): Promise<TargetRunResult> => {
+  const {
+    config: target,
+    startedAt,
+    keywords,
+    sheet,
+    results,
+    updates,
+    keywordLogicMap,
+    logBuilder,
+  } = outcome;
 
   if (options.printOnly) {
     return {
@@ -345,19 +516,6 @@ const runTargetWorkflow = async (
       missingKeywords: [],
     };
   }
-
-  const logBuilder = createDetailedLogBuilder();
-  const keywordLogicMap = new Map<string, boolean>();
-  const { updates, updateFunction } = createDirectUpdateCollector();
-
-  const results = await processKeywords(keywords, logBuilder, {
-    updateFunction,
-    isLoggedIn,
-    concurrency: options.concurrency,
-    blogIds: target.blogIds,
-    allowAnyBlog: target.allowAnyBlog,
-    keywordLogicMap,
-  });
 
   const historySnapshots = buildHistorySnapshots(
     options.sheetId,
@@ -406,14 +564,23 @@ const runTargetWorkflow = async (
 
   saveDetailedLogs(logBuilder.getLogs(), `${target.csvPrefix}_${timestamp}`, elapsedTime);
 
-  logger.summary.complete(`${target.label} 직접 노출체크 완료`, [
+  const summaryItems = [
     { label: '총 검색어', value: `${keywords.length}개` },
     { label: '총 노출 발견', value: `${results.length}개` },
     { label: '인기글', value: `${popularCount}개` },
     { label: '스블', value: `${sblCount}개` },
     { label: '처리 시간', value: elapsedTime },
     { label: '시트 반영', value: options.dryRun ? '건너뜀' : '완료' },
-  ]);
+  ];
+
+  if (removedCount > 0) {
+    summaryItems.splice(2, 0, {
+      label: '탭 중복 제거',
+      value: `${removedCount}개`,
+    });
+  }
+
+  logger.summary.complete(`${target.label} 직접 노출체크 완료`, summaryItems);
 
   return {
     target: target.target,
@@ -460,27 +627,66 @@ const main = async (): Promise<void> => {
 
     const isLoggedIn = await ensureLoggedIn();
     const targetConfigs = options.targets.map((target) => TARGET_CONFIGS[target]);
-    const settledResults = await Promise.allSettled(
-      targetConfigs.map((target) =>
-        runTargetWorkflow(options, target, context, isLoggedIn)
-      )
+    const settledCrawls = await Promise.allSettled(
+      targetConfigs.map((target) => runTargetCrawl(options, target, isLoggedIn))
     );
 
-    const succeeded = settledResults.flatMap((result) =>
+    const crawlOutcomes = settledCrawls.flatMap((result) =>
       result.status === 'fulfilled' ? [result.value] : []
     );
-    const failed = settledResults.flatMap((result, index) =>
+    const crawlFailures = settledCrawls.flatMap((result, index) =>
       result.status === 'rejected'
         ? [
             {
               label: targetConfigs[index].label,
-              reason: result.reason instanceof Error
-                ? result.reason.message
-                : String(result.reason),
+              reason:
+                result.reason instanceof Error
+                  ? result.reason.message
+                  : String(result.reason),
             },
           ]
         : []
     );
+
+    const removedByTarget = applyCrossTargetDedup(crawlOutcomes);
+    const totalRemoved = Array.from(removedByTarget.values()).reduce(
+      (sum, value) => sum + value,
+      0
+    );
+
+    if (totalRemoved > 0) {
+      logger.info(`📎 탭 간 중복 노출 총 ${totalRemoved}건 정리`);
+    }
+
+    const settledFinalizes = await Promise.allSettled(
+      crawlOutcomes.map((outcome) =>
+        finalizeTarget(
+          options,
+          context,
+          outcome,
+          removedByTarget.get(outcome.config.target) ?? 0
+        )
+      )
+    );
+
+    const succeeded = settledFinalizes.flatMap((result) =>
+      result.status === 'fulfilled' ? [result.value] : []
+    );
+    const finalizeFailures = settledFinalizes.flatMap((result, index) =>
+      result.status === 'rejected'
+        ? [
+            {
+              label: crawlOutcomes[index].config.label,
+              reason:
+                result.reason instanceof Error
+                  ? result.reason.message
+                  : String(result.reason),
+            },
+          ]
+        : []
+    );
+
+    const failed = [...crawlFailures, ...finalizeFailures];
 
     logger.divider('병렬 실행 결과');
 
