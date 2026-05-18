@@ -136,48 +136,45 @@ export const sendDoorayExposureResult = async (params: {
     oldLogicCount,
   } = params;
 
-  const nonExposedCount = totalKeywords - exposureCount;
   const exposureRate = formatRate(exposureCount, totalKeywords);
+  const displayName = cronType.replace(/^멀티페이지 크론 /, '').replace(/^\[|\]$/g, '');
 
-  // 이전 결과 로드
   const prev = loadSnapshots()[cronType];
-
-  // 비교 지표
   const expDiff = diffIndicator(exposureCount, prev?.exposureCount);
-  const popDiff = diffIndicator(popularCount, prev?.popularCount);
-  const sblDiff = diffIndicator(sblCount, prev?.sblCount);
-  const nonExpDiff = diffIndicator(nonExposedCount, prev ? prev.totalKeywords - prev.exposureCount : undefined);
 
   let text = '';
-  text += `[${cronType}] ${getKSTDateString()}\n`;
-  text += `노출 ${exposureCount}/${totalKeywords} (${exposureRate})${expDiff} | 인기 ${popularCount}${popDiff} | 스블 ${sblCount}${sblDiff}\n`;
+  text += `[${displayName}] ${getKSTDateString()}\n`;
+  text += `노출 ${exposureCount}/${totalKeywords} (${exposureRate})${expDiff} | 소요 ${elapsedTime}\n`;
 
-  if (typeof newLogicCount === 'number' && typeof oldLogicCount === 'number') {
-    const newDiff = diffIndicator(newLogicCount, prev?.newLogicCount);
-    const oldDiff = diffIndicator(oldLogicCount, prev?.oldLogicCount);
-    text += `신규로직 ${newLogicCount}${newDiff} | 구로직 ${oldLogicCount}${oldDiff}\n`;
-  }
+  if (exposureCount > 0) {
+    const popDiff = diffIndicator(popularCount, prev?.popularCount);
+    const sblDiff = diffIndicator(sblCount, prev?.sblCount);
+    text += `인기 ${popularCount}${popDiff} | 스블 ${sblCount}${sblDiff}`;
 
-  text += `소요 ${elapsedTime}\n`;
+    if (typeof newLogicCount === 'number' && typeof oldLogicCount === 'number') {
+      const newDiff = diffIndicator(newLogicCount, prev?.newLogicCount);
+      const oldDiff = diffIndicator(oldLogicCount, prev?.oldLogicCount);
+      text += ` | 신규 ${newLogicCount}${newDiff} | 구 ${oldLogicCount}${oldDiff}`;
+    }
+    text += `\n`;
 
-  if (sheetStats && sheetStats.length > 0) {
-    const statParts = sheetStats.map((stat) => {
-      const prevStat = prev?.sheetStats?.find((s) => s.name === stat.name);
-      const statDiff = diffIndicator(stat.count, prevStat?.count);
-      return `${stat.name} ${stat.count}${statDiff}`;
-    });
-    text += `시트별: ${statParts.join(' | ')}\n`;
-  }
-
-  if (prev) {
-    const totalDiff = exposureCount - prev.exposureCount;
-    const sign = totalDiff > 0 ? '+' : '';
-    if (totalDiff !== 0) {
-      text += `전회 대비: ${prev.exposureCount} → ${exposureCount} (${sign}${totalDiff})\n`;
+    if (sheetStats && sheetStats.length > 0) {
+      const statParts = sheetStats.map((stat) => {
+        const prevStat = prev?.sheetStats?.find((s) => s.name === stat.name);
+        const statDiff = diffIndicator(stat.count, prevStat?.count);
+        return `${stat.name} ${stat.count}${statDiff}`;
+      });
+      text += `시트별: ${statParts.join(' | ')}\n`;
     }
   }
 
-  if (missingKeywords && missingKeywords.length > 0) {
+  if (prev && exposureCount !== prev.exposureCount) {
+    const totalDiff = exposureCount - prev.exposureCount;
+    const sign = totalDiff > 0 ? '+' : '';
+    text += `전회 대비: ${prev.exposureCount} → ${exposureCount} (${sign}${totalDiff})\n`;
+  }
+
+  if (exposureCount > 0 && missingKeywords && missingKeywords.length > 0) {
     const showCount = Math.min(missingKeywords.length, 5);
     const remaining = missingKeywords.length - showCount;
     text += `\n미노출 ${missingKeywords.length}건: ${missingKeywords.slice(0, showCount).join(', ')}`;

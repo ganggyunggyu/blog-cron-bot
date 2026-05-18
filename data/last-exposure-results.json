@@ -2,18 +2,18 @@
   "멀티페이지 크론 [흑염소 구]": {
     "cronType": "멀티페이지 크론 [흑염소 구]",
     "totalKeywords": 314,
-    "exposureCount": 148,
-    "popularCount": 66,
-    "sblCount": 82,
-    "newLogicCount": 4,
-    "oldLogicCount": 144,
+    "exposureCount": 141,
+    "popularCount": 64,
+    "sblCount": 77,
+    "newLogicCount": 2,
+    "oldLogicCount": 139,
     "sheetStats": [
       {
         "name": "흑염소 구",
-        "count": 166
+        "count": 164
       }
     ],
-    "timestamp": "2026-05-07T02:31:32.596Z"
+    "timestamp": "2026-05-18T01:43:10.034Z"
   },
   "일반건 노출체크": {
     "cronType": "일반건 노출체크",
@@ -154,5 +154,97 @@
       }
     ],
     "timestamp": "2026-05-11T03:15:02.113Z"
+  },
+  "패키지": {
+    "cronType": "패키지",
+    "totalKeywords": 189,
+    "exposureCount": 70,
+    "popularCount": 19,
+    "sblCount": 51,
+    "newLogicCount": 3,
+    "oldLogicCount": 67,
+    "timestamp": "2026-05-18T01:57:19.472Z"
+  },
+  "일반건": {
+    "cronType": "일반건",
+    "totalKeywords": 97,
+    "exposureCount": 49,
+    "popularCount": 16,
+    "sblCount": 33,
+    "newLogicCount": 5,
+    "oldLogicCount": 44,
+    "timestamp": "2026-05-18T01:57:19.484Z"
+  },
+  "도그마루": {
+    "cronType": "도그마루",
+    "totalKeywords": 300,
+    "exposureCount": 109,
+    "popularCount": 79,
+    "sblCount": 30,
+    "newLogicCount": 51,
+    "oldLogicCount": 58,
+    "timestamp": "2026-05-18T01:57:19.773Z"
+  },
+  "흑염소 구": {
+    "cronType": "흑염소 구",
+    "totalKeywords": 314,
+    "exposureCount": 141,
+    "popularCount": 64,
+    "sblCount": 77,
+    "newLogicCount": 2,
+    "oldLogicCount": 139,
+    "timestamp": "2026-05-18T01:57:19.786Z"
+  },
+  "알리바바": {
+    "cronType": "알리바바",
+    "totalKeywords": 329,
+    "exposureCount": 13,
+    "popularCount": 13,
+    "sblCount": 0,
+    "timestamp": "2026-05-18T01:57:19.811Z"
+  },
+  "멀티페이지 크론 [피부시술]": {
+    "cronType": "멀티페이지 크론 [피부시술]",
+    "totalKeywords": 17,
+    "exposureCount": 0,
+    "popularCount": 0,
+    "sblCount": 0,
+    "newLogicCount": 0,
+    "oldLogicCount": 0,
+    "sheetStats": [],
+    "timestamp": "2026-05-18T02:18:08.722Z"
+  },
+  "멀티페이지 크론 [약처방]": {
+    "cronType": "멀티페이지 크론 [약처방]",
+    "totalKeywords": 28,
+    "exposureCount": 0,
+    "popularCount": 0,
+    "sblCount": 0,
+    "newLogicCount": 0,
+    "oldLogicCount": 0,
+    "sheetStats": [],
+    "timestamp": "2026-05-18T02:20:28.181Z"
+  },
+  "멀티페이지 크론 [다이어트보조제]": {
+    "cronType": "멀티페이지 크론 [다이어트보조제]",
+    "totalKeywords": 30,
+    "exposureCount": 0,
+    "popularCount": 0,
+    "sblCount": 0,
+    "newLogicCount": 0,
+    "oldLogicCount": 0,
+    "sheetStats": [],
+    "timestamp": "2026-05-18T02:20:56.560Z"
+  },
+  "멀티페이지 크론 [치과]": {
+    "cronType": "멀티페이지 크론 [치과]",
+    "totalKeywords": 48,
+    "exposureCount": 0,
+    "popularCount": 0,
+    "sblCount": 0,
+    "newLogicCount": 0,
+    "oldLogicCount": 0,
+    "sheetStats": [],
+    "timestamp": "2026-05-18T02:24:51.311Z"
   }
 }
