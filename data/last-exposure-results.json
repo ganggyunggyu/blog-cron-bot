@@ -43,11 +43,11 @@
   },
   "루트 키워드": {
     "cronType": "루트 키워드",
-    "totalKeywords": 225,
-    "exposureCount": 139,
-    "popularCount": 6,
-    "sblCount": 133,
-    "timestamp": "2026-05-19T00:49:16.980Z"
+    "totalKeywords": 226,
+    "exposureCount": 137,
+    "popularCount": 5,
+    "sblCount": 132,
+    "timestamp": "2026-05-20T00:50:37.329Z"
   },
   "멀티페이지 크론 [애견]": {
     "cronType": "멀티페이지 크론 [애견]",
@@ -115,13 +115,13 @@
   },
   "패키지 일반건 노출체크": {
     "cronType": "패키지 일반건 노출체크",
-    "totalKeywords": 585,
-    "exposureCount": 247,
-    "popularCount": 134,
-    "sblCount": 113,
-    "newLogicCount": 81,
-    "oldLogicCount": 166,
-    "timestamp": "2026-05-19T01:03:54.985Z"
+    "totalKeywords": 586,
+    "exposureCount": 258,
+    "popularCount": 143,
+    "sblCount": 115,
+    "newLogicCount": 86,
+    "oldLogicCount": 172,
+    "timestamp": "2026-05-20T01:09:01.968Z"
   },
   "멀티페이지 크론 [전체]": {
     "cronType": "멀티페이지 크론 [전체]",

@@ -16,6 +16,7 @@ export const ALIBABA_BLOG_IDS = dedupeAlibabaBlogIds([
 ] as const);
 
 export const ALIBABA_SECTION_NAMES = [
+  '신규작업',
   '블로그 1',
   '블로그 2',
   '블로그 3',
@@ -29,6 +30,7 @@ export const ALIBABA_BLOG_IDS_BY_SECTION: Record<
   AlibabaSectionName,
   string[]
 > = {
+  신규작업: [...ALIBABA_BLOG_IDS],
   '블로그 1': [...ALIBABA_BLOG_IDS],
   '블로그 2': [...ALIBABA_BLOG_IDS],
   '블로그 3': [...ALIBABA_BLOG_IDS],
