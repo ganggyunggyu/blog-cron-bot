@@ -116,12 +116,12 @@
   "패키지 일반건 노출체크": {
     "cronType": "패키지 일반건 노출체크",
     "totalKeywords": 585,
-    "exposureCount": 232,
-    "popularCount": 124,
-    "sblCount": 108,
-    "newLogicCount": 68,
-    "oldLogicCount": 164,
-    "timestamp": "2026-05-24T01:08:44.930Z"
+    "exposureCount": 223,
+    "popularCount": 121,
+    "sblCount": 102,
+    "newLogicCount": 66,
+    "oldLogicCount": 157,
+    "timestamp": "2026-05-24T01:28:19.067Z"
   },
   "멀티페이지 크론 [전체]": {
     "cronType": "멀티페이지 크론 [전체]",
