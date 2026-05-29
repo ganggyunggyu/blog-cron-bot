@@ -288,6 +288,9 @@ const VIRAL_TEAM_SCHEDULE_BLOG_IDS = dedupeBlogIds([
 ] as const);
 
 const TAGGED_DOGMARU_BLOG_IDS = dedupeBlogIds([
+  'nanugi99',
+  'v3se',
+  'zifefe00000',
   'tpeany',
   'yakooroo',
   'minjin90310',
@@ -310,6 +313,7 @@ const TAGGED_DOGMARU_BLOG_IDS = dedupeBlogIds([
 ] as const);
 
 const TAGGED_SURI_PET_BLOG_IDS = dedupeBlogIds([
+  'sanghoonchoi',
   'hotelelena',
   'k54382000',
   'umle1203',
