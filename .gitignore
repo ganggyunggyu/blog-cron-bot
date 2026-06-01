@@ -27,6 +27,7 @@ src/tools/*
 !src/tools/dry-run-root-individual-exposure.ts
 !src/tools/run-parallel-direct-sheet-check.ts
 !src/tools/blog-share-report.ts
+!src/tools/export-blog-share-sheet.ts
 
 # Logs & Debug
 logs/

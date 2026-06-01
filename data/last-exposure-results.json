@@ -26,10 +26,10 @@
   "도그마루 노출체크": {
     "cronType": "도그마루 노출체크",
     "totalKeywords": 300,
-    "exposureCount": 101,
-    "popularCount": 77,
-    "sblCount": 24,
-    "timestamp": "2026-05-29T03:42:53.555Z"
+    "exposureCount": 88,
+    "popularCount": 65,
+    "sblCount": 23,
+    "timestamp": "2026-06-01T02:06:54.866Z"
   },
   "패키지 노출체크": {
     "cronType": "패키지 노출체크",
@@ -68,18 +68,18 @@
   "멀티페이지 크론 [서리펫]": {
     "cronType": "멀티페이지 크론 [서리펫]",
     "totalKeywords": 123,
-    "exposureCount": 103,
-    "popularCount": 32,
-    "sblCount": 9,
+    "exposureCount": 102,
+    "popularCount": 20,
+    "sblCount": 10,
     "newLogicCount": 87,
-    "oldLogicCount": 16,
+    "oldLogicCount": 15,
     "sheetStats": [
       {
         "name": "서리펫",
-        "count": 103
+        "count": 102
       }
     ],
-    "timestamp": "2026-05-29T04:08:06.210Z"
+    "timestamp": "2026-06-01T02:35:09.533Z"
   },
   "멀티페이지 크론 [흑염소 신규]": {
     "cronType": "멀티페이지 크론 [흑염소 신규]",
