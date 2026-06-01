@@ -314,6 +314,7 @@ const TAGGED_DOGMARU_BLOG_IDS = dedupeBlogIds([
 
 const TAGGED_SURI_PET_BLOG_IDS = dedupeBlogIds([
   'sanghoonchoi',
+  'ylk3516',
   'hotelelena',
   'k54382000',
   'umle1203',
