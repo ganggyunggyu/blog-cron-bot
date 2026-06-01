@@ -30,6 +30,28 @@ export interface CafeExposureCsvRow {
   writeDate: string;
 }
 
+export interface BlogShareSummaryCsvRow {
+  rank: number;
+  blogId: string;
+  blogName: string;
+  keywordCount: number;
+  exposureCount: number;
+  bestPosition: number;
+  keywords: string[];
+}
+
+export interface BlogShareDetailCsvRow {
+  keyword: string;
+  blogId: string;
+  blogName: string;
+  postTitle: string;
+  postLink: string;
+  exposureType: string;
+  topicName: string;
+  position: number;
+  isNewLogic: boolean;
+}
+
 const OUTPUT_ROOT_DIR = path.join(__dirname, '../output');
 const TIMESTAMP_SUFFIX_REGEX =
   /(?:_|-)(\d{4})-(\d{2})-(\d{2})(?:T|-)\d{2}-\d{2}-\d{2}$/;
@@ -327,4 +349,82 @@ export const saveKeywordLogicCSV = (
   fs.writeFileSync(filePath, '\uFEFF' + csvContent, 'utf8');
 
   logger.success(`키워드 로직 CSV 저장 완료: ${filePath}`);
+};
+
+export const saveBlogShareSummaryCSV = (
+  rows: BlogShareSummaryCsvRow[],
+  filename: string
+): string => {
+  const filePath = resolveOutputFilePath(filename);
+  const escape = (value: string): string =>
+    `"${String(value ?? '').replace(/"/g, '""')}"`;
+
+  const header = [
+    '순위',
+    '블로그ID',
+    '블로그명',
+    '점유키워드수',
+    '총노출수',
+    '최고순위',
+    '점유키워드',
+  ].join(',');
+
+  const csvRows = rows.map((row) =>
+    [
+      row.rank,
+      escape(row.blogId),
+      escape(row.blogName),
+      row.keywordCount,
+      row.exposureCount,
+      row.bestPosition,
+      escape(row.keywords.join(' / ')),
+    ].join(',')
+  );
+
+  const csvContent = [header, ...csvRows].join('\n');
+  fs.writeFileSync(filePath, '\uFEFF' + csvContent, 'utf8');
+
+  logger.success(`블로그 점유 요약 CSV 저장 완료: ${filePath}`);
+  return filePath;
+};
+
+export const saveBlogShareDetailCSV = (
+  rows: BlogShareDetailCsvRow[],
+  filename: string
+): string => {
+  const filePath = resolveOutputFilePath(filename);
+  const escape = (value: string): string =>
+    `"${String(value ?? '').replace(/"/g, '""')}"`;
+
+  const header = [
+    '키워드',
+    '블로그ID',
+    '블로그명',
+    '게시글제목',
+    '게시글링크',
+    '노출영역',
+    '주제명',
+    '순위',
+    '신로직',
+  ].join(',');
+
+  const csvRows = rows.map((row) =>
+    [
+      escape(row.keyword),
+      escape(row.blogId),
+      escape(row.blogName),
+      escape(row.postTitle),
+      row.postLink,
+      escape(row.exposureType),
+      escape(row.topicName),
+      row.position,
+      row.isNewLogic ? 'o' : '',
+    ].join(',')
+  );
+
+  const csvContent = [header, ...csvRows].join('\n');
+  fs.writeFileSync(filePath, '\uFEFF' + csvContent, 'utf8');
+
+  logger.success(`블로그 점유 상세 CSV 저장 완료: ${filePath}`);
+  return filePath;
 };
