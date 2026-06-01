@@ -27,7 +27,7 @@ import {
   UpdateFunction,
 } from '../lib/keyword-processor/types';
 import { logger } from '../lib/logger';
-import { ExposureResult, matchBlogs } from '../matcher';
+import { ExposureResult, extractBlogId, matchBlogs } from '../matcher';
 import { getKSTTimestamp, getSearchQuery } from '../utils';
 
 dotenv.config();
@@ -311,6 +311,19 @@ const aggregateMatches = (
   }
 };
 
+const removeInfluencerSectionMatches = (
+  matches: ExposureResult[]
+): ExposureResult[] =>
+  matches.filter((match) => {
+    const postBlogId = extractBlogId(match.postLink);
+
+    if (!postBlogId) {
+      return true;
+    }
+
+    return postBlogId === match.blogId.toLowerCase();
+  });
+
 const buildSummaryRows = (
   summaryMap: Map<string, BlogShareBucket>,
   topLimit: number
@@ -403,10 +416,10 @@ const runReport = async (options: ReportOptions): Promise<void> => {
       continue;
     }
 
-    const matches = matchBlogs(keyword, items, {
+    const matches = removeInfluencerSectionMatches(matchBlogs(keyword, items, {
       allowAnyBlog: true,
       blogIds: [],
-    });
+    }));
 
     aggregateMatches(matches, summaryMap, detailRows);
   }
