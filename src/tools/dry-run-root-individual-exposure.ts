@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 import { GoogleSpreadsheet, GoogleSpreadsheetWorksheet } from 'google-spreadsheet';
 import { JWT } from 'google-auth-library';
-import { ROOT_CONFIG, TEST_CONFIG } from '../constants';
+import { ROOT_CONFIG } from '../constants';
 import { logger } from '../lib/logger';
 
 dotenv.config();
@@ -98,7 +98,6 @@ interface CumulativeCalculationResult {
 }
 
 const DEFAULT_CONCURRENCY = 4;
-const PROGRAM_ROOT_TAB = TEST_CONFIG.SHEET_NAMES.ROOT;
 const MONTHLY_ROOT_TAB = ROOT_CONFIG.SHEET_NAMES.PACKAGE;
 
 const normalizeCell = (value: unknown): string =>
@@ -443,28 +442,39 @@ const loadProgramRootRows = async (
   limit: number,
   companyLimit: number
 ): Promise<ProgramRootRow[]> => {
-  const doc = await openSpreadsheet(TEST_CONFIG.SHEET_ID, auth);
-  const sheet = getRequiredSheet(doc, PROGRAM_ROOT_TAB);
-  const rows = await loadGrid(sheet, sheet.rowCount, 12);
+  const doc = await openSpreadsheet(ROOT_CONFIG.SHEET_ID, auth);
+  const sheet = getRequiredSheet(doc, MONTHLY_ROOT_TAB);
+  const rows = await loadGrid(sheet, sheet.rowCount, 6);
+  let currentCompany = '';
+  let currentLink = '';
 
   const loadedRows = rows
-    .slice(1)
+    .slice(3)
     .flatMap((row, index): ProgramRootRow[] => {
       const company = normalizeCell(row[0]);
       const keyword = normalizeCell(row[1]);
+      const link = normalizeCell(row[5]);
 
-      if (!company || !keyword) {
+      if (company) {
+        currentCompany = company;
+      }
+
+      if (link) {
+        currentLink = link;
+      }
+
+      if (!currentCompany || !keyword) {
         return [];
       }
 
       return [
         {
-          rowNumber: index + 2,
-          company,
+          rowNumber: index + 4,
+          company: currentCompany,
           keyword,
           baseKeyword: keyword.replace(/\([^)]*\)/g, '').trim(),
           isExposed: parseBooleanCell(row[4]),
-          link: normalizeCell(row[8]),
+          link: currentLink,
         },
       ];
     });
@@ -1057,19 +1067,9 @@ const writeIndividualPlans = async (
     const firstPlan = sheetPlans[0];
     const doc = await openSpreadsheet(firstPlan.spreadsheetId, auth);
     const sheet = doc.sheetsByTitle[firstPlan.sheetTitle] ?? chooseIndividualSheet(doc);
-    const writeColumnIndexes = sheetPlans.flatMap((plan) => [
-      plan.targetColumnNumber - 1,
-      ...(plan.cumulativeColumnNumber !== null &&
-      ((plan.nextCumulativeFormula !== '') ||
-        (plan.nextCumulativeValue !== '' &&
-          plan.currentCumulativeValue !== plan.nextCumulativeValue))
-        ? [plan.cumulativeColumnNumber - 1]
-        : []),
-      ...(plan.extensionColumnNumber !== null &&
-      plan.nextExtensionValue !== plan.extensionValue
-        ? [plan.extensionColumnNumber - 1]
-        : []),
-    ]);
+    const writeColumnIndexes = sheetPlans.map(
+      ({ targetColumnNumber }) => targetColumnNumber - 1
+    );
     const maxColumnIndex = Math.max(...writeColumnIndexes);
     const minColumnIndex = Math.min(...writeColumnIndexes);
     const maxRowIndex = Math.max(
@@ -1099,29 +1099,6 @@ const writeIndividualPlans = async (
       }
 
       sheet.getCell(rowIndex, columnIndex).value = plan.nextValue;
-
-      if (
-        plan.cumulativeColumnNumber !== null &&
-        plan.nextCumulativeFormula !== ''
-      ) {
-        sheet.getCell(rowIndex, plan.cumulativeColumnNumber - 1).formula =
-          plan.nextCumulativeFormula;
-      } else if (
-        plan.cumulativeColumnNumber !== null &&
-        plan.nextCumulativeValue !== '' &&
-        plan.currentCumulativeValue !== plan.nextCumulativeValue
-      ) {
-        sheet.getCell(rowIndex, plan.cumulativeColumnNumber - 1).value =
-          plan.nextCumulativeValue;
-      }
-
-      if (
-        plan.extensionColumnNumber !== null &&
-        plan.nextExtensionValue !== plan.extensionValue
-      ) {
-        sheet.getCell(rowIndex, plan.extensionColumnNumber - 1).value =
-          plan.nextExtensionValue;
-      }
     });
 
     await sheet.saveUpdatedCells();
@@ -1199,18 +1176,8 @@ const main = async (): Promise<void> => {
       currentValue,
       nextValue,
       shouldCreateDateColumn,
-      currentCumulativeValue,
-      nextCumulativeValue,
-      nextCumulativeFormula,
-      extensionValue,
-      nextExtensionValue,
     }) =>
-      shouldCreateDateColumn ||
-      currentValue !== nextValue ||
-      nextCumulativeFormula !== '' ||
-      (nextCumulativeValue !== '' &&
-        currentCumulativeValue !== nextCumulativeValue) ||
-      extensionValue !== nextExtensionValue
+      shouldCreateDateColumn || currentValue !== nextValue
   );
   const exposedPlans = plans.filter(({ nextValue }) => nextValue === 'o');
   const clearPlans = plans.filter(({ nextValue }) => nextValue === '');
@@ -1301,7 +1268,7 @@ const main = async (): Promise<void> => {
   }
 
   logger.summary.complete('ROOT INDIVIDUAL EXPOSURE SYNC COMPLETE', [
-    { label: '프로그램 루트 행', value: `${programRows.length}개` },
+    { label: '월보장 노출 소스 행', value: `${programRows.length}개` },
     { label: '월보장 매칭', value: `${matchedPairs.length}개` },
     { label: '중복 매칭', value: `${duplicateMatches.length}개` },
     { label: '개별시트 매칭', value: `${plans.length}개` },
