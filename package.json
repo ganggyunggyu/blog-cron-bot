@@ -34,7 +34,8 @@
     "alibaba:check": "ts-node src/tools/run-alibaba-check.ts",
     "alibaba:logic": "ts-node src/tools/check-alibaba-logic-type.ts",
     "blog:share": "ts-node src/tools/blog-share-report.ts",
-    "blog:share:export": "ts-node src/tools/export-blog-share-sheet.ts"
+    "blog:share:export": "ts-node src/tools/export-blog-share-sheet.ts",
+    "cafe-bot:published:exposure": "ts-node src/tools/check-cafe-bot-published-exposure.ts"
   },
   "dependencies": {
     "axios": "^1.13.2",
