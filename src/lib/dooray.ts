@@ -29,7 +29,6 @@ interface ExposureSnapshot {
   timestamp: string;
 }
 
-const DOORAY_WEBHOOK_URL = process.env.DOORAY_WEBHOOK_URL;
 const SNAPSHOT_DIR = path.resolve(__dirname, '../../data');
 const SNAPSHOT_FILE = path.join(SNAPSHOT_DIR, 'last-exposure-results.json');
 
@@ -92,7 +91,9 @@ export const sendDoorayMessage = async (
   text: string,
   botName: string = '노출체크봇'
 ): Promise<boolean> => {
-  if (!DOORAY_WEBHOOK_URL) {
+  const doorayWebhookUrl = process.env.DOORAY_WEBHOOK_URL;
+
+  if (!doorayWebhookUrl) {
     logger.warn('DOORAY_WEBHOOK_URL 환경변수가 설정되지 않았습니다.');
     return false;
   }
@@ -103,7 +104,7 @@ export const sendDoorayMessage = async (
       text,
     };
 
-    await axios.post(DOORAY_WEBHOOK_URL, message);
+    await axios.post(doorayWebhookUrl, message);
     return true;
   } catch (error) {
     logger.error(`Dooray 메시지 전송 실패: ${(error as Error).message}`);
