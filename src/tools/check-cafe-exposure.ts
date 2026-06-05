@@ -329,6 +329,9 @@ const writeSummaryFile = (
 };
 
 const getHanryeodamwonCafeSheetConfig = () => {
+  const hasCustomSheetName = Boolean(
+    process.env.HANRYEODAMWON_CAFE_SHEET_NAME || process.env.CAFE_SHEET_NAME
+  );
   const sheetId =
     process.env.HANRYEODAMWON_CAFE_SHEET_ID ||
     process.env.CAFE_SHEET_ID ||
@@ -342,7 +345,7 @@ const getHanryeodamwonCafeSheetConfig = () => {
   const rawSheetGid =
     process.env.HANRYEODAMWON_CAFE_SHEET_GID ||
     process.env.CAFE_SHEET_GID ||
-    String(HANRYEODAMWON_CAFE_SHEET_GID);
+    (hasCustomSheetName ? '' : String(HANRYEODAMWON_CAFE_SHEET_GID));
 
   const sheetGid = Number(rawSheetGid);
 
@@ -351,7 +354,7 @@ const getHanryeodamwonCafeSheetConfig = () => {
     sheetName,
     sheetGid: Number.isFinite(sheetGid)
       ? sheetGid
-      : HANRYEODAMWON_CAFE_SHEET_GID,
+      : undefined,
   };
 };
 
