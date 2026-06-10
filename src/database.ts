@@ -7,6 +7,7 @@ export interface IKeyword extends Document {
   visibility: boolean;
   popularTopic: string;
   url: string;
+  postPublishedAt?: string;
   sheetType: string;
   keywordType: 'restaurant' | 'pet' | 'basic';
   lastChecked: Date;
@@ -29,6 +30,7 @@ const KeywordSchema: Schema = new Schema(
     visibility: { type: Boolean, default: false },
     popularTopic: { type: String, default: '' },
     url: { type: String, default: '' },
+    postPublishedAt: { type: String, default: '' },
     sheetType: { type: String, default: 'package' },
     keywordType: { type: String, enum: ['restaurant', 'pet', 'basic'], default: 'basic' },
     lastChecked: { type: Date, default: Date.now },
@@ -54,6 +56,7 @@ export interface IRootKeyword extends Document {
   visibility: boolean;
   popularTopic: string;
   url: string;
+  postPublishedAt?: string;
   keywordType: 'restaurant' | 'pet' | 'basic';
   lastChecked: Date;
   restaurantName?: string;
@@ -75,6 +78,7 @@ const RootKeywordSchema: Schema = new Schema(
     visibility: { type: Boolean, default: false },
     popularTopic: { type: String, default: '' },
     url: { type: String, default: '' },
+    postPublishedAt: { type: String, default: '' },
     keywordType: { type: String, enum: ['restaurant', 'pet', 'basic'], default: 'basic' },
     lastChecked: { type: Date, default: Date.now },
     restaurantName: { type: String, default: '' },
@@ -147,7 +151,8 @@ export const updateKeywordResult = async (
   rankWithCafe?: number,
   isUpdateRequired?: boolean,
   isNewLogic?: boolean,
-  foundPage?: number
+  foundPage?: number,
+  postPublishedAt?: string
 ): Promise<void> => {
   try {
     const update: Partial<IKeyword> = {
@@ -169,6 +174,8 @@ export const updateKeywordResult = async (
       update.isUpdateRequired = isUpdateRequired;
     if (typeof isNewLogic !== 'undefined') update.isNewLogic = isNewLogic;
     if (typeof foundPage !== 'undefined') update.foundPage = foundPage;
+    if (typeof postPublishedAt !== 'undefined')
+      update.postPublishedAt = postPublishedAt;
 
     await Keyword.findByIdAndUpdate(keywordId, update);
   } catch (error) {
@@ -190,7 +197,8 @@ export const updateRootKeywordResult = async (
   rankWithCafe?: number,
   isUpdateRequired?: boolean,
   isNewLogic?: boolean,
-  foundPage?: number
+  foundPage?: number,
+  postPublishedAt?: string
 ): Promise<void> => {
   try {
     const update: Partial<IRootKeyword> = {
@@ -212,6 +220,8 @@ export const updateRootKeywordResult = async (
       update.isUpdateRequired = isUpdateRequired;
     if (typeof isNewLogic !== 'undefined') update.isNewLogic = isNewLogic;
     if (typeof foundPage !== 'undefined') update.foundPage = foundPage;
+    if (typeof postPublishedAt !== 'undefined')
+      update.postPublishedAt = postPublishedAt;
 
     await RootKeyword.findByIdAndUpdate(keywordId, update);
   } catch (error) {
@@ -228,6 +238,7 @@ export interface IPageCheckKeyword extends Document {
   visibility: boolean;
   popularTopic: string;
   url: string;
+  postPublishedAt?: string;
   keywordType: 'restaurant' | 'pet' | 'basic';
   lastChecked: Date;
   restaurantName?: string;
@@ -248,6 +259,7 @@ export interface PageCheckKeywordInput {
   visibility?: boolean;
   popularTopic?: string;
   url?: string;
+  postPublishedAt?: string;
   keywordType?: 'restaurant' | 'pet' | 'basic';
   restaurantName?: string;
   matchedTitle?: string;
@@ -266,6 +278,7 @@ const PageCheckKeywordSchema: Schema = new Schema(
     visibility: { type: Boolean, default: false },
     popularTopic: { type: String, default: '' },
     url: { type: String, default: '' },
+    postPublishedAt: { type: String, default: '' },
     keywordType: {
       type: String,
       enum: ['restaurant', 'pet', 'basic'],
@@ -376,6 +389,7 @@ export const replacePageCheckKeywords = async (
         visibility,
         popularTopic,
         url,
+        postPublishedAt,
         keywordType,
         restaurantName,
         matchedTitle,
@@ -391,6 +405,7 @@ export const replacePageCheckKeywords = async (
         visibility,
         popularTopic,
         url,
+        postPublishedAt,
         keywordType,
         restaurantName,
         matchedTitle,
@@ -442,7 +457,8 @@ export const updatePageCheckKeywordResult = async (
   rankWithCafe?: number,
   isUpdateRequired?: boolean,
   isNewLogic?: boolean,
-  foundPage?: number
+  foundPage?: number,
+  postPublishedAt?: string
 ): Promise<void> => {
   try {
     const model = pageCheckModels[sheetType];
@@ -465,6 +481,8 @@ export const updatePageCheckKeywordResult = async (
       update.isUpdateRequired = isUpdateRequired;
     if (typeof isNewLogic !== 'undefined') update.isNewLogic = isNewLogic;
     if (typeof foundPage !== 'undefined') update.foundPage = foundPage;
+    if (typeof postPublishedAt !== 'undefined')
+      update.postPublishedAt = postPublishedAt;
 
     await model.findByIdAndUpdate(keywordId, update);
   } catch (error) {
@@ -489,6 +507,7 @@ export interface IExposureHistorySnapshot extends Document {
   visibility: boolean;
   popularTopic: string;
   url: string;
+  postPublishedAt?: string;
   keywordType: 'restaurant' | 'pet' | 'basic';
   restaurantName?: string;
   matchedTitle?: string;
@@ -517,6 +536,7 @@ export interface ExposureHistorySnapshotInput {
   visibility: boolean;
   popularTopic: string;
   url: string;
+  postPublishedAt?: string;
   keywordType: 'restaurant' | 'pet' | 'basic';
   restaurantName?: string;
   matchedTitle?: string;
@@ -543,6 +563,7 @@ const ExposureHistorySnapshotSchema: Schema = new Schema(
     visibility: { type: Boolean, default: false },
     popularTopic: { type: String, default: '' },
     url: { type: String, default: '' },
+    postPublishedAt: { type: String, default: '' },
     keywordType: {
       type: String,
       enum: ['restaurant', 'pet', 'basic'],

@@ -91,6 +91,7 @@ export const getCrawlResult = async (
                   group: `검색결과 ${pageNumber}페이지`,
                   blogLink: blogItem.link,
                   blogName: blogItem.blogName,
+                  postPublishedAt: blogItem.postPublishedAt,
                   positionWithCafe: undefined,
                   isNewLogic: false,
                   page: pageNumber,
@@ -164,7 +165,10 @@ export const getCrawlResult = async (
         0,
         '',
         0,
-        false
+        false,
+        undefined,
+        0,
+        ''
       );
 
       const crawlErrorLog = logBuilder.createCrawlError({

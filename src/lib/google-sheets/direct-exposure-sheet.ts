@@ -24,6 +24,7 @@ export interface DirectSheetUpdate {
   visibility: boolean;
   popularTopic: string;
   url: string;
+  postPublishedAt?: string;
   keywordType: KeywordType;
   restaurantName?: string;
   matchedTitle?: string;
@@ -199,7 +200,8 @@ export const createDirectUpdateCollector = (): {
     rankWithCafe,
     isUpdateRequired,
     isNewLogic,
-    foundPage
+    foundPage,
+    postPublishedAt
   ) => {
     updates.set(keywordId, {
       visibility,
@@ -214,6 +216,7 @@ export const createDirectUpdateCollector = (): {
       isUpdateRequired,
       isNewLogic,
       foundPage,
+      postPublishedAt,
     });
   };
 
@@ -267,6 +270,7 @@ export const writeResultsToWorksheet = async (
   const popularRankCol = getHeaderIndex(headerMap, ['인기글순위', '인기글 순위']);
   const matchedTitleCol = getHeaderIndex(headerMap, ['이미지매칭', '이미지 매칭']);
   const linkCol = getHeaderIndex(headerMap, ['링크']);
+  const publishedAtCol = getHeaderIndex(headerMap, ['발행일', '작성일']);
   const logicCol = getHeaderIndex(headerMap, ['변경', '로직', '신규로직']);
   const rowCol = getHeaderIndex(headerMap, ['행']);
 
@@ -278,6 +282,7 @@ export const writeResultsToWorksheet = async (
     popularRankCol,
     matchedTitleCol,
     linkCol,
+    publishedAtCol,
     logicCol,
     rowCol,
   ].filter((value): value is number => value !== null);
@@ -316,6 +321,12 @@ export const writeResultsToWorksheet = async (
       visibility ? update?.matchedTitle ?? '' : ''
     );
     setCellValue(sheet, rowIndex, linkCol, visibility ? update?.url ?? '' : '');
+    setCellValue(
+      sheet,
+      rowIndex,
+      publishedAtCol,
+      visibility ? update?.postPublishedAt ?? '' : ''
+    );
     setCellValue(sheet, rowIndex, logicCol, logicValue);
     setCellValue(sheet, rowIndex, rowCol, keyword.orderIndex);
   });

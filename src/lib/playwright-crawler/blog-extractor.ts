@@ -5,6 +5,7 @@ export interface BlogItem {
   link: string;
   blogName: string;
   page: number;
+  postPublishedAt?: string;
 }
 
 export const extractAllBlogLinks = (html: string, page: number = 1): BlogItem[] => {
@@ -25,12 +26,21 @@ export const extractAllBlogLinks = (html: string, page: number = 1): BlogItem[] 
     seenLinks.add(href);
 
     const title = $el.text().trim() || $el.attr('title')?.trim() || '';
+    const $item = $el.closest(
+      '[data-template-id="ugcItem"], [data-template-type="snippetParagraph"], [data-template-type="snippetImage"]'
+    );
+    const postPublishedAt = $item
+      .find('.sds-comps-profile-info-subtext')
+      .first()
+      .text()
+      .trim();
 
     items.push({
       title,
       link: href,
       blogName: postMatch[1],
       page,
+      postPublishedAt,
     });
   });
 

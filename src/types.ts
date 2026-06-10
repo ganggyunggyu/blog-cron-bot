@@ -19,6 +19,7 @@ export interface MatchedPostInfo {
   blogId: string;
   postTitle: string;
   postLink: string;
+  postPublishedAt?: string;
   position: number;
   positionWithCafe?: number;
   topicName: string;

@@ -158,7 +158,8 @@ function createUpdateFunction(sheetType: PageCheckSheetType) {
     rankWithCafe?: number,
     isUpdateRequired?: boolean,
     isNewLogic?: boolean,
-    foundPage?: number
+    foundPage?: number,
+    postPublishedAt?: string
   ) => {
     await updatePageCheckKeywordResult(
       sheetType,
@@ -174,7 +175,8 @@ function createUpdateFunction(sheetType: PageCheckSheetType) {
       rankWithCafe,
       isUpdateRequired,
       isNewLogic,
-      foundPage
+      foundPage,
+      postPublishedAt
     );
   };
 }

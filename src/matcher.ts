@@ -12,6 +12,7 @@ export interface ExposureResult {
   blogName: string;
   postTitle: string;
   postLink: string;
+  postPublishedAt?: string;
   exposureType: string;
   topicName: string;
   position: number;
@@ -92,6 +93,7 @@ export const matchBlogs = (
         blogName: item.blogName,
         postTitle: item.title,
         postLink: item.link,
+        postPublishedAt: item.postPublishedAt,
         exposureType,
         topicName,
         position,

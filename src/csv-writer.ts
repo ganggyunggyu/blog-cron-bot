@@ -146,6 +146,7 @@ export const saveToSheetCSV = (
     '인기글 순위',
     '이미지 매칭',
     '링크',
+    '발행일',
     '로직',
     '행',
   ].join(',');
@@ -187,6 +188,7 @@ export const saveToSheetCSV = (
         popularRank,
         '',
         result.postLink,
+        escape(result.postPublishedAt || ''),
         logicType,
         index + 1,
       ].join(',');
@@ -202,6 +204,7 @@ export const saveToSheetCSV = (
       return [
         escape(kw.company || ''),
         escape(kw.keyword),
+        '',
         '',
         '',
         '',
@@ -234,6 +237,7 @@ export const saveToCSV = (
     '블로그명',
     '게시글제목',
     '게시글링크',
+    '발행일',
     '인기주제',
     '스블주제명',
     '순위',
@@ -253,6 +257,7 @@ export const saveToCSV = (
       `"${result.blogName}"`,
       `"${result.postTitle.replace(/"/g, '""')}"`,
       result.postLink,
+      `"${(result.postPublishedAt || '').replace(/"/g, '""')}"`,
       result.exposureType,
       `"${result.topicName}"`,
       result.position,

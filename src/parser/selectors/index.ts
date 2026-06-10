@@ -6,6 +6,7 @@ export interface PopularSelectorConfig {
   intentionPreview: string;
   intentionProfile: string;
   intentionImage: string;
+  profileSubtext: string;
 
   snippetParagraphList: string;
   snippetItem: string;
@@ -32,6 +33,7 @@ export const DEFAULT_SELECTORS: PopularSelectorConfig = {
   intentionPreview: '.sds-comps-text-type-body1',
   intentionProfile: '.sds-comps-profile-info-title-text a',
   intentionImage: '.sds-comps-image img',
+  profileSubtext: '.sds-comps-profile-info-subtext',
 
   snippetParagraphList: '.fds-ugc-snippet-paragraph-item-list',
   snippetItem: '[data-template-type="snippetParagraph"]',

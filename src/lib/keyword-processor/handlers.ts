@@ -36,7 +36,8 @@ export const handleExcluded = async (params: ExcludedParams): Promise<void> => {
     0,
     false,
     isNewLogic,
-    0
+    0,
+    ''
   );
 
   const excludedLog = logBuilder.createExcluded({
@@ -91,7 +92,8 @@ export const handleQueueEmpty = async (
     0,
     false,
     isNewLogic,
-    0
+    0,
+    ''
   );
 
   const queueEmptyLog = logBuilder.createFailure({
@@ -189,7 +191,8 @@ export const handleSuccess = async (params: SuccessParams): Promise<void> => {
     nextMatch.positionWithCafe,
     isUpdateRequired,
     isNewLogic,
-    nextMatch.page ?? 1
+    nextMatch.page ?? 1,
+    nextMatch.postPublishedAt || ''
   );
 
   allResults.push({
@@ -224,6 +227,7 @@ export const handleSuccess = async (params: SuccessParams): Promise<void> => {
       postLink: nextMatch.postLink,
       position: nextMatch.position ?? 0,
       positionWithCafe: nextMatch.positionWithCafe,
+      postPublishedAt: nextMatch.postPublishedAt || '',
       topicName: nextMatch.topicName || '',
       exposureType: nextMatch.exposureType,
       extractedVendor,
@@ -276,7 +280,8 @@ export const handleFilterFailure = async (
     0,
     false,
     isNewLogic,
-    0
+    0,
+    ''
   );
 
   const filterFailureLog = logBuilder.createFilterFailure({

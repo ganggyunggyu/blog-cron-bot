@@ -17,7 +17,8 @@ export type UpdateFunction = (
   rankWithCafe?: number,
   isUpdateRequired?: boolean,
   isNewLogic?: boolean,
-  foundPage?: number
+  foundPage?: number,
+  postPublishedAt?: string
 ) => Promise<void>;
 
 export interface ProcessKeywordsOptions {

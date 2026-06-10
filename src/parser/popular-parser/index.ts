@@ -16,6 +16,7 @@ export interface PopularItem {
   group: string;
   blogLink: string;
   blogName: string;
+  postPublishedAt?: string;
   positionWithCafe?: number;
   isNewLogic?: boolean;
   page?: number;
@@ -36,6 +37,9 @@ const getResolvedElementLink = ($element: cheerio.Cheerio<any>): string =>
     $element.attr('href')?.trim() || '',
     $element.attr('cru')?.trim() || undefined
   );
+
+const getPostPublishedAt = ($item: cheerio.Cheerio<any>): string =>
+  $item.find(SELECTORS.profileSubtext).first().text().trim();
 
 export const extractPopularItems = (
   html: string,
@@ -81,6 +85,7 @@ export const extractPopularItems = (
         const blogName = $profile.text().trim();
         const blogHref = getResolvedElementLink($profile) || postHref;
         const source = detectNaverSource(blogHref || postHref);
+        const postPublishedAt = getPostPublishedAt($item);
 
         const snippet = $item
           .find(SELECTORS.intentionPreview)
@@ -107,6 +112,7 @@ export const extractPopularItems = (
             group: topicName,
             blogLink: blogHref,
             blogName,
+            postPublishedAt,
             positionWithCafe: globalPosition,
             isNewLogic: isNewItem,
             sourceType: source.type,
@@ -153,6 +159,7 @@ export const extractPopularItems = (
         const blogName = $profile.text().trim();
         const blogHref = getResolvedElementLink($profile) || postHref;
         const source = detectNaverSource(blogHref || postHref);
+        const postPublishedAt = getPostPublishedAt($item);
 
         const snippet = $item
           .find(SELECTORS.snippetPreview)
@@ -178,6 +185,7 @@ export const extractPopularItems = (
             group: topicName,
             blogLink: blogHref,
             blogName,
+            postPublishedAt,
             positionWithCafe: globalPosition,
             isNewLogic: isNewItem,
             sourceType: source.type,
@@ -227,6 +235,7 @@ export const extractPopularItems = (
         const blogName = $profile.text().trim();
         const blogHref = getResolvedElementLink($profile) || postHref;
         const source = detectNaverSource(blogHref || postHref);
+        const postPublishedAt = getPostPublishedAt($item);
 
         const image =
           $item.find('.sds-comps-image img').first().attr('src')?.trim() || '';
@@ -246,6 +255,7 @@ export const extractPopularItems = (
             group: topicName,
             blogLink: blogHref,
             blogName,
+            postPublishedAt,
             positionWithCafe: globalPosition,
             isNewLogic: isNewItem,
             sourceType: source.type,
