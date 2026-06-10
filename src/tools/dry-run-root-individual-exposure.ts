@@ -2,6 +2,7 @@ import * as dotenv from 'dotenv';
 import { GoogleSpreadsheet, GoogleSpreadsheetWorksheet } from 'google-spreadsheet';
 import { JWT } from 'google-auth-library';
 import { ROOT_CONFIG } from '../constants';
+import { sendDoorayMessage } from '../lib/dooray';
 import { logger } from '../lib/logger';
 
 dotenv.config();
@@ -13,6 +14,7 @@ interface CliOptions {
   companyLimit: number;
   concurrency: number;
   checkCumulative: boolean;
+  notify: boolean;
 }
 
 interface ProgramRootRow {
@@ -29,6 +31,7 @@ interface MonthlyRootRow {
   company: string;
   keyword: string;
   sheetId: string;
+  gid: number | null;
 }
 
 interface IndividualWritePlan {
@@ -53,7 +56,10 @@ interface IndividualWritePlan {
   extensionValue: string;
   nextExtensionValue: string;
   cumulativeReason: string;
+  todayCumulativeNumber: number | null;
   terminationNotice: boolean;
+  extensionReviewNotice: boolean;
+  extensionProgressNotice: boolean;
 }
 
 interface IndividualSkip {
@@ -70,6 +76,7 @@ interface MatchedPair {
 
 interface SheetMatchedPairGroup {
   sheetId: string;
+  gid: number | null;
   pairs: MatchedPair[];
 }
 
@@ -94,7 +101,10 @@ interface CumulativeCalculationResult {
   formula: string;
   nextExtensionValue: string;
   reason: string;
+  todayCumulativeNumber: number | null;
   terminationNotice: boolean;
+  extensionReviewNotice: boolean;
+  extensionProgressNotice: boolean;
 }
 
 const DEFAULT_CONCURRENCY = 4;
@@ -115,10 +125,22 @@ const buildMatchKey = (company: string, keyword: string): string =>
 const extractSpreadsheetId = (url: string): string =>
   normalizeCell(url).match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/)?.[1] ?? '';
 
+const extractSheetGid = (url: string): number | null => {
+  const match = normalizeCell(url).match(/[?#&]gid=(\d+)/);
+
+  return match ? Number(match[1]) : null;
+};
+
 const parseBooleanCell = (value: string): boolean =>
   ['o', '1', 'true', 'y', 'yes', '노출'].includes(
     normalizeCell(value).toLowerCase()
   );
+
+const isExcludedMarkerRow = (row: string[]): boolean => {
+  const rowText = row.join(' ').replace(/\s+/g, '');
+
+  return /자료미전달리스트|지료미전달리스트/.test(rowText);
+};
 
 const getGoogleSheetAuth = (): JWT => {
   const email = normalizeCell(process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL);
@@ -352,6 +374,7 @@ const parseArgs = (): CliOptions => {
   let companyLimit = 0;
   let concurrency = DEFAULT_CONCURRENCY;
   let checkCumulative = false;
+  let notify = true;
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -401,6 +424,16 @@ const parseArgs = (): CliOptions => {
       continue;
     }
 
+    if (arg === '--notify') {
+      notify = true;
+      continue;
+    }
+
+    if (arg === '--no-notify') {
+      notify = false;
+      continue;
+    }
+
     throw new Error(`알 수 없는 인자: ${arg}`);
   }
 
@@ -411,6 +444,7 @@ const parseArgs = (): CliOptions => {
     companyLimit,
     concurrency,
     checkCumulative,
+    notify,
   };
 };
 
@@ -447,37 +481,40 @@ const loadProgramRootRows = async (
   const rows = await loadGrid(sheet, sheet.rowCount, 6);
   let currentCompany = '';
   let currentLink = '';
+  const loadedRows: ProgramRootRow[] = [];
 
-  const loadedRows = rows
-    .slice(3)
-    .flatMap((row, index): ProgramRootRow[] => {
-      const company = normalizeCell(row[0]);
-      const keyword = normalizeCell(row[1]);
-      const link = normalizeCell(row[5]);
+  for (let index = 3; index < rows.length; index += 1) {
+    const row = rows[index];
 
-      if (company) {
-        currentCompany = company;
-      }
+    if (isExcludedMarkerRow(row)) {
+      break;
+    }
 
-      if (link) {
-        currentLink = link;
-      }
+    const company = normalizeCell(row[0]);
+    const keyword = normalizeCell(row[1]);
+    const link = normalizeCell(row[5]);
 
-      if (!currentCompany || !keyword) {
-        return [];
-      }
+    if (company) {
+      currentCompany = company;
+    }
 
-      return [
-        {
-          rowNumber: index + 4,
-          company: currentCompany,
-          keyword,
-          baseKeyword: keyword.replace(/\([^)]*\)/g, '').trim(),
-          isExposed: parseBooleanCell(row[4]),
-          link: currentLink,
-        },
-      ];
+    if (link) {
+      currentLink = link;
+    }
+
+    if (!currentCompany || !keyword) {
+      continue;
+    }
+
+    loadedRows.push({
+      rowNumber: index + 1,
+      company: currentCompany,
+      keyword,
+      baseKeyword: keyword.replace(/\([^)]*\)/g, '').trim(),
+      isExposed: parseBooleanCell(row[4]),
+      link: currentLink,
     });
+  }
 
   const companyLimitedRows = limitRowsByCompany(loadedRows, companyLimit);
 
@@ -490,11 +527,21 @@ const loadMonthlyRootRows = async (auth: JWT): Promise<MonthlyRootRow[]> => {
   const rows = await loadGrid(sheet, sheet.rowCount, 8);
   let currentCompany = '';
   let currentSheetId = '';
+  let currentGid: number | null = null;
+  const loadedRows: MonthlyRootRow[] = [];
 
-  return rows.slice(3).flatMap((row, index): MonthlyRootRow[] => {
+  for (let index = 3; index < rows.length; index += 1) {
+    const row = rows[index];
+
+    if (isExcludedMarkerRow(row)) {
+      break;
+    }
+
     const company = normalizeCell(row[0]);
     const keyword = normalizeCell(row[1]);
+    const link = normalizeCell(row[5]);
     const sheetId = extractSpreadsheetId(row[5]);
+    const gid = extractSheetGid(link);
 
     if (company) {
       currentCompany = company;
@@ -502,21 +549,23 @@ const loadMonthlyRootRows = async (auth: JWT): Promise<MonthlyRootRow[]> => {
 
     if (sheetId) {
       currentSheetId = sheetId;
+      currentGid = gid;
     }
 
     if (!keyword || !currentCompany) {
-      return [];
+      continue;
     }
 
-    return [
-      {
-        rowNumber: index + 4,
-        company: currentCompany,
-        keyword,
-        sheetId: currentSheetId,
-      },
-    ];
-  });
+    loadedRows.push({
+      rowNumber: index + 1,
+      company: currentCompany,
+      keyword,
+      sheetId: currentSheetId,
+      gid: currentGid,
+    });
+  }
+
+  return loadedRows;
 };
 
 const buildMonthlyRowMap = (
@@ -534,9 +583,12 @@ const buildMonthlyRowMap = (
 };
 
 const chooseIndividualSheet = (
-  doc: GoogleSpreadsheet
+  doc: GoogleSpreadsheet,
+  gid: number | null
 ): GoogleSpreadsheetWorksheet =>
-  doc.sheetsByTitle['시트1'] ?? doc.sheetsByIndex[0];
+  (gid !== null ? doc.sheetsById[gid] : undefined) ??
+  doc.sheetsByTitle['시트1'] ??
+  doc.sheetsByIndex[0];
 
 const getHeaderIndex = (headers: string[], aliases: string[]): number => {
   const normalizedAliases = aliases.map(normalizeKeyPart);
@@ -599,6 +651,25 @@ const parseDateHeader = (header: string): DateParts | null => {
 
 const getDateKey = (parts: DateParts): string => `${parts.month}/${parts.day}`;
 
+const getDateNumber = (parts: DateParts): number => parts.month * 100 + parts.day;
+
+const findFirstBlankColumnIndex = (
+  headers: string[],
+  startColumnIndex: number
+): number => {
+  for (
+    let columnIndex = Math.max(0, startColumnIndex);
+    columnIndex < headers.length;
+    columnIndex += 1
+  ) {
+    if (!normalizeCell(headers[columnIndex])) {
+      return columnIndex;
+    }
+  }
+
+  return Math.max(0, startColumnIndex, headers.length);
+};
+
 const parseExtensionDate = (value: string): DateParts | null => {
   const normalized = normalizeCell(value);
   const slashMatch = normalized.match(/^(\d{1,2})\/(\d{1,2})$/);
@@ -639,11 +710,30 @@ const resolveDateColumn = (
   date: Date
 ): DateColumnResolution => {
   const targetParts = getKstDateParts(date);
+  const targetDateNumber = getDateNumber(targetParts);
   const dateHeaders = headers.flatMap((header, index) => {
     const parts = parseDateHeader(header);
 
     return parts ? [{ index, header, parts }] : [];
   });
+  const lastDateHeader = dateHeaders[dateHeaders.length - 1];
+
+  if (!lastDateHeader) {
+    return {
+      columnIndex: findFirstBlankColumnIndex(headers, 0),
+      label: formatKoreanDateLabel(date),
+      shouldCreate: true,
+    };
+  }
+
+  if (getDateNumber(lastDateHeader.parts) < targetDateNumber) {
+    return {
+      columnIndex: findFirstBlankColumnIndex(headers, lastDateHeader.index + 1),
+      label: formatDateLabelLikeHeader(date, lastDateHeader.header),
+      shouldCreate: true,
+    };
+  }
+
   const existingDateHeader = [...dateHeaders]
     .reverse()
     .find(
@@ -659,25 +749,34 @@ const resolveDateColumn = (
     };
   }
 
-  const lastDateHeader = dateHeaders[dateHeaders.length - 1];
-
-  if (!lastDateHeader) {
-    const firstBlankColumnIndex = headers.findIndex(
-      (header) => !normalizeCell(header)
-    );
-
-    return {
-      columnIndex:
-        firstBlankColumnIndex >= 0 ? firstBlankColumnIndex : headers.length,
-      label: formatKoreanDateLabel(date),
-      shouldCreate: true,
-    };
-  }
-
   return {
-    columnIndex: lastDateHeader.index + 1,
+    columnIndex: findFirstBlankColumnIndex(headers, lastDateHeader.index + 1),
     label: formatDateLabelLikeHeader(date, lastDateHeader.header),
     shouldCreate: true,
+  };
+};
+
+const buildNoticeFlags = (
+  extensionValue: string,
+  todayCumulativeNumber: number | null
+): Pick<
+  CumulativeCalculationResult,
+  'terminationNotice' | 'extensionReviewNotice' | 'extensionProgressNotice'
+> => {
+  const normalizedExtensionValue = normalizeKeyPart(extensionValue);
+
+  return {
+    terminationNotice:
+      normalizedExtensionValue === 'x' && todayCumulativeNumber === 25,
+    extensionReviewNotice:
+      normalizedExtensionValue !== 'o' &&
+      normalizedExtensionValue !== 'x' &&
+      todayCumulativeNumber !== null &&
+      todayCumulativeNumber >= 15,
+    extensionProgressNotice:
+      normalizedExtensionValue === 'o' &&
+      todayCumulativeNumber !== null &&
+      todayCumulativeNumber >= 26,
   };
 };
 
@@ -716,22 +815,38 @@ const calculateCumulativeValue = (
   const normalizedExtensionValue = normalizeKeyPart(extensionValue);
   const extensionDate = parseExtensionDate(extensionValue);
   const currentCumulativeNumber = parseIntegerCell(currentCumulativeValue);
+  const buildResult = (
+    value: string,
+    formula: string,
+    nextExtensionValue: string,
+    reason: string,
+    todayCumulativeNumber: number | null
+  ): CumulativeCalculationResult => ({
+    value,
+    formula,
+    nextExtensionValue,
+    reason,
+    todayCumulativeNumber,
+    ...buildNoticeFlags(extensionValue, todayCumulativeNumber),
+  });
 
   if (normalizedExtensionValue === 'x') {
-    return {
-      value: currentCumulativeValue,
-      formula: '',
-      nextExtensionValue: extensionValue,
-      reason: '연장=x 유지',
-      terminationNotice:
-        currentCumulativeNumber !== null &&
-        currentCumulativeNumber < 25 &&
-        calculateIncrementalCumulativeNumber(
-          currentCumulativeNumber,
-          currentDateValue,
-          nextDateValue
-        ) >= 25,
-    };
+    const todayCumulativeNumber =
+      currentCumulativeNumber === null
+        ? null
+        : calculateIncrementalCumulativeNumber(
+            currentCumulativeNumber,
+            currentDateValue,
+            nextDateValue
+          );
+
+    return buildResult(
+      currentCumulativeValue,
+      '',
+      extensionValue,
+      '연장=x 유지',
+      todayCumulativeNumber
+    );
   }
 
   if (extensionDate) {
@@ -742,13 +857,13 @@ const calculateCumulativeValue = (
     );
 
     if (startColumnIndex === null) {
-      return {
-        value: currentCumulativeValue,
-        formula: '',
-        nextExtensionValue: extensionValue,
-        reason: `연장 시작일 ${extensionValue} 컬럼 없음`,
-        terminationNotice: false,
-      };
+      return buildResult(
+        currentCumulativeValue,
+        '',
+        extensionValue,
+        `연장 시작일 ${extensionValue} 컬럼 없음`,
+        null
+      );
     }
 
     let count = 0;
@@ -768,23 +883,23 @@ const calculateCumulativeValue = (
       }
     }
 
-    return {
-      value: String(count),
-      formula: '',
-      nextExtensionValue: extensionValue,
-      reason: `연장 시작일 ${extensionValue}부터 계산`,
-      terminationNotice: false,
-    };
+    return buildResult(
+      String(count),
+      '',
+      extensionValue,
+      `연장 시작일 ${extensionValue}부터 계산`,
+      count
+    );
   }
 
   if (currentCumulativeNumber === null) {
-    return {
-      value: currentCumulativeValue,
-      formula: '',
-      nextExtensionValue: extensionValue,
-      reason: '기존 누적값 숫자 아님',
-      terminationNotice: false,
-    };
+    return buildResult(
+      currentCumulativeValue,
+      '',
+      extensionValue,
+      '기존 누적값 숫자 아님',
+      null
+    );
   }
 
   const nextCumulativeNumber = calculateIncrementalCumulativeNumber(
@@ -798,45 +913,45 @@ const calculateCumulativeValue = (
     currentCumulativeNumber < 26 &&
     nextCumulativeNumber >= 26
   ) {
-    return {
-      value: '',
-      formula: buildCountifFormulaFromDateColumn(
+    return buildResult(
+      '',
+      buildCountifFormulaFromDateColumn(
         dateColumn.columnIndex,
         targetRowNumber
       ),
-      nextExtensionValue: dateColumn.label,
-      reason: '연장=o 26일 도달, 오늘부터 1일 재계산',
-      terminationNotice: false,
-    };
+      dateColumn.label,
+      '연장=o 26일 도달, 오늘부터 1일 재계산',
+      nextCumulativeNumber
+    );
   }
 
   if (normalizeKeyPart(currentDateValue) !== 'o' && normalizeKeyPart(nextDateValue) === 'o') {
-    return {
-      value: String(nextCumulativeNumber),
-      formula: '',
-      nextExtensionValue: extensionValue,
-      reason: '오늘 신규 노출 +1',
-      terminationNotice: false,
-    };
+    return buildResult(
+      String(nextCumulativeNumber),
+      '',
+      extensionValue,
+      '오늘 신규 노출 +1',
+      nextCumulativeNumber
+    );
   }
 
   if (normalizeKeyPart(currentDateValue) === 'o' && normalizeKeyPart(nextDateValue) !== 'o') {
-    return {
-      value: String(nextCumulativeNumber),
-      formula: '',
-      nextExtensionValue: extensionValue,
-      reason: '오늘 노출 제거 -1',
-      terminationNotice: false,
-    };
+    return buildResult(
+      String(nextCumulativeNumber),
+      '',
+      extensionValue,
+      '오늘 노출 제거 -1',
+      nextCumulativeNumber
+    );
   }
 
-  return {
-    value: currentCumulativeValue,
-    formula: '',
-    nextExtensionValue: extensionValue,
-    reason: '오늘 상태 변화 없음',
-    terminationNotice: false,
-  };
+  return buildResult(
+    currentCumulativeValue,
+    '',
+    extensionValue,
+    '오늘 상태 변화 없음',
+    nextCumulativeNumber
+  );
 };
 
 const processInBatches = async <T, R>(
@@ -883,10 +998,76 @@ const aggregatePlansByCell = (
         existingPlan.shouldCreateDateColumn || plan.shouldCreateDateColumn,
       nextValue:
         existingPlan.nextValue === 'o' || plan.nextValue === 'o' ? 'o' : '',
+      todayCumulativeNumber:
+        existingPlan.todayCumulativeNumber ?? plan.todayCumulativeNumber,
+      terminationNotice: existingPlan.terminationNotice || plan.terminationNotice,
+      extensionReviewNotice:
+        existingPlan.extensionReviewNotice || plan.extensionReviewNotice,
+      extensionProgressNotice:
+        existingPlan.extensionProgressNotice || plan.extensionProgressNotice,
     });
   });
 
   return Array.from(planMap.values());
+};
+
+const formatNoticeKeyword = (plan: IndividualWritePlan): string => {
+  const keyword = normalizeCell(plan.keyword.replace(/\([^)]*\)/g, ''));
+  const cumulativeDisplay =
+    plan.todayCumulativeNumber === null
+      ? '계산불가'
+      : `${plan.todayCumulativeNumber}일`;
+  const extensionDisplay = plan.extensionValue || '빈칸';
+
+  return `- ${plan.company} / ${keyword} (누적 ${cumulativeDisplay}, 연장=${extensionDisplay})`;
+};
+
+const formatNoticeSection = (
+  title: string,
+  plans: IndividualWritePlan[],
+  limit = 20
+): string => {
+  if (plans.length === 0) {
+    return '';
+  }
+
+  const lines = plans.slice(0, limit).map(formatNoticeKeyword);
+  const remaining = plans.length - lines.length;
+
+  if (remaining > 0) {
+    lines.push(`- 외 ${remaining}건`);
+  }
+
+  return [`[${title}] ${plans.length}건`, ...lines].join('\n');
+};
+
+const sendExtensionNoticeMessage = async (params: {
+  dateColumnLabel: string;
+  sourceCount: number;
+  matchedCount: number;
+  changedCount: number;
+  terminationPlans: IndividualWritePlan[];
+  extensionReviewPlans: IndividualWritePlan[];
+  extensionProgressPlans: IndividualWritePlan[];
+}): Promise<boolean> => {
+  const sections = [
+    formatNoticeSection('종료건', params.terminationPlans),
+    formatNoticeSection('연장 확인건', params.extensionReviewPlans),
+    formatNoticeSection('연장진행건', params.extensionProgressPlans),
+  ].filter(Boolean);
+
+  if (sections.length === 0) {
+    return false;
+  }
+
+  const text = [
+    `[루트개별시트 연장 알림] ${params.dateColumnLabel}`,
+    `작업 ${params.sourceCount}개 / 매칭 ${params.matchedCount}개 / 변경 ${params.changedCount}개`,
+    '',
+    sections.join('\n\n'),
+  ].join('\n');
+
+  return sendDoorayMessage(text, '루트개별시트봇');
 };
 
 const buildIndividualWritePlansForSheet = async (
@@ -896,7 +1077,7 @@ const buildIndividualWritePlansForSheet = async (
 ): Promise<{ plans: IndividualWritePlan[]; skips: IndividualSkip[] }> => {
   try {
     const doc = await openSpreadsheet(group.sheetId, auth);
-    const sheet = chooseIndividualSheet(doc);
+    const sheet = chooseIndividualSheet(doc, group.gid);
     const { headers, rows } = await loadIndividualSheetSnapshot(sheet);
     const keywordColumnIndex = getHeaderIndex(headers, ['키워드']);
     const resolvedKeywordColumnIndex = keywordColumnIndex >= 0 ? keywordColumnIndex : 0;
@@ -950,7 +1131,10 @@ const buildIndividualWritePlansForSheet = async (
       let extensionValue = '';
       let nextExtensionValue = '';
       let cumulativeReason = '누적 컬럼 없음';
+      let todayCumulativeNumber: number | null = null;
       let terminationNotice = false;
+      let extensionReviewNotice = false;
+      let extensionProgressNotice = false;
 
       if (cumulativeColumnIndex >= 0) {
         currentCumulativeValue = normalizeCell(cumulativeValues[targetRowIndex]);
@@ -976,7 +1160,10 @@ const buildIndividualWritePlansForSheet = async (
         nextCumulativeFormula = cumulativeResult.formula;
         nextExtensionValue = cumulativeResult.nextExtensionValue;
         cumulativeReason = cumulativeResult.reason;
+        todayCumulativeNumber = cumulativeResult.todayCumulativeNumber;
         terminationNotice = cumulativeResult.terminationNotice;
+        extensionReviewNotice = cumulativeResult.extensionReviewNotice;
+        extensionProgressNotice = cumulativeResult.extensionProgressNotice;
       }
 
       plans.push({
@@ -1003,7 +1190,10 @@ const buildIndividualWritePlansForSheet = async (
         extensionValue,
         nextExtensionValue,
         cumulativeReason,
+        todayCumulativeNumber,
         terminationNotice,
+        extensionReviewNotice,
+        extensionProgressNotice,
       });
     }
 
@@ -1023,11 +1213,14 @@ const buildIndividualWritePlansForSheet = async (
 const groupMatchedPairsBySheet = (
   pairs: MatchedPair[]
 ): { groups: SheetMatchedPairGroup[]; skips: IndividualSkip[] } => {
-  const groupMap = new Map<string, MatchedPair[]>();
+  const groupMap = new Map<
+    string,
+    { sheetId: string; gid: number | null; pairs: MatchedPair[] }
+  >();
   const skips: IndividualSkip[] = [];
 
   pairs.forEach((pair) => {
-    const { sheetId } = pair.monthlyRow;
+    const { sheetId, gid } = pair.monthlyRow;
 
     if (!sheetId) {
       skips.push({
@@ -1038,15 +1231,20 @@ const groupMatchedPairsBySheet = (
       return;
     }
 
-    const existingPairs = groupMap.get(sheetId) ?? [];
-    groupMap.set(sheetId, [...existingPairs, pair]);
+    const groupKey = `${sheetId}::${gid ?? ''}`;
+    const existingGroup = groupMap.get(groupKey) ?? {
+      sheetId,
+      gid,
+      pairs: [],
+    };
+    groupMap.set(groupKey, {
+      ...existingGroup,
+      pairs: [...existingGroup.pairs, pair],
+    });
   });
 
   return {
-    groups: Array.from(groupMap.entries()).map(([sheetId, groupedPairs]) => ({
-      sheetId,
-      pairs: groupedPairs,
-    })),
+    groups: Array.from(groupMap.values()),
     skips,
   };
 };
@@ -1066,7 +1264,8 @@ const writeIndividualPlans = async (
   for (const [, sheetPlans] of groupedPlans) {
     const firstPlan = sheetPlans[0];
     const doc = await openSpreadsheet(firstPlan.spreadsheetId, auth);
-    const sheet = doc.sheetsByTitle[firstPlan.sheetTitle] ?? chooseIndividualSheet(doc);
+    const sheet =
+      doc.sheetsByTitle[firstPlan.sheetTitle] ?? chooseIndividualSheet(doc, null);
     const writeColumnIndexes = sheetPlans.map(
       ({ targetColumnNumber }) => targetColumnNumber - 1
     );
@@ -1117,6 +1316,10 @@ const main = async (): Promise<void> => {
   logger.summary.start('ROOT INDIVIDUAL EXPOSURE SYNC', [
     { label: '날짜 컬럼', value: dateColumnLabel },
     { label: '모드', value: options.dryRun ? 'dry-run' : 'write' },
+    {
+      label: 'Dooray 알림',
+      value: options.notify && !options.dryRun ? '사용' : '없음',
+    },
     { label: '대상 제한', value: options.limit > 0 ? `${options.limit}개` : '전체' },
     {
       label: '업체 제한',
@@ -1204,6 +1407,12 @@ const main = async (): Promise<void> => {
   const terminationNoticePlans = plans.filter(
     ({ terminationNotice }) => terminationNotice
   );
+  const extensionReviewNoticePlans = plans.filter(
+    ({ extensionReviewNotice }) => extensionReviewNotice
+  );
+  const extensionProgressNoticePlans = plans.filter(
+    ({ extensionProgressNotice }) => extensionProgressNotice
+  );
 
   if (!options.dryRun) {
     await writeIndividualPlans(auth, changedPlans);
@@ -1251,11 +1460,57 @@ const main = async (): Promise<void> => {
     }
   }
 
-  if (terminationNoticePlans.length > 0) {
-    logger.divider('금일 종료건');
-    terminationNoticePlans.forEach((plan) => {
-      logger.warn(`${plan.company} - ${normalizeCell(plan.keyword.replace(/\([^)]*\)/g, ''))}`);
+  const logNoticePlans = (
+    title: string,
+    noticePlans: IndividualWritePlan[]
+  ): void => {
+    if (noticePlans.length === 0) {
+      return;
+    }
+
+    logger.divider(title);
+    noticePlans.slice(0, 30).forEach((plan) => {
+      const cumulativeDisplay =
+        plan.todayCumulativeNumber === null
+          ? '계산불가'
+          : `${plan.todayCumulativeNumber}일`;
+      const extensionDisplay = plan.extensionValue || '빈칸';
+
+      logger.warn(
+        `${plan.company} / ${normalizeCell(plan.keyword.replace(/\([^)]*\)/g, ''))}: 누적 ${cumulativeDisplay}, 연장=${extensionDisplay}`
+      );
     });
+
+    if (noticePlans.length > 30) {
+      logger.warn(`...외 ${noticePlans.length - 30}건`);
+    }
+  };
+
+  logNoticePlans('종료건', terminationNoticePlans);
+  logNoticePlans('연장 확인건', extensionReviewNoticePlans);
+  logNoticePlans('연장진행건', extensionProgressNoticePlans);
+
+  const noticeCount =
+    terminationNoticePlans.length +
+    extensionReviewNoticePlans.length +
+    extensionProgressNoticePlans.length;
+  let notificationResult = '대상 없음';
+
+  if (options.dryRun) {
+    notificationResult = 'dry-run 미전송';
+  } else if (!options.notify) {
+    notificationResult = '옵션으로 미전송';
+  } else if (noticeCount > 0) {
+    const sent = await sendExtensionNoticeMessage({
+      dateColumnLabel,
+      sourceCount: programRows.length,
+      matchedCount: plans.length,
+      changedCount: changedPlans.length,
+      terminationPlans: terminationNoticePlans,
+      extensionReviewPlans: extensionReviewNoticePlans,
+      extensionProgressPlans: extensionProgressNoticePlans,
+    });
+    notificationResult = sent ? '전송 완료' : '전송 실패';
   }
 
   logger.divider('스킵 샘플');
@@ -1280,7 +1535,10 @@ const main = async (): Promise<void> => {
     { label: '누적 계산 대상', value: `${cumulativePlans.length}개` },
     { label: '누적 변경 후보', value: `${changedCumulativePlans.length}개` },
     { label: '연장 변경 후보', value: `${changedExtensionPlans.length}개` },
-    { label: '금일 종료건', value: `${terminationNoticePlans.length}개` },
+    { label: '종료건', value: `${terminationNoticePlans.length}개` },
+    { label: '연장 확인건', value: `${extensionReviewNoticePlans.length}개` },
+    { label: '연장진행건', value: `${extensionProgressNoticePlans.length}개` },
+    { label: 'Dooray 알림', value: notificationResult },
     { label: '스킵', value: `${skips.length}개` },
     { label: '실제 쓰기', value: options.dryRun ? '없음' : '완료' },
   ]);
