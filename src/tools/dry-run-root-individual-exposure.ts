@@ -110,8 +110,9 @@ interface CumulativeCalculationResult {
 const DEFAULT_CONCURRENCY = 4;
 const MONTHLY_ROOT_TAB = ROOT_CONFIG.SHEET_NAMES.PACKAGE;
 const GOOGLE_RETRY_LIMIT = 7;
-const INDIVIDUAL_SNAPSHOT_ROW_LIMIT = 1000;
+const INDIVIDUAL_SNAPSHOT_ROW_LIMIT = 300;
 const INDIVIDUAL_SNAPSHOT_COLUMN_LIMIT = 600;
+const INDIVIDUAL_SNAPSHOT_FALLBACK_ROW_LIMIT = 120;
 
 const sleep = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms));
@@ -316,23 +317,43 @@ const loadIndividualSheetSnapshot = async (
     sheet.columnCount,
     INDIVIDUAL_SNAPSHOT_COLUMN_LIMIT
   );
+  const loadSnapshot = async (rowLimit: number): Promise<string[][]> => {
+    await withGoogleRetry(
+      () =>
+        sheet.loadCells({
+          startRowIndex: 0,
+          endRowIndex: rowLimit,
+          startColumnIndex: 0,
+          endColumnIndex,
+        }),
+      `${sheet.title} 스냅샷 로드`
+    );
 
-  await withGoogleRetry(
-    () =>
-      sheet.loadCells({
-        startRowIndex: 0,
-        endRowIndex,
-        startColumnIndex: 0,
-        endColumnIndex,
-      }),
-    `${sheet.title} 스냅샷 로드`
-  );
+    return Array.from({ length: rowLimit }, (_, rowIndex) =>
+      Array.from({ length: endColumnIndex }, (_, columnIndex) =>
+        getCellValue(sheet, rowIndex, columnIndex)
+      )
+    );
+  };
 
-  const rows = Array.from({ length: endRowIndex }, (_, rowIndex) =>
-    Array.from({ length: endColumnIndex }, (_, columnIndex) =>
-      getCellValue(sheet, rowIndex, columnIndex)
-    )
-  );
+  let rows: string[][];
+
+  try {
+    rows = await loadSnapshot(endRowIndex);
+  } catch (error) {
+    if (!getErrorMessage(error).includes('Cannot create a string longer')) {
+      throw error;
+    }
+
+    const fallbackEndRowIndex = Math.min(
+      sheet.rowCount,
+      INDIVIDUAL_SNAPSHOT_FALLBACK_ROW_LIMIT
+    );
+    logger.warn(
+      `${sheet.title} 스냅샷이 커서 ${fallbackEndRowIndex}행 범위로 재시도`
+    );
+    rows = await loadSnapshot(fallbackEndRowIndex);
+  }
 
   return {
     headers: rows[0] ?? [],
