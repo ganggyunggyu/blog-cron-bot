@@ -109,6 +109,12 @@ interface CumulativeCalculationResult {
 
 const DEFAULT_CONCURRENCY = 4;
 const MONTHLY_ROOT_TAB = ROOT_CONFIG.SHEET_NAMES.PACKAGE;
+const GOOGLE_RETRY_LIMIT = 7;
+const INDIVIDUAL_SNAPSHOT_ROW_LIMIT = 1000;
+const INDIVIDUAL_SNAPSHOT_COLUMN_LIMIT = 600;
+
+const sleep = (ms: number): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 const normalizeCell = (value: unknown): string =>
   String(value ?? '').replace(/\s+/g, ' ').trim();
@@ -142,6 +148,53 @@ const isExcludedMarkerRow = (row: string[]): boolean => {
   return /자료미전달리스트|지료미전달리스트/.test(rowText);
 };
 
+const getErrorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error);
+
+const isRetryableGoogleError = (error: unknown): boolean => {
+  const message = getErrorMessage(error);
+
+  return (
+    message.includes('[429]') ||
+    message.includes('Quota exceeded') ||
+    message.includes('Rate Limit') ||
+    message.includes('[500]') ||
+    message.includes('[502]') ||
+    message.includes('[503]') ||
+    message.includes('[504]')
+  );
+};
+
+const withGoogleRetry = async <T>(
+  operation: () => Promise<T>,
+  label: string
+): Promise<T> => {
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt < GOOGLE_RETRY_LIMIT; attempt += 1) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+
+      if (!isRetryableGoogleError(error) || attempt === GOOGLE_RETRY_LIMIT - 1) {
+        break;
+      }
+
+      const waitMs = Math.min(
+        60000,
+        1200 * 2 ** attempt + Math.floor(Math.random() * 800)
+      );
+      logger.warn(
+        `${label} 재시도 ${attempt + 1}/${GOOGLE_RETRY_LIMIT - 1} (${Math.round(waitMs / 1000)}초 대기): ${getErrorMessage(error)}`
+      );
+      await sleep(waitMs);
+    }
+  }
+
+  throw lastError;
+};
+
 const getGoogleSheetAuth = (): JWT => {
   const email = normalizeCell(process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL);
   const key = normalizeCell(process.env.GOOGLE_PRIVATE_KEY).replace(/\\n/g, '\n');
@@ -162,7 +215,10 @@ const openSpreadsheet = async (
   auth: JWT
 ): Promise<GoogleSpreadsheet> => {
   const doc = new GoogleSpreadsheet(spreadsheetId, auth);
-  await doc.loadInfo();
+  await withGoogleRetry(
+    () => doc.loadInfo(),
+    `스프레드시트 정보 로드 ${spreadsheetId}`
+  );
   return doc;
 };
 
@@ -193,12 +249,16 @@ const loadGrid = async (
   const endRowIndex = Math.min(sheet.rowCount, rowCount);
   const endColumnIndex = Math.min(sheet.columnCount, columnCount);
 
-  await sheet.loadCells({
-    startRowIndex: 0,
-    endRowIndex,
-    startColumnIndex: 0,
-    endColumnIndex,
-  });
+  await withGoogleRetry(
+    () =>
+      sheet.loadCells({
+        startRowIndex: 0,
+        endRowIndex,
+        startColumnIndex: 0,
+        endColumnIndex,
+      }),
+    `${sheet.title} 셀 로드`
+  );
 
   return Array.from({ length: endRowIndex }, (_, rowIndex) =>
     Array.from({ length: endColumnIndex }, (_, columnIndex) =>
@@ -212,12 +272,16 @@ const loadHeaderRow = async (
 ): Promise<string[]> => {
   const endColumnIndex = Math.min(sheet.columnCount, 600);
 
-  await sheet.loadCells({
-    startRowIndex: 0,
-    endRowIndex: 1,
-    startColumnIndex: 0,
-    endColumnIndex,
-  });
+  await withGoogleRetry(
+    () =>
+      sheet.loadCells({
+        startRowIndex: 0,
+        endRowIndex: 1,
+        startColumnIndex: 0,
+        endColumnIndex,
+      }),
+    `${sheet.title} 헤더 로드`
+  );
 
   return Array.from({ length: endColumnIndex }, (_, columnIndex) =>
     getCellValue(sheet, 0, columnIndex)
@@ -228,12 +292,16 @@ const loadColumnValues = async (
   sheet: GoogleSpreadsheetWorksheet,
   columnIndex: number
 ): Promise<string[]> => {
-  await sheet.loadCells({
-    startRowIndex: 0,
-    endRowIndex: sheet.rowCount,
-    startColumnIndex: columnIndex,
-    endColumnIndex: columnIndex + 1,
-  });
+  await withGoogleRetry(
+    () =>
+      sheet.loadCells({
+        startRowIndex: 0,
+        endRowIndex: sheet.rowCount,
+        startColumnIndex: columnIndex,
+        endColumnIndex: columnIndex + 1,
+      }),
+    `${sheet.title} 컬럼 로드`
+  );
 
   return Array.from({ length: sheet.rowCount }, (_, rowIndex) =>
     getCellValue(sheet, rowIndex, columnIndex)
@@ -243,15 +311,22 @@ const loadColumnValues = async (
 const loadIndividualSheetSnapshot = async (
   sheet: GoogleSpreadsheetWorksheet
 ): Promise<IndividualSheetSnapshot> => {
-  const endRowIndex = sheet.rowCount;
-  const endColumnIndex = Math.min(sheet.columnCount, 600);
+  const endRowIndex = Math.min(sheet.rowCount, INDIVIDUAL_SNAPSHOT_ROW_LIMIT);
+  const endColumnIndex = Math.min(
+    sheet.columnCount,
+    INDIVIDUAL_SNAPSHOT_COLUMN_LIMIT
+  );
 
-  await sheet.loadCells({
-    startRowIndex: 0,
-    endRowIndex,
-    startColumnIndex: 0,
-    endColumnIndex,
-  });
+  await withGoogleRetry(
+    () =>
+      sheet.loadCells({
+        startRowIndex: 0,
+        endRowIndex,
+        startColumnIndex: 0,
+        endColumnIndex,
+      }),
+    `${sheet.title} 스냅샷 로드`
+  );
 
   const rows = Array.from({ length: endRowIndex }, (_, rowIndex) =>
     Array.from({ length: endColumnIndex }, (_, columnIndex) =>
@@ -967,6 +1042,10 @@ const processInBatches = async <T, R>(
       batch.map((item, index) => handler(item, start + index))
     );
     results.push(...batchResults);
+
+    if (start + concurrency < items.length) {
+      await sleep(1200);
+    }
   }
 
   return results;
@@ -1276,18 +1355,26 @@ const writeIndividualPlans = async (
     );
 
     if (sheet.columnCount <= maxColumnIndex) {
-      await sheet.resize({
-        rowCount: sheet.rowCount,
-        columnCount: maxColumnIndex + 1,
-      });
+      await withGoogleRetry(
+        () =>
+          sheet.resize({
+            rowCount: sheet.rowCount,
+            columnCount: maxColumnIndex + 1,
+          }),
+        `${sheet.title} 컬럼 확장`
+      );
     }
 
-    await sheet.loadCells({
-      startRowIndex: 0,
-      endRowIndex: maxRowIndex + 1,
-      startColumnIndex: minColumnIndex,
-      endColumnIndex: maxColumnIndex + 1,
-    });
+    await withGoogleRetry(
+      () =>
+        sheet.loadCells({
+          startRowIndex: 0,
+          endRowIndex: maxRowIndex + 1,
+          startColumnIndex: minColumnIndex,
+          endColumnIndex: maxColumnIndex + 1,
+        }),
+      `${sheet.title} 쓰기 범위 로드`
+    );
 
     sheetPlans.forEach((plan) => {
       const columnIndex = plan.targetColumnNumber - 1;
@@ -1300,11 +1387,16 @@ const writeIndividualPlans = async (
       sheet.getCell(rowIndex, columnIndex).value = plan.nextValue;
     });
 
-    await sheet.saveUpdatedCells();
+    await withGoogleRetry(
+      () => sheet.saveUpdatedCells(),
+      `${sheet.title} 셀 저장`
+    );
 
     logger.success(
       `${firstPlan.spreadsheetTitle} / ${sheet.title}: ${sheetPlans.length}셀 기록 완료`
     );
+
+    await sleep(700);
   }
 };
 
