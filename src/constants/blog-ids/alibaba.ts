@@ -13,6 +13,8 @@ export const ALIBABA_BLOG_IDS = dedupeAlibabaBlogIds([
   'heavymouse448',
   'ui3nnkai',
   'rqr1io45',
+  'i_thinkkkk',
+  'managa7766',
 ] as const);
 
 export const ALIBABA_SECTION_NAMES = [

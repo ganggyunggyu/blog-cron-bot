@@ -39,7 +39,7 @@ const assertExcludesAll = (targetBlogIds: string[], excludedBlogIds: readonly st
 assertContainsAll(DOGMARU_BLOG_IDS, REQUIRED_DOGMARU_BLOG_IDS);
 assertContainsAll(DOGMARU_PAGE_CHECK_BLOG_IDS, REQUIRED_DOGMARU_BLOG_IDS);
 
-assert.equal(ALIBABA_BLOG_IDS.length, 6);
+assert.equal(ALIBABA_BLOG_IDS.length, 13);
 assert.equal(new Set(ALIBABA_BLOG_IDS).size, ALIBABA_BLOG_IDS.length);
 
 for (const sectionName of ALIBABA_SECTION_NAMES) {
