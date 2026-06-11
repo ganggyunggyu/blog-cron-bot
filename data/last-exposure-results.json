@@ -43,11 +43,11 @@
   },
   "루트 키워드": {
     "cronType": "루트 키워드",
-    "totalKeywords": 192,
-    "exposureCount": 144,
-    "popularCount": 5,
-    "sblCount": 139,
-    "timestamp": "2026-06-10T08:37:58.102Z"
+    "totalKeywords": 190,
+    "exposureCount": 24,
+    "popularCount": 17,
+    "sblCount": 7,
+    "timestamp": "2026-06-11T05:24:09.688Z"
   },
   "멀티페이지 크론 [애견]": {
     "cronType": "멀티페이지 크론 [애견]",
@@ -249,18 +249,18 @@
   },
   "알리바바 노출체크": {
     "cronType": "알리바바 노출체크",
-    "totalKeywords": 1,
-    "exposureCount": 1,
-    "popularCount": 0,
-    "sblCount": 0,
-    "newLogicCount": 0,
-    "oldLogicCount": 1,
+    "totalKeywords": 474,
+    "exposureCount": 39,
+    "popularCount": 6,
+    "sblCount": 11,
+    "newLogicCount": 4,
+    "oldLogicCount": 35,
     "sheetStats": [
       {
         "name": "신규작업",
-        "count": 1
+        "count": 39
       }
     ],
-    "timestamp": "2026-06-11T04:44:57.556Z"
+    "timestamp": "2026-06-11T05:12:59.156Z"
   }
 }
