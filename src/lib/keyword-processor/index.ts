@@ -50,6 +50,7 @@ interface SharedProcessContext {
   blogIds?: string[];
   allowAnyBlog?: boolean;
   consumeMatches: boolean;
+  includeGenericBlogResults: boolean;
   keywordLogicMap?: Map<string, boolean>;
   caches: CrawlCaches;
   allResults: OrderedExposureResult[];
@@ -114,6 +115,7 @@ const processSingleKeyword = async (
     blogIds,
     allowAnyBlog,
     consumeMatches,
+    includeGenericBlogResults,
     keywordLogicMap,
     caches,
     allResults,
@@ -141,7 +143,8 @@ const processSingleKeyword = async (
     updateFunction,
     maxPages,
     blogIds,
-    allowAnyBlog
+    allowAnyBlog,
+    includeGenericBlogResults
   );
 
   if (!crawlResult) {
@@ -221,6 +224,7 @@ const processSingleKeyword = async (
         caches,
         baseMatchesCount: 0,
         existingLinks,
+        includeGenericBlogResults,
       });
 
       if (guestRetryResult.recovered && guestRetryResult.retryResult?.match) {
@@ -328,6 +332,7 @@ const processSingleKeyword = async (
       baseMatchesCount: allMatchesCount,
       existingLinks,
       logNewMatches: true,
+      includeGenericBlogResults,
     });
 
     guestRetryInfo = guestRetryResult.guestRetryComparison;
@@ -418,6 +423,7 @@ export const processKeywords = async (
   const blogIds = options?.blogIds;
   const allowAnyBlog = options?.allowAnyBlog;
   const consumeMatches = options?.consumeMatches ?? true;
+  const includeGenericBlogResults = options?.includeGenericBlogResults ?? false;
   const keywordLogicMap = options?.keywordLogicMap;
   const allResults: OrderedExposureResult[] = [];
 
@@ -442,6 +448,7 @@ export const processKeywords = async (
     blogIds,
     allowAnyBlog,
     consumeMatches,
+    includeGenericBlogResults,
     keywordLogicMap,
     caches,
     allResults,

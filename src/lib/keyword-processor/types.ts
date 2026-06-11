@@ -29,6 +29,7 @@ export interface ProcessKeywordsOptions {
   blogIds?: string[];
   allowAnyBlog?: boolean;
   consumeMatches?: boolean;
+  includeGenericBlogResults?: boolean;
   keywordLogicMap?: Map<string, boolean>;
 }
 
@@ -90,6 +91,7 @@ export interface GuestRetryParams {
   baseMatchesCount: number;
   existingLinks: Set<string>;
   logNewMatches?: boolean;
+  includeGenericBlogResults?: boolean;
 }
 
 export interface GuestRetryResult {

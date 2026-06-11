@@ -10,7 +10,7 @@ import { getAllowAnyBlog } from './allow-any-blog';
 import { KeywordDoc, KeywordType, CrawlCaches, UpdateFunction } from './types';
 import { extractRestaurantName } from './keyword-classifier';
 import { crawlMultiPagesPlaywright } from '../playwright-crawler';
-import { extractAllBlogLinks } from '../playwright-crawler/blog-extractor';
+import { appendGenericBlogItems } from './generic-blog-results';
 
 interface CrawlResult {
   items: any[];
@@ -32,7 +32,8 @@ export const getCrawlResult = async (
   updateFunction: UpdateFunction,
   maxPages: number = 1,
   blogIds: string[] = BLOG_IDS,
-  allowAnyBlogOverride?: boolean
+  allowAnyBlogOverride?: boolean,
+  includeGenericBlogResults: boolean = false
 ): Promise<CrawlResult | null> => {
   const { crawlCache, itemsCache, matchQueueMap, htmlStructureCache } = caches;
 
@@ -61,6 +62,9 @@ export const getCrawlResult = async (
 
         // 1페이지에서 신규로직 여부 먼저 판단
         const firstPageItems = extractPopularItems(html);
+        if (includeGenericBlogResults) {
+          appendGenericBlogItems(firstPageItems, html, 1);
+        }
         const firstPageGroups = new Set(firstPageItems.map((item: any) => item.group));
         topicNamesArray = Array.from(firstPageGroups);
 
@@ -78,26 +82,7 @@ export const getCrawlResult = async (
               }
             }
           } else {
-            const blogItems = extractAllBlogLinks(pageHtml, pageNumber);
-            for (const blogItem of blogItems) {
-              if (!seenLinks.has(blogItem.link)) {
-                seenLinks.add(blogItem.link);
-                allItems.push({
-                  title: blogItem.title,
-                  link: blogItem.link,
-                  snippet: '',
-                  image: '',
-                  badge: '',
-                  group: `검색결과 ${pageNumber}페이지`,
-                  blogLink: blogItem.link,
-                  blogName: blogItem.blogName,
-                  postPublishedAt: blogItem.postPublishedAt,
-                  positionWithCafe: undefined,
-                  isNewLogic: false,
-                  page: pageNumber,
-                });
-              }
-            }
+            appendGenericBlogItems(allItems, pageHtml, pageNumber);
           }
         });
 
@@ -106,6 +91,9 @@ export const getCrawlResult = async (
       } else {
         html = await crawlWithRetry(searchQuery, CRAWL_CONFIG.maxRetries);
         items = extractPopularItems(html);
+        if (includeGenericBlogResults) {
+          appendGenericBlogItems(items, html, 1);
+        }
       }
 
       const allowAnyBlog = getAllowAnyBlog(

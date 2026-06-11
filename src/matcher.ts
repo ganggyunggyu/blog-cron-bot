@@ -6,6 +6,9 @@ const EXCLUDED_SET = new Set(
   EXCLUDED_BLOG_IDS.map((id) => id.toLowerCase())
 );
 
+const isGenericBlogGroup = (group: string): boolean =>
+  group === '통합검색 블로그' || /^검색결과 \d+페이지$/u.test(group);
+
 export interface ExposureResult {
   query: string;
   blogId: string;
@@ -74,7 +77,11 @@ export const matchBlogs = (
       : blogId && allowedIds.has(blogId);
     if (accept) {
       let exposureType: string;
-      if (item.page && item.page > 1) {
+      const isGenericBlogResult = isGenericBlogGroup(item.group || '');
+
+      if (isGenericBlogResult) {
+        exposureType = item.group;
+      } else if (item.page && item.page > 1) {
         exposureType = `검색결과 ${item.page}페이지`;
       } else {
         exposureType = isPopular ? '인기글' : '스블';
@@ -85,7 +92,8 @@ export const matchBlogs = (
         ? index + 1
         : itemPositions.get(item) || index + 1;
 
-      const positionWithCafe = isPopular ? item.positionWithCafe : undefined;
+      const positionWithCafe =
+        isPopular && !isGenericBlogResult ? item.positionWithCafe : undefined;
 
       results.push({
         query,

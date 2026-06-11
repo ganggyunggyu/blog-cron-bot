@@ -6,6 +6,7 @@ import { GuestRetryComparison } from '../../types';
 import { logger } from '../logger';
 import { findMatchingPost } from '../post-filter';
 import { getAllowAnyBlog } from './allow-any-blog';
+import { appendGenericBlogItems } from './generic-blog-results';
 import { GuestRetryParams, GuestRetryResult } from './types';
 
 export const runGuestRetry = async (
@@ -25,6 +26,7 @@ export const runGuestRetry = async (
     baseMatchesCount,
     existingLinks,
     logNewMatches,
+    includeGenericBlogResults,
   } = params;
 
   try {
@@ -32,6 +34,9 @@ export const runGuestRetry = async (
 
     const guestHtml = await crawlWithRetryWithoutCookie(searchQuery, 2);
     const guestItems = extractPopularItems(guestHtml);
+    if (includeGenericBlogResults) {
+      appendGenericBlogItems(guestItems, guestHtml, 1);
+    }
 
     const loginTopics = new Set(topicNamesArray);
     const guestTopics = new Set(guestItems.map((item: any) => item.group));
