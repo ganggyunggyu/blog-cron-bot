@@ -15,6 +15,7 @@ interface CliOptions {
   concurrency: number;
   checkCumulative: boolean;
   notify: boolean;
+  exposedOnly: boolean;
 }
 
 interface ProgramRootRow {
@@ -471,6 +472,7 @@ const parseArgs = (): CliOptions => {
   let concurrency = DEFAULT_CONCURRENCY;
   let checkCumulative = false;
   let notify = true;
+  let exposedOnly = true;
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -530,6 +532,16 @@ const parseArgs = (): CliOptions => {
       continue;
     }
 
+    if (arg === '--exposed-only') {
+      exposedOnly = true;
+      continue;
+    }
+
+    if (arg === '--include-unexposed') {
+      exposedOnly = false;
+      continue;
+    }
+
     throw new Error(`알 수 없는 인자: ${arg}`);
   }
 
@@ -541,6 +553,7 @@ const parseArgs = (): CliOptions => {
     concurrency,
     checkCumulative,
     notify,
+    exposedOnly,
   };
 };
 
@@ -570,7 +583,8 @@ const limitRowsByCompany = (
 const loadProgramRootRows = async (
   auth: JWT,
   limit: number,
-  companyLimit: number
+  companyLimit: number,
+  exposedOnly: boolean
 ): Promise<ProgramRootRow[]> => {
   const doc = await openSpreadsheet(ROOT_CONFIG.SHEET_ID, auth);
   const sheet = getRequiredSheet(doc, MONTHLY_ROOT_TAB);
@@ -612,7 +626,10 @@ const loadProgramRootRows = async (
     });
   }
 
-  const companyLimitedRows = limitRowsByCompany(loadedRows, companyLimit);
+  const targetRows = exposedOnly
+    ? loadedRows.filter(({ isExposed }) => isExposed)
+    : loadedRows;
+  const companyLimitedRows = limitRowsByCompany(targetRows, companyLimit);
 
   return limit > 0 ? companyLimitedRows.slice(0, limit) : companyLimitedRows;
 };
@@ -1438,13 +1455,15 @@ const main = async (): Promise<void> => {
       label: '업체 제한',
       value: options.companyLimit > 0 ? `상단 ${options.companyLimit}개 업체` : '전체',
     },
+    { label: '대상 필터', value: options.exposedOnly ? '노출=o만' : '전체' },
     { label: '동시성', value: `${options.concurrency}` },
   ]);
 
   const programRows = await loadProgramRootRows(
     auth,
     options.limit,
-    options.companyLimit
+    options.companyLimit,
+    options.exposedOnly
   );
   const monthlyRows = await loadMonthlyRootRows(auth);
   const monthlyRowMap = buildMonthlyRowMap(monthlyRows);
