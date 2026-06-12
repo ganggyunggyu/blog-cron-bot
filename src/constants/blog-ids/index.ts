@@ -144,6 +144,7 @@ const GENERAL_ONLY_BLOG_IDS = dedupeBlogIds([
   'dreamclock33',
   'sarangchai_',
   'i_thinkkkk',
+  'introsm',
   'sw078',
   'seowoo7603',
   'ikc9036',
