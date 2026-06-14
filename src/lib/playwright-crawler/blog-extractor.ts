@@ -5,6 +5,7 @@ export interface BlogItem {
   link: string;
   blogName: string;
   page: number;
+  position?: number;
   postPublishedAt?: string;
 }
 
