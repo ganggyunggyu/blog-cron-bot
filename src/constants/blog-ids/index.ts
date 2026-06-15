@@ -68,6 +68,7 @@ export const EXCLUDED_BLOG_IDS = [
   'antique2013',
   'mintto02',
   'sundays0411',
+  'ikc9036',
 ] as const;
 
 const EXCLUDED_BLOG_ID_SET = new Set(
@@ -147,7 +148,6 @@ const GENERAL_ONLY_BLOG_IDS = dedupeBlogIds([
   'introsm',
   'sw078',
   'seowoo7603',
-  'ikc9036',
   'skidrow762',
   'sghjan',
   'sunyzone2',
