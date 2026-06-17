@@ -13,6 +13,8 @@
     "cron:dogmaru": "ts-node src/cron-dogmaru.ts",
     "cron:exclude": "ts-node src/cron-dogmaru-exclude.ts",
     "cron:pages": "ts-node src/cron-pages.ts",
+    "cron:pages:package": "cross-env ONLY_SHEET_TYPE=package EXPOSURE_MAX_PAGES=4 ts-node src/cron-sheet.ts",
+    "cron:pages:general": "cross-env ONLY_SHEET_TYPE=dogmaru-exclude EXPOSURE_MAX_PAGES=4 ts-node src/cron-sheet.ts",
     "scheduler": "ts-node src/pm2-scheduler.ts",
     "scheduler:test": "cross-env TEST_DELAY_MINUTES=1 ts-node src/pm2-scheduler.ts",
     "scheduler:root": "ts-node src/pm2-scheduler-root.ts",

@@ -40,7 +40,9 @@ export const resolveNaverSearchResultUrl = (
   try {
     const parsedUrl = new URL(candidate, NAVER_SEARCH_BASE_URL);
     const encodedUrl =
-      parsedUrl.searchParams.get('u') || parsedUrl.searchParams.get('url');
+      parsedUrl.searchParams.get('u') ||
+      parsedUrl.searchParams.get('url') ||
+      parsedUrl.searchParams.get('cru');
 
     if (encodedUrl) {
       return decodeUrl(encodedUrl);

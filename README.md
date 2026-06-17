@@ -72,6 +72,12 @@ pnpm build
 pnpm start
 ```
 
+패키지/일반건 전용 4페이지 노출체크:
+```bash
+pnpm cron:pages:package
+pnpm cron:pages:general
+```
+
 ## 시트타입별 동작 (sheet-config)
 
 `src/sheet-config.ts`에서 시트타입별 동작을 설정할 수 있습니다. 환경변수가 설정되어 있으면 시트 설정보다 환경변수가 우선합니다.

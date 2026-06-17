@@ -6,12 +6,27 @@ import { createDetailedLogBuilder, saveDetailedLogs } from './logs';
 import { processKeywords } from './lib/keyword-processor';
 import { checkNaverLogin } from './lib/check-naver-login';
 import { logger } from './lib/logger';
+import { closeBrowser } from './lib/playwright-crawler';
 import { getKSTTimestamp } from './utils';
 import { sendDoorayExposureResult } from './lib/dooray';
 import { ExposureResult } from './matcher';
 import { DOGMARU_PAGE_CHECK_BLOG_IDS } from './constants/blog-ids';
 
 dotenv.config();
+
+const parsePositiveIntegerEnv = (...names: string[]): number | undefined => {
+  for (const name of names) {
+    const value = process.env[name]?.trim();
+    if (!value) continue;
+
+    const parsed = Number(value);
+    if (Number.isInteger(parsed) && parsed > 0) {
+      return parsed;
+    }
+  }
+
+  return undefined;
+};
 
 export async function main() {
   const startTime = Date.now();
@@ -41,6 +56,8 @@ export async function main() {
   const onlyCompany = (process.env.ONLY_COMPANY || '').trim();
   const onlyKeywordRegex = (process.env.ONLY_KEYWORD_REGEX || '').trim();
   const onlyId = (process.env.ONLY_ID || '').trim();
+  const maxPages =
+    parsePositiveIntegerEnv('EXPOSURE_MAX_PAGES', 'PAGE_CHECK_MAX_PAGES') ?? 1;
 
   let filtered = allKeywords;
   const normalize = (s: unknown) =>
@@ -75,6 +92,9 @@ export async function main() {
   logger.info(
     `📋 검색어 ${keywords.length}개 처리 예정 (필터 applied, start=${startIndex})`
   );
+  if (maxPages > 1) {
+    logger.info(`📄 멀티페이지 검색 활성화: 최대 ${maxPages}페이지`);
+  }
   logger.blank();
 
   const logBuilder = createDetailedLogBuilder();
@@ -89,6 +109,7 @@ export async function main() {
     logger.info(`📦 패키지/일반건 ${otherKeywords.length}개 처리`);
     const results = await processKeywords(otherKeywords, logBuilder, {
       isLoggedIn: loginStatus.isLoggedIn,
+      maxPages,
       keywordLogicMap,
     });
     allResults.push(...results);
@@ -98,6 +119,7 @@ export async function main() {
     logger.info(`🐕 도그마루 ${dogmaruKeywords.length}개 처리 (전체 블로그 기준)`);
     const results = await processKeywords(dogmaruKeywords, logBuilder, {
       isLoggedIn: loginStatus.isLoggedIn,
+      maxPages,
       blogIds: DOGMARU_PAGE_CHECK_BLOG_IDS,
       keywordLogicMap,
     });
@@ -183,6 +205,7 @@ export async function main() {
     { label: '실패', value: `${stats.failed}개` },
   ]);
 
+  await closeBrowser();
   await disconnectDB();
 }
 

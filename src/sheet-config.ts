@@ -25,6 +25,10 @@ const ALIASES: Record<string, string> = {
   dogmaru: 'dogmaru',
   도그마루: 'dogmaru',
   package: 'package',
+  패키지: 'package',
+  general: 'dogmaru-exclude',
+  일반건: 'dogmaru-exclude',
+  'dogmaru-exclude': 'dogmaru-exclude',
 };
 
 const SHEET_OPTIONS: Record<string, SheetOptions> = {
@@ -40,6 +44,13 @@ const SHEET_OPTIONS: Record<string, SheetOptions> = {
     maxContentChecks: 4,
     contentCheckDelayMs: 0,
     csvFilePrefix: 'results-dogmaru',
+  },
+
+  'dogmaru-exclude': {
+    allowAnyBlog: false,
+    maxContentChecks: 3,
+    contentCheckDelayMs: 0,
+    csvFilePrefix: 'results-dogmaru-exclude',
   },
 };
 
