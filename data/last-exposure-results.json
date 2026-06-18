@@ -252,17 +252,17 @@
   "알리바바 노출체크": {
     "cronType": "알리바바 노출체크",
     "totalKeywords": 474,
-    "exposureCount": 52,
-    "popularCount": 13,
-    "sblCount": 23,
-    "newLogicCount": 12,
-    "oldLogicCount": 40,
+    "exposureCount": 47,
+    "popularCount": 10,
+    "sblCount": 21,
+    "newLogicCount": 9,
+    "oldLogicCount": 38,
     "sheetStats": [
       {
         "name": "신규작업",
-        "count": 52
+        "count": 47
       }
     ],
-    "timestamp": "2026-06-17T01:32:56.686Z"
+    "timestamp": "2026-06-18T01:14:05.007Z"
   }
 }
