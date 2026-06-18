@@ -311,6 +311,7 @@ const TAGGED_DOGMARU_BLOG_IDS = dedupeBlogIds([
   'tinyfish183',
   'mw_mj',
   'janaggena',
+  'wandookong2',
 ] as const);
 
 const TAGGED_SURI_PET_BLOG_IDS = dedupeBlogIds([

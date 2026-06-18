@@ -14,7 +14,7 @@ import {
   SURI_PET_PAGE_CHECK_BLOG_IDS,
 } from '../constants/blog-ids';
 
-const REQUIRED_DOGMARU_BLOG_IDS = ['mw_mj', 'janaggena'];
+const REQUIRED_DOGMARU_BLOG_IDS = ['mw_mj', 'janaggena', 'wandookong2'];
 
 const assertContainsAll = (targetBlogIds: string[], expectedBlogIds: string[]) => {
   for (const expectedBlogId of expectedBlogIds) {
