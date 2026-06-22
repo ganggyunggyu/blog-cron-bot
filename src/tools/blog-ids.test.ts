@@ -15,6 +15,8 @@ import {
 } from '../constants/blog-ids';
 
 const REQUIRED_DOGMARU_BLOG_IDS = ['mw_mj', 'janaggena', 'wandookong2'];
+const REQUIRED_ALIBABA_BLOG_IDS = ['introsm'];
+const REQUIRED_ALL_BLOG_IDS = ['introsm'];
 
 const assertContainsAll = (targetBlogIds: string[], expectedBlogIds: string[]) => {
   for (const expectedBlogId of expectedBlogIds) {
@@ -38,9 +40,15 @@ const assertExcludesAll = (targetBlogIds: string[], excludedBlogIds: readonly st
 
 assertContainsAll(DOGMARU_BLOG_IDS, REQUIRED_DOGMARU_BLOG_IDS);
 assertContainsAll(DOGMARU_PAGE_CHECK_BLOG_IDS, REQUIRED_DOGMARU_BLOG_IDS);
+assertContainsAll(BLOG_IDS, REQUIRED_ALL_BLOG_IDS);
+assertContainsAll(PAGES_BLOG_IDS, REQUIRED_ALL_BLOG_IDS);
+assertContainsAll(DOGMARU_PAGE_CHECK_BLOG_IDS, REQUIRED_ALL_BLOG_IDS);
+assertContainsAll(PET_PAGE_CHECK_BLOG_IDS, REQUIRED_ALL_BLOG_IDS);
+assertContainsAll(SURI_PET_PAGE_CHECK_BLOG_IDS, REQUIRED_ALL_BLOG_IDS);
 
-assert.equal(ALIBABA_BLOG_IDS.length, 13);
+assert.equal(ALIBABA_BLOG_IDS.length, 14);
 assert.equal(new Set(ALIBABA_BLOG_IDS).size, ALIBABA_BLOG_IDS.length);
+assertContainsAll(ALIBABA_BLOG_IDS, REQUIRED_ALIBABA_BLOG_IDS);
 
 for (const sectionName of ALIBABA_SECTION_NAMES) {
   assert.deepEqual(

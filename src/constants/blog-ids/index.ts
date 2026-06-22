@@ -338,7 +338,10 @@ const PAGE_ONLY_BLOG_IDS = dedupeBlogIds([
 ]);
 
 // cron:pages용 전체 블로그(도그마루/서리펫 전용 계정 제외)
-export const PAGES_BLOG_IDS = [...PAGE_GENERAL_BLOG_IDS];
+export const PAGES_BLOG_IDS = dedupeBlogIds([
+  ...PAGE_GENERAL_BLOG_IDS,
+  'introsm',
+]);
 
 // 노출체크 대상 블로그 계정 목록(블로그 URL 기준 ID)
 export const BLOG_IDS = dedupeBlogIds([

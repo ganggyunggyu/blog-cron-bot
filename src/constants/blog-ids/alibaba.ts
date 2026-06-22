@@ -14,6 +14,7 @@ export const ALIBABA_BLOG_IDS = dedupeAlibabaBlogIds([
   'ui3nnkai',
   'rqr1io45',
   'i_thinkkkk',
+  'introsm',
   'managa7766',
 ] as const);
 
