@@ -7,6 +7,7 @@ import {
   DOGMARU_BLOG_IDS,
   DOGMARU_PAGE_CHECK_BLOG_IDS,
   EXCLUDED_BLOG_IDS,
+  PACKAGE_GENERAL_MORE_CHECK_BLOG_IDS,
   PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE,
   PAGES_BLOG_IDS,
   PET_PAGE_CHECK_BLOG_IDS,
@@ -17,6 +18,58 @@ import {
 const REQUIRED_DOGMARU_BLOG_IDS = ['mw_mj', 'janaggena', 'wandookong2'];
 const REQUIRED_ALIBABA_BLOG_IDS = ['introsm'];
 const REQUIRED_ALL_BLOG_IDS = ['introsm'];
+const REQUIRED_PACKAGE_GENERAL_MORE_CHECK_BLOG_IDS = [
+  '0902ab',
+  'by9996',
+  'ziniz77',
+  'taraswati',
+  'vividoasis',
+  'yaves0218',
+  'idoenzang',
+  'an970405',
+  'hotelelena',
+  'yakooroo',
+  'sssunz',
+  'canopus_72',
+  'queen9336',
+  'sesrsoa',
+  'umle1203',
+  'minjin90310',
+  'mw_mj',
+  'jkr1231',
+  'jini79_kr',
+  'sweetfam',
+  'kwen1030',
+  'k54382000',
+  'janaggena',
+  'wandookong2',
+  'hwre7774',
+  'mirca1004',
+  'surreal805',
+  'tpeany',
+  'ikc9036',
+  'nanugi99',
+  'v3se',
+  'i_thinkkkk',
+  'sunyzone2',
+  'kgshon',
+  'olpark4455',
+  'ylk3516',
+  'managa7766',
+  'ps8868',
+  'introsm',
+  'durysuk',
+  'armour00',
+  'solantoro',
+  'busansmart',
+  'dnation09',
+  'dreamclock33',
+  'sarangchai_',
+  'sw078',
+  'seowoo7603',
+  'sanghoonchoi',
+  'zizi923',
+];
 
 const assertContainsAll = (targetBlogIds: string[], expectedBlogIds: string[]) => {
   for (const expectedBlogId of expectedBlogIds) {
@@ -41,6 +94,10 @@ const assertExcludesAll = (targetBlogIds: string[], excludedBlogIds: readonly st
 assertContainsAll(DOGMARU_BLOG_IDS, REQUIRED_DOGMARU_BLOG_IDS);
 assertContainsAll(DOGMARU_PAGE_CHECK_BLOG_IDS, REQUIRED_DOGMARU_BLOG_IDS);
 assertContainsAll(BLOG_IDS, REQUIRED_ALL_BLOG_IDS);
+assertContainsAll(
+  PACKAGE_GENERAL_MORE_CHECK_BLOG_IDS,
+  REQUIRED_PACKAGE_GENERAL_MORE_CHECK_BLOG_IDS
+);
 assertContainsAll(PAGES_BLOG_IDS, REQUIRED_ALL_BLOG_IDS);
 assertContainsAll(DOGMARU_PAGE_CHECK_BLOG_IDS, REQUIRED_ALL_BLOG_IDS);
 assertContainsAll(PET_PAGE_CHECK_BLOG_IDS, REQUIRED_ALL_BLOG_IDS);
