@@ -350,6 +350,33 @@ export const BLOG_IDS = dedupeBlogIds([
   ...VIRAL_TEAM_SCHEDULE_BLOG_IDS,
 ]);
 
+const PACKAGE_GENERAL_MORE_CHECK_EXTRA_BLOG_IDS = [
+  'hotelelena',
+  'yakooroo',
+  'umle1203',
+  'minjin90310',
+  'k54382000',
+  'wandookong2',
+  'hwre7774',
+  'mirca1004',
+  'tpeany',
+  'ikc9036',
+  'nanugi99',
+  'v3se',
+  'ylk3516',
+  'managa7766',
+  'ps8868',
+  'durysuk',
+  'armour00',
+  'sanghoonchoi',
+  'zizi923',
+] as const;
+
+// 일반건/패키지 더보기 체크는 바이럴팀 스케줄표의 URL 기준 블로그 ID를 모두 포함한다.
+export const PACKAGE_GENERAL_MORE_CHECK_BLOG_IDS = Array.from(
+  new Set([...BLOG_IDS, ...PACKAGE_GENERAL_MORE_CHECK_EXTRA_BLOG_IDS])
+);
+
 // 도그마루 전용 블로그
 export const DOGMARU_BLOG_IDS = dedupeBlogIds([
   ...PAGE_PET_BLOG_IDS,
