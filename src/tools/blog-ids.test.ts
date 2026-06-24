@@ -18,6 +18,7 @@ import {
 const REQUIRED_DOGMARU_BLOG_IDS = ['mw_mj', 'janaggena', 'wandookong2'];
 const REQUIRED_ALIBABA_BLOG_IDS = ['introsm'];
 const REQUIRED_ALL_BLOG_IDS = ['introsm'];
+const DOGMARU_PAGE_CHECK_ONLY_EXCLUDED_BLOG_IDS = ['sghjan'];
 const REQUIRED_PACKAGE_GENERAL_MORE_CHECK_BLOG_IDS = [
   '0902ab',
   'by9996',
@@ -94,6 +95,11 @@ const assertExcludesAll = (targetBlogIds: string[], excludedBlogIds: readonly st
 assertContainsAll(DOGMARU_BLOG_IDS, REQUIRED_DOGMARU_BLOG_IDS);
 assertContainsAll(DOGMARU_PAGE_CHECK_BLOG_IDS, REQUIRED_DOGMARU_BLOG_IDS);
 assertContainsAll(BLOG_IDS, REQUIRED_ALL_BLOG_IDS);
+assertContainsAll(BLOG_IDS, DOGMARU_PAGE_CHECK_ONLY_EXCLUDED_BLOG_IDS);
+assertExcludesAll(
+  DOGMARU_PAGE_CHECK_BLOG_IDS,
+  DOGMARU_PAGE_CHECK_ONLY_EXCLUDED_BLOG_IDS
+);
 assertContainsAll(
   PACKAGE_GENERAL_MORE_CHECK_BLOG_IDS,
   REQUIRED_PACKAGE_GENERAL_MORE_CHECK_BLOG_IDS

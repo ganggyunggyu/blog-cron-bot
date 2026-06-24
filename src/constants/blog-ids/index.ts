@@ -314,6 +314,12 @@ const TAGGED_DOGMARU_BLOG_IDS = dedupeBlogIds([
   'wandookong2',
 ] as const);
 
+const DOGMARU_PAGE_CHECK_EXCLUDED_BLOG_IDS = ['sghjan'] as const;
+
+const DOGMARU_PAGE_CHECK_EXCLUDED_BLOG_ID_SET = new Set<string>(
+  DOGMARU_PAGE_CHECK_EXCLUDED_BLOG_IDS
+);
+
 const TAGGED_SURI_PET_BLOG_IDS = dedupeBlogIds([
   'sanghoonchoi',
   'ylk3516',
@@ -387,7 +393,7 @@ export const DOGMARU_BLOG_IDS = dedupeBlogIds([
 export const DOGMARU_PAGE_CHECK_BLOG_IDS = dedupeBlogIds([
   ...BLOG_IDS,
   ...DOGMARU_BLOG_IDS,
-]);
+]).filter((blogId) => !DOGMARU_PAGE_CHECK_EXCLUDED_BLOG_ID_SET.has(blogId));
 
 // 서리펫 전용 블로그
 export const SURI_PET_BLOG_IDS = dedupeBlogIds([
