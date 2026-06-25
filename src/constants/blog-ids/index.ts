@@ -284,6 +284,7 @@ const VIRAL_TEAM_SCHEDULE_BLOG_IDS = dedupeBlogIds([
   'rughrt293',
   'jambbojy',
   'jw96306',
+  'durysuk',
   'kgshon',
   'olpark4455',
 ] as const);
@@ -312,6 +313,7 @@ const TAGGED_DOGMARU_BLOG_IDS = dedupeBlogIds([
   'mw_mj',
   'janaggena',
   'wandookong2',
+  'mirca1004',
 ] as const);
 
 const DOGMARU_PAGE_CHECK_EXCLUDED_BLOG_IDS = ['sghjan'] as const;
@@ -326,6 +328,7 @@ const TAGGED_SURI_PET_BLOG_IDS = dedupeBlogIds([
   'hotelelena',
   'k54382000',
   'umle1203',
+  'pjwon03',
 ] as const);
 
 const PAGE_GENERAL_BLOG_IDS = dedupeBlogIds([
