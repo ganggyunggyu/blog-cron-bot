@@ -17,13 +17,11 @@
   },
   "일반건 노출체크": {
     "cronType": "일반건 노출체크",
-    "totalKeywords": 94,
-    "exposureCount": 11,
-    "popularCount": 7,
+    "totalKeywords": 90,
+    "exposureCount": 17,
+    "popularCount": 17,
     "sblCount": 0,
-    "newLogicCount": 4,
-    "oldLogicCount": 7,
-    "timestamp": "2026-06-17T03:21:00.412Z"
+    "timestamp": "2026-06-25T01:28:59.024Z"
   },
   "도그마루 노출체크": {
     "cronType": "도그마루 노출체크",
@@ -35,21 +33,21 @@
   },
   "패키지 노출체크": {
     "cronType": "패키지 노출체크",
-    "totalKeywords": 137,
-    "exposureCount": 46,
-    "popularCount": 42,
+    "totalKeywords": 274,
+    "exposureCount": 39,
+    "popularCount": 39,
     "sblCount": 0,
-    "newLogicCount": 29,
-    "oldLogicCount": 17,
-    "timestamp": "2026-06-17T03:05:18.736Z"
+    "newLogicCount": 14,
+    "oldLogicCount": 25,
+    "timestamp": "2026-06-25T01:23:36.882Z"
   },
   "루트 키워드": {
     "cronType": "루트 키워드",
-    "totalKeywords": 190,
-    "exposureCount": 9,
-    "popularCount": 9,
+    "totalKeywords": 191,
+    "exposureCount": 19,
+    "popularCount": 19,
     "sblCount": 0,
-    "timestamp": "2026-06-18T04:41:22.880Z"
+    "timestamp": "2026-06-25T01:12:14.047Z"
   },
   "멀티페이지 크론 [애견]": {
     "cronType": "멀티페이지 크론 [애견]",
@@ -252,17 +250,17 @@
   "알리바바 노출체크": {
     "cronType": "알리바바 노출체크",
     "totalKeywords": 474,
-    "exposureCount": 68,
-    "popularCount": 13,
-    "sblCount": 28,
-    "newLogicCount": 11,
-    "oldLogicCount": 57,
+    "exposureCount": 86,
+    "popularCount": 16,
+    "sblCount": 44,
+    "newLogicCount": 15,
+    "oldLogicCount": 71,
     "sheetStats": [
       {
         "name": "신규작업",
-        "count": 68
+        "count": 86
       }
     ],
-    "timestamp": "2026-06-24T02:10:29.279Z"
+    "timestamp": "2026-06-25T01:29:43.041Z"
   }
 }
