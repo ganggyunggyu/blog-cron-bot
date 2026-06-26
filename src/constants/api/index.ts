@@ -71,9 +71,9 @@ export const ALIBABA_CONFIG = {
   KEYWORD_COL: 1,
   RESULT_COLS: {
     EXPOSED: 2,
-    RANK: 3,
-    TOPIC: 4,
-    LINK: 5,
+    RANK: 4,
+    TOPIC: 5,
+    LINK: 6,
   },
 } as const;
 
