@@ -249,18 +249,18 @@
   },
   "알리바바 노출체크": {
     "cronType": "알리바바 노출체크",
-    "totalKeywords": 474,
-    "exposureCount": 96,
-    "popularCount": 13,
-    "sblCount": 53,
-    "newLogicCount": 12,
-    "oldLogicCount": 84,
+    "totalKeywords": 351,
+    "exposureCount": 65,
+    "popularCount": 65,
+    "sblCount": 0,
+    "newLogicCount": 62,
+    "oldLogicCount": 3,
     "sheetStats": [
       {
         "name": "신규작업",
-        "count": 96
+        "count": 65
       }
     ],
-    "timestamp": "2026-06-26T02:04:15.248Z"
+    "timestamp": "2026-06-26T03:00:01.890Z"
   }
 }
