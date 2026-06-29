@@ -1,0 +1,30 @@
+[
+  {
+    "sheet": "철인삼남매",
+    "rowNumber": 7,
+    "company": "대동면옥 강릉본점",
+    "keyword": "강릉맛집추천",
+    "publishedAt": "2026. 6. 20.",
+    "sameKeywordCount": "2",
+    "url": "https://blog.naver.com/dreamclock33/224320961599",
+    "blogId": "dreamclock33",
+    "logNo": "224320961599",
+    "success": false,
+    "stage": "find_private_radio",
+    "message": "비공개 라디오 없음"
+  },
+  {
+    "sheet": "철인삼남매",
+    "rowNumber": 26,
+    "company": "무등소갈비 대구메리어트점",
+    "keyword": "동대구역 맛집",
+    "publishedAt": "2026. 6. 12.",
+    "sameKeywordCount": "4",
+    "url": "https://blog.naver.com/dreamclock33/224313031738",
+    "blogId": "dreamclock33",
+    "logNo": "224313031738",
+    "success": false,
+    "stage": "exception",
+    "message": "page.goto: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"https://blog.naver.com/PostUpdateForm.naver?blogId=dreamclock33&logNo=224313031738\", waiting until \"domcontentloaded\"\u001b[22m\n"
+  }
+]
