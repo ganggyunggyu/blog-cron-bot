@@ -10,6 +10,7 @@ import urllib.parse
 import urllib.request
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta
+from functools import lru_cache
 from pathlib import Path
 
 from bs4 import BeautifulSoup
@@ -75,6 +76,17 @@ COMPANY_SUFFIXES = (
     "직영점",
     "분점",
     "점",
+)
+BAD_COMPANY_FRAGMENTS = (
+    "맛집",
+    "맛",
+    "곳만",
+    "광고",
+    "후기",
+    "혼밥",
+    "추천",
+    "거리뷰",
+    "개의",
 )
 
 
@@ -187,12 +199,24 @@ def parse_post_date(value: str, reference: datetime) -> datetime | None:
     return None
 
 
+@lru_cache(maxsize=4096)
+def keyword_pattern(keyword: str) -> re.Pattern:
+    compact = re.sub(r"\s+", "", visible(keyword))
+    separators = r"[\s·ㆍ|ㅣ_\-]*"
+    body = separators.join(re.escape(char) for char in compact)
+    return re.compile(rf"(?<![0-9A-Za-z가-힣]){body}(?![0-9A-Za-z가-힣])", re.IGNORECASE)
+
+
+def title_has_keyword(title: str, keyword: str) -> bool:
+    return bool(keyword_pattern(keyword).search(visible(title)))
+
+
 def choose_keyword(title: str, keyword_entries):
     title_norm = normalize_keyword(title)
     matches = []
     for item in keyword_entries:
         kw_norm = item["keywordNorm"]
-        if kw_norm and kw_norm in title_norm:
+        if kw_norm and kw_norm in title_norm and title_has_keyword(title, item["keyword"]):
             matches.append(item)
     if not matches:
         return None
@@ -255,9 +279,27 @@ def company_tokens(company: str):
 def clean_company_name(value: str) -> str:
     value = visible(value)
     value = re.sub(r"^(?:추천|강추|위치|기본|정보|매장|가게|식당)\s+", "", value)
+    value = re.sub(r"\s*(?:외관|분위기|위치|영업|기본|메뉴|내부|자리|공간|느낌).*$", "", value)
+    value = re.sub(r"의$", "", value)
     value = re.sub(r"(?:이라는 곳|라는 곳|이라는|라는|입니다|이에요|였어요|이고요|인데요|인데|으로|에서|은|는|이|가|을|를|집)$", "", value)
+    value = re.sub(r"으$", "", value)
     value = re.sub(r"(?:\s*추천|\s*기본정보|\s*기본 정보|\s*위치와.*|\s*위치.*|\s*영업.*)$", "", value)
     return visible(value)
+
+
+def is_plausible_company_name(value: str) -> bool:
+    norm = normalize_text(value)
+    if not (2 <= len(norm) <= 30):
+        return False
+    if norm in GENERIC_COMPANY_TOKENS:
+        return False
+    if norm.endswith(("맛", "맛집", "곳만", "후기")):
+        return False
+    if any(fragment in norm for fragment in ("광고", "내돈내산", "추천만", "후기만", "거리뷰", "개의글")):
+        return False
+    if norm in BAD_COMPANY_FRAGMENTS:
+        return False
+    return True
 
 
 def extract_name_around_token(text: str, token_norm: str) -> str:
@@ -276,6 +318,8 @@ def extract_name_around_token(text: str, token_norm: str) -> str:
             continue
         if len(raw_norm) < len(token_norm):
             continue
+        if not is_plausible_company_name(raw_clean):
+            continue
         return raw_clean
     return ""
 
@@ -293,8 +337,7 @@ def extract_company_from_title(title: str, keyword: str) -> str:
         match = re.search(pattern, title)
         if match:
             candidate = clean_company_name(match.group(1))
-            norm = normalize_text(candidate)
-            if 2 <= len(norm) <= 24 and not any(fragment in norm for fragment in ("추천", "후기", "좋은곳")):
+            if is_plausible_company_name(candidate):
                 return candidate
 
     cleaned = title
@@ -308,14 +351,14 @@ def extract_company_from_title(title: str, keyword: str) -> str:
         tail = cleaned.rsplit("맛집", 1)[-1].strip()
         tail = clean_company_name(tail)
         tail_norm = normalize_text(tail)
-        if 2 <= len(tail_norm) <= 20 and not tail_norm.endswith("추천") and not re.search(r"(좋은곳|좋은|추천)$", tail_norm):
+        if is_plausible_company_name(tail) and not re.search(r"(좋은곳|좋은|추천)$", tail_norm):
             return tail
 
     keywordless = cleaned.replace(keyword, "").strip() if keyword else cleaned
     words = keywordless.split()
     if words:
         tail = clean_company_name(" ".join(words[-2:]))
-        if 2 <= len(normalize_text(tail)) <= 20:
+        if is_plausible_company_name(tail):
             return tail
     return ""
 
@@ -323,7 +366,10 @@ def extract_company_from_title(title: str, keyword: str) -> str:
 def extract_company_from_body(body: str) -> str:
     body = visible(body)
     patterns = [
-        r"찾다가\s+([0-9A-Za-z가-힣]+(?:\s+[0-9A-Za-z가-힣]+){0,2})(?:으로|로)\s+발길",
+        r"([0-9A-Za-z가-힣]+(?:\s+[0-9A-Za-z가-힣]+){0,1})\s+주소\s*[:：]",
+        r"([0-9A-Za-z가-힣]+(?:\s+[0-9A-Za-z가-힣]+){0,1})\s+위치와",
+        r"그런데\s+([0-9A-Za-z가-힣]+)(?:은|는)\s",
+        r"찾다가\s+([0-9A-Za-z가-힣]+(?:\s+[0-9A-Za-z가-힣]+){0,1})(?:으로|로)\s+발길",
         r"소개해드릴(?:게요|께요|까\s*해요)\s+([0-9A-Za-z가-힣]+(?:\s+[0-9A-Za-z가-힣]+){0,2})",
         r"\d+\.\s+([0-9A-Za-z가-힣]+(?:\s+[0-9A-Za-z가-힣]+){0,1})\s",
         r"자리한\s+([0-9A-Za-z가-힣]+(?:\s+[0-9A-Za-z가-힣]+){0,1})(?:이|가|은|는)\s+그곳",
@@ -334,8 +380,7 @@ def extract_company_from_body(body: str) -> str:
     for pattern in patterns:
         for match in re.finditer(pattern, body):
             candidate = clean_company_name(match.group(1))
-            norm = normalize_text(candidate)
-            if 2 <= len(norm) <= 24 and not any(generic == norm for generic in GENERIC_COMPANY_TOKENS):
+            if is_plausible_company_name(candidate):
                 return candidate
     return ""
 
@@ -376,13 +421,13 @@ def match_company(candidates, title: str, body: str):
     if best:
         return best["company"], best["reason"]
 
-    title_company = extract_company_from_title(title, "")
-    if title_company:
-        return title_company, "title"
-
     body_company = extract_company_from_body(body)
     if body_company:
         return body_company, "body"
+
+    title_company = extract_company_from_title(title, "")
+    if title_company:
+        return title_company, "title"
 
     if len(candidates) == 1:
         return candidates[0]["company"], "single-source-fallback"
