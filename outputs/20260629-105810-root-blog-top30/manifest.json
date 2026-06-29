@@ -1,0 +1,49 @@
+{
+  "createdAt": "2026-06-29 11:28:41",
+  "checkpoint": "/Users/ganggyunggyu/Programing/blog-cron-bot/outputs/20260629-105810-root-blog-top30/raw-checkpoint.json",
+  "xlsx": "/Users/ganggyunggyu/Programing/blog-cron-bot/outputs/20260629-105810-root-blog-top30/root_blog_top30_20260629-105810.xlsx",
+  "csv": {
+    "blog_by_rank.csv": "/Users/ganggyunggyu/Programing/blog-cron-bot/outputs/20260629-105810-root-blog-top30/blog_by_rank.csv",
+    "blog_by_latest.csv": "/Users/ganggyunggyu/Programing/blog-cron-bot/outputs/20260629-105810-root-blog-top30/blog_by_latest.csv",
+    "keyword_raw.csv": "/Users/ganggyunggyu/Programing/blog-cron-bot/outputs/20260629-105810-root-blog-top30/keyword_raw.csv"
+  },
+  "summary": {
+    "sourceRows": 190,
+    "uniqueTargets": 129,
+    "rawRows": 137,
+    "exposedRows": 34,
+    "exposedUniqueKeywords": 26,
+    "uniqueBlogs": 7,
+    "uniqueLinks": 33,
+    "over30Rows": 0,
+    "missingDateRows": 0,
+    "errorRows": 1,
+    "stableUnder30Rows": 2
+  },
+  "errors": [
+    {
+      "keyword": "지웰시티맛집(창심관 지웰시티점)",
+      "error": "더보기 결과 0개",
+      "checkedCount": 0
+    }
+  ],
+  "stableUnder30": [
+    {
+      "keyword": "율량동술집(라스트춘선 율량점)",
+      "checkedCount": 27
+    },
+    {
+      "keyword": "애월횟집(청초수물회 제주점)",
+      "checkedCount": 19
+    }
+  ],
+  "blogCounts": {
+    "seowoo7603": 13,
+    "dreamclock33": 7,
+    "busansmart": 4,
+    "dnation09": 4,
+    "sw078": 4,
+    "sarangchai_": 1,
+    "yaves0218": 1
+  }
+}
