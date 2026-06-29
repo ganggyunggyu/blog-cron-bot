@@ -1,0 +1,1935 @@
+{
+  "generatedAt": "2026-06-29T04:43:29.835Z",
+  "generatedAtKst": "2026-06-29 13:43:29",
+  "inputJson": "outputs/blog-published-ranks/target-blog-posts-keyword-sheet-mar-jun-bageul-blue-20260629.json",
+  "topN": 20,
+  "keywordCount": 71,
+  "rankedLinkCount": 9,
+  "rankByLink": {
+    "https://blog.naver.com/seowoo7603/224320721194": 3,
+    "https://blog.naver.com/seowoo7603/224320729472": 4,
+    "https://blog.naver.com/seowoo7603/224317580008": 2,
+    "https://blog.naver.com/seowoo7603/224313959350": 3,
+    "https://blog.naver.com/seowoo7603/224318890516": 1,
+    "https://blog.naver.com/busansmart/224319841544": 1,
+    "https://blog.naver.com/seowoo7603/224323426719": 5,
+    "https://blog.naver.com/seowoo7603/224320741479": 2,
+    "https://blog.naver.com/seowoo7603/224324414177": 4
+  },
+  "results": [
+    {
+      "keyword": "강남 룸식당",
+      "checkedAt": "2026-06-29T04:41:55.581Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/yhc9224/224245741425",
+          "text": "강남역 룸식당 강남역 단체회식 하기 좋은 차슈밍"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/sarangchai_/224320852199",
+          "text": "[강남] 강남 룸식당 파크루안 역삼점 흑식초탕수육 차버섯동파육 어향가지속박이 전가복 솔직후기"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/seowoo7603/224320721194",
+          "text": "강남 룸식당 육목원 한상차림 숙성 한우 새우살 안창살 솔직후기"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/seowoo7603/224320729472",
+          "text": "강남 룸식당 육목원 숙성 한우 새우살 등심 안심 순두부찌개 솔직후기"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/dnation09/224320871555",
+          "text": "강남 룸식당 파크루안 역삼점 중식당 룸 회식 솔직후기"
+        },
+        {
+          "rank": 6,
+          "link": "https://blog.naver.com/gameinple/224320288620",
+          "text": "강남역 룸식당 프라이빗한 한우부티크"
+        },
+        {
+          "rank": 7,
+          "link": "https://blog.naver.com/bluesun8001/224323621214",
+          "text": "강남 룸식당 화담장어 강남역 장어구이 맛집 모임장소 추천 이유"
+        },
+        {
+          "rank": 8,
+          "link": "https://blog.naver.com/power9404/223967089454",
+          "text": "혜님\nblog.naver.com›power9404"
+        },
+        {
+          "rank": 9,
+          "link": "https://blog.naver.com/92happywoo/223992985159",
+          "text": "꿈꾸는에릭\nblog.naver.com›92happywoo"
+        }
+      ],
+      "rankByLink": {
+        "https://blog.naver.com/seowoo7603/224320721194": 3,
+        "https://blog.naver.com/seowoo7603/224320729472": 4
+      }
+    },
+    {
+      "keyword": "강릉 점심 맛집",
+      "checkedAt": "2026-06-29T04:43:01.914Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/ariview/224319054872",
+          "text": "강릉 한정식 맛집 사임당부엌 점심 밥집 솔직후기"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/today_811/224322777447",
+          "text": "강릉 교동택지점심 맛집, 한 끼 든든했던 복작복작"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/eses1318/224301160630",
+          "text": "강릉 여행 맛집 추천 점심 막국수 강릉 로컬 맛집"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/greendigong/224042414730",
+          "text": "민지\nblog.naver.com›greendigong"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/jskoo88/222995771957",
+          "text": "나빌레라\nblog.naver.com›jskoo88"
+        },
+        {
+          "rank": 6,
+          "link": "https://blog.naver.com/soh109/224287079930",
+          "text": "오키야옹이\nblog.naver.com›soh109"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "강릉 현지인 맛집",
+      "checkedAt": "2026-06-29T04:43:05.448Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/ratbell/224317040006",
+          "text": "[강릉 맛집] 강릉 교동 선지해장국 현지인 맛집 '동원해장국'"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/uurah/224316237694",
+          "text": "정화식당｜강릉 현지인 맛집, 로컬 추천 오징어볶음 맛집"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "강릉막국수",
+      "checkedAt": "2026-06-29T04:42:59.085Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/vtndusv/224319621397",
+          "text": "남항진 현지인 강릉 막국수 맛집 삼교리동치미막국수 점심 가족 식사 추천"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/dj6638/224316729300",
+          "text": "강릉 사랑채막국수 장칼국수 물막국수 초당동맛집 주말 방문 후기"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/mint_always/224318487780",
+          "text": "강릉 동치미 막국수 맛집 삼교리동치미막국수 남항진점 아이랑 가기 좋은 강릉 점심 맛집"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/ggamanglee/224320258639",
+          "text": "강릉 강문해변 핫플 먹거리 막국수 웨이팅"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/rbf0987/224316505806",
+          "text": "강릉시외버스터미널 근처 맛집 <장면옥> | 강릉막국수맛집,강릉터미널맛집,강릉냉면맛집 강릉교동맛집"
+        },
+        {
+          "rank": 6,
+          "link": "https://blog.naver.com/abcchoco123/224315472050",
+          "text": "강릉 맛집 막국수 추천 고씨네동해막국수&순두부칼국수 본점 솔직 후기"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "강릉맛집",
+      "checkedAt": "2026-06-29T04:42:59.688Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/btsn_8/224273052254",
+          "text": "강릉 중앙시장 인기 맛집 모음 / 내돈내산 찐후기 (살짝 실망?)"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "강릉맛집추천",
+      "checkedAt": "2026-06-29T04:41:55.599Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/almiwow/224319160776",
+          "text": "강릉 고씨네동해막국수, 애견동반 아침식사 맛집 추천"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "건대 맛집",
+      "checkedAt": "2026-06-29T04:43:06.582Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/streetcarver/224326553350",
+          "text": "건대 맛집으로 추천하는 성수완당 완당면 바질크림만두 돈까스 기린 이치방 생맥주"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/dreamkonkuk/223479201690",
+          "text": "네이버 블로그\nblog.naver.com›dreamkonkuk"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/etooseci247/223735211025",
+          "text": "이투스247학원\nblog.naver.com›etooseci247"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "공덕 맛집",
+      "checkedAt": "2026-06-29T04:43:06.025Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/holyspirit_2/224318124149",
+          "text": "공덕전골맛집 옥된장 공덕점 소갈비수육전골 공덕모임 공덕회식"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/justdoithin/224280799597",
+          "text": "공덕 주민이 자주 가는 공덕 맛집 추천 (직장인 점심, 가족 외식, 베이커리까지)"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/merchant_ven/224323890482",
+          "text": "공덕역 맛집 송추가마골 인어반 마포점"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/merchant_ven/224304072739",
+          "text": "[공덕역 맛집] 분식을품다 공덕점 | 직장인 점심으로 딱 좋은 분식집"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "공주 맛집",
+      "checkedAt": "2026-06-29T04:41:55.599Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/seulbi0495/224316289616",
+          "text": "공주맛집 매향 100% 순메밀 막국수와 편육무침은 꼭 드세요 내돈내산 후기"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "광안리맛집",
+      "checkedAt": "2026-06-29T04:41:55.629Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/kwoncharm_e/224318090642",
+          "text": "부산 광안리한정식맛집 시의전서 코스요리 즐기며 데이트"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/dnr6578/224305737661",
+          "text": "[부산수영구맛집/민락동맛집/광안리맛집]조이풀조이풀 - 제철 모듬 스시, 요다레교자(Feat.게스트하우스어반)"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/naeun2700/224318624899",
+          "text": "부산 남천동 현지인 찐맛집 [남천가야밀면] ㅣ 광안리 맛집"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "광화문 맛집",
+      "checkedAt": "2026-06-29T04:41:55.240Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/ekgmlql369/224317555224",
+          "text": "[광화문/종각] 르메이에르 광화문 맛집 점심 추천 | 이치규 광화문점 규카츠 솔직후기"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/han__ya/224316161334",
+          "text": "[서울/종로] 이치규 광화문점, 퀄리티 좋은 광화문 데이트 규카츠 맛집 추천"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "교대역 맛집",
+      "checkedAt": "2026-06-29T04:43:06.417Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/melly0330/224317862982",
+          "text": "[서울]교대역 맛집 서관면옥 평양냉면 입문자도 국물까지 완냉"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/e_s_l/224312994137",
+          "text": "교대역 맛집, 바른식시골보쌈감자옹심이, 혜림산낙지, 더막창스 강남본점"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "구디맛집",
+      "checkedAt": "2026-06-29T04:42:02.261Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/mygoaway/224315733716",
+          "text": "참숯향 가득한 구로디지털단지 맛집, 참숯구이육향 구로디지털단지점 (트러플 짜파게티 존맛)"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/rkatk1155/224322726799",
+          "text": "구디 숙성회 맛집 가족 외식 추천 씽왕해산물전문점 숙성회 때깔 곱다"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/hyona___/224315908840",
+          "text": "구디 맛집 추천 형제특수부위 내돈내산"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/ghdql0049/224317415489",
+          "text": "[맛집탐방] 구로디지털단지맛집 추천 의영이네양갈비 :: 직접 구워주는 기념일 데이트맛집"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "구월동 맛집",
+      "checkedAt": "2026-06-29T04:42:02.424Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/jjwgo1004/224323073401",
+          "text": "[위드위치]인천 구월동 파스타 맛집 블루리본 브런치카페"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/yangsy2535/224317314151",
+          "text": "구월동타코맛집 더맨타코 토핑 듬뿍 풀드포크파히타"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/juyeon123456/224325618416",
+          "text": "구월동 점심 맛집 육대장 본점 육개장&보쌈 후기"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/i030223/224318044089",
+          "text": "구월동 횟집 숙성회 찐맛집 후히 주말 웨이팅 내돈내산"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/chaltm/224326322150",
+          "text": "인천 구월동 맛집 용가회전훠궈 구월점 무한리필 샤브샤브 주차 및 영업시간 소스꿀팁 후기"
+        },
+        {
+          "rank": 6,
+          "link": "https://blog.naver.com/hyedinii/224319076597",
+          "text": "[구월동 맛집] 곱창들의 수다 | 구월동곱창 맛집"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "김해맛집",
+      "checkedAt": "2026-06-29T04:42:03.013Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/viva0205/224320401369",
+          "text": "김해 가족 외식 맛집 ️ 스테이크부터 파스타까지 맛있는 가성비맛집 코지하우스"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/modu1029/224324103145",
+          "text": "[김해 맛집] 어방동 이가네가야밀면 현지인 추천 물밀면 왕만두 솔직 후기"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/sung0860kkk/224324297949",
+          "text": "김해 내외동 식당 샤브마니아 놀이방 있는 가족외식 맛집"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/sung0860kkk/224320292100",
+          "text": "김해율하돈까스 맛집 남다른돈까스 장유율하점 가족외식 추천"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "남천동맛집",
+      "checkedAt": "2026-06-29T04:42:02.388Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/pure5038/224316341251",
+          "text": "[부산수영구맛집 / 남천동맛집] 마블링에 압도당하는 한우 노포 맛집, ‘영남식육식당’ 솔직 후기!"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/kim1004a/224319779492",
+          "text": "[용한우]수영구 남천동 맛집 모임|용한우 최상급 한우에 생맥주 한잔하기 좋은 곳"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/muzzi93/224324216103",
+          "text": "광안리남천동 횟집코스요리 부산현지인추천 회맛집 새로오픈술집::회담[내돈내산]"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "노량진맛집",
+      "checkedAt": "2026-06-29T04:42:02.603Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/hae0809k/224279315600",
+          "text": "[노량진 공시생 식당] 마마부찌/노량진 공시생 밥집 비교/노량진 맛집추천 내돈내산"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/unja5558/224322094249",
+          "text": "노량진 가성비 맛집 한정메뉴 수비드 차슈동 정식이 원픽(주말점심 웨이팅)"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "덕수궁 맛집",
+      "checkedAt": "2026-06-29T04:42:10.710Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/yyi1261/224320124211",
+          "text": "덕수궁 맛집 추천 탄백 | 시청역 근처 정동길 칼국수 찐맛집"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/seowoo7603/224317580008",
+          "text": "저녁 고기 모임 장소로 괜찮았던 덕수궁 맛집 추천"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/j149837/224320277108",
+          "text": "[시청역맛집] 덕수궁 한식 맛집: 탁사발 두부공방 덕수궁점"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/minichoujane/224318639337",
+          "text": "시청역맛집 덕수궁나들이 후에 점심으로 가기좋은 서울3대족발 만족오향족발 시청점 보쌈,쟁반국수 후기"
+        }
+      ],
+      "rankByLink": {
+        "https://blog.naver.com/seowoo7603/224317580008": 2
+      }
+    },
+    {
+      "keyword": "동대구역 맛집",
+      "checkedAt": "2026-06-29T04:42:10.407Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/gustjsdl8/224316202605",
+          "text": "동대구역 근처 맛집 공평우동 신상 신천동 가성비 점심 메뉴"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/gustjsdl8/224293190850",
+          "text": "동대구역 주변 맛집 신천동 술집 모임하기 좋은 가장맛있는족발"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/lstory_/224315335303",
+          "text": "동대구역 근처 맛집 대구 신천동 가성비 점심 저녁 공평우동"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/lstory_/224288746482",
+          "text": "대구 동대구역 주변 맛집 신천동 술집 가장맛있는족발"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/nophone/224321824853",
+          "text": "동대구역 맛집 킨조 : 맛있는 안주와 감성돋는 음악이 있는 분위기 좋은 이자까야 맛집"
+        },
+        {
+          "rank": 6,
+          "link": "https://blog.naver.com/yaejin29/224322773372",
+          "text": "내돈내산 동대구역 신상맛집 “공평우동 동대구점” 다녀온 솔직후기"
+        },
+        {
+          "rank": 7,
+          "link": "https://blog.naver.com/egg10280/224323189999",
+          "text": "대구 동구 동대구역 고깃집 : 1703참한집 동대구역점 숙성 삼겹살과 돼지껍데기 맛집"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "동래맛집",
+      "checkedAt": "2026-06-29T04:43:09.494Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/tree3387/224316545043",
+          "text": "동래역 4번 출구 맛집 미친막창 부산동래점 방문후기"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/pineappleyj/224316866704",
+          "text": "꽃돼지식당 : 동래고깃집 동래회식맛집 동래구워주는고기집"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/qlslqlsl0513/224317731883",
+          "text": "부산 동래 한우 맛집 우적 | 고급 룸식당, 분위기 좋은 소고기집"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "동탄맛집",
+      "checkedAt": "2026-06-29T04:42:10.408Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/rhominjoo/224298266310",
+          "text": "[동탄호수공원 맛집] 고기어때 : 호수공원 근처 삼겹살 1등 맛집, 내돈내산 솔직후기"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "문래 맛집",
+      "checkedAt": "2026-06-29T04:42:10.465Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/paltrow123/224323678579",
+          "text": "네이버 리뷰 1.4만개 맛집중에 맛집 문래동 '골목집' ft.풍자 또간집, 허영만 백반기행 영등포 문래동맛집"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/yoon_se0/224316787668",
+          "text": "[문래맛집] 골목집 오리불고기+오감탕 내돈내산 후기! 주차장 및 휴무일 총정리"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/phuu1122/224320166006",
+          "text": "[문래 맛집] 돌판 위에 육즙 가득 구워먹는 문래 고기집 ‘석암생소금구이 문래점’"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/myj7035/224322414971",
+          "text": "문래 맛집 골목집 후기｜오리불고기 + 오리감자탕 푸짐한 한 상 (회식·가족모임 추천)"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/abcwldus1/224320908587",
+          "text": "[서울/문래동맛집] 앤틱함 가득 영국식 레스토랑 3단 브런치가 돋보이는 내돈내산 문래 맛집 : 영길리"
+        },
+        {
+          "rank": 6,
+          "link": "https://blog.naver.com/guswjd2266/224272435466",
+          "text": "문래동 맛집 소문난식당 김치고등어조림 맛집 내돈내산 (주말 웨이팅/포장가능)"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "문래역 맛집",
+      "checkedAt": "2026-06-29T04:43:11.624Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/jining1379/224324348626",
+          "text": "문래역 오꼬노미야끼 맛집 아카이테판 후기 데이트 추천 (feat. 두번째 청모)"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/sysy_daily/224319176270",
+          "text": "문래역 생선구이 맛집 고래식당 | 부모님 모시고 오기 딱 좋은 곳"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/nkastar1/224305482007",
+          "text": "영등포역 맛집 문래동즉석떡볶이에서 가성비 푸짐하게 점심"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/susie9501/224317432864",
+          "text": "문래역 맛집 치킨 추천 장작꾼 웨이팅 안 아까운 이유"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/cinnamon0412/224106526247",
+          "text": "시나몬\nblog.naver.com›cinnamon0412"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "발산역맛집",
+      "checkedAt": "2026-06-29T04:43:12.359Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/tjfla99/224319316585",
+          "text": "발산역 맛집 편편집 | 마곡샤브샤브, 월남쌈 무한리필 가성비로 즐기기"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/alphas0413/224320915466",
+          "text": "발산역맛집 편편집 발산역점 , 편백찜 샤브샤브 월남쌈 무한리필 후기"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/bigpso/224320579528",
+          "text": "[발산역 맛집] 가성비 끝판왕 무한리필 샤브샤브 & 편백찜 ‘편편집 발산점’ A세트 솔직 후기!"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "방이동 회식",
+      "checkedAt": "2026-06-29T04:42:17.698Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/dnation09/224324583242",
+          "text": "방이동 회식 추천 잠실 굽돌집 풍건숙성 삼겹살 내돈내산 후기"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/angelic09/224321954286",
+          "text": "방이동 회식장소 회 맛집 방이수산 잠실방이점 메뉴 추천"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/seowoo7603/224313959350",
+          "text": "방이동회식 굽돌집 삼겹살 맛집 추천"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/shdlswl123/224316437215",
+          "text": "초원소금구이 방이동 고기집 맛집 차돌 삼합 재재방문"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/506project/224317027381",
+          "text": "방이동 회식하기 좋은 화덕 피자 맛집 홉쏘 (올림픽공원 데이트)"
+        },
+        {
+          "rank": 6,
+          "link": "https://blog.naver.com/nodyrf/224269501151",
+          "text": "송파 잠실 방이동 회식 장소 추천 옛날농장 방이점 다녀온 솔직 후기!"
+        },
+        {
+          "rank": 7,
+          "link": "https://blog.naver.com/kizaki56/224148146550",
+          "text": "몽몽\n57.7만 인용\nblog.naver.com›kizaki56"
+        },
+        {
+          "rank": 8,
+          "link": "https://blog.naver.com/castpd/224120048157",
+          "text": "치부르\nblog.naver.com›castpd"
+        }
+      ],
+      "rankByLink": {
+        "https://blog.naver.com/seowoo7603/224313959350": 3
+      }
+    },
+    {
+      "keyword": "방이동맛집",
+      "checkedAt": "2026-06-29T04:42:11.073Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/qkrwldud1792/224317247346",
+          "text": "방이동맛집 개나리아구찜 본점｜불쇼와 대창아구찜이 인상적이었던 방이동 먹자골목 맛집"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/100bang_kr/224315984650",
+          "text": "야장에서 치맥하기 딱 좋은 요즘,방이동 맛집에서 한잔 콜?"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/modm81/224317804296",
+          "text": "방이동 맛집 발견 [모미지 잠실방이점]ㅣ전 좌석 프라이빗룸 방이동 이자카야ㅣ방이동 모임장소 추천"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/qlfk1/224317578869",
+          "text": "방이동 중국집 맛집/ 방이동 짬뽕맛집 / 차돌짬뽕 맛집/ 잠실 잡채밥 맛집 / 잠실 먹자골목 중국집 맛집 / 잠실 방이동 가족식사 추천 내돈내산"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "부천역 맛집",
+      "checkedAt": "2026-06-29T04:42:18.030Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/rina414/224316190874",
+          "text": "부천시청역 맛집 흑백반점ㅣ12시간 끓여낸 육수와 불향이 살아있는 중식당"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/daily_99_12/224316260474",
+          "text": "[부천] 가족과 함께 가본 부천 상동역 근처 양념 갈비 맛집 라리랑 내돈내산 솔직 후기 | 돼지갈비,칡 비빔냉면,계란찜 / 고유가 지원금 사용 가능 식당"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/sookinae/224324143843",
+          "text": "부천 맛집 제줏간 부천상동점 고기집 세트메뉴 가격 내돈내산 후기"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "불당동 맛집",
+      "checkedAt": "2026-06-29T04:42:17.682Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/qwe0936/224318538071",
+          "text": "천안 불당동 맛집 마초스테이크 천안아산점"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/qwe0936/224320685212",
+          "text": "천안 불당동 맛집 식당 옥된장 천안불당점 든든한 점심으로 추천"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/madeby_hong/224317942448",
+          "text": "천안 불당동 신상 맛집 ‘풍장닭갈비’, 직접 먹어본 솔직 담백 내돈내산 후기!"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/redsong33/224316827997",
+          "text": "천안 불당동 곱창 맛집 입문자 안성맞춤 곱 넘쳐흐르는 회식장소 추천"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/dreamclock33/224320953435",
+          "text": "불당동 맛집 가족모임 숯불 갈비 내돈내산 후기"
+        },
+        {
+          "rank": 6,
+          "link": "https://blog.naver.com/minix204/224320691238",
+          "text": "천안 불당동 맛집 ‘육미안 천안불당점’ 소갈비, 숯불구이, 주차"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "사당맛집",
+      "checkedAt": "2026-06-29T04:42:18.114Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/lovemy_b/224320894229",
+          "text": "사당역 맛집 청와옥_순대국으로 블루리본 허영만 백반기행 맛집 청와옥"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "사당역 맛집",
+      "checkedAt": "2026-06-29T04:43:12.552Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/lovemy_b/224320894229",
+          "text": "사당역 맛집 청와옥_순대국으로 블루리본 허영만 백반기행 맛집 청와옥"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "산본 맛집",
+      "checkedAt": "2026-06-29T04:43:13.068Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/k251206/224315493604",
+          "text": "산본역 고기집 맛집 석암생소금구이 산본점 | 모둠세트 석암볶음밥 후기"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/k251206/224317772954",
+          "text": "나오리장작구이 산본점 산더미차돌구이 후기 | 산본역 맛집 장작구이 가성비 추천"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/jungee0818/224321340286",
+          "text": "[군포/산본역 맛집] 멸치 육수의 진수 산본칼국수 원탑, 달인대보칼국수 주차장 꿀팁 및 메뉴 추천!"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/pkj5456/224269696996",
+          "text": "군포 산본 맛집 점심 회식 산본역 맛집"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "성수 맛집",
+      "checkedAt": "2026-06-29T04:42:18.848Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/castpd/224325117046",
+          "text": "성수동 핫플 성수 데이트 코스 돈카츠 맛집 카츠메"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/ddunalim/224317309910",
+          "text": "성수동 신상 맛집 성수막국수, 100% 순메밀 자가제면 막국수 후기"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/gussu_/224319658741",
+          "text": "서울 성수동 쌀국수 맛집 벱 n번째 재방문 후기"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "센텀맛집",
+      "checkedAt": "2026-06-29T04:42:24.324Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/vkfks001/224267190455",
+          "text": "부산 해운대 센텀시티 맛집 : 딤딤섬 신세계백화점 센텀시티점"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/alik1982/224321185584",
+          "text": "[센텀 맛집 밥집] 푸짐한 고기와 진한 국물이 일품인 별해별감자탕 센텀점, 해장국 맛집 추천"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/kallisto1004/224315923146",
+          "text": "부산 해운대 센텀 맛집 1차, 2차 다 해결가능한 하숙집 센텀본점"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/ksl47wn1/224319093497",
+          "text": "센텀시티 점심 고민 끝! 직장인이 추천하는 현풍닭칼국수와 주변 맛집 비교"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/ksl47wn1/224284333675",
+          "text": "[신세계센텀시티몰 맛집] 화니 낙지 돌솥비빔밥 혼밥 메뉴 추천 및 솔직 후기"
+        },
+        {
+          "rank": 6,
+          "link": "https://blog.naver.com/ksl47wn1/224287410181",
+          "text": "[해운대 센텀맛집] 쇼핑 필수 코스! 현지 풍미 가득한 '차이 딤섬앤누들바 센텀시티몰점' 솔직 후기(feat. 혼밥&데이트 명소)"
+        },
+        {
+          "rank": 7,
+          "link": "https://blog.naver.com/hee_hee_hee/224250863666",
+          "text": "부산 센텀 신세계백화점 센텀시티 맛집 식당가 줄서는 식당 <딤딤섬 > 토요일 점심 방문 후기 & 메뉴추천 & 웨이팅 꿀팁 & 할인정보 ( + 딤딤섬 B세트 )"
+        },
+        {
+          "rank": 8,
+          "link": "https://blog.naver.com/qjq50/224284343151",
+          "text": "[센텀 신세계 맛집] 2만 원대 식당가 호구 피하는 법 (히바린 내돈내산 팩트체크)"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "속초 맛집 추천",
+      "checkedAt": "2026-06-29T04:42:24.354Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/sorang28/224319421490",
+          "text": "[속초 맛집 추천] 오마카세 키친오뮤에서 특별한 데이트"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "속초 물회 맛집",
+      "checkedAt": "2026-06-29T04:43:17.307Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/hhss2-/224317007160",
+          "text": "속초 물회 맛집 영금물회 내돈내산 솔직후기 택시기사님 추천 현지인 맛집"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/goodplacetoeat/224319641357",
+          "text": "[강원 속초] 속초물회맛집 속초항아리물회, 해삼전복모듬물회와 섭국 오징어순대 먹고 온 후기"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/chemy1212/224319164731",
+          "text": "속초 물회 3대 맛집 내돈내산 솔직비교 (봉포머구리 vs 청초수물회 vs 송도물회) 취향별 완벽 정리"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/sw078/224319956566",
+          "text": "양양맛집 청초수물회 속초 물회 맛집 청초호뷰"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/mjpiglet/224264460447",
+          "text": "속초 청초수물회 후기, 청초호뷰 물회 맛집 가격·웨이팅 정리"
+        },
+        {
+          "rank": 6,
+          "link": "https://blog.naver.com/tlsfkdla33/224323899615",
+          "text": ": 속초 맛집 : 청초수물회 속초본점<성게알비빔밥/오징어순대/일반물회/맛집추천>"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "속초 점심",
+      "checkedAt": "2026-06-29T04:42:24.641Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/cpflrjf117/224321363409",
+          "text": "속초 점심 맛집 추천 엑스포 의정부 부대찌개"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/yorore10/224318580454",
+          "text": "속초점심 추천! 현지인도 찾는 오복식당 장칼국수와 김밥 후기"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/eghals123/224316152799",
+          "text": "야탑 가성비 횟집 직장인 점심맛집 속초종합어시장 야탑점"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/dkgus8542/224325430077",
+          "text": "부천 중동 점심 횟집 속초오징어어시장 부천중동현대점 고등어구이 물회 맛집"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/104204303/224322991921",
+          "text": "강원도 속초 또간집 1등 맛집 송정희어머니 순두부 점심"
+        },
+        {
+          "rank": 6,
+          "link": "https://blog.naver.com/soh109/224174830737",
+          "text": "오키야옹이\nblog.naver.com›soh109"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "속초맛집",
+      "checkedAt": "2026-06-29T04:43:16.062Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/hatnim1225/224318937709",
+          "text": "강원도 속초 1박2일 먹방여행기록 일정 맛집 후기"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "송도 센트럴파크 맛집",
+      "checkedAt": "2026-06-29T04:42:24.773Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/seowoo7603/224318890516",
+          "text": "참나무 장작에 훈연한 족발 한잔하기 좋은 송도 센트럴파크 맛집 추천"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/goodluck_sin/224318334165",
+          "text": "인천 송도 센트럴파크 근처 한정식 아이랑 가기 좋은 맛집 밥상편지 내돈내산"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/hha4741/224318023745",
+          "text": "인천 송도센트럴파크 맛집 파스타, 리조또, 샐러드 체나콜로아트폴레 후기"
+        }
+      ],
+      "rankByLink": {
+        "https://blog.naver.com/seowoo7603/224318890516": 1
+      }
+    },
+    {
+      "keyword": "수원맛집",
+      "checkedAt": "2026-06-29T04:43:18.276Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/sdragon-/224316539792",
+          "text": "[수원 인계동 맛집] 더원식당 짬뽕 미니탕수육 현지인 로컬 주차 솔직후기!"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "수원역맛집",
+      "checkedAt": "2026-06-29T04:42:25.456Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/sol_forest/224320150914",
+          "text": "수원역 맛집 곱창 잡내없이 고소한 한우곱창 분위기 좋은 우심 수원본점"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/sw078/224319945404",
+          "text": "수원역맛집 육풍 수원역 삼겹살 맛집 회식 룸식당 한우육회"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/kwakcheol/224315831515",
+          "text": "수원역 맛집 술집 추천 꼬꼬아찌 숯불치킨 수원역점"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/kwakcheol/224322670123",
+          "text": "수원역 갈비 맛집 구워주는 고깃집 이팔사팔"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "신논현 맛집",
+      "checkedAt": "2026-06-29T04:42:31.786Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/cjswlgml99/224316462825",
+          "text": "신논현역 맛집 한식 회식 장소로도 추천 ‘소제이 서울본점’ 소꼬리찜 에레이갈비"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "신논현 횟집",
+      "checkedAt": "2026-06-29T04:43:18.641Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/beruko/224320262204",
+          "text": "보물섬 강남 횟집 신논현 야장 술집 맛집 추천"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/cabotin_8494/224316182868",
+          "text": "신논현 횟집 보물섬 자연산 회와 매운탕 야장에서 소주한잔"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/sw078/224317498352",
+          "text": "신논현 횟집 논현 숙성회 고등어 한치막회 산호초 솔직후기"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/skskgml8/224326523332",
+          "text": "강남 횟집 신논현 횟집 논현동 맛집 보물섬 자연산 대방어회 제대로 즐기는 법"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/blessest1/224308727855",
+          "text": "신논현역 횟집 강남 만원수산 내돈내산 가성비 좋은 횟집"
+        },
+        {
+          "rank": 6,
+          "link": "https://blog.naver.com/l234jh920/224319625046",
+          "text": "신논현 횟집 자연산 모듬회 맛집 l 보물섬 후기"
+        },
+        {
+          "rank": 7,
+          "link": "https://blog.naver.com/arabdubuofficial/224315628784",
+          "text": "아랍두부\nblog.naver.com›arabdubuofficial"
+        },
+        {
+          "rank": 8,
+          "link": "https://blog.naver.com/lcindy1101/224291756681",
+          "text": "은은로그\nblog.naver.com›lcindy1101"
+        },
+        {
+          "rank": 9,
+          "link": "https://blog.naver.com/by_eunae/224019401866",
+          "text": "으아잉\nblog.naver.com›by_eunae"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "신논현역 맛집",
+      "checkedAt": "2026-06-29T04:42:30.625Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/cjswlgml99/224316462825",
+          "text": "신논현역 맛집 한식 회식 장소로도 추천 ‘소제이 서울본점’ 소꼬리찜 에레이갈비"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "신용산 맛집",
+      "checkedAt": "2026-06-29T04:43:20.519Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/philihwang/224316165687",
+          "text": "신용산역 맛집 쌍미곱창, 용산역 근처 야외 곱창 분위기 끝판왕"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/nazcaplate/224318393378",
+          "text": "신용산 맛집 더쿠라 용산 | 다양한 메뉴에 분위기 좋은 용리단길술집"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/nazcaplate/224324512739",
+          "text": "신용산 맛집 판코네 | 가볍게 데이트하기 좋은 신용산 이탈리안 솔직후기 | 내돈내산"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/dreamclock33/224320939361",
+          "text": "신용산 맛집 장어튀김 붓카케우동 솔직후기"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/zzoromzzap/224316165399",
+          "text": "[신용산역 맛집] 능동미나리 신용산점 | 미슐랭 빕구르망 맛집 방문 후기"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "신촌 술집",
+      "checkedAt": "2026-06-29T04:42:31.132Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/topbuilding/224318666990",
+          "text": "레트로 감성 폭발하는 신촌역 술집, 후배들과 2차로 다녀온 가성비 최고 신촌 단체 술집 역전포장마차 신촌점 방문기"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/sonii94/224315661062",
+          "text": "신촌 술집 역전포장마차 신촌점 곱창전골에 소맥 말기 좋은 신촌역 술집 단체 룸 완비 후기"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/alsyd84/224308990581",
+          "text": "신촌역 술집 역전포장마차 신촌점 분위기 좋은 데이트 코스"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/khj2808/224319061441",
+          "text": "서울 신촌역 술집 신촌 곱도리탕 맛집 역전포장마차"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/sielle83/222979178731",
+          "text": "문썬\n13.8만 인용\nblog.naver.com›sielle83"
+        },
+        {
+          "rank": 6,
+          "link": "https://blog.naver.com/records__ok/223827959870",
+          "text": "옥이\nblog.naver.com›records__ok"
+        },
+        {
+          "rank": 7,
+          "link": "https://blog.naver.com/skguscogus/223989477497",
+          "text": "라미\nblog.naver.com›skguscogus"
+        },
+        {
+          "rank": 8,
+          "link": "https://blog.naver.com/kyungmiku/224001847912",
+          "text": "구갱\nblog.naver.com›kyungmiku"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "안양역맛집",
+      "checkedAt": "2026-06-29T04:42:31.190Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/moteru/224318298942",
+          "text": "감성과 분위기가 있는 안양역 맛집 감성반점 感性飯店"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/puppypooo/224315112178",
+          "text": "[안양역 맛집] '삼촌식당' 내돈내산 솔직후기 | 안양 댕리단길 데이트 코스 카레라이스 맛집"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/950957/224317040229",
+          "text": "안양역 맛집 추천 일번가양꼬치 기본맛 매운맛 비교후기"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "애월맛집",
+      "checkedAt": "2026-06-29T04:42:31.973Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/zozyouu/224315894672",
+          "text": "제주 애월 맛집 곽지해수욕장 국수맛집 블루그라스 후기"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/haeun151347/224320986191",
+          "text": "[제주]제주 애월 제주도민 추천 맛집 가성비 좋은 회 정식 한상 추천 - 마니주"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "양산 맛집",
+      "checkedAt": "2026-06-29T04:42:36.867Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/joh3776/224318435187",
+          "text": "양산 남부시장 맛집 코끼리양분식 경양식돈까스 모듬돈까스 쫄면 솔직후기, 양산 맛집 추천"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/joh3776/224321569796",
+          "text": "양산 현지인 맛집 추천 남부시장 매콤명태 솔직후기"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/oneq9q/224325927331",
+          "text": "증산역 맛집 양산 가성비 점심특선 가능한 남도갈비 후기"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/oneq9q/224316609585",
+          "text": "양산 감성카페 팥집단, 생활의달인 팥빙수 맛집 솔직후기"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/rlduael11/224299683625",
+          "text": "양산 북정동 닭도리탕이 맛있는 한식 찐맛집 토담집"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "여의도 맛집",
+      "checkedAt": "2026-06-29T04:42:37.414Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/seoeunjin13/224316834346",
+          "text": "[여의도 맛집 진주집] 전국 3대 콩국수 진주집 웨이팅 적은 저녁방문 꿀팁과 내돈내산 솔직후기"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "역삼 맛집",
+      "checkedAt": "2026-06-29T04:43:22.497Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/mingu_u99/224316333277",
+          "text": "역삼 직장인 맛집 비장탄 숯불 히츠마부시 ‘치솟’ 방문 후기"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/free3394/224053319007",
+          "text": "함꽁맘\nblog.naver.com›free3394"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/snowrun/224090480492",
+          "text": "핸잉이\n21.3만 인용\nblog.naver.com›snowrun"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "영등포역 맛집",
+      "checkedAt": "2026-06-29T04:42:37.783Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/eodus0712/224319753947",
+          "text": "[영등포구청역 맛집] 얼큰한 김치찌개 생각날 때! '맨날먹는김치찌개' 내돈내산 후기"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/eodus0712/224318932884",
+          "text": "[영등포구청역 맛집] 오늘 하루 햄버거? '파파이스' 더블푹버거 내돈내산 후기"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/eodus0712/224321299762",
+          "text": "[영등포구청역 맛집] 매콤한 떡볶이와 튀김, 순대까지 갓벽한 '당산분식' 내돈내산 후기"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/theothermoon/224318708066",
+          "text": "[영등포시장역 맛집] 향미옥, 영등포 근처 점심 저녁 혼밥하기 딱 좋은 쌀국수 솔직리뷰"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/theothermoon/224322090373",
+          "text": "[영등포구청역 고기집 맛집] \"초량생갈비\" 비오는날 웨이팅 재방문많은곳 솔직후기"
+        },
+        {
+          "rank": 6,
+          "link": "https://blog.naver.com/alswls9676/224325968387",
+          "text": "영등포역 맛집 대세박목살 살살 녹는 목살에 곤드레밥까지"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "오창 맛집",
+      "checkedAt": "2026-06-29T04:43:23.726Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/bensoo/224317324401",
+          "text": "[청주 오창 맛집] 찐교동짬뽕 오창본점, 짬뽕의 깊은 맛을 즐길 수 있는 오창 맛집"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/fnfood/224320831100",
+          "text": "오창 호수공원 맛집 시골생삼겹우렁쌈밥 정식 추천"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/cnwjddms7751/224259109098",
+          "text": "오창읍 맛집 오창2산단 중국집 맛집 부향각 솔직후기"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/ramjjy/224318675202",
+          "text": "청주 오창읍 두심온 간장게장 정식 후기 오창 맛집 인정"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/seowoo7603/224313941455",
+          "text": "청주 오창 여행 맛집 현지인 노포 매운 뽈찜 대구왕뽈때기 솔직후기"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "용산 맛집",
+      "checkedAt": "2026-06-29T04:43:24.916Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/shlove01299/224324469266",
+          "text": "국립중앙박물관 맛집, 용산역 고기집 찾는다면 적토발효구이 용산점 강력 추천"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/zzoromzzap/224316165399",
+          "text": "[신용산역 맛집] 능동미나리 신용산점 | 미슐랭 빕구르망 맛집 방문 후기"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "용현동 맛집",
+      "checkedAt": "2026-06-29T04:42:38.273Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/mromro_/224321708392",
+          "text": "[용현동맛집]인천용현동노포맛집원조막창숯불구이 내돈내산후기❤️"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/dmsql1490/224323350873",
+          "text": "인천 용현동 맛집 추천 도화역 근처 가족외식 장소로 딱 맞았던 도화갈비"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/sso649393/224316460949",
+          "text": "[인천맛집] 인천 용현동 맛집, 얼큰한 국물 미쳤던 큰손 샤브샤브 인하대점, 인하대 후문 가성비 맛집 찾는다면 점심식사로 완전 추천!"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/kungfoodpanda/224317106498",
+          "text": "인천 용현동 청국장 제육볶음맛집 처가댁진밥상"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/banjjak2022/224317650456",
+          "text": "용현동 맛집 강경불고기 의정부본점, 줄 서서 먹는 이유"
+        },
+        {
+          "rank": 6,
+          "link": "https://blog.naver.com/aaron_lifechapter/224316873652",
+          "text": "인천 용현동 맛집 대풍쪽갈비_내돈내산 맛집리뷰"
+        },
+        {
+          "rank": 7,
+          "link": "https://blog.naver.com/tong_namgu/223916331075",
+          "text": "미추\nblog.naver.com›tong_namgu"
+        },
+        {
+          "rank": 8,
+          "link": "https://blog.naver.com/joojoo5623/224312404850",
+          "text": "제이유\nblog.naver.com›joojoo5623"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "율량동 맛집",
+      "checkedAt": "2026-06-29T04:42:38.806Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/thtk0803/224319171551",
+          "text": "청주 율량동 맛집 맛있게 매운 매운등갈비찜 홍등식당1997"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/r2ming_/224316811922",
+          "text": "청주 율량동 맛집 고부심 _ N번째 방문 후기"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/sulhee0927/224320089747",
+          "text": "청주 율량동 양꼬치 맛집, 숙성 양꼬치와 마라탕이 끝내주는 훠룽쿵부 율량점"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/dnation09/224316450629",
+          "text": "청주 율량동 맛집 창심관 꽃삼겹살 추천 후기"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/klas2400/224323126483",
+          "text": "청주 율량동 돈까스 맛집 돈나의부엌 (구 돈까스나라)"
+        },
+        {
+          "rank": 6,
+          "link": "https://blog.naver.com/klas2400/224306641244",
+          "text": "청주 율량동 맛집 추천 손의손 불쭈꾸미볶음 돈까스까지 맛있다"
+        },
+        {
+          "rank": 7,
+          "link": "https://blog.naver.com/klas2400/224296637792",
+          "text": "청주 율량동 맛집 오봉집 요즘 핫한 칼낙지 먹고 온 후기"
+        },
+        {
+          "rank": 8,
+          "link": "https://blog.naver.com/a0av18/224321311703",
+          "text": "청주 율량동 맛집 슈퍼막회 모듬회세트 솔직후기"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "을지로 맛집",
+      "checkedAt": "2026-06-29T04:42:44.244Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/alsrud0314/224261141167",
+          "text": "을지로 맛집 내돈내산｜야장 삼겹살 코스 추천, 향촌식당 → 만선호프 솔직 후기"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "의정부역 맛집",
+      "checkedAt": "2026-06-29T04:42:44.258Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/busansmart/224319841544",
+          "text": "한우 한돈 장어까지 한 자리에서 챙기는 의정부역 맛집 추천"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/gkxhfla/224325916827",
+          "text": "의정부횟집 추천 속초오징어어시장 의정부점, 의정부역 점심 물회 맛집"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/bhlee97/224323049451",
+          "text": "의정부역맛집 속초오징어시장 의정부점"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/bravo_official_/224315518476",
+          "text": "의정부역 33년 전통의 닭갈비 맛집 추천"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/bravo_official_/224321634469",
+          "text": "의정부역 비 오는 날 생각나는 모듬전 맛집"
+        },
+        {
+          "rank": 6,
+          "link": "https://blog.naver.com/bravo_official_/224319505112",
+          "text": "의정부역 매운 오징어볶음 맛집 추천"
+        }
+      ],
+      "rankByLink": {
+        "https://blog.naver.com/busansmart/224319841544": 1
+      }
+    },
+    {
+      "keyword": "이수맛집 추천",
+      "checkedAt": "2026-06-29T04:42:44.674Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/ddungddun/224322678631",
+          "text": "사당 이수 맛집 이수역 가성비 고기집 추천 가격 퀄리티 모두 좋은 연중무휴 브레이크타임 없는 황제 소갈비살"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/ddungddun/224319163294",
+          "text": "사당 이수 맛집 내돈내산 불맛가득 숙성 쪽갈비 추천 30년 경력 맛집 이수쪽갈비"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/yeorim40/224313075119",
+          "text": "[이수 맛집] 듀블럭: 사당 이수역 맛집 청모하기 좋은 양식집 추천!"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/jjwgo1004/224321533142",
+          "text": "[코시]이수역 맛집 돈까스와 냉우동이 맛있는 혼밥 맛집"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/jjwgo1004/224320525750",
+          "text": "[딥다이브]이수역 분위기 좋은 소개팅 디저트 카페"
+        },
+        {
+          "rank": 6,
+          "link": "https://blog.naver.com/jinikimjini/224321039721",
+          "text": "이수 맛집 곱창 추천! 콜키지프리라 제로맥주 들고 가기 좋은 백호양대창"
+        },
+        {
+          "rank": 7,
+          "link": "https://blog.naver.com/dungdang17/224219021747",
+          "text": "댕둥히진\nblog.naver.com›dungdang17"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "정자역 맛집",
+      "checkedAt": "2026-06-29T04:42:45.166Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/dotori0104/224317228206",
+          "text": "정자역 맛집 술집 야장 가능한 분위기 좋은 요리주점 바차 정자점"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/chloe7513/224316495172",
+          "text": "주차 가능한 정자역 맛집 점심 까몬 분당정자직영점"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/chloe7513/224299850935",
+          "text": "정자역 맛집 술집 바차 정자점"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "제주 연동 맛집",
+      "checkedAt": "2026-06-29T04:42:51.649Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/ll004ll/224316922380",
+          "text": "제주 연동 맛집 - 강명선샤브샤브 (제주 돼지 샤브샤브)"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/seowoo7603/224320741479",
+          "text": "여행 와서 뜨끈하게 먹기 좋은 제주 연동 맛집 추천"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/cagycagy/224319839293",
+          "text": "제주연동맛집 철수네 숯불갈비 가성비 도민 인정"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/ahnmj1970/224319849010",
+          "text": "[제주 맛집] 여기 낙대새를 먹어보면 재방문할 수밖에 없는 제주시 연동 제원 맛집&술집 ‘보글보글’"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/kwonminji103/224319192209",
+          "text": "제주 연동 맛집 돌격한우｜제주공항 근처 한우 맛집"
+        }
+      ],
+      "rankByLink": {
+        "https://blog.naver.com/seowoo7603/224320741479": 2
+      }
+    },
+    {
+      "keyword": "제주공항근처맛집",
+      "checkedAt": "2026-06-29T04:42:45.832Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/gprl1010/224316285475",
+          "text": "제주공항 근처 맛집 우진해장국 :: N번째 방문러의 평일 아침 웨이팅 근황과 첫 녹두빈대떡 솔직후기(ft.주차,별관 정보)"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "청주 물회 맛집",
+      "checkedAt": "2026-06-29T04:42:51.011Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/qhwn0130/223860630678",
+          "text": "라임보돌\nblog.naver.com›qhwn0130"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/jackdaniell/224321740261",
+          "text": "청주 물회맛집 성화동 뱃놈 스끼다시 나오는 포항물회"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/sakura0806/224315073589",
+          "text": "청주 물회 맛집 여름철 별미 성화동 뱃놈"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/k_yn67/224317805195",
+          "text": "청주 봉명동 맛집 ‘아키아키’ 점심특선 해산물 물회 정식 (주차, 예약, 이벤트)"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/seowoo7603/224323426719",
+          "text": "스시까지 같이 나와 든든했던 청주 물회 맛집 추천"
+        },
+        {
+          "rank": 6,
+          "link": "https://blog.naver.com/hyunah0701/224320929739",
+          "text": "점심특선 메뉴로 시원하고 맛있게 먹고 온 청주물회맛집 아키아키"
+        },
+        {
+          "rank": 7,
+          "link": "https://blog.naver.com/dhddl231/224296305476",
+          "text": "청주운천동 물회 맛집 꼴깍회 ｜현지인 추천 회맛집 물회 솔직후기"
+        },
+        {
+          "rank": 8,
+          "link": "https://blog.naver.com/a0av18/224274479282",
+          "text": "셩셩\nblog.naver.com›a0av18"
+        },
+        {
+          "rank": 9,
+          "link": "https://blog.naver.com/rlaal_dud2/223562114377",
+          "text": "MI언니\nblog.naver.com›rlaal_dud2"
+        }
+      ],
+      "rankByLink": {
+        "https://blog.naver.com/seowoo7603/224323426719": 5
+      }
+    },
+    {
+      "keyword": "청주 봉명동 맛집",
+      "checkedAt": "2026-06-29T04:42:51.878Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/norm-ju/224316551572",
+          "text": "청주 봉명동 고기맛집 / 봉명동 낙원축산물짜글이 /봉명동 회식 맛집 추천"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/klas2400/224319535725",
+          "text": "청주 봉명동 양갈비 맛집 갈비스토리 잡내 없고 반찬까지 맛있다"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/dnation09/224324587645",
+          "text": "매콤한 찜으로 모임 분위기 살리기 좋은 청주봉명동맛집"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/seowoo7603/224324414177",
+          "text": "청주 봉명동 맛집 대구왕뽈때기 아구찜 회식 내돈내산 추천"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/youliwert/224237193928",
+          "text": "청주 봉명동 맛집 Ι 토박이 로컬 짜글이 맛집, 현지인 제가 정말 추천합니다, 낙원축산물 짜글이"
+        },
+        {
+          "rank": 6,
+          "link": "https://blog.naver.com/mcm2922/224134849990",
+          "text": "곰둥이 X 아빠곰\nblog.naver.com›mcm2922"
+        }
+      ],
+      "rankByLink": {
+        "https://blog.naver.com/seowoo7603/224324414177": 4
+      }
+    },
+    {
+      "keyword": "청주맛집",
+      "checkedAt": "2026-06-29T04:43:25.452Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/dudal671115/224238428925",
+          "text": "청주 로컬 맛집 11곳 내돈내산만 공개함요"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/me898925/224321913134",
+          "text": "청주 모충동 서원대 후문 내돈내산 맛집_갓성비에 양도 많고 맛도 좋은 양식 전문점 : 아프로 Appro"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/prettysm222/224320485196",
+          "text": "[청주 죽림동 맛집] 청주 쭈꾸미볶음 맛집 돗가비불쭈꾸미 THE청주, 2호점에 다녀왔어요"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "청주상견례",
+      "checkedAt": "2026-06-29T04:42:52.384Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/kdwb1127/224255731566",
+          "text": "[웨딩]청주 우설화 상견례 상견례코스 솔직후기 내돈내산 할인 꿀팁 청주 상견례 추천"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/cksgml1201/224302176301",
+          "text": "청주 우설화 상견례 B코스 내돈내산 후기 (양가부모님 선물 / 상견례 피피티)"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/travelyoung0402/224246923406",
+          "text": "청주 ‘경복궁’ 환갑잔치 후기(상견례 한정식 코스 후기)"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/0ddugi5170/224273699836",
+          "text": "청주룸식당 상견례하기 좋은 성화동 마실 한정식"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/12399gjsmf/224326107550",
+          "text": "청주 상견례 후기 여기정 꽃피는섬 내돈내산 후기"
+        },
+        {
+          "rank": 6,
+          "link": "https://blog.naver.com/dlgustjs_/224227697909",
+          "text": "w.1 청주 상견례 식당 추천 <상춘고택> 가가보정식 솔직후기 청주상견례식당 리스트 공유 답례품 추천"
+        },
+        {
+          "rank": 7,
+          "link": "https://blog.naver.com/jyeong31/223769362248",
+          "text": "엉이영\nblog.naver.com›jyeong31"
+        },
+        {
+          "rank": 8,
+          "link": "https://blog.naver.com/greenjhl/224111340958",
+          "text": "그리니\nblog.naver.com›greenjhl"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "충무로맛집",
+      "checkedAt": "2026-06-29T04:43:27.052Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/dreamclock33/224318749373",
+          "text": "29년 같은 자리 회식에 아껴둔 충무로 맛집 추천"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/kizaki56/224317020707",
+          "text": "충무로 맛집 필동 전자방 야장 감성 분위기 좋았던 중국집"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/aiden5686/224326463763",
+          "text": "충무로 쭈꾸미 맛집 쭈담, 점심부터 저녁 모임까지 책임지는 직화 전문점"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "탕정맛집",
+      "checkedAt": "2026-06-29T04:43:28.757Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/bombomstory1203/224317529116",
+          "text": "[아산탕정맛집] 초여름 날씨에 딱! '교동면옥 아산탕정점' 살얼음동동 육전 냉면 내돈내산 리뷰!"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/che289/224319246708",
+          "text": "아산 지중해마을 맛집 탕정 고소한 삼겹살이 맛있는 연탄집"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/pjk88/224318880693",
+          "text": "아산 탕정역 맛집 분위기 좋은 레스토랑 케미 바이 페어링지"
+        },
+        {
+          "rank": 4,
+          "link": "https://blog.naver.com/bca22/224320840207",
+          "text": "[아산 탕정 맛집] 두 번째 만남을 빛내준 분위기 좋은 아르보브런치 데이트 코스"
+        },
+        {
+          "rank": 5,
+          "link": "https://blog.naver.com/bca22/224317713645",
+          "text": "아산 탕정 신상 맛집 참찹쌀떡 가오픈 런! 쫀득함에 반한 솔직 후기"
+        },
+        {
+          "rank": 6,
+          "link": "https://blog.naver.com/smzdlz0/224318160359",
+          "text": "아산탕정\"못생긴뚱돼지\" 기가막힌 꼬들살맛집 내돈내감"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "하남 맛집",
+      "checkedAt": "2026-06-29T04:43:29.530Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/blue77y/224323981853",
+          "text": "스타필드 하남 맛집천국 잇토피아(EATOPIA)3층, 필동함박 & 온기정 텐동"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/inxs2011/224320911353",
+          "text": "하남스타필드 잇토피아 맛집 필동함박&멘쇼쿠 솔직 리뷰"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "합정역 맛집",
+      "checkedAt": "2026-06-29T04:42:53.180Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/jjwgo1004/224317247633",
+          "text": "[생어거스틴]합정역 맛집 점심 쌀국수가 맛있는 회식 장소 메뉴 추천"
+        },
+        {
+          "rank": 2,
+          "link": "https://blog.naver.com/1oo_sol/224318385496",
+          "text": "[합정역 맛집 점심] 쌀국수부터 팟타이, 나시고랭까지 즐기는 태국 요리 생어거스틴 솔직 후기"
+        },
+        {
+          "rank": 3,
+          "link": "https://blog.naver.com/plesure1014/224320786513",
+          "text": "합정동 술집 데이트 장소로 좋은 합정역 이자카야 맛집 미야비하나레"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "해운대 맛집 추천",
+      "checkedAt": "2026-06-29T04:42:58.925Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/young_creator/224310859738",
+          "text": "내돈내산 현지 부산 맛집 추천 리스트 10곳 해운대 광안리 영도 수영"
+        }
+      ],
+      "rankByLink": {}
+    },
+    {
+      "keyword": "홍대 맛집",
+      "checkedAt": "2026-06-29T04:42:59.093Z",
+      "topLinks": [
+        {
+          "rank": 1,
+          "link": "https://blog.naver.com/pulak47/224321865588",
+          "text": "[서울 홍대] 분위기 좋은 기념일 날 가기 좋은 식당 핌피 pimfy 홍대 내돈내산 양식 레스토랑 맛집 추천"
+        }
+      ],
+      "rankByLink": {}
+    }
+  ]
+}

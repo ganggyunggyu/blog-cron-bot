@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv';
 import { promises as fs } from 'fs';
-import path from 'path';
+import * as path from 'path';
 import { GoogleSpreadsheet, GoogleSpreadsheetWorksheet } from 'google-spreadsheet';
 import { JWT } from 'google-auth-library';
 
@@ -8,7 +8,10 @@ dotenv.config();
 
 const SHEET_ID = '1K3in6YXzn3yL4sZHlU-LrcnBAvtT4J-LYPBa6vvS4OE';
 const TSV_DIR = process.env.TSV_DIR || 'work/mar-jun-all-with-rank-tsv-20260629';
-const SHEET_NAMES = ['제이제이', '철인삼남매', '사랑채마켓', '호이호이'];
+const SHEET_NAMES = (process.env.SHEET_NAMES || '제이제이,철인삼남매,사랑채마켓,호이호이')
+  .split(',')
+  .map((value) => value.trim())
+  .filter(Boolean);
 const HEADER_FILL = { red: 0.12, green: 0.31, blue: 0.47 };
 const HEADER_TEXT = { red: 1, green: 1, blue: 1 };
 const COLUMN_WIDTHS = [360, 180, 150, 110, 130, 90];
@@ -56,6 +59,26 @@ const getSheet = (doc: GoogleSpreadsheet, title: string): GoogleSpreadsheetWorks
   return sheet;
 };
 
+const getOrCreateSheet = async (
+  doc: GoogleSpreadsheet,
+  title: string
+): Promise<GoogleSpreadsheetWorksheet> => {
+  const existing = doc.sheetsByTitle[title];
+  if (existing) {
+    return existing;
+  }
+
+  return doc.addSheet({
+    title,
+    headerValues: ['링크', '업체명', '키워드', '발행일', '동일키워드발행수', '검색순위'],
+    gridProperties: {
+      rowCount: 1000,
+      columnCount: 26,
+      frozenRowCount: 1,
+    },
+  });
+};
+
 const applyFormat = async (
   sheet: GoogleSpreadsheetWorksheet,
   headers: string[],
@@ -101,7 +124,7 @@ const updateSheet = async (
   doc: GoogleSpreadsheet,
   sheetName: string
 ): Promise<{ sheetName: string; rows: number }> => {
-  const sheet = getSheet(doc, sheetName);
+  const sheet = await getOrCreateSheet(doc, sheetName);
   const { headers, rows } = await parseTsv(path.join(TSV_DIR, `${sheetName}.tsv`));
 
   await sheet.resize({ rowCount: Math.max(rows.length + 20, 1000), columnCount: 26 });

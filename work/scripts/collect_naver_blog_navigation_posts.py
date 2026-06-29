@@ -13,10 +13,17 @@ BLOGS = [
     {"sheetName": "철인삼남매", "displayName": "철인삼남매 (25.12.12 만료)", "blogId": "dreamclock33"},
     {"sheetName": "사랑채마켓", "displayName": "사랑채마켓 (26.06.30 만료)", "blogId": "sarangchai_"},
     {"sheetName": "호이호이", "displayName": "호이호이 (영구-단체전환)", "blogId": "sw078"},
+    {"sheetName": "바글바글", "displayName": "바글바글", "blogId": "seowoo7603"},
+    {"sheetName": "블루망고", "displayName": "블루망고", "blogId": "busansmart"},
 ]
 OUT_DIR = Path("outputs/blog-published-ranks")
 CUTOFF = datetime(2026, 3, 29)
 REFERENCE = datetime(2026, 6, 29, 12, 10)
+BLOG_FILTER = {
+    item.strip()
+    for item in __import__("os").environ.get("BLOG_FILTER", "").split(",")
+    if item.strip()
+}
 SEEDED_CATEGORIES = {
     # 맛집 발행글이 전체글 currentPage=0 에서 일부 누락/점프되는 블로그가 있어
     # 실제 블로그 네비게이션 카테고리 번호도 같이 수집한다.
@@ -215,7 +222,14 @@ def collect_blog(blog: dict) -> dict:
 def main():
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     results = []
-    for blog in BLOGS:
+    blogs = [
+        blog
+        for blog in BLOGS
+        if not BLOG_FILTER
+        or blog["sheetName"] in BLOG_FILTER
+        or blog["blogId"] in BLOG_FILTER
+    ]
+    for blog in blogs:
         print(f"[nav] {blog['sheetName']} {blog['blogId']}", flush=True)
         result = collect_blog(blog)
         print(
