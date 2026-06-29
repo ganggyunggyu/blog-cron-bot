@@ -1,0 +1,1054 @@
+{
+  "generatedAt": "2026-06-29T03:25:43.999Z",
+  "generatedAtKst": "2026-06-29 12:25:43",
+  "inputJson": "outputs/blog-published-ranks/target-blog-posts-keyword-sheet-mar-jun-all-with-rank-20260629.json",
+  "topN": 20,
+  "keywordCount": 149,
+  "rankedLinkCount": 0,
+  "rankByLink": {},
+  "results": [
+    {
+      "keyword": "가경동 맛집",
+      "checkedAt": "2026-06-29T03:24:19.726Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "강남 돌잔치",
+      "checkedAt": "2026-06-29T03:25:38.872Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "강남 룸식당",
+      "checkedAt": "2026-06-29T03:24:19.745Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "강남 상견례",
+      "checkedAt": "2026-06-29T03:25:41.314Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "강남 점심",
+      "checkedAt": "2026-06-29T03:24:23.341Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "강남맛집",
+      "checkedAt": "2026-06-29T03:24:19.873Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "강남역 룸식당",
+      "checkedAt": "2026-06-29T03:24:19.745Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "강남역 소고기",
+      "checkedAt": "2026-06-29T03:24:19.725Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "강남역 점심 맛집",
+      "checkedAt": "2026-06-29T03:24:22.937Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "강남역 회식",
+      "checkedAt": "2026-06-29T03:25:32.085Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "강동 맛집",
+      "checkedAt": "2026-06-29T03:24:23.372Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "강릉 점심 맛집",
+      "checkedAt": "2026-06-29T03:24:26.451Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "강릉 현지인 맛집",
+      "checkedAt": "2026-06-29T03:24:27.780Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "강릉막국수",
+      "checkedAt": "2026-06-29T03:24:22.937Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "강릉맛집",
+      "checkedAt": "2026-06-29T03:24:23.421Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "강릉맛집추천",
+      "checkedAt": "2026-06-29T03:24:26.041Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "강릉역 맛집",
+      "checkedAt": "2026-06-29T03:24:26.402Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "건대 맛집",
+      "checkedAt": "2026-06-29T03:24:26.880Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "공덕 맛집",
+      "checkedAt": "2026-06-29T03:24:29.355Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "공덕역 회식",
+      "checkedAt": "2026-06-29T03:24:29.660Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "공덕역맛집",
+      "checkedAt": "2026-06-29T03:24:29.660Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "공주 맛집",
+      "checkedAt": "2026-06-29T03:24:29.997Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "광교 맛집",
+      "checkedAt": "2026-06-29T03:24:32.637Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "광교룸식당",
+      "checkedAt": "2026-06-29T03:24:31.206Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "광안리 이자카야",
+      "checkedAt": "2026-06-29T03:25:32.230Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "광안리 점심 맛집",
+      "checkedAt": "2026-06-29T03:24:33.619Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "광안리맛집",
+      "checkedAt": "2026-06-29T03:24:32.879Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "광안리술집",
+      "checkedAt": "2026-06-29T03:24:33.186Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "광양 불고기",
+      "checkedAt": "2026-06-29T03:24:34.562Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "광화문 맛집",
+      "checkedAt": "2026-06-29T03:25:32.796Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "교대역 맛집",
+      "checkedAt": "2026-06-29T03:24:35.703Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "교대점심",
+      "checkedAt": "2026-06-29T03:24:36.656Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "구디맛집",
+      "checkedAt": "2026-06-29T03:24:36.788Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "구월동 맛집",
+      "checkedAt": "2026-06-29T03:24:37.129Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "군산 나운동 맛집",
+      "checkedAt": "2026-06-29T03:24:38.455Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "길동 맛집",
+      "checkedAt": "2026-06-29T03:24:38.836Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "김해 한우 맛집",
+      "checkedAt": "2026-06-29T03:24:40.034Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "김해맛집",
+      "checkedAt": "2026-06-29T03:24:39.594Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "나성동 맛집",
+      "checkedAt": "2026-06-29T03:25:42.037Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "남양주 카페",
+      "checkedAt": "2026-06-29T03:24:40.671Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "남천동맛집",
+      "checkedAt": "2026-06-29T03:24:41.934Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "노량진맛집",
+      "checkedAt": "2026-06-29T03:24:42.566Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "논현동 맛집",
+      "checkedAt": "2026-06-29T03:24:42.870Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "논현역 회식",
+      "checkedAt": "2026-06-29T03:24:43.842Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "덕수궁 맛집",
+      "checkedAt": "2026-06-29T03:24:44.052Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "동대구역 맛집",
+      "checkedAt": "2026-06-29T03:24:45.686Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "동래맛집",
+      "checkedAt": "2026-06-29T03:25:39.450Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "동탄 고깃집",
+      "checkedAt": "2026-06-29T03:24:45.985Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "동탄 룸식당",
+      "checkedAt": "2026-06-29T03:24:45.718Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "동탄맛집",
+      "checkedAt": "2026-06-29T03:24:47.323Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "문래 맛집",
+      "checkedAt": "2026-06-29T03:24:47.689Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "문래동 맛집",
+      "checkedAt": "2026-06-29T03:25:32.801Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "발산맛집",
+      "checkedAt": "2026-06-29T03:24:48.731Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "발산역맛집",
+      "checkedAt": "2026-06-29T03:24:48.903Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "방이동 회식",
+      "checkedAt": "2026-06-29T03:24:50.464Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "방이동맛집",
+      "checkedAt": "2026-06-29T03:24:50.109Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "백운호수맛집",
+      "checkedAt": "2026-06-29T03:24:50.868Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "보문단지 맛집",
+      "checkedAt": "2026-06-29T03:24:51.956Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "부천 상견례",
+      "checkedAt": "2026-06-29T03:24:52.248Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "부천역 맛집",
+      "checkedAt": "2026-06-29T03:24:53.554Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "불당동 맛집",
+      "checkedAt": "2026-06-29T03:25:32.985Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "사당 술집",
+      "checkedAt": "2026-06-29T03:24:54.187Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "사당맛집",
+      "checkedAt": "2026-06-29T03:25:33.749Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "사당역 맛집",
+      "checkedAt": "2026-06-29T03:25:33.895Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "사당역 술집",
+      "checkedAt": "2026-06-29T03:24:54.546Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "사당역 이자카야",
+      "checkedAt": "2026-06-29T03:24:55.921Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "산남동 맛집",
+      "checkedAt": "2026-06-29T03:24:55.570Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "산본 맛집",
+      "checkedAt": "2026-06-29T03:25:34.454Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "서대문역 맛집",
+      "checkedAt": "2026-06-29T03:24:56.881Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "서면 맛집",
+      "checkedAt": "2026-06-29T03:25:39.466Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "서현 맛집",
+      "checkedAt": "2026-06-29T03:24:57.609Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "선릉역 맛집",
+      "checkedAt": "2026-06-29T03:24:57.953Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "선릉역 회식",
+      "checkedAt": "2026-06-29T03:24:58.720Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "성수 맛집",
+      "checkedAt": "2026-06-29T03:25:00.014Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "성수동 맛집",
+      "checkedAt": "2026-06-29T03:24:59.712Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "성수역 데이트",
+      "checkedAt": "2026-06-29T03:25:01.545Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "성심당",
+      "checkedAt": "2026-06-29T03:25:00.916Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "센텀맛집",
+      "checkedAt": "2026-06-29T03:25:02.012Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "속초 맛집 추천",
+      "checkedAt": "2026-06-29T03:25:39.649Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "속초 물회 맛집",
+      "checkedAt": "2026-06-29T03:25:34.459Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "속초 점심",
+      "checkedAt": "2026-06-29T03:25:03.340Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "속초 점심 맛집",
+      "checkedAt": "2026-06-29T03:25:34.659Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "속초 해수욕장 맛집",
+      "checkedAt": "2026-06-29T03:25:04.135Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "속초맛집",
+      "checkedAt": "2026-06-29T03:25:03.341Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "송도 맛집",
+      "checkedAt": "2026-06-29T03:25:04.760Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "송도 샤브샤브",
+      "checkedAt": "2026-06-29T03:25:05.024Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "송도 센트럴파크 맛집",
+      "checkedAt": "2026-06-29T03:25:42.186Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "송도 점심 맛집",
+      "checkedAt": "2026-06-29T03:25:35.405Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "송현아 맛집",
+      "checkedAt": "2026-06-29T03:25:42.824Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "수원 스타필드 맛집",
+      "checkedAt": "2026-06-29T03:25:06.591Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "수원맛집",
+      "checkedAt": "2026-06-29T03:25:06.379Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "수원역 삼겹살",
+      "checkedAt": "2026-06-29T03:25:42.787Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "수원역맛집",
+      "checkedAt": "2026-06-29T03:25:07.336Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "신논현 데이트",
+      "checkedAt": "2026-06-29T03:25:08.088Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "신논현 맛집",
+      "checkedAt": "2026-06-29T03:25:08.238Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "신논현 횟집",
+      "checkedAt": "2026-06-29T03:25:09.887Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "신논현역 맛집",
+      "checkedAt": "2026-06-29T03:25:09.887Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "신용산 맛집",
+      "checkedAt": "2026-06-29T03:25:10.730Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "신촌 술집",
+      "checkedAt": "2026-06-29T03:25:11.652Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "아산맛집",
+      "checkedAt": "2026-06-29T03:25:11.434Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "안산맛집",
+      "checkedAt": "2026-06-29T03:25:13.548Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "안양역맛집",
+      "checkedAt": "2026-06-29T03:25:13.448Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "애월맛집",
+      "checkedAt": "2026-06-29T03:25:35.552Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "약수역맛집",
+      "checkedAt": "2026-06-29T03:25:36.140Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "양산 맛집",
+      "checkedAt": "2026-06-29T03:25:13.885Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "여수 고기집",
+      "checkedAt": "2026-06-29T03:25:15.034Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "여수맛집",
+      "checkedAt": "2026-06-29T03:25:36.141Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "여의도 맛집",
+      "checkedAt": "2026-06-29T03:25:15.210Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "여의도 점심 맛집",
+      "checkedAt": "2026-06-29T03:25:17.535Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "역삼 맛집",
+      "checkedAt": "2026-06-29T03:25:36.331Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "영등포 맛집",
+      "checkedAt": "2026-06-29T03:25:40.379Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "영등포역 맛집",
+      "checkedAt": "2026-06-29T03:25:37.066Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "영종도 맛집",
+      "checkedAt": "2026-06-29T03:25:37.210Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "예산맛집",
+      "checkedAt": "2026-06-29T03:25:42.968Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "오송 회식",
+      "checkedAt": "2026-06-29T03:25:17.106Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "오창 맛집",
+      "checkedAt": "2026-06-29T03:25:17.535Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "용산 맛집",
+      "checkedAt": "2026-06-29T03:25:18.769Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "육회 칼비빔면",
+      "checkedAt": "2026-06-29T03:25:37.817Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "율량동 맛집",
+      "checkedAt": "2026-06-29T03:25:19.205Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "율량동 회식",
+      "checkedAt": "2026-06-29T03:25:20.293Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "을지로 맛집",
+      "checkedAt": "2026-06-29T03:25:20.891Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "의왕롯데아울렛",
+      "checkedAt": "2026-06-29T03:25:20.492Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "의정부역 맛집",
+      "checkedAt": "2026-06-29T03:25:22.155Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "이수맛집 추천",
+      "checkedAt": "2026-06-29T03:25:37.802Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "이태원맛집",
+      "checkedAt": "2026-06-29T03:25:22.558Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "일산 맛집",
+      "checkedAt": "2026-06-29T03:25:23.238Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "잠실 맛집",
+      "checkedAt": "2026-06-29T03:25:24.086Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "제주공항근처맛집",
+      "checkedAt": "2026-06-29T03:25:40.524Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "종로 맛집",
+      "checkedAt": "2026-06-29T03:25:24.110Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "천안맛집",
+      "checkedAt": "2026-06-29T03:25:41.122Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "첨단맛집",
+      "checkedAt": "2026-06-29T03:25:25.280Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "청주 물회 맛집",
+      "checkedAt": "2026-06-29T03:25:43.695Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "청주 봉명동 맛집",
+      "checkedAt": "2026-06-29T03:25:26.821Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "청주 지웰시티 맛집",
+      "checkedAt": "2026-06-29T03:25:37.983Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "청주맛집",
+      "checkedAt": "2026-06-29T03:25:25.929Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "청주상견례",
+      "checkedAt": "2026-06-29T03:25:27.656Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "청주오마카세",
+      "checkedAt": "2026-06-29T03:25:27.657Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "충무로맛집",
+      "checkedAt": "2026-06-29T03:25:28.721Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "탕정맛집",
+      "checkedAt": "2026-06-29T03:25:38.724Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "트리플스트리트맛집",
+      "checkedAt": "2026-06-29T03:25:41.129Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "판교맛집",
+      "checkedAt": "2026-06-29T03:25:29.464Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "포천맛집",
+      "checkedAt": "2026-06-29T03:25:28.721Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "하남 맛집",
+      "checkedAt": "2026-06-29T03:25:29.421Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "합정역 맛집",
+      "checkedAt": "2026-06-29T03:25:29.438Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "해운대 맛집",
+      "checkedAt": "2026-06-29T03:25:30.432Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "해운대 맛집 추천",
+      "checkedAt": "2026-06-29T03:25:30.578Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "홍대 고기집",
+      "checkedAt": "2026-06-29T03:25:31.137Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "홍대 맛집",
+      "checkedAt": "2026-06-29T03:25:31.139Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    },
+    {
+      "keyword": "홍대 점심 맛집",
+      "checkedAt": "2026-06-29T03:25:31.332Z",
+      "topLinks": [],
+      "rankByLink": {},
+      "error": "topN is not defined"
+    }
+  ]
+}

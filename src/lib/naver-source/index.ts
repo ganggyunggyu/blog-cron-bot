@@ -21,6 +21,18 @@ export const normalizeCafeName = (value: string): string =>
     .replace(/\s+/g, '')
     .trim();
 
+const RESERVED_INFLUENCER_PATHS = new Set([
+  'article',
+  'delivery',
+  'discover',
+  'home',
+  'identity-access',
+  'myfeed',
+  'profile',
+  'qna',
+  'search',
+]);
+
 export const resolveNaverSearchResultUrl = (
   href: string,
   fallbackUrl?: string
@@ -60,7 +72,6 @@ export const extractBlogIdFromUrl = (url: string): string => {
 
   const urlPatterns = [
     /blog\.naver\.com\/([^/?&#]+)/i,
-    /in\.naver\.com\/([^/?&#]+)/i,
     /m\.blog\.naver\.com\/([^/?&#]+)/i,
   ];
 
@@ -81,6 +92,19 @@ export const extractBlogIdFromUrl = (url: string): string => {
 
     if (parsedUrl.pathname.includes('PostView.naver')) {
       return (parsedUrl.searchParams.get('blogId') || '').toLowerCase();
+    }
+
+    if (parsedUrl.hostname.includes('in.naver.com')) {
+      const pathSegments = parsedUrl.pathname.replace(/^\/+/, '').split('/');
+      const influencerId = (pathSegments[0] || '').toLowerCase();
+
+      if (
+        influencerId &&
+        !RESERVED_INFLUENCER_PATHS.has(influencerId) &&
+        (pathSegments.length === 1 || pathSegments.includes('contents'))
+      ) {
+        return influencerId;
+      }
     }
   } catch {}
 

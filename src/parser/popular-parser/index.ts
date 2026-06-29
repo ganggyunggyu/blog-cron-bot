@@ -41,6 +41,80 @@ const getResolvedElementLink = ($element: cheerio.Cheerio<any>): string =>
 const getPostPublishedAt = ($item: cheerio.Cheerio<any>): string =>
   $item.find(SELECTORS.profileSubtext).first().text().trim();
 
+const getInfluencerIdFromUrl = (url: string): string => {
+  try {
+    const parsedUrl = new URL(url, 'https://in.naver.com');
+    if (!parsedUrl.hostname.includes('in.naver.com')) return '';
+
+    const pathSegments = parsedUrl.pathname.replace(/^\/+/, '').split('/');
+    if (!pathSegments.includes('contents')) return '';
+
+    return (pathSegments[0] || '').toLowerCase();
+  } catch {
+    return '';
+  }
+};
+
+const extractInfluencerContentItems = (
+  $: cheerio.CheerioAPI
+): PopularItem[] => {
+  const items: PopularItem[] = [];
+  const seenLinks = new Set<string>();
+
+  $('a[href*="in.naver.com/"][href*="/contents/"], button[data-url*="in.naver.com/"][data-url*="/contents/"]').each(
+    (_, element) => {
+      const $element = $(element);
+      const rawUrl =
+        $element.attr('href')?.trim() ||
+        $element.attr('data-url')?.trim() ||
+        '';
+      const link = resolveNaverSearchResultUrl(rawUrl);
+      const influencerId = getInfluencerIdFromUrl(link);
+
+      if (!link || !influencerId || seenLinks.has(link)) {
+        return;
+      }
+
+      const $item = $element.closest('[data-template-id="ugcItem"], [data-template-type="searchBasic"], .fds-ink-keyword-item, li, div');
+      const title =
+        $element
+          .find('.sds-comps-text-type-headline1, .fds-comps-text, .sds-comps-text')
+          .first()
+          .text()
+          .trim() ||
+        $element.text().trim();
+      const blogName =
+        $item
+          .find('.sds-comps-profile-info-title-text')
+          .first()
+          .text()
+          .trim() || influencerId;
+      const postPublishedAt = getPostPublishedAt($item);
+
+      if (!title) {
+        return;
+      }
+
+      seenLinks.add(link);
+      items.push({
+        title,
+        link,
+        snippet: '',
+        image: '',
+        badge: '',
+        group: '인플루언서 콘텐츠',
+        blogLink: `https://in.naver.com/${influencerId}`,
+        blogName,
+        postPublishedAt,
+        sourceType: 'blog',
+        sourceId: influencerId,
+      });
+    }
+  );
+
+  return items;
+};
+
 export const extractPopularItems = (
   html: string,
   options: ExtractPopularItemsOptions = {}
@@ -267,7 +341,7 @@ export const extractPopularItems = (
   }
 
   const unique = new Map<string, PopularItem>();
-  for (const item of items) {
+  for (const item of [...items, ...extractInfluencerContentItems($)]) {
     if (!unique.has(item.link)) {
       unique.set(item.link, item);
     }

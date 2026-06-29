@@ -30,6 +30,28 @@ const isSnippetLikeText = (value: string): boolean => {
 const isUsableTitle = (value: string): boolean =>
   !isProfileLikeText(value) && !isSnippetLikeText(value);
 
+const parseInfluencerContentUrl = (
+  href: string
+): { influencerId: string; contentId: string } | null => {
+  try {
+    const url = new URL(href, 'https://in.naver.com');
+    if (!url.hostname.includes('in.naver.com')) return null;
+
+    const pathSegments = url.pathname.replace(/^\/+/, '').split('/');
+    const contentsIndex = pathSegments.indexOf('contents');
+    if (contentsIndex < 1) return null;
+
+    const influencerId = pathSegments[0] || '';
+    const contentId = pathSegments[contentsIndex + 2] || pathSegments[contentsIndex + 1] || '';
+
+    if (!influencerId || !contentId) return null;
+
+    return { influencerId, contentId };
+  } catch {
+    return null;
+  }
+};
+
 const getBestTitle = ($el: cheerio.Cheerio<any>): string => {
   const directText = cleanText($el.text() || $el.attr('title') || '');
   if (isUsableTitle(directText)) return directText;
@@ -116,6 +138,36 @@ export const extractAllBlogLinks = (html: string, page: number = 1): BlogItem[] 
       postPublishedAt,
     });
   });
+
+  $('a[href*="in.naver.com/"][href*="/contents/"], button[data-url*="in.naver.com/"][data-url*="/contents/"]').each(
+    (_, el) => {
+      const $el = $(el);
+      const href = ($el.attr('href') || $el.attr('data-url') || '').trim();
+      const influencerPost = parseInfluencerContentUrl(href);
+
+      if (!href || !influencerPost) return;
+
+      const title = getBestTitle($el);
+      const postPublishedAt = getPostPublishedAt($el);
+      const existing = itemByLink.get(href);
+
+      if (existing) {
+        if (isBetterTitle(title, existing.title)) existing.title = title;
+        if (!existing.postPublishedAt && postPublishedAt) {
+          existing.postPublishedAt = postPublishedAt;
+        }
+        return;
+      }
+
+      itemByLink.set(href, {
+        title,
+        link: href,
+        blogName: influencerPost.influencerId,
+        page,
+        postPublishedAt,
+      });
+    }
+  );
 
   return Array.from(itemByLink.values());
 };

@@ -9,6 +9,9 @@ const EXCLUDED_SET = new Set(
 const isGenericBlogGroup = (group: string): boolean =>
   group === '통합검색 블로그' || /^검색결과 \d+페이지$/u.test(group);
 
+const isInfluencerGroup = (group: string): boolean =>
+  group === '인플루언서 콘텐츠';
+
 export interface ExposureResult {
   query: string;
   blogId: string;
@@ -52,7 +55,10 @@ export const matchBlogs = (
   const allowedIds = new Set(targetBlogIds.map((id) => id.toLowerCase()));
   const allowAnyBlog = !!(options && options.allowAnyBlog);
 
-  const uniqueGroups = new Set(items.map((item) => item.group));
+  const itemsForLogic = items.filter((item) => !isInfluencerGroup(item.group));
+  const uniqueGroups = new Set(
+    (itemsForLogic.length > 0 ? itemsForLogic : items).map((item) => item.group)
+  );
 
   const isPopular = uniqueGroups.size === 1;
   const itemPositions = new Map<PopularItem, number>();
@@ -81,6 +87,8 @@ export const matchBlogs = (
 
       if (isGenericBlogResult) {
         exposureType = item.group;
+      } else if (isInfluencerGroup(item.group || '')) {
+        exposureType = '인플루언서 콘텐츠';
       } else if (item.page && item.page > 1) {
         exposureType = `검색결과 ${item.page}페이지`;
       } else {
