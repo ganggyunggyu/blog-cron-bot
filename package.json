@@ -5,6 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
+    "test": "pnpm test:unit",
+    "test:unit": "ts-node src/lib/csv-output/csv-output.test.ts && ts-node src/lib/scheduler-runner/time.test.ts",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
     "cron": "ts-node src/cron.ts",

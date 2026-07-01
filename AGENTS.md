@@ -108,6 +108,21 @@ cron.ts
 - 로그인/비로그인 모드는 검색 결과 변동 비교용 실행 모드이며, 노출체크 대상 계정 목록 정의와는 별개로 취급.
 - `BLOG_IDS` 계열 상수는 노출체크 대상 블로그 계정 목록이며, `cron-pages`에서 `suripet` 시트는 `SURI_PET_BLOG_IDS`만 사용한다.
 
+## ARCHITECTURE / REFACTORING RULES
+
+- 현재 프로젝트는 UI 없는 TypeScript 크론/CLI 봇이다. React/Vue FSD 디렉터리(`pages`, `widgets`, `features`)를 새로 만들지 말고, FSD 원칙만 백엔드 배치 구조에 맞게 적용한다.
+- 레이어 역할:
+  - Entrypoints: `src/cron*.ts`, `src/pm2-scheduler*.ts`, `src/tools/*` — 인자/env 해석과 워크플로우 호출만 담당.
+  - Workflows: `src/lib/*`, `src/api/*` — 작업 단위 오케스트레이션과 외부 연동 흐름 담당.
+  - Domain: `src/matcher.ts`, `src/parser/*`, `src/lib/keyword-processor/*`, `src/sheet-config.ts`, `src/database.ts` — 노출체크 판정, 파싱, 매칭, 저장 모델 담당.
+  - Adapters: `src/crawler.ts`, `src/lib/playwright-crawler/*`, `src/lib/google-sheets/*`, `src/lib/dooray.ts` — 네이버/시트/알림 같은 외부 I/O 담당.
+  - Shared: `src/constants/*`, `src/logs/*`, `src/lib/utils/*`, `src/types.ts` — 순수 유틸, 상수, 공통 타입만 담당.
+- 의존 방향은 Entrypoints → Workflows → Domain/Adapters → Shared 순으로 유지한다. `tools`/`cron`/`pm2-scheduler`에서만 상위 조립을 하고, 하위 모듈이 엔트리포인트를 import하지 않는다.
+- 새 파일과 리팩터링 대상 파일은 200줄 이하를 기본 제한으로 둔다. 기존 200줄 초과 파일을 수정할 때는 기능 추가보다 먼저 도메인 단위 분리를 검토하고, 일회성 `tools`/마이그레이션만 필요한 경우 예외 사유를 남긴다.
+- 함수는 한 가지 이유로만 변경되게 유지한다. 60줄을 넘거나 3단계 이상 중첩되면 작은 함수로 분리하고 early return을 우선한다.
+- 같은 로직이 3곳 이상 반복되면 공용 모듈로 추출한다. 운영 영향이 큰 스케줄러/시트/크롤러 로직은 2곳 반복이어도 추출 후보로 본다.
+- 구조 리팩터링과 버그 수정은 분리한다. 리팩터링 커밋은 동작 보존을 목표로 하고 최소 `pnpm build`로 검증한다.
+
 ## ANTI-PATTERNS (THIS PROJECT)
 
 - `.env`, `*.pem` 절대 커밋 금지.
