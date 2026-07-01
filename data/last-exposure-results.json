@@ -25,11 +25,11 @@
   },
   "도그마루 노출체크": {
     "cronType": "도그마루 노출체크",
-    "totalKeywords": 300,
+    "totalKeywords": 299,
     "exposureCount": 68,
     "popularCount": 68,
     "sblCount": 0,
-    "timestamp": "2026-06-29T03:01:16.780Z"
+    "timestamp": "2026-07-01T01:34:20.451Z"
   },
   "패키지 노출체크": {
     "cronType": "패키지 노출체크",
@@ -261,6 +261,6 @@
         "count": 13
       }
     ],
-    "timestamp": "2026-06-30T01:24:40.580Z"
+    "timestamp": "2026-07-01T01:00:58.513Z"
   }
 }
