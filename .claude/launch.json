@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dashboard-dev",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--dir", "dashboard", "dev", "--port", "4500"],
+      "port": 4500
+    }
+  ]
+}

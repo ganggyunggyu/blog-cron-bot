@@ -42,7 +42,8 @@ blog-cron-bot/
 ├── output/                   # 생성된 CSV (주차별 하위 디렉토리)
 ├── logs/                     # 런타임 로그 파일
 ├── debug/                    # 상세 디버그 로그
-└── ecosystem.config.cjs      # PM2 설정 (keywords + root 2개 앱)
+├── dashboard/                # 별도 Next.js 제어판 앱 (자체 package.json, → DASHBOARD 섹션 참고)
+└── ecosystem.config.cjs      # PM2 설정 (keywords + root + all-sheets + dashboard 4개 앱)
 ```
 
 ## DATA PIPELINE
@@ -110,7 +111,7 @@ cron.ts
 
 ## ARCHITECTURE / REFACTORING RULES
 
-- 현재 프로젝트는 UI 없는 TypeScript 크론/CLI 봇이다. React/Vue FSD 디렉터리(`pages`, `widgets`, `features`)를 새로 만들지 말고, FSD 원칙만 백엔드 배치 구조에 맞게 적용한다.
+- `src/`는 UI 없는 TypeScript 크론/CLI 봇이다. `src/` 안에는 React/Vue FSD 디렉터리(`pages`, `widgets`, `features`)를 새로 만들지 말고, FSD 원칙만 백엔드 배치 구조에 맞게 적용한다. (제어용 웹 UI는 `src/`가 아닌 완전히 분리된 `dashboard/` 앱으로 존재함 — → DASHBOARD 섹션 참고)
 - 레이어 역할:
   - Entrypoints: `src/cron*.ts`, `src/pm2-scheduler*.ts`, `src/tools/*` — 인자/env 해석과 워크플로우 호출만 담당.
   - Workflows: `src/lib/*`, `src/api/*` — 작업 단위 오케스트레이션과 외부 연동 흐름 담당.
@@ -168,8 +169,18 @@ pnpm cookie:login           # 로그인 후 쿠키 획득
 
 ## DEPLOYMENT
 
-- **EC2**: PM2 (`ecosystem.config.cjs`) — keywords + root 2개 앱, 512MB 메모리 제한.
+- **EC2**: PM2 (`ecosystem.config.cjs`) — keywords + root + all-sheets + dashboard 4개 앱, 각 512MB 메모리 제한.
 - **3단계 워크플로우**: Sheet sync → Crawl → Sheet import. 순서 필수, 중간 실패 시 전체 중단.
+- `blog-cron-dashboard` PM2 앱은 `pnpm --dir dashboard build`로 먼저 빌드해야 `pm2 start ecosystem.config.cjs`가 정상 기동한다.
+
+## DASHBOARD (제어판)
+
+- 위치: `dashboard/` — 완전히 분리된 Next.js 16 앱 (자체 `package.json`/`node_modules`/`tsconfig.json`). `src/`는 건드리지 않는다.
+- 목적: PM2 데몬(keywords/root/all-sheets) 상태 조회·start/stop/restart, 원샷 크론 스크립트 수동 실행 + 실시간 로그 스트리밍(SSE), `output/` 결과 파일 브라우징/다운로드, 스케줄 현황(추정) 표시.
+- 인증: 공유 비밀번호 1개(`DASHBOARD_PASSWORD`) + HMAC 서명 세션 쿠키(`DASHBOARD_SESSION_SECRET`). `dashboard/proxy.ts`(Next 16의 middleware 후신)가 로그인 페이지 제외 전체 경로를 보호. 두 값은 `dashboard/.env.local`에 설정 (커밋 금지, `.env*`는 `dashboard/.gitignore`에서 이미 제외됨).
+- 잡 레지스트리(`dashboard/src/server/job-registry.ts`)는 안전한 스크립트만 curated whitelist로 노출한다: `cron:p`(테스트), `cron:root`, `cron:pages:package`, `cron:pages:general`, `cron:dogmaru`, `cron:exclude`, `parallel:check`, `cafe:check`. `cookie:*`/`capture-*`/`naver:popular:update`처럼 stdin·비headless 브라우저·소스코드 수정이 필요한 스크립트는 절대 추가하지 않는다 (CLI 전용 유지).
+- 알려진 제약: 레포 전체에 `SIGINT`/`SIGTERM` 핸들러가 없고 `cron-dogmaru.ts`/`cron-dogmaru-exclude.ts`는 정상 종료 시에도 `closeBrowser()`를 호출하지 않는다. 대시보드의 job-runner는 자식 프로세스를 process group으로 spawn해서 정지 시 그룹 전체를 kill하지만, 이 두 스크립트 자체의 브라우저 leak은 대시보드로 고쳐지지 않는다 — 근본 수정은 `src/cron-dogmaru*.ts`에 `closeBrowser()` 호출을 추가하는 별도 작업으로 처리한다.
+- 포트 4500 고정 사용 (`SHEET_APP_URL`/`PAGE_CHECK_API` 기본값인 localhost:3000과 충돌 방지).
 
 ## NOTES
 
