@@ -29,6 +29,7 @@ src/tools/*
 !src/tools/blog-share-report.ts
 !src/tools/export-blog-share-sheet.ts
 !src/tools/check-cafe-bot-published-exposure.ts
+!src/tools/auto-login.ts
 
 # Logs & Debug
 logs/
