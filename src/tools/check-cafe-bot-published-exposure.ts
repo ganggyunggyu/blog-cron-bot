@@ -36,7 +36,8 @@ interface ExposureRow extends PublishedArticleRow {
 }
 
 const DEFAULT_CAFE_BOT_ENV = '/Users/ganggyunggyu/Programing/cafe-bot/.env.local';
-const OUTPUT_ROOT_DIR = path.join(__dirname, '../../output');
+const OUTPUT_ROOT_DIR =
+  process.env.OUTPUT_ROOT_DIR || path.join(__dirname, '../../output');
 
 const parseArgs = () => {
   const args = process.argv.slice(2);

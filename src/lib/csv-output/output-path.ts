@@ -7,7 +7,8 @@ type DateParts = {
   day: number;
 };
 
-const OUTPUT_ROOT_DIR = path.join(__dirname, '../../../output');
+const OUTPUT_ROOT_DIR =
+  process.env.OUTPUT_ROOT_DIR || path.join(__dirname, '../../../output');
 const TIMESTAMP_SUFFIX_REGEX =
   /(?:_|-)(\d{4})-(\d{2})-(\d{2})(?:T|-)\d{2}-\d{2}-\d{2}$/;
 

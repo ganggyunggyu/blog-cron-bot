@@ -63,7 +63,7 @@ const startScheduler = async (): Promise<void> => {
     runBoxTitle: 'ALL-SHEETS RUN',
     catchUpBoxTitle: 'SCHEDULER CATCH-UP',
     logPrefix: 'SCHED',
-    statePathEnvName: 'SCHEDULER_STATE_PATH',
+    statePathEnvName: 'ALL_SHEETS_SCHEDULER_STATE_PATH',
     defaultStateFile: '.scheduler-state.all-sheets.json',
     getRunScheduleConfig,
     runWorkflow: runAllSheetsWorkflow,

@@ -8,7 +8,7 @@ export function saveDetailedLogs(
   timestamp: string,
   elapsedTimeStr: string
 ): void {
-  const logsDir = path.join(process.cwd(), 'logs');
+  const logsDir = process.env.LOGS_DIR || path.join(process.cwd(), 'logs');
   if (!fs.existsSync(logsDir)) {
     fs.mkdirSync(logsDir, { recursive: true });
   }
