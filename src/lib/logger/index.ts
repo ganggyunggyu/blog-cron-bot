@@ -86,11 +86,16 @@ const progressBar = (current: number, total: number, width = 30) => {
   return `${bar} ${current}/${total} (${percentStr})`;
 };
 
+// 실제 터미널(TTY)에서만 \r 기반 진행바를 그린다.
+// pm2/대시보드처럼 파이프로 stdout을 캡처하는 환경에서는 \r이 그대로 텍스트로 남아
+// 진행바 조각이 다음 로그 줄 앞에 들러붙어 보이므로, 그런 환경에서는 아예 렌더링하지 않는다.
+const isInteractive = Boolean(process.stdout.isTTY);
+
 let lastProgressLine = '';
 let statusState: { current: number; total: number; message: string } | null = null;
 
 const renderStatusLine = () => {
-  if (!statusState) return;
+  if (!isInteractive || !statusState) return;
 
   const { current, total, message } = statusState;
   const percent = Math.round((current / total) * 100);
@@ -109,6 +114,7 @@ const renderStatusLine = () => {
 };
 
 const clearStatusLine = () => {
+  if (!isInteractive) return;
   if (lastProgressLine) {
     process.stdout.write('\r' + ' '.repeat(lastProgressLine.length) + '\r');
     lastProgressLine = '';
