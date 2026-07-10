@@ -42,8 +42,8 @@ module.exports = {
     {
       name: 'blog-cron-dashboard',
       cwd: `${__dirname}/dashboard`,
-      script: 'pnpm',
-      args: `start -- -p ${process.env.PORT || 4500}`,
+      script: 'node_modules/.bin/next',
+      args: `start -p ${process.env.PORT || 4500}`,
       interpreter: 'none',
       instances: 1,
       exec_mode: 'fork',
