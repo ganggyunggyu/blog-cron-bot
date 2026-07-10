@@ -3,7 +3,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "pm2-runtime start ecosystem.railway.cjs"
+startCommand = "pm2-runtime start ecosystem.railway.config.cjs"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 120
 restartPolicyType = "ALWAYS"

@@ -20,4 +20,4 @@ RUN pnpm --dir dashboard build
 
 ENV NODE_ENV=production
 
-CMD ["pm2-runtime", "start", "ecosystem.railway.cjs"]
+CMD ["pm2-runtime", "start", "ecosystem.railway.config.cjs"]
