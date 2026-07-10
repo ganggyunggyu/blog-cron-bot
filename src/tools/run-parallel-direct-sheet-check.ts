@@ -7,6 +7,7 @@ import { processKeywords } from '../lib/keyword-processor';
 import { checkNaverLogin } from '../lib/check-naver-login';
 import { logger } from '../lib/logger';
 import { closeBrowser } from '../lib/playwright-crawler';
+import { sendDoorayExposureResult } from '../lib/dooray';
 import { getKSTTimestamp } from '../utils';
 import { saveToCSV, saveToSheetCSV } from '../csv-writer';
 import { TEST_CONFIG } from '../constants';
@@ -583,6 +584,18 @@ const finalizeTarget = async (
   }
 
   logger.summary.complete(`${target.label} 직접 노출체크 완료`, summaryItems);
+
+  if (!options.dryRun) {
+    await sendDoorayExposureResult({
+      cronType: `${target.label} (직접병렬)`,
+      totalKeywords: keywords.length,
+      exposureCount: results.length,
+      popularCount,
+      sblCount,
+      elapsedTime,
+      missingKeywords,
+    });
+  }
 
   return {
     target: target.target,
