@@ -20,6 +20,9 @@ const REQUIRED_DOGMARU_BLOG_IDS = [
   'janaggena',
   'wandookong2',
   'mirca1004',
+  'dudtjsdh159',
+  'yaboo_171022',
+  'artistjunga',
 ];
 const REQUIRED_SURI_PET_BLOG_IDS = ['pjwon03'];
 const REQUIRED_ALIBABA_BLOG_IDS = ['introsm'];

@@ -314,6 +314,9 @@ const TAGGED_DOGMARU_BLOG_IDS = dedupeBlogIds([
   'janaggena',
   'wandookong2',
   'mirca1004',
+  'dudtjsdh159',
+  'yaboo_171022',
+  'artistjunga',
 ] as const);
 
 const DOGMARU_PAGE_CHECK_EXCLUDED_BLOG_IDS = ['sghjan'] as const;
