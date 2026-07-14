@@ -18,9 +18,13 @@ const STATUS_TONE: Record<string, 'success' | 'warning' | 'danger' | 'neutral'> 
 };
 
 const DAEMON_LABELS: Record<string, string> = {
-  'blog-cron-bot-keywords': '키워드 스케줄러',
-  'blog-cron-bot-root': '루트 스케줄러',
-  'blog-cron-bot-all-sheets': '전체 시트 스케줄러',
+  'blog-cron-direct-check-8am': '패키지/일반건/도그마루/루트 노출체크',
+  'blog-cron-more-check-830am': '더보기 노출체크',
+};
+
+const DAEMON_SCHEDULE_LABELS: Record<string, string> = {
+  'blog-cron-direct-check-8am': '매일 08:00',
+  'blog-cron-more-check-830am': '매일 08:30',
 };
 
 interface DaemonRowProps {
@@ -46,8 +50,9 @@ const DaemonRow = ({ daemon }: DaemonRowProps) => {
           <Badge tone={STATUS_TONE[daemon.status] ?? 'neutral'}>{daemon.status}</Badge>
         </div>
         <span className="text-xs text-neutral-500 dark:text-neutral-400">
-          PID {daemon.pid ?? '-'} · 가동 {formatUptime(daemon.uptimeMs)} · 메모리{' '}
-          {formatBytes(daemon.memoryBytes)} · 재시작 {daemon.restarts ?? '-'}회
+          {DAEMON_SCHEDULE_LABELS[daemon.name] ?? '-'} 실행 · PID {daemon.pid ?? '-'} · 가동{' '}
+          {formatUptime(daemon.uptimeMs)} · 메모리 {formatBytes(daemon.memoryBytes)} · 실행 횟수{' '}
+          {daemon.restarts ?? '-'}회
         </span>
       </div>
       <div className="flex items-center gap-2">

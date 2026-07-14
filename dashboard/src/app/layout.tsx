@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'blog-cron-bot 대시보드',
+  title: '노출지기 대시보드',
   description: '네이버 노출체크 크론 봇 제어판',
 };
 

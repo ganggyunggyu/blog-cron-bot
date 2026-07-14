@@ -33,7 +33,7 @@ const LoginPage = () => {
     <div className="flex min-h-screen items-center justify-center bg-neutral-50 dark:bg-neutral-950">
       <Card className="w-full max-w-sm">
         <h1 className="mb-4 text-lg font-semibold text-neutral-900 dark:text-neutral-100">
-          blog-cron-bot 대시보드
+          노출지기 대시보드
         </h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <input

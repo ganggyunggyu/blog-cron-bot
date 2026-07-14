@@ -2,9 +2,8 @@ import pm2 from 'pm2';
 import type { ProcessDescription } from 'pm2';
 
 export const DAEMON_APP_NAMES = [
-  'blog-cron-bot-keywords',
-  'blog-cron-bot-root',
-  'blog-cron-bot-all-sheets',
+  'blog-cron-direct-check-8am',
+  'blog-cron-more-check-830am',
 ] as const;
 
 export type DaemonAppName = (typeof DAEMON_APP_NAMES)[number];
