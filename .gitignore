@@ -30,6 +30,7 @@ src/tools/*
 !src/tools/export-blog-share-sheet.ts
 !src/tools/check-cafe-bot-published-exposure.ts
 !src/tools/auto-login.ts
+!src/tools/check-old-logic-more-exposure.ts
 
 # Logs & Debug
 logs/
