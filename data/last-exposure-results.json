@@ -262,5 +262,13 @@
       }
     ],
     "timestamp": "2026-07-06T21:52:34.672Z"
+  },
+  "일반건 (직접병렬)": {
+    "cronType": "일반건 (직접병렬)",
+    "totalKeywords": 78,
+    "exposureCount": 4,
+    "popularCount": 4,
+    "sblCount": 0,
+    "timestamp": "2026-07-14T02:57:16.136Z"
   }
 }

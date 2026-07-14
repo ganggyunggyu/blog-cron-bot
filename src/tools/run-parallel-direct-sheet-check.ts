@@ -10,7 +10,7 @@ import { closeBrowser } from '../lib/playwright-crawler';
 import { sendDoorayExposureResult } from '../lib/dooray';
 import { getKSTTimestamp } from '../utils';
 import { saveToCSV, saveToSheetCSV } from '../csv-writer';
-import { TEST_CONFIG } from '../constants';
+import { PRODUCT_SHEET_ID, ROOT_CONFIG } from '../constants';
 import { DOGMARU_PAGE_CHECK_BLOG_IDS } from '../constants/blog-ids';
 import { ExposureResult } from '../matcher';
 import { autoLogin } from './auto-login';
@@ -37,6 +37,7 @@ type TargetType = 'package' | 'dogmaru-exclude' | 'dogmaru' | 'root';
 interface TargetConfig {
   target: TargetType;
   label: string;
+  sheetId: string;
   tabName: string;
   sheetType: string;
   csvPrefix: string;
@@ -45,7 +46,6 @@ interface TargetConfig {
 }
 
 interface CliOptions {
-  sheetId: string;
   targets: TargetType[];
   dryRun: boolean;
   printOnly: boolean;
@@ -90,21 +90,24 @@ const TARGET_CONFIGS: Record<TargetType, TargetConfig> = {
   package: {
     target: 'package',
     label: '패키지',
-    tabName: TEST_CONFIG.SHEET_NAMES.PACKAGE,
+    sheetId: PRODUCT_SHEET_ID,
+    tabName: '패키지',
     sheetType: 'package',
     csvPrefix: 'direct-package',
   },
   'dogmaru-exclude': {
     target: 'dogmaru-exclude',
     label: '일반건',
-    tabName: TEST_CONFIG.SHEET_NAMES.DOGMARU_EXCLUDE,
+    sheetId: PRODUCT_SHEET_ID,
+    tabName: '도그마루 제외',
     sheetType: 'dogmaru-exclude',
     csvPrefix: 'direct-dogmaru-exclude',
   },
   dogmaru: {
     target: 'dogmaru',
     label: '도그마루',
-    tabName: TEST_CONFIG.SHEET_NAMES.DOGMARU,
+    sheetId: PRODUCT_SHEET_ID,
+    tabName: '도그마루',
     sheetType: 'dogmaru',
     csvPrefix: 'direct-dogmaru',
     blogIds: DOGMARU_PAGE_CHECK_BLOG_IDS,
@@ -112,7 +115,8 @@ const TARGET_CONFIGS: Record<TargetType, TargetConfig> = {
   root: {
     target: 'root',
     label: '루트',
-    tabName: TEST_CONFIG.SHEET_NAMES.ROOT,
+    sheetId: ROOT_CONFIG.SHEET_ID,
+    tabName: ROOT_CONFIG.SHEET_NAMES.PACKAGE,
     sheetType: 'root',
     csvPrefix: 'direct-root',
     allowAnyBlog: false,
@@ -157,7 +161,6 @@ const parsePositiveNumber = (value: string): number => {
 const parseArgs = (): CliOptions => {
   const args = process.argv.slice(2);
 
-  let sheetId: string = TEST_CONFIG.SHEET_ID;
   let targets = [...ALL_TARGETS];
   let dryRun = false;
   let printOnly = false;
@@ -167,12 +170,6 @@ const parseArgs = (): CliOptions => {
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
     const nextArg = args[index + 1];
-
-    if (arg === '--sheet-id' && nextArg) {
-      sheetId = nextArg;
-      index += 1;
-      continue;
-    }
 
     if (arg === '--targets' && nextArg) {
       targets = parseTargets(nextArg);
@@ -206,7 +203,6 @@ const parseArgs = (): CliOptions => {
   }
 
   return {
-    sheetId,
     targets,
     dryRun,
     printOnly,
@@ -441,7 +437,7 @@ const runTargetCrawl = async (
 ): Promise<TargetCrawlOutcome> => {
   const startedAt = Date.now();
   const auth = getGoogleSheetAuth();
-  const doc = await openSpreadsheet(options.sheetId, auth);
+  const doc = await openSpreadsheet(target.sheetId, auth);
   const sheet = getWorksheetByTitle(doc, target.tabName);
   const loadedKeywords = await loadKeywordsFromWorksheet(sheet, target.sheetType);
   const keywords = limitKeywords(loadedKeywords, options.limit);
@@ -521,7 +517,7 @@ const finalizeTarget = async (
   }
 
   const historySnapshots = buildHistorySnapshots(
-    options.sheetId,
+    target.sheetId,
     target,
     context,
     keywords,
@@ -619,10 +615,14 @@ const main = async (): Promise<void> => {
   };
   let didConnectDb = false;
 
+  const targetSheetSummary = options.targets
+    .map((target) => `${TARGET_CONFIGS[target].label}=${TARGET_CONFIGS[target].sheetId}`)
+    .join(', ');
+
   logger.summary.start('DIRECT PARALLEL SHEET CHECK', [
     { label: '시작', value: context.checkedAt.toLocaleString('ko-KR') },
     { label: 'OS', value: `${os.platform()} (${os.arch()})` },
-    { label: '시트', value: options.sheetId },
+    { label: '시트', value: targetSheetSummary },
     { label: '타겟', value: options.targets.join(', ') },
     { label: '탭 내부 동시성', value: `${options.concurrency}` },
     { label: '모드', value: options.printOnly ? 'print-only' : options.dryRun ? 'dry-run' : 'write' },
