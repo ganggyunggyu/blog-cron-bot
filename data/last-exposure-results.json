@@ -250,18 +250,18 @@
   "알리바바 노출체크": {
     "cronType": "알리바바 노출체크",
     "totalKeywords": 351,
-    "exposureCount": 17,
-    "popularCount": 17,
+    "exposureCount": 6,
+    "popularCount": 6,
     "sblCount": 0,
-    "newLogicCount": 13,
-    "oldLogicCount": 4,
+    "newLogicCount": 0,
+    "oldLogicCount": 0,
     "sheetStats": [
       {
         "name": "신규작업",
-        "count": 17
+        "count": 6
       }
     ],
-    "timestamp": "2026-07-06T21:52:34.672Z"
+    "timestamp": "2026-07-14T09:15:39.440Z"
   },
   "일반건 (직접병렬)": {
     "cronType": "일반건 (직접병렬)",
