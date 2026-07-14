@@ -100,6 +100,24 @@ export const getWorksheetByTitle = (
 
 const HEADER_ROW_SCAN_LIMIT = 10;
 
+/**
+ * 스캔한 상단 행들(각 행은 정규화된 셀 텍스트 배열) 중 targetHeader와 정확히 일치하는
+ * 셀이 있는 첫 행의 인덱스를 반환. 못 찾으면 null.
+ * 순수 함수라 실제 시트 없이도 테스트 가능 — I/O(loadHeaderRowAutoDetect)와 분리해둠.
+ */
+export const findHeaderRowIndex = (
+  rows: readonly string[][],
+  targetHeader: string
+): number | null => {
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
+    if (rows[rowIndex].some((value) => value === targetHeader)) {
+      return rowIndex;
+    }
+  }
+
+  return null;
+};
+
 const loadHeaderRowAutoDetect = async (
   sheet: GoogleSpreadsheetWorksheet
 ): Promise<void> => {
@@ -112,16 +130,17 @@ const loadHeaderRowAutoDetect = async (
     endColumnIndex: sheet.columnCount,
   });
 
-  for (let rowIndex = 0; rowIndex < scanRowCount; rowIndex += 1) {
-    const hasKeywordHeader = Array.from(
-      { length: sheet.columnCount },
-      (_, columnIndex) => normalizeCell(sheet.getCell(rowIndex, columnIndex).value)
-    ).some((value) => value === '키워드');
+  const scannedRows: string[][] = Array.from({ length: scanRowCount }, (_, rowIndex) =>
+    Array.from({ length: sheet.columnCount }, (_, columnIndex) =>
+      normalizeCell(sheet.getCell(rowIndex, columnIndex).value)
+    )
+  );
 
-    if (hasKeywordHeader) {
-      await sheet.loadHeaderRow(rowIndex + 1);
-      return;
-    }
+  const headerRowIndex = findHeaderRowIndex(scannedRows, '키워드');
+
+  if (headerRowIndex !== null) {
+    await sheet.loadHeaderRow(headerRowIndex + 1);
+    return;
   }
 
   await sheet.loadHeaderRow();

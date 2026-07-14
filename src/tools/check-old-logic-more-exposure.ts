@@ -12,10 +12,10 @@ import {
   PACKAGE_GENERAL_MORE_CHECK_BLOG_IDS,
   SURI_PET_PAGE_CHECK_BLOG_IDS,
   TEST_CONFIG,
-  PRODUCT_SHEET_ID,
-  ROOT_CONFIG,
+  EXPOSURE_SHEET_LOCATIONS,
 } from '../constants';
 import {
+  findHeaderRowIndex,
   getGoogleSheetAuth,
   openSpreadsheet,
 } from '../lib/google-sheets/direct-exposure-sheet';
@@ -1398,14 +1398,14 @@ const loadHeaderValues = async (
     return rowValues;
   };
 
-  for (let rowIndex = 0; rowIndex < scanRowCount; rowIndex += 1) {
-    const candidateHeaders = readRow(rowIndex);
-    if (getHeaderColumnIndex(candidateHeaders, ['키워드']) !== null) {
-      return { headers: candidateHeaders, headerRowIndex: rowIndex };
-    }
+  const scannedRows = Array.from({ length: scanRowCount }, (_, rowIndex) => readRow(rowIndex));
+  const headerRowIndex = findHeaderRowIndex(scannedRows, '키워드');
+
+  if (headerRowIndex !== null) {
+    return { headers: scannedRows[headerRowIndex], headerRowIndex };
   }
 
-  return { headers: readRow(0), headerRowIndex: 0 };
+  return { headers: scannedRows[0] ?? readRow(0), headerRowIndex: 0 };
 };
 
 const loadRequiredColumns = async (
@@ -1490,12 +1490,7 @@ const getOrCreateOutputWorksheet = async (
 
 const REAL_SOURCE_TAB_LOCATIONS: Partial<
   Record<SourceTab, { sheetId: string; tabTitle: string }>
-> = {
-  패키지: { sheetId: PRODUCT_SHEET_ID, tabTitle: '패키지' },
-  일반건: { sheetId: PRODUCT_SHEET_ID, tabTitle: '도그마루 제외' },
-  도그마루: { sheetId: PRODUCT_SHEET_ID, tabTitle: '도그마루' },
-  루트: { sheetId: ROOT_CONFIG.SHEET_ID, tabTitle: ROOT_CONFIG.SHEET_NAMES.PACKAGE },
-};
+> = EXPOSURE_SHEET_LOCATIONS;
 
 const loadOldLogicKeywords = async (
   auth: JWT,

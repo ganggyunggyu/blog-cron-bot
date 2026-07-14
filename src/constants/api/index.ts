@@ -88,6 +88,21 @@ export const ROOT_CONFIG = {
   },
 };
 
+/**
+ * 패키지/일반건/도그마루/루트 노출체크가 실제로 키워드를 읽고 써야 하는 진짜 운영 시트 위치.
+ * 예전에 이 매핑이 run-parallel-direct-sheet-check.ts와 check-old-logic-more-exposure.ts에
+ * 각각 따로 정의돼 있다가 스크래치 시트(TEST_CONFIG.SHEET_ID)를 기본값으로 잘못 가리키는
+ * 버그가 있었음 — 단일 소스로 통합해서 재발을 막음.
+ */
+export const EXPOSURE_SHEET_LOCATIONS = {
+  패키지: { sheetId: PRODUCT_SHEET_ID, tabTitle: '패키지' },
+  일반건: { sheetId: PRODUCT_SHEET_ID, tabTitle: '도그마루 제외' },
+  도그마루: { sheetId: PRODUCT_SHEET_ID, tabTitle: '도그마루' },
+  루트: { sheetId: ROOT_CONFIG.SHEET_ID, tabTitle: ROOT_CONFIG.SHEET_NAMES.PACKAGE },
+} as const;
+
+export type ExposureSheetLocationKey = keyof typeof EXPOSURE_SHEET_LOCATIONS;
+
 export const requests: SyncRequest[] = SHEET_CONFIGS.map(
   ({ sheetId, sheetName, sheetType }) => ({
     sheetId,

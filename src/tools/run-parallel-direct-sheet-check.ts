@@ -10,7 +10,7 @@ import { closeBrowser } from '../lib/playwright-crawler';
 import { sendDoorayExposureResult } from '../lib/dooray';
 import { getKSTTimestamp } from '../utils';
 import { saveToCSV, saveToSheetCSV } from '../csv-writer';
-import { PRODUCT_SHEET_ID, ROOT_CONFIG } from '../constants';
+import { EXPOSURE_SHEET_LOCATIONS } from '../constants';
 import { DOGMARU_PAGE_CHECK_BLOG_IDS } from '../constants/blog-ids';
 import { ExposureResult } from '../matcher';
 import { autoLogin } from './auto-login';
@@ -90,24 +90,24 @@ const TARGET_CONFIGS: Record<TargetType, TargetConfig> = {
   package: {
     target: 'package',
     label: '패키지',
-    sheetId: PRODUCT_SHEET_ID,
-    tabName: '패키지',
+    sheetId: EXPOSURE_SHEET_LOCATIONS.패키지.sheetId,
+    tabName: EXPOSURE_SHEET_LOCATIONS.패키지.tabTitle,
     sheetType: 'package',
     csvPrefix: 'direct-package',
   },
   'dogmaru-exclude': {
     target: 'dogmaru-exclude',
     label: '일반건',
-    sheetId: PRODUCT_SHEET_ID,
-    tabName: '도그마루 제외',
+    sheetId: EXPOSURE_SHEET_LOCATIONS.일반건.sheetId,
+    tabName: EXPOSURE_SHEET_LOCATIONS.일반건.tabTitle,
     sheetType: 'dogmaru-exclude',
     csvPrefix: 'direct-dogmaru-exclude',
   },
   dogmaru: {
     target: 'dogmaru',
     label: '도그마루',
-    sheetId: PRODUCT_SHEET_ID,
-    tabName: '도그마루',
+    sheetId: EXPOSURE_SHEET_LOCATIONS.도그마루.sheetId,
+    tabName: EXPOSURE_SHEET_LOCATIONS.도그마루.tabTitle,
     sheetType: 'dogmaru',
     csvPrefix: 'direct-dogmaru',
     blogIds: DOGMARU_PAGE_CHECK_BLOG_IDS,
@@ -115,8 +115,8 @@ const TARGET_CONFIGS: Record<TargetType, TargetConfig> = {
   root: {
     target: 'root',
     label: '루트',
-    sheetId: ROOT_CONFIG.SHEET_ID,
-    tabName: ROOT_CONFIG.SHEET_NAMES.PACKAGE,
+    sheetId: EXPOSURE_SHEET_LOCATIONS.루트.sheetId,
+    tabName: EXPOSURE_SHEET_LOCATIONS.루트.tabTitle,
     sheetType: 'root',
     csvPrefix: 'direct-root',
     allowAnyBlog: false,
