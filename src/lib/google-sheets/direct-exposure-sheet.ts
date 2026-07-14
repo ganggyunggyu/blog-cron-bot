@@ -98,6 +98,35 @@ export const getWorksheetByTitle = (
   return sheet;
 };
 
+const HEADER_ROW_SCAN_LIMIT = 10;
+
+const loadHeaderRowAutoDetect = async (
+  sheet: GoogleSpreadsheetWorksheet
+): Promise<void> => {
+  const scanRowCount = Math.min(HEADER_ROW_SCAN_LIMIT, sheet.rowCount || 1);
+
+  await sheet.loadCells({
+    startRowIndex: 0,
+    endRowIndex: Math.max(scanRowCount, 1),
+    startColumnIndex: 0,
+    endColumnIndex: sheet.columnCount,
+  });
+
+  for (let rowIndex = 0; rowIndex < scanRowCount; rowIndex += 1) {
+    const hasKeywordHeader = Array.from(
+      { length: sheet.columnCount },
+      (_, columnIndex) => normalizeCell(sheet.getCell(rowIndex, columnIndex).value)
+    ).some((value) => value === '키워드');
+
+    if (hasKeywordHeader) {
+      await sheet.loadHeaderRow(rowIndex + 1);
+      return;
+    }
+  }
+
+  await sheet.loadHeaderRow();
+};
+
 const getHeaderIndexMap = (sheet: GoogleSpreadsheetWorksheet): Map<string, number> => {
   const headerMap = new Map<string, number>();
 
@@ -151,7 +180,7 @@ export const loadKeywordsFromWorksheet = async (
   sheet: GoogleSpreadsheetWorksheet,
   sheetType: string
 ): Promise<DirectSheetKeywordDoc[]> => {
-  await sheet.loadHeaderRow();
+  await loadHeaderRowAutoDetect(sheet);
 
   const rows = await sheet.getRows<SheetRowRecord>();
   const keywords = rows.flatMap((row, index) => {
@@ -260,7 +289,7 @@ export const writeResultsToWorksheet = async (
     return;
   }
 
-  await sheet.loadHeaderRow();
+  await loadHeaderRowAutoDetect(sheet);
 
   const headerMap = getHeaderIndexMap(sheet);
   const topicCol = getHeaderIndex(headerMap, ['인기주제']);
