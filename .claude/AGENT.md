@@ -1,4 +1,4 @@
-# naver-exposure-bot - 개발 가이드
+# 노출지기 (naver-exposure-bot) - 개발 가이드
 
 ## 프로젝트 개요
 - **타입**: Node.js TypeScript CLI / 크론 봇

@@ -1,7 +1,7 @@
 {
-  "name": "naver-exposure-bot",
+  "name": "노출지기",
   "version": "1.0.0",
-  "description": "네이버 검색 노출 크론 봇",
+  "description": "네이버 검색 노출 크론 봇 (노출지기)",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
