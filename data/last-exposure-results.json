@@ -265,10 +265,34 @@
   },
   "일반건 (직접병렬)": {
     "cronType": "일반건 (직접병렬)",
-    "totalKeywords": 78,
-    "exposureCount": 4,
-    "popularCount": 4,
+    "totalKeywords": 123,
+    "exposureCount": 5,
+    "popularCount": 5,
     "sblCount": 0,
-    "timestamp": "2026-07-14T02:57:16.136Z"
+    "timestamp": "2026-07-14T04:02:10.729Z"
+  },
+  "도그마루 (직접병렬)": {
+    "cronType": "도그마루 (직접병렬)",
+    "totalKeywords": 299,
+    "exposureCount": 87,
+    "popularCount": 87,
+    "sblCount": 0,
+    "timestamp": "2026-07-14T04:02:09.909Z"
+  },
+  "패키지 (직접병렬)": {
+    "cronType": "패키지 (직접병렬)",
+    "totalKeywords": 162,
+    "exposureCount": 8,
+    "popularCount": 8,
+    "sblCount": 0,
+    "timestamp": "2026-07-14T04:02:11.604Z"
+  },
+  "루트 (직접병렬)": {
+    "cronType": "루트 (직접병렬)",
+    "totalKeywords": 3,
+    "exposureCount": 0,
+    "popularCount": 0,
+    "sblCount": 0,
+    "timestamp": "2026-07-14T04:04:46.009Z"
   }
 }
