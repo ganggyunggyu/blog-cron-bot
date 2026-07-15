@@ -1556,7 +1556,6 @@ const loadOldLogicKeywords = async (
 
     for (let rowIndex = dataStartRowIndex; rowIndex < sheet.rowCount; rowIndex += 1) {
       const keyword = getLoadedCellText(sheet, rowIndex, keywordColumnIndex);
-
       if (!keyword) {
         continue;
       }

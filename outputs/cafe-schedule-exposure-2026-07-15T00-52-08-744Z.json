@@ -1,0 +1,146 @@
+{
+  "summary": {
+    "spreadsheetId": "1vrN5gvtokWxPs8CNaNcvZQLWyIMBOIcteYXQbyfiZl0",
+    "sheetTitle": "260714 스케줄",
+    "sheetGid": 126285763,
+    "checkedAt": "2026-07-15 09:51:57",
+    "scheduleRows": 8,
+    "uniqueKeywords": 8,
+    "retryFailedOnly": true,
+    "cafeSources": [
+      {
+        "name": "일상 소통마당",
+        "sourceId": "talkmadang702"
+      },
+      {
+        "name": "가중건다",
+        "sourceId": "healthhhh"
+      },
+      {
+        "name": "운연정",
+        "sourceId": "driveee"
+      },
+      {
+        "name": "육아 돌봄수첩",
+        "sourceId": "ahffkdlek12"
+      },
+      {
+        "name": "맛집 동네밥상",
+        "sourceId": "localtable702"
+      },
+      {
+        "name": "맛집 메뉴수첩",
+        "sourceId": "menunote702"
+      },
+      {
+        "name": "맛집 식탁모임",
+        "sourceId": "tableclub702"
+      },
+      {
+        "name": "애견 반려정보",
+        "sourceId": "petinfo183"
+      },
+      {
+        "name": "애견 산책이야기",
+        "sourceId": "dogwalk2m4"
+      },
+      {
+        "name": "건강 생활수첩",
+        "sourceId": "carelog702"
+      },
+      {
+        "name": "건강 습관노트",
+        "sourceId": "habitnote702"
+      },
+      {
+        "name": "생활 정보마당",
+        "sourceId": "infomadang702"
+      }
+    ],
+    "exposed": 3,
+    "unexposed": 5,
+    "failed": 0
+  },
+  "rows": [
+    {
+      "row": 12,
+      "keyword": "헤어에센스추천",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "cafeName": "",
+      "sourceIds": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 78,
+      "keyword": "알파cd",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "cafeName": "",
+      "sourceIds": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 79,
+      "keyword": "울산위고비",
+      "exposureStatus": "노출",
+      "rank": "1 | 4 | 6",
+      "cafeName": "애견 산책이야기 | 애견 반려정보 | 맛집 식탁모임",
+      "sourceIds": "dogwalk2m4 | petinfo183 | tableclub702",
+      "links": "https://cafe.naver.com/dogwalk2m4/34?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImRvZ3dhbGsybTQiLCJhcnRpY2xlSWQiOjM0LCJpc3N1ZWRBdCI6MTc4NDA3NjcyMDQxM30.T9Nmeq9_qF12z0OwAgtjr5MpBoOooPICsOh7HZ_B2dM | https://cafe.naver.com/petinfo183/7?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6InBldGluZm8xODMiLCJhcnRpY2xlSWQiOjcsImlzc3VlZEF0IjoxNzg0MDc2NzIwNDE0fQ.-MgBLFPUC4jmal_ZOyDfSXNGL9kPh5DYbOFScLBXJpQ | https://cafe.naver.com/tableclub702/28?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6InRhYmxlY2x1YjcwMiIsImFydGljbGVJZCI6MjgsImlzc3VlZEF0IjoxNzg0MDc2NzIwNDE0fQ.5kLfK8kXr2b84zHE-Fr3lhrsepJipwRDuKXc9k5RhZU",
+      "note": ""
+    },
+    {
+      "row": 81,
+      "keyword": "대구사진관",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "cafeName": "",
+      "sourceIds": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 82,
+      "keyword": "천안내성발톱",
+      "exposureStatus": "노출",
+      "rank": "6",
+      "cafeName": "맛집 동네밥상",
+      "sourceIds": "localtable702",
+      "links": "https://cafe.naver.com/localtable702/12?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImxvY2FsdGFibGU3MDIiLCJhcnRpY2xlSWQiOjEyLCJpc3N1ZWRBdCI6MTc4NDA3NjE5MTYwM30.jWhP_2pIFROCNg-y15DSNn5kNdcGKAaDwX5bgb5Twsw",
+      "note": ""
+    },
+    {
+      "row": 84,
+      "keyword": "아산웨딩홀",
+      "exposureStatus": "노출",
+      "rank": "2",
+      "cafeName": "맛집 동네밥상",
+      "sourceIds": "localtable702",
+      "links": "https://cafe.naver.com/localtable702/8?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImxvY2FsdGFibGU3MDIiLCJhcnRpY2xlSWQiOjgsImlzc3VlZEF0IjoxNzg0MDc2Njc2Nzg5fQ.Xi6vMduv-9j_gATZ0z3Mi-jxT1rahdYrfSPeTvJkHLs",
+      "note": ""
+    },
+    {
+      "row": 85,
+      "keyword": "천안웨딩홀",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "cafeName": "",
+      "sourceIds": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 86,
+      "keyword": "수원웨딩홀",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "cafeName": "",
+      "sourceIds": "",
+      "links": "",
+      "note": ""
+    }
+  ]
+}
