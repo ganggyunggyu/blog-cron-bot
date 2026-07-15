@@ -265,27 +265,27 @@
   },
   "일반건 (직접병렬)": {
     "cronType": "일반건 (직접병렬)",
-    "totalKeywords": 1,
-    "exposureCount": 0,
-    "popularCount": 0,
+    "totalKeywords": 123,
+    "exposureCount": 6,
+    "popularCount": 6,
     "sblCount": 0,
-    "timestamp": "2026-07-15T15:46:26.589Z"
+    "timestamp": "2026-07-15T23:14:52.303Z"
   },
   "도그마루 (직접병렬)": {
     "cronType": "도그마루 (직접병렬)",
-    "totalKeywords": 1,
-    "exposureCount": 0,
-    "popularCount": 0,
+    "totalKeywords": 299,
+    "exposureCount": 101,
+    "popularCount": 101,
     "sblCount": 0,
-    "timestamp": "2026-07-15T15:46:25.853Z"
+    "timestamp": "2026-07-15T23:16:59.092Z"
   },
   "패키지 (직접병렬)": {
     "cronType": "패키지 (직접병렬)",
-    "totalKeywords": 1,
-    "exposureCount": 0,
-    "popularCount": 0,
+    "totalKeywords": 167,
+    "exposureCount": 7,
+    "popularCount": 7,
     "sblCount": 0,
-    "timestamp": "2026-07-15T15:45:37.046Z"
+    "timestamp": "2026-07-15T23:20:05.594Z"
   },
   "루트 (직접병렬)": {
     "cronType": "루트 (직접병렬)",
@@ -297,10 +297,10 @@
   },
   "서리펫 (직접병렬)": {
     "cronType": "서리펫 (직접병렬)",
-    "totalKeywords": 1,
-    "exposureCount": 0,
-    "popularCount": 0,
+    "totalKeywords": 131,
+    "exposureCount": 64,
+    "popularCount": 64,
     "sblCount": 0,
-    "timestamp": "2026-07-15T15:46:26.317Z"
+    "timestamp": "2026-07-15T23:09:54.644Z"
   }
 }
