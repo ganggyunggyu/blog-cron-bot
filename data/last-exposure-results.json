@@ -294,5 +294,13 @@
     "popularCount": 0,
     "sblCount": 0,
     "timestamp": "2026-07-14T04:04:46.009Z"
+  },
+  "서리펫 (직접병렬)": {
+    "cronType": "서리펫 (직접병렬)",
+    "totalKeywords": 131,
+    "exposureCount": 90,
+    "popularCount": 66,
+    "sblCount": 0,
+    "timestamp": "2026-07-15T03:11:09.822Z"
   }
 }

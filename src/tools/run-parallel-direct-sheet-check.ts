@@ -11,7 +11,10 @@ import { sendDoorayExposureResult } from '../lib/dooray';
 import { getKSTTimestamp } from '../utils';
 import { saveToCSV, saveToSheetCSV } from '../csv-writer';
 import { EXPOSURE_SHEET_LOCATIONS } from '../constants';
-import { DOGMARU_PAGE_CHECK_BLOG_IDS } from '../constants/blog-ids';
+import {
+  DOGMARU_PAGE_CHECK_BLOG_IDS,
+  SURI_PET_BLOG_IDS,
+} from '../constants/blog-ids';
 import { ExposureResult } from '../matcher';
 import { autoLogin } from './auto-login';
 import {
@@ -32,7 +35,12 @@ import {
 
 dotenv.config();
 
-type TargetType = 'package' | 'dogmaru-exclude' | 'dogmaru' | 'root';
+type TargetType =
+  | 'package'
+  | 'dogmaru-exclude'
+  | 'dogmaru'
+  | 'seoripet'
+  | 'root';
 
 interface TargetConfig {
   target: TargetType;
@@ -51,6 +59,7 @@ interface CliOptions {
   printOnly: boolean;
   limit: number;
   concurrency: number;
+  maxPages?: number;
 }
 
 interface RunContext {
@@ -74,6 +83,7 @@ const ALL_TARGETS: TargetType[] = [
   'package',
   'dogmaru-exclude',
   'dogmaru',
+  'seoripet',
   'root',
 ];
 
@@ -83,7 +93,8 @@ const TARGET_DEDUP_PRIORITY: Record<TargetType, number> = {
   'dogmaru-exclude': 1,
   package: 2,
   dogmaru: 3,
-  root: 4,
+  seoripet: 4,
+  root: 5,
 };
 
 const TARGET_CONFIGS: Record<TargetType, TargetConfig> = {
@@ -112,6 +123,15 @@ const TARGET_CONFIGS: Record<TargetType, TargetConfig> = {
     csvPrefix: 'direct-dogmaru',
     blogIds: DOGMARU_PAGE_CHECK_BLOG_IDS,
   },
+  seoripet: {
+    target: 'seoripet',
+    label: '서리펫',
+    sheetId: EXPOSURE_SHEET_LOCATIONS.서리펫.sheetId,
+    tabName: EXPOSURE_SHEET_LOCATIONS.서리펫.tabTitle,
+    sheetType: 'seoripet',
+    csvPrefix: 'direct-seoripet',
+    blogIds: SURI_PET_BLOG_IDS,
+  },
   root: {
     target: 'root',
     label: '루트',
@@ -130,6 +150,12 @@ const normalizeTarget = (value: string): TargetType | null => {
   if (normalized === 'dogmaru-exclude' || normalized === 'general')
     return 'dogmaru-exclude';
   if (normalized === 'dogmaru') return 'dogmaru';
+  if (
+    normalized === 'seoripet' ||
+    normalized === '서리펫' ||
+    normalized === 'suripet'
+  )
+    return 'seoripet';
   if (normalized === 'root') return 'root';
 
   return null;
@@ -166,6 +192,7 @@ const parseArgs = (): CliOptions => {
   let printOnly = false;
   let limit = 0;
   let concurrency = DEFAULT_TARGET_CONCURRENCY;
+  let maxPages: number | undefined;
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -189,6 +216,12 @@ const parseArgs = (): CliOptions => {
       continue;
     }
 
+    if (arg === '--max-pages' && nextArg) {
+      maxPages = parsePositiveNumber(nextArg);
+      index += 1;
+      continue;
+    }
+
     if (arg === '--dry-run') {
       dryRun = true;
       continue;
@@ -208,6 +241,7 @@ const parseArgs = (): CliOptions => {
     printOnly,
     limit,
     concurrency,
+    maxPages,
   };
 };
 
@@ -471,6 +505,7 @@ const runTargetCrawl = async (
     blogIds: target.blogIds,
     allowAnyBlog: target.allowAnyBlog,
     keywordLogicMap,
+    maxPages: options.maxPages,
   });
 
   return {

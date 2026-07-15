@@ -55,12 +55,14 @@ export const TEST_CONFIG = {
     PACKAGE: '패키지',
     DOGMARU_EXCLUDE: '일반건',
     DOGMARU: '도그마루',
+    SERIPET: '서리펫',
     ROOT: '루트',
   },
   LABELS: {
     PACKAGE: '패키지',
     DOGMARU_EXCLUDE: '일반건',
     DOGMARU: '도그마루',
+    SERIPET: '서리펫',
     ROOT: '루트',
   },
 } as const;
@@ -98,6 +100,7 @@ export const EXPOSURE_SHEET_LOCATIONS = {
   패키지: { sheetId: PRODUCT_SHEET_ID, tabTitle: '패키지' },
   일반건: { sheetId: PRODUCT_SHEET_ID, tabTitle: '도그마루 제외' },
   도그마루: { sheetId: PRODUCT_SHEET_ID, tabTitle: '도그마루' },
+  서리펫: { sheetId: PRODUCT_SHEET_ID, tabTitle: '서리펫' },
   루트: { sheetId: ROOT_CONFIG.SHEET_ID, tabTitle: ROOT_CONFIG.SHEET_NAMES.PACKAGE },
 } as const;
 
