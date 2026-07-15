@@ -2,6 +2,15 @@ import { GoogleSpreadsheet } from 'google-spreadsheet';
 import { JWT } from 'google-auth-library';
 import { TEST_CONFIG } from '../../constants/api';
 import { logger } from '../logger';
+import {
+  DirectSheetUpdate,
+  buildKeywordQueueMap,
+  getGoogleSheetAuth,
+  getWorksheetByTitle,
+  loadKeywordsFromWorksheet,
+  openSpreadsheet,
+  writeResultsToWorksheet,
+} from './direct-exposure-sheet';
 
 type SuripetSheetRow = Record<string, string>;
 
@@ -103,4 +112,67 @@ export const loadSuripetKeywordsFromSheet = async (): Promise<
   );
 
   return keywords;
+};
+
+export interface SuripetResultInput {
+  keyword: string;
+  visibility: boolean;
+  popularTopic: string;
+  url: string;
+  postPublishedAt?: string;
+  keywordType: 'restaurant' | 'pet' | 'basic';
+  matchedTitle?: string;
+  rank?: number;
+  rankWithCafe?: number;
+  isUpdateRequired?: boolean;
+  isNewLogic?: boolean;
+  foundPage?: number;
+}
+
+/**
+ * PAGE_CHECK_API(외부 서버)를 거치지 않고, 이미 검증된 direct-write 경로로
+ * "서리펫" 탭에 결과를 직접 반영함. 키워드 텍스트로 매칭하므로 시트 행 순서가
+ * DB 조회 순서와 달라도 엉뚱한 행에 쓰이지 않음.
+ */
+export const writeSuripetResultsToSheet = async (
+  results: SuripetResultInput[]
+): Promise<void> => {
+  const auth = getGoogleSheetAuth();
+  const doc = await openSpreadsheet(TEST_CONFIG.SHEET_ID, auth);
+  const sheet = getWorksheetByTitle(doc, SURIPET_SHEET_NAME);
+  const sheetKeywords = await loadKeywordsFromWorksheet(sheet, 'suripet');
+  const queueMap = buildKeywordQueueMap(sheetKeywords);
+  const updates = new Map<string, DirectSheetUpdate>();
+  let mappedCount = 0;
+  let unmatchedCount = 0;
+
+  results.forEach((result) => {
+    const queue = queueMap.get(normalizeCell(result.keyword));
+    const matched = queue?.shift();
+
+    if (!matched) {
+      unmatchedCount += 1;
+      return;
+    }
+
+    updates.set(matched._id, {
+      visibility: result.visibility,
+      popularTopic: result.popularTopic,
+      url: result.url,
+      postPublishedAt: result.postPublishedAt,
+      keywordType: result.keywordType,
+      matchedTitle: result.matchedTitle,
+      rank: result.rank,
+      rankWithCafe: result.rankWithCafe,
+      isUpdateRequired: result.isUpdateRequired,
+      isNewLogic: result.isNewLogic,
+      foundPage: result.foundPage,
+    });
+    mappedCount += 1;
+  });
+
+  await writeResultsToWorksheet(sheet, sheetKeywords, updates);
+  logger.success(
+    `Google Sheets 서리펫 직접 반영 완료: ${mappedCount}/${sheetKeywords.length}행 (미매칭 ${unmatchedCount})`
+  );
 };

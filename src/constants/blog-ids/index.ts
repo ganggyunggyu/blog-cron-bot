@@ -432,5 +432,5 @@ export const PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE: Record<
   prescription: [...PRESCRIPTION_BLOG_IDS],
   'eye-clinic': [...EYE_CLINIC_BLOG_IDS],
   pet: [...PET_PAGE_CHECK_BLOG_IDS],
-  suripet: [...SURI_PET_PAGE_CHECK_BLOG_IDS],
+  suripet: [...SURI_PET_BLOG_IDS],
 };

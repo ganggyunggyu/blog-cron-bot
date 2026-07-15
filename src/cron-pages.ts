@@ -19,7 +19,10 @@ import { getKSTTimestamp } from './utils';
 import { ExposureResult } from './matcher';
 import { sendDoorayExposureResult } from './lib/dooray';
 import { PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE } from './constants/blog-ids';
-import { loadSuripetKeywordsFromSheet } from './lib/google-sheets/suripet-page-check';
+import {
+  loadSuripetKeywordsFromSheet,
+  writeSuripetResultsToSheet,
+} from './lib/google-sheets/suripet-page-check';
 
 dotenv.config();
 
@@ -89,16 +92,44 @@ async function syncAllSheetsAPI(): Promise<number> {
   }
 }
 
-async function exportSheetAPI(sheetType: PageCheckSheetType): Promise<boolean> {
+// 서리펫은 PAGE_CHECK_API(외부 서버)에 의존하지 않고 direct-write로 시트에 바로 반영함
+async function exportSuripetSheetDirect(): Promise<boolean> {
   try {
-    // suripet은 전용 API 사용
-    const url =
-      sheetType === 'suripet'
-        ? `${PAGE_CHECK_API}/api/suripet/export`
-        : `${PAGE_CHECK_API}/api/page-check/export`;
-    const body = sheetType === 'suripet' ? {} : { sheetType };
+    const keywords = await getPageCheckKeywords('suripet');
+    await writeSuripetResultsToSheet(
+      keywords.map((keyword) => ({
+        keyword: keyword.keyword,
+        visibility: keyword.visibility,
+        popularTopic: keyword.popularTopic,
+        url: keyword.url,
+        postPublishedAt: keyword.postPublishedAt,
+        keywordType: keyword.keywordType,
+        matchedTitle: keyword.matchedTitle,
+        rank: keyword.rank,
+        rankWithCafe: keyword.rankWithCafe,
+        isUpdateRequired: keyword.isUpdateRequired,
+        isNewLogic: keyword.isNewLogic,
+        foundPage: keyword.foundPage,
+      }))
+    );
+    return true;
+  } catch (error) {
+    logger.error(
+      `  ${SHEET_TYPE_NAMES.suripet} 내보내기 실패: ${(error as Error).message}`
+    );
+    return false;
+  }
+}
 
-    const res = await axios.post(url, body);
+async function exportSheetAPI(sheetType: PageCheckSheetType): Promise<boolean> {
+  if (sheetType === 'suripet') {
+    return exportSuripetSheetDirect();
+  }
+
+  try {
+    const res = await axios.post(`${PAGE_CHECK_API}/api/page-check/export`, {
+      sheetType,
+    });
     const totalRows = res.data.totalRows ?? res.data.count ?? 0;
     const updatedCells = res.data.updatedCells ?? '';
     logger.success(

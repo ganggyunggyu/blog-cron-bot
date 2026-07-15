@@ -12,27 +12,15 @@ const TARGET_SHEET_ID = '1T9PHu-fH6HPmyYA9dtfXaDLm20XAPN-9mzlE2QTPkF0';
 const TARGET_GID = 1406050962;
 const TARGET_TITLE = '카페노출체크';
 
-const HEADERS = [
-  '키워드',
-  '카페 노출',
-  '카페 순위',
-  '카페명',
-  '카페 링크',
-  '카페 조회수',
-  '카페 작성일',
-  '비고',
-];
+const HEADERS = ['키워드', '노출여부', '순위', '카페블로그명', '링크'];
 
 interface CafeExportRow {
   [key: string]: string;
   키워드: string;
-  '카페 노출': string;
-  '카페 순위': string;
-  카페명: string;
-  '카페 링크': string;
-  '카페 조회수': string;
-  '카페 작성일': string;
-  비고: string;
+  노출여부: string;
+  순위: string;
+  카페블로그명: string;
+  링크: string;
 }
 
 const text = (value: unknown): string => String(value ?? '').trim();
@@ -72,7 +60,7 @@ const loadSourceRows = async (): Promise<CafeExportRow[]> => {
     startRowIndex: 0,
     endRowIndex: sheet.rowCount,
     startColumnIndex: 0,
-    endColumnIndex: 23,
+    endColumnIndex: 21,
   });
 
   let markerRowIndex = -1;
@@ -92,13 +80,10 @@ const loadSourceRows = async (): Promise<CafeExportRow[]> => {
 
     rows.push({
       키워드: keyword,
-      '카페 노출': text(sheet.getCell(rowIndex, 17).value),
-      '카페 순위': text(sheet.getCell(rowIndex, 18).value),
-      카페명: text(sheet.getCell(rowIndex, 19).value),
-      '카페 링크': text(sheet.getCell(rowIndex, 21).value),
-      '카페 조회수': '',
-      '카페 작성일': '',
-      비고: text(sheet.getCell(rowIndex, 22).value),
+      노출여부: text(sheet.getCell(rowIndex, 17).value),
+      순위: text(sheet.getCell(rowIndex, 18).value),
+      카페블로그명: text(sheet.getCell(rowIndex, 19).value),
+      링크: text(sheet.getCell(rowIndex, 20).value),
     });
   }
 
@@ -147,8 +132,7 @@ const main = async (): Promise<void> => {
     targetGid: TARGET_GID,
     targetTitle: TARGET_TITLE,
     rows: rows.length,
-    exposed: rows.filter((row) => row['카페 노출'] === 'o').length,
-    failed: rows.filter((row) => Boolean(row.비고)).length,
+    exposed: rows.filter((row) => row.노출여부 === 'o').length,
   };
   const outputPath = path.join(
     process.cwd(),

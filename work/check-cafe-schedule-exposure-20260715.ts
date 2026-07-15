@@ -5,26 +5,26 @@ import { GoogleSpreadsheet, GoogleSpreadsheetWorksheet } from 'google-spreadshee
 import { JWT } from 'google-auth-library';
 import { crawlWithRetryWithoutCookie, randomDelay } from '../src/crawler';
 import {
-  buildCafeExposureRow,
   CafeMatch,
   CafeTarget,
   matchCafeTargets,
 } from '../src/lib/cafe-exposure-check';
 import { extractPopularItems } from '../src/parser';
+import { matchBlogs } from '../src/matcher';
+import { BLOG_IDS } from '../src/constants/blog-ids';
 
 dotenv.config();
 
 const SHEET_ID = '1vrN5gvtokWxPs8CNaNcvZQLWyIMBOIcteYXQbyfiZl0';
 const SHEET_GID = 126285763;
 const OUTPUT_START_COLUMN = 16; // Q
+// 카페 + 블로그(우리 블로그 전부) 둘 중 하나라도 노출되면 "노출"로 판정한다.
 const OUTPUT_HEADERS = [
   '노출체크일시',
-  '카페노출',
-  '카페순위',
-  '카페명',
-  '카페소스ID',
-  '카페링크',
-  '비고',
+  '노출여부',
+  '순위',
+  '카페블로그명',
+  '링크',
 ];
 const RETRY_FAILED_ONLY = process.env.RETRY_FAILED_ONLY === 'true';
 
@@ -36,10 +36,15 @@ interface ScheduleKeyword {
 interface CheckResult {
   exposureStatus: '노출' | '미노출' | '확인실패';
   rank: string;
-  cafeName: string;
-  sourceIds: string;
+  name: string;
   links: string;
   note: string;
+}
+
+interface CombinedMatch {
+  rank: number;
+  name: string;
+  link: string;
 }
 
 const cellText = (value: unknown): string => String(value ?? '').trim();
@@ -140,14 +145,25 @@ const loadSchedule = async (
   return { title, rows, targets };
 };
 
-const toResult = (matches: CafeMatch[]): CheckResult => {
-  const row = buildCafeExposureRow('', matches);
+const toResult = (cafeMatches: CafeMatch[], blogMatches: ReturnType<typeof matchBlogs>): CheckResult => {
+  const combined: CombinedMatch[] = [
+    ...cafeMatches.map((match) => ({ rank: match.cafeRank, name: match.targetName, link: match.link })),
+    ...blogMatches.map((match) => ({
+      rank: match.position,
+      name: match.blogName || match.blogId,
+      link: match.postLink,
+    })),
+  ].sort((a, b) => a.rank - b.rank);
+
+  if (combined.length === 0) {
+    return { exposureStatus: '미노출', rank: '', name: '', links: '', note: '' };
+  }
+
   return {
-    exposureStatus: row.exposureStatus,
-    rank: row.rank,
-    cafeName: row.cafeName,
-    sourceIds: unique(matches.map((match) => match.sourceId)).join(' | '),
-    links: row.link,
+    exposureStatus: '노출',
+    rank: combined.map((match) => String(match.rank)).join(' | '),
+    name: unique(combined.map((match) => match.name)).join(' | '),
+    links: unique(combined.map((match) => match.link)).join(' | '),
     note: '',
   };
 };
@@ -156,13 +172,14 @@ const checkKeyword = async (keyword: string, targets: CafeTarget[]): Promise<Che
   try {
     const html = await crawlWithRetryWithoutCookie(keyword, 1);
     const items = extractPopularItems(html, { includeCafe: true });
-    return toResult(matchCafeTargets(items, targets));
+    const cafeMatches = matchCafeTargets(items, targets);
+    const blogMatches = matchBlogs(keyword, items, { blogIds: BLOG_IDS });
+    return toResult(cafeMatches, blogMatches);
   } catch (error) {
     return {
       exposureStatus: '확인실패',
       rank: '',
-      cafeName: '',
-      sourceIds: '',
+      name: '',
       links: '',
       note: (error as Error).message || 'Unknown error',
     };
@@ -207,6 +224,9 @@ const runChecks = async (
   return results;
 };
 
+// 이전 포맷(카페소스ID, 비고 포함 7열)에서 남은 열까지 지우기 위한 폭
+const LEGACY_MAX_COLUMNS = 7;
+
 const writeResults = async (
   sheet: GoogleSpreadsheetWorksheet,
   scheduleRows: ScheduleKeyword[],
@@ -214,7 +234,8 @@ const writeResults = async (
   results: Map<string, CheckResult>
 ): Promise<void> => {
   const lastRowIndex = Math.max(...scheduleRows.map((row) => row.rowIndex));
-  const requiredColumnCount = OUTPUT_START_COLUMN + OUTPUT_HEADERS.length;
+  const clearedColumnCount = Math.max(OUTPUT_HEADERS.length, LEGACY_MAX_COLUMNS);
+  const requiredColumnCount = OUTPUT_START_COLUMN + clearedColumnCount;
   if (sheet.columnCount < requiredColumnCount) {
     await sheet.resize({ rowCount: sheet.rowCount, columnCount: requiredColumnCount });
   }
@@ -226,9 +247,9 @@ const writeResults = async (
     endColumnIndex: requiredColumnCount,
   });
 
-  OUTPUT_HEADERS.forEach((header, offset) => {
-    sheet.getCell(0, OUTPUT_START_COLUMN + offset).value = header;
-  });
+  for (let offset = 0; offset < clearedColumnCount; offset += 1) {
+    sheet.getCell(0, OUTPUT_START_COLUMN + offset).value = OUTPUT_HEADERS[offset] ?? '';
+  }
 
   scheduleRows.forEach(({ rowIndex, keyword }) => {
     const result = results.get(keyword);
@@ -237,14 +258,12 @@ const writeResults = async (
       checkedAt,
       result.exposureStatus === '노출' ? 'o' : '',
       result.rank,
-      result.cafeName,
-      result.sourceIds,
+      result.name,
       result.links,
-      result.note,
     ];
-    values.forEach((value, offset) => {
-      sheet.getCell(rowIndex, OUTPUT_START_COLUMN + offset).value = value;
-    });
+    for (let offset = 0; offset < clearedColumnCount; offset += 1) {
+      sheet.getCell(rowIndex, OUTPUT_START_COLUMN + offset).value = values[offset] ?? '';
+    }
   });
 
   await sheet.saveUpdatedCells();

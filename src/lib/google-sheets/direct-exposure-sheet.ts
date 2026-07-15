@@ -118,6 +118,37 @@ export const findHeaderRowIndex = (
   return null;
 };
 
+const hasDuplicateHeader = (headers: readonly string[]): boolean => {
+  const nonEmpty = headers.filter((header) => header.length > 0);
+  return new Set(nonEmpty).size !== nonEmpty.length;
+};
+
+/**
+ * 같은 이름이 반복되는 헤더 뒤쪽 항목에 접미사를 붙여 유일하게 만듦.
+ * google-spreadsheet의 loadHeaderRow()는 중복 헤더를 발견하면 무조건 throw하는데,
+ * 일부 실제 운영 시트(A/B열 둘 다 "키워드")는 의도된 구조라 시트 자체를 고칠 수 없음 —
+ * 읽기 쪽에서만 우회.
+ */
+const dedupeHeaders = (headers: readonly string[]): string[] => {
+  const seenCounts = new Map<string, number>();
+
+  return headers.map((header) => {
+    if (!header) {
+      return header;
+    }
+
+    const count = seenCounts.get(header) ?? 0;
+    seenCounts.set(header, count + 1);
+
+    return count === 0 ? header : `${header}__dup${count}`;
+  });
+};
+
+interface WorksheetWithPrivateHeaderState {
+  _headerValues: string[];
+  _headerRowIndex: number;
+}
+
 const loadHeaderRowAutoDetect = async (
   sheet: GoogleSpreadsheetWorksheet
 ): Promise<void> => {
@@ -137,6 +168,15 @@ const loadHeaderRowAutoDetect = async (
   );
 
   const headerRowIndex = findHeaderRowIndex(scannedRows, '키워드');
+  const targetRowIndex = headerRowIndex ?? 0;
+  const rawHeaders = scannedRows[targetRowIndex] ?? [];
+
+  if (hasDuplicateHeader(rawHeaders)) {
+    const worksheetWithPrivateState = sheet as unknown as WorksheetWithPrivateHeaderState;
+    worksheetWithPrivateState._headerValues = dedupeHeaders(rawHeaders);
+    worksheetWithPrivateState._headerRowIndex = targetRowIndex + 1;
+    return;
+  }
 
   if (headerRowIndex !== null) {
     await sheet.loadHeaderRow(headerRowIndex + 1);
@@ -227,6 +267,28 @@ export const loadKeywordsFromWorksheet = async (
   });
 
   return keywords;
+};
+
+/**
+ * 키워드 텍스트 → 그 키워드를 가진 대상 시트 행들의 큐.
+ * 결과 소스(CSV/DB)와 대상 시트의 행 순서가 어긋나 있을 수 있어서 '행' 번호로 위치
+ * 매칭하면 엉뚱한 키워드에 값이 써짐 — 키워드 텍스트로 매칭해서 순서가 달라도 정확한
+ * 행에 반영되도록 함. 동일 키워드가 여러 번 나오면 시트에 나온 순서 그대로 큐에서
+ * 하나씩 소비(선입선출)해서 배정함.
+ */
+export const buildKeywordQueueMap = (
+  keywords: DirectSheetKeywordDoc[]
+): Map<string, DirectSheetKeywordDoc[]> => {
+  const queueMap = new Map<string, DirectSheetKeywordDoc[]>();
+
+  keywords.forEach((keyword) => {
+    const normalized = normalizeCell(keyword.keyword);
+    const queue = queueMap.get(normalized) ?? [];
+    queue.push(keyword);
+    queueMap.set(normalized, queue);
+  });
+
+  return queueMap;
 };
 
 export const createDirectUpdateCollector = (): {

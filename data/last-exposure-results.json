@@ -115,13 +115,13 @@
   },
   "패키지 일반건 노출체크": {
     "cronType": "패키지 일반건 노출체크",
-    "totalKeywords": 571,
-    "exposureCount": 61,
-    "popularCount": 61,
+    "totalKeywords": 586,
+    "exposureCount": 113,
+    "popularCount": 113,
     "sblCount": 0,
-    "newLogicCount": 53,
-    "oldLogicCount": 8,
-    "timestamp": "2026-06-11T08:57:13.322Z"
+    "newLogicCount": 32,
+    "oldLogicCount": 81,
+    "timestamp": "2026-07-15T01:46:16.083Z"
   },
   "멀티페이지 크론 [전체]": {
     "cronType": "멀티페이지 크론 [전체]",
@@ -253,15 +253,15 @@
     "exposureCount": 6,
     "popularCount": 6,
     "sblCount": 0,
-    "newLogicCount": 0,
-    "oldLogicCount": 0,
+    "newLogicCount": 5,
+    "oldLogicCount": 1,
     "sheetStats": [
       {
         "name": "신규작업",
         "count": 6
       }
     ],
-    "timestamp": "2026-07-14T09:15:39.440Z"
+    "timestamp": "2026-07-15T01:58:47.667Z"
   },
   "일반건 (직접병렬)": {
     "cronType": "일반건 (직접병렬)",
