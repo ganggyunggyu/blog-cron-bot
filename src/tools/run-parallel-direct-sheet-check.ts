@@ -171,7 +171,7 @@ const parseArgs = (): CliOptions => {
     const arg = args[index];
     const nextArg = args[index + 1];
 
-    if (arg === '--targets' && nextArg) {
+    if ((arg === '--targets' || arg === '--target') && nextArg) {
       targets = parseTargets(nextArg);
       index += 1;
       continue;
