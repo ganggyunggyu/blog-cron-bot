@@ -138,6 +138,23 @@ const loadSchedule = async (
     if (name && sourceId) targets.push({ name, ids: [sourceId] });
   }
 
+  if (targets.length === 0) {
+    targets.push(
+      { name: '일상 소통마당', ids: ['talkmadang702'] },
+      { name: '가중건다', ids: ['healthhhh'] },
+      { name: '운연정', ids: ['driveee'] },
+      { name: '육아 돌봄수첩', ids: ['ahffkdlek12'] },
+      { name: '맛집 동네밥상', ids: ['localtable702'] },
+      { name: '맛집 메뉴수첩', ids: ['menunote702'] },
+      { name: '맛집 식탁모임', ids: ['tableclub702'] },
+      { name: '애견 반려정보', ids: ['petinfo183'] },
+      { name: '애견 산책이야기', ids: ['dogwalk2m4'] },
+      { name: '건강 생활수첩', ids: ['carelog702'] },
+      { name: '건강 습관노트', ids: ['habitnote702'] },
+      { name: '생활 정보마당', ids: ['infomadang702'] },
+    );
+  }
+
   if (rows.length === 0 || targets.length === 0) {
     throw new Error(`스케줄 키워드 ${rows.length}개, 카페 소스 ${targets.length}개로 실행 불가`);
   }

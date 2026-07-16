@@ -1,0 +1,183 @@
+{
+  "summary": {
+    "spreadsheetId": "1vrN5gvtokWxPs8CNaNcvZQLWyIMBOIcteYXQbyfiZl0",
+    "sheetTitle": "260714 스케줄",
+    "sheetGid": 126285763,
+    "checkedAt": "2026-07-16 10:00:13",
+    "scheduleRows": 13,
+    "uniqueKeywords": 13,
+    "retryFailedOnly": true,
+    "cafeSources": [
+      {
+        "name": "일상 소통마당",
+        "sourceId": "talkmadang702"
+      },
+      {
+        "name": "가중건다",
+        "sourceId": "healthhhh"
+      },
+      {
+        "name": "운연정",
+        "sourceId": "driveee"
+      },
+      {
+        "name": "육아 돌봄수첩",
+        "sourceId": "ahffkdlek12"
+      },
+      {
+        "name": "맛집 동네밥상",
+        "sourceId": "localtable702"
+      },
+      {
+        "name": "맛집 메뉴수첩",
+        "sourceId": "menunote702"
+      },
+      {
+        "name": "맛집 식탁모임",
+        "sourceId": "tableclub702"
+      },
+      {
+        "name": "애견 반려정보",
+        "sourceId": "petinfo183"
+      },
+      {
+        "name": "애견 산책이야기",
+        "sourceId": "dogwalk2m4"
+      },
+      {
+        "name": "건강 생활수첩",
+        "sourceId": "carelog702"
+      },
+      {
+        "name": "건강 습관노트",
+        "sourceId": "habitnote702"
+      },
+      {
+        "name": "생활 정보마당",
+        "sourceId": "infomadang702"
+      }
+    ],
+    "exposed": 6,
+    "unexposed": 7,
+    "failed": 0
+  },
+  "rows": [
+    {
+      "row": 65,
+      "keyword": "깔창",
+      "exposureStatus": "노출",
+      "rank": "4",
+      "name": "운연정",
+      "links": "https://cafe.naver.com/driveee/19?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImRyaXZlZWUiLCJhcnRpY2xlSWQiOjE5LCJpc3N1ZWRBdCI6MTc4NDE2MzYxNjI5M30.I8ONukci8HJAn1h0j-HF4t3eYJF862pkbdtQec1vbdA",
+      "note": ""
+    },
+    {
+      "row": 134,
+      "keyword": "18K결혼반지",
+      "exposureStatus": "노출",
+      "rank": "5",
+      "name": "애견 산책이야기",
+      "links": "https://cafe.naver.com/dogwalk2m4/30?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImRvZ3dhbGsybTQiLCJhcnRpY2xlSWQiOjMwLCJpc3N1ZWRBdCI6MTc4NDE2MzQ3MDM3MH0.mR_7hHT5UYR-LrXAPgvjfZ9STa8beb4Jm_cqSeShXek",
+      "note": ""
+    },
+    {
+      "row": 138,
+      "keyword": "커플링브랜드",
+      "exposureStatus": "노출",
+      "rank": "3",
+      "name": "운연정",
+      "links": "https://cafe.naver.com/driveee/60?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImRyaXZlZWUiLCJhcnRpY2xlSWQiOjYwLCJpc3N1ZWRBdCI6MTc4NDE2MzYxNjM0OX0.vyksLg_JKUyOOeytq7rFW6YdsJPxXpcGOYQ-yllb2n8",
+      "note": ""
+    },
+    {
+      "row": 141,
+      "keyword": "14K커플링",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 142,
+      "keyword": "명품반지브랜드",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 145,
+      "keyword": "웨딩반지",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 147,
+      "keyword": "예물반지",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 148,
+      "keyword": "결혼예물",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 150,
+      "keyword": "랩그라운다이아",
+      "exposureStatus": "노출",
+      "rank": "4",
+      "name": "일상 소통마당",
+      "links": "https://cafe.naver.com/talkmadang702/33?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6InRhbGttYWRhbmc3MDIiLCJhcnRpY2xlSWQiOjMzLCJpc3N1ZWRBdCI6MTc4NDE2MzYxODcxNn0.k48JwKd2cIrgEC1Yxu8GfVPY0wWjeMTyoqMXuOlQf5Y",
+      "note": ""
+    },
+    {
+      "row": 152,
+      "keyword": "랩다이아몬드반지",
+      "exposureStatus": "노출",
+      "rank": "5 | 6",
+      "name": "애견 산책이야기 | 일상 소통마당",
+      "links": "https://cafe.naver.com/dogwalk2m4/5?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImRvZ3dhbGsybTQiLCJhcnRpY2xlSWQiOjUsImlzc3VlZEF0IjoxNzg0MTYzNjE5NjE4fQ.DHG5wItbNL6zlTYplLqIC2gdQwPMz3WRPNAoXA3SV78 | https://cafe.naver.com/talkmadang702/35?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6InRhbGttYWRhbmc3MDIiLCJhcnRpY2xlSWQiOjM1LCJpc3N1ZWRBdCI6MTc4NDE2MzYxOTYxOH0.Daa-DdRnJ5x7dE0-k4DtvE-rUaPF6ksIysimwqWF_kk",
+      "note": ""
+    },
+    {
+      "row": 153,
+      "keyword": "랩다이아목걸이",
+      "exposureStatus": "노출",
+      "rank": "1",
+      "name": "일상 소통마당",
+      "links": "https://cafe.naver.com/talkmadang702/36?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6InRhbGttYWRhbmc3MDIiLCJhcnRpY2xlSWQiOjM2LCJpc3N1ZWRBdCI6MTc4NDE2MzYxOTY2M30.wZhb_r8cXkyYk1EWf_ZmY7wKry9qHiVpP42aHe9xudY",
+      "note": ""
+    },
+    {
+      "row": 158,
+      "keyword": "명품커플링",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 159,
+      "keyword": "프로포즈링",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    }
+  ]
+}

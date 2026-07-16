@@ -17,11 +17,11 @@
   },
   "일반건 노출체크": {
     "cronType": "일반건 노출체크",
-    "totalKeywords": 78,
-    "exposureCount": 7,
-    "popularCount": 7,
+    "totalKeywords": 123,
+    "exposureCount": 5,
+    "popularCount": 5,
     "sblCount": 0,
-    "timestamp": "2026-07-13T00:33:03.277Z"
+    "timestamp": "2026-07-16T01:00:14.032Z"
   },
   "도그마루 노출체크": {
     "cronType": "도그마루 노출체크",
@@ -43,11 +43,11 @@
   },
   "루트 키워드": {
     "cronType": "루트 키워드",
-    "totalKeywords": 197,
+    "totalKeywords": 196,
     "exposureCount": 3,
     "popularCount": 3,
     "sblCount": 0,
-    "timestamp": "2026-07-15T01:03:24.513Z"
+    "timestamp": "2026-07-16T01:08:58.729Z"
   },
   "멀티페이지 크론 [애견]": {
     "cronType": "멀티페이지 크론 [애견]",
@@ -68,18 +68,18 @@
   "멀티페이지 크론 [서리펫]": {
     "cronType": "멀티페이지 크론 [서리펫]",
     "totalKeywords": 123,
-    "exposureCount": 96,
-    "popularCount": 35,
+    "exposureCount": 61,
+    "popularCount": 61,
     "sblCount": 0,
-    "newLogicCount": 26,
-    "oldLogicCount": 70,
+    "newLogicCount": 14,
+    "oldLogicCount": 47,
     "sheetStats": [
       {
         "name": "서리펫",
-        "count": 96
+        "count": 61
       }
     ],
-    "timestamp": "2026-07-01T02:52:08.889Z"
+    "timestamp": "2026-07-16T00:54:00.590Z"
   },
   "멀티페이지 크론 [흑염소 신규]": {
     "cronType": "멀티페이지 크론 [흑염소 신규]",

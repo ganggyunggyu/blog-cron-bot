@@ -1,0 +1,750 @@
+{
+  "summary": {
+    "spreadsheetId": "1vrN5gvtokWxPs8CNaNcvZQLWyIMBOIcteYXQbyfiZl0",
+    "sheetTitle": "260714 스케줄",
+    "sheetGid": 126285763,
+    "checkedAt": "2026-07-16 09:58:16",
+    "scheduleRows": 76,
+    "uniqueKeywords": 64,
+    "retryFailedOnly": true,
+    "cafeSources": [
+      {
+        "name": "일상 소통마당",
+        "sourceId": "talkmadang702"
+      },
+      {
+        "name": "가중건다",
+        "sourceId": "healthhhh"
+      },
+      {
+        "name": "운연정",
+        "sourceId": "driveee"
+      },
+      {
+        "name": "육아 돌봄수첩",
+        "sourceId": "ahffkdlek12"
+      },
+      {
+        "name": "맛집 동네밥상",
+        "sourceId": "localtable702"
+      },
+      {
+        "name": "맛집 메뉴수첩",
+        "sourceId": "menunote702"
+      },
+      {
+        "name": "맛집 식탁모임",
+        "sourceId": "tableclub702"
+      },
+      {
+        "name": "애견 반려정보",
+        "sourceId": "petinfo183"
+      },
+      {
+        "name": "애견 산책이야기",
+        "sourceId": "dogwalk2m4"
+      },
+      {
+        "name": "건강 생활수첩",
+        "sourceId": "carelog702"
+      },
+      {
+        "name": "건강 습관노트",
+        "sourceId": "habitnote702"
+      },
+      {
+        "name": "생활 정보마당",
+        "sourceId": "infomadang702"
+      }
+    ],
+    "exposed": 15,
+    "unexposed": 48,
+    "failed": 13
+  },
+  "rows": [
+    {
+      "row": 13,
+      "keyword": "헤어드라이기",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 14,
+      "keyword": "드라이기 추천",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 24,
+      "keyword": "드라이기 추천",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 50,
+      "keyword": "무지외반증 교정기",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 51,
+      "keyword": "거북목교정기",
+      "exposureStatus": "노출",
+      "rank": "1 | 4",
+      "name": "가중건다 | 일상 소통마당",
+      "links": "https://cafe.naver.com/healthhhh/18?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImhlYWx0aGhoaCIsImFydGljbGVJZCI6MTgsImlzc3VlZEF0IjoxNzg0MTYzNTAwMjUxfQ.ATNBBIAruw63Ys9N-ZwAAPrjBGMKlkHFiAg9Glo1ckc | https://cafe.naver.com/talkmadang702/6?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6InRhbGttYWRhbmc3MDIiLCJhcnRpY2xlSWQiOjYsImlzc3VlZEF0IjoxNzg0MTYzNTAwMjUxfQ.cpORxBXUrSr6kwvAapMvCB4t-zMGCu9yR_f5rA3TwnI",
+      "note": ""
+    },
+    {
+      "row": 52,
+      "keyword": "족저근막염깔창",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 53,
+      "keyword": "올리브오일",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 54,
+      "keyword": "조문 답례품",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 55,
+      "keyword": "밀크씨슬",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 57,
+      "keyword": "sat학원",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 58,
+      "keyword": "무지외반증 교정기",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 59,
+      "keyword": "거북목교정기",
+      "exposureStatus": "노출",
+      "rank": "1 | 4",
+      "name": "가중건다 | 일상 소통마당",
+      "links": "https://cafe.naver.com/healthhhh/18?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImhlYWx0aGhoaCIsImFydGljbGVJZCI6MTgsImlzc3VlZEF0IjoxNzg0MTYzNTAwMjUxfQ.ATNBBIAruw63Ys9N-ZwAAPrjBGMKlkHFiAg9Glo1ckc | https://cafe.naver.com/talkmadang702/6?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6InRhbGttYWRhbmc3MDIiLCJhcnRpY2xlSWQiOjYsImlzc3VlZEF0IjoxNzg0MTYzNTAwMjUxfQ.cpORxBXUrSr6kwvAapMvCB4t-zMGCu9yR_f5rA3TwnI",
+      "note": ""
+    },
+    {
+      "row": 60,
+      "keyword": "족저근막염깔창",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 61,
+      "keyword": "아치깔창",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 62,
+      "keyword": "족저근막염 신발",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 63,
+      "keyword": "신발깔창",
+      "exposureStatus": "노출",
+      "rank": "1",
+      "name": "가중건다",
+      "links": "https://cafe.naver.com/healthhhh/22?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImhlYWx0aGhoaCIsImFydGljbGVJZCI6MjIsImlzc3VlZEF0IjoxNzg0MTYzNTAyNTA0fQ.L-SSLjSRNg6srMWZg8YksCdBC6sSElVoABMTgDkoQv8",
+      "note": ""
+    },
+    {
+      "row": 64,
+      "keyword": "올리브오일",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 65,
+      "keyword": "깔창",
+      "exposureStatus": "확인실패",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": "HTTP 403"
+    },
+    {
+      "row": 66,
+      "keyword": "평발깔창",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 67,
+      "keyword": "푸룬주스",
+      "exposureStatus": "노출",
+      "rank": "3",
+      "name": "가중건다",
+      "links": "https://cafe.naver.com/healthhhh/38?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImhlYWx0aGhoaCIsImFydGljbGVJZCI6MzgsImlzc3VlZEF0IjoxNzg0MTYzNTE4NDU2fQ.gHGPBNoNnnvGxjBZWf-b9R1Lms7tWS2XGEr_T1DoGWA",
+      "note": ""
+    },
+    {
+      "row": 69,
+      "keyword": "군대깔창",
+      "exposureStatus": "노출",
+      "rank": "4",
+      "name": "가중건다",
+      "links": "https://cafe.naver.com/healthhhh/40?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImhlYWx0aGhoaCIsImFydGljbGVJZCI6NDAsImlzc3VlZEF0IjoxNzg0MTYzNTIwMTMxfQ.FNpLd_I3CrmCH8lDwpVrU8lWb716EM968E-VP2irkvI",
+      "note": ""
+    },
+    {
+      "row": 70,
+      "keyword": "답례품",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 71,
+      "keyword": "군대깔창",
+      "exposureStatus": "노출",
+      "rank": "4",
+      "name": "가중건다",
+      "links": "https://cafe.naver.com/healthhhh/40?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImhlYWx0aGhoaCIsImFydGljbGVJZCI6NDAsImlzc3VlZEF0IjoxNzg0MTYzNTIwMTMxfQ.FNpLd_I3CrmCH8lDwpVrU8lWb716EM968E-VP2irkvI",
+      "note": ""
+    },
+    {
+      "row": 72,
+      "keyword": "종로웨딩밴드",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 73,
+      "keyword": "종로반지",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 74,
+      "keyword": "종로금은방",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 75,
+      "keyword": "회사 답례품",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 76,
+      "keyword": "결혼 답례품",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 77,
+      "keyword": "삼척카페",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 81,
+      "keyword": "대구 가족사진",
+      "exposureStatus": "노출",
+      "rank": "4",
+      "name": "운연정",
+      "links": "https://cafe.naver.com/driveee/40?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImRyaXZlZWUiLCJhcnRpY2xlSWQiOjQwLCJpc3N1ZWRBdCI6MTc4NDE2MzUzNzAwNH0.urU4lHuwDBnWxBctdxzKyBmaRjzRhDAwn2kI8dk1slQ",
+      "note": ""
+    },
+    {
+      "row": 82,
+      "keyword": "울산마운자로처방",
+      "exposureStatus": "노출",
+      "rank": "2",
+      "name": "건강 습관노트",
+      "links": "https://cafe.naver.com/habitnote702/42?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImhhYml0bm90ZTcwMiIsImFydGljbGVJZCI6NDIsImlzc3VlZEF0IjoxNzg0MTYzMjk4MjUyfQ.KaERXBQnMkZ7KHxsl_HcJZa2gxG8LD7CSJ-z2nN_jzQ",
+      "note": ""
+    },
+    {
+      "row": 88,
+      "keyword": "알파cd",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 89,
+      "keyword": "울산위고비",
+      "exposureStatus": "노출",
+      "rank": "4 | 5 | 7",
+      "name": "애견 산책이야기 | 애견 반려정보 | 맛집 식탁모임",
+      "links": "https://cafe.naver.com/dogwalk2m4/34?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImRvZ3dhbGsybTQiLCJhcnRpY2xlSWQiOjM0LCJpc3N1ZWRBdCI6MTc4NDE2MzI5Mjc2NX0.7xIcr7rvUHB9aLyuqnlQWPaajvL1gA5r2sWWHvxs7QE | https://cafe.naver.com/petinfo183/7?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6InBldGluZm8xODMiLCJhcnRpY2xlSWQiOjcsImlzc3VlZEF0IjoxNzg0MTYzMjkyNzY1fQ.AgiQ5xH8Vd3pw5YNVFsTVQXRDtfbOPg2nnLDfgl0wdg | https://cafe.naver.com/tableclub702/28?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6InRhYmxlY2x1YjcwMiIsImFydGljbGVJZCI6MjgsImlzc3VlZEF0IjoxNzg0MTYzMjkyNzY1fQ.kDnsM6US8MOQ7A3TDqgCoJey5up5O-zgv3Lt3IvnVGQ",
+      "note": ""
+    },
+    {
+      "row": 91,
+      "keyword": "대구사진관",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 92,
+      "keyword": "천안내성발톱",
+      "exposureStatus": "노출",
+      "rank": "7",
+      "name": "맛집 동네밥상",
+      "links": "https://cafe.naver.com/localtable702/12?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImxvY2FsdGFibGU3MDIiLCJhcnRpY2xlSWQiOjEyLCJpc3N1ZWRBdCI6MTc4NDE2MzU0NjY4Mn0.4N7ilStJ30MtqjYJKZqYwkjs6wqe79N_q6-H9NpnIpE",
+      "note": ""
+    },
+    {
+      "row": 93,
+      "keyword": "올리브오일",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 94,
+      "keyword": "아산웨딩홀",
+      "exposureStatus": "노출",
+      "rank": "4",
+      "name": "맛집 동네밥상",
+      "links": "https://cafe.naver.com/localtable702/8?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImxvY2FsdGFibGU3MDIiLCJhcnRpY2xlSWQiOjgsImlzc3VlZEF0IjoxNzg0MTYzMjA2NjAzfQ.qkJ7w2hQfEtIFjhXHLWJtq8E_nr4UlxxEwbgP0OMxlU",
+      "note": ""
+    },
+    {
+      "row": 95,
+      "keyword": "천안웨딩홀",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 96,
+      "keyword": "수원웨딩홀",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 98,
+      "keyword": "대구 가족사진",
+      "exposureStatus": "노출",
+      "rank": "4",
+      "name": "운연정",
+      "links": "https://cafe.naver.com/driveee/40?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImRyaXZlZWUiLCJhcnRpY2xlSWQiOjQwLCJpc3N1ZWRBdCI6MTc4NDE2MzUzNzAwNH0.urU4lHuwDBnWxBctdxzKyBmaRjzRhDAwn2kI8dk1slQ",
+      "note": ""
+    },
+    {
+      "row": 100,
+      "keyword": "인천예식장",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 103,
+      "keyword": "광주웨딩홀",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 104,
+      "keyword": "부천웨딩홀",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 105,
+      "keyword": "일산웨딩홀",
+      "exposureStatus": "노출",
+      "rank": "3 | 5",
+      "name": "맛집 식탁모임 | 애견 반려정보",
+      "links": "https://cafe.naver.com/tableclub702/3?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6InRhYmxlY2x1YjcwMiIsImFydGljbGVJZCI6MywiaXNzdWVkQXQiOjE3ODQxNjM1NjA2NDd9.SyoYVzpRKWJnlqjoSv4Zrdbtih1grdTqfUVzuzknT-Q | https://cafe.naver.com/petinfo183/22?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6InBldGluZm8xODMiLCJhcnRpY2xlSWQiOjIyLCJpc3N1ZWRBdCI6MTc4NDE2MzU2MDY0N30.uUFtrWbUBBbyxmjEn3RzXhwIovvnDw336Jfrb66NAKs",
+      "note": ""
+    },
+    {
+      "row": 107,
+      "keyword": "신정호카페",
+      "exposureStatus": "노출",
+      "rank": "3",
+      "name": "애견 산책이야기",
+      "links": "https://cafe.naver.com/dogwalk2m4/40?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImRvZ3dhbGsybTQiLCJhcnRpY2xlSWQiOjQwLCJpc3N1ZWRBdCI6MTc4NDE2MzIzNzk1M30._-kzbhKfdUYzIH1JuwvehBMf5D9QYC1lIjq9QC2tFl8",
+      "note": ""
+    },
+    {
+      "row": 108,
+      "keyword": "광주예식장",
+      "exposureStatus": "노출",
+      "rank": "2 | 4",
+      "name": "murmur새 창 열림 | 맛집 식탁모임",
+      "links": "https://blog.naver.com/i_thinkkkk/224313888921 | https://cafe.naver.com/tableclub702/6?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6InRhYmxlY2x1YjcwMiIsImFydGljbGVJZCI6NiwiaXNzdWVkQXQiOjE3ODQxNjM1NjQ5NTV9.NDAbJgpgdhi4BwJ2e_R-DB-EyNFLqAKRW9k23a-cOzc",
+      "note": ""
+    },
+    {
+      "row": 109,
+      "keyword": "의정부웨딩홀",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 110,
+      "keyword": "인천웨딩홀추천",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 111,
+      "keyword": "음식물처리기",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 112,
+      "keyword": "음식물분쇄기",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 113,
+      "keyword": "헤어드라이기",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 123,
+      "keyword": "종로웨딩밴드",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 124,
+      "keyword": "종로반지",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 125,
+      "keyword": "종로금은방",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 126,
+      "keyword": "종로다이아몬드",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 127,
+      "keyword": "종로결혼반지",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 128,
+      "keyword": "종로웨딩반지",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 129,
+      "keyword": "웨딩반지브랜드",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 131,
+      "keyword": "종로예물반지",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 133,
+      "keyword": "다이아몬드반지",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 134,
+      "keyword": "18K결혼반지",
+      "exposureStatus": "확인실패",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": "HTTP 403"
+    },
+    {
+      "row": 138,
+      "keyword": "커플링브랜드",
+      "exposureStatus": "확인실패",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": "HTTP 403"
+    },
+    {
+      "row": 139,
+      "keyword": "웨딩링추천",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 141,
+      "keyword": "14K커플링",
+      "exposureStatus": "확인실패",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": "HTTP 403"
+    },
+    {
+      "row": 142,
+      "keyword": "명품반지브랜드",
+      "exposureStatus": "확인실패",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": "HTTP 403"
+    },
+    {
+      "row": 143,
+      "keyword": "종로예물",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 144,
+      "keyword": "백금커플링",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 145,
+      "keyword": "웨딩반지",
+      "exposureStatus": "확인실패",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": "HTTP 403"
+    },
+    {
+      "row": 147,
+      "keyword": "예물반지",
+      "exposureStatus": "확인실패",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": "HTTP 403"
+    },
+    {
+      "row": 148,
+      "keyword": "결혼예물",
+      "exposureStatus": "확인실패",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": "HTTP 403"
+    },
+    {
+      "row": 150,
+      "keyword": "랩그라운다이아",
+      "exposureStatus": "확인실패",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": "HTTP 403"
+    },
+    {
+      "row": 152,
+      "keyword": "랩다이아몬드반지",
+      "exposureStatus": "확인실패",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": "HTTP 403"
+    },
+    {
+      "row": 153,
+      "keyword": "랩다이아목걸이",
+      "exposureStatus": "확인실패",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": "HTTP 403"
+    },
+    {
+      "row": 155,
+      "keyword": "웨딩밴드브랜드",
+      "exposureStatus": "미노출",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": ""
+    },
+    {
+      "row": 158,
+      "keyword": "명품커플링",
+      "exposureStatus": "확인실패",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": "HTTP 403"
+    },
+    {
+      "row": 159,
+      "keyword": "프로포즈링",
+      "exposureStatus": "확인실패",
+      "rank": "",
+      "name": "",
+      "links": "",
+      "note": "HTTP 403"
+    }
+  ]
+}
