@@ -58,21 +58,6 @@ const saveSnapshot = (key: string, snapshot: ExposureSnapshot): void => {
   }
 };
 
-// ── 비교 헬퍼 ──
-
-const diffIndicator = (current: number, previous: number | undefined): string => {
-  if (previous === undefined) return '';
-  const diff = current - previous;
-  if (diff > 0) return ` ▲ +${diff}`;
-  if (diff < 0) return ` ▼ ${diff}`;
-  return ' ─';
-};
-
-const formatRate = (count: number, total: number): string => {
-  if (total === 0) return '0%';
-  return `${((count / total) * 100).toFixed(1)}%`;
-};
-
 const getKSTDateString = (): string => {
   const now = new Date();
   return now.toLocaleString('ko-KR', {
@@ -137,51 +122,11 @@ export const sendDoorayExposureResult = async (params: {
     oldLogicCount,
   } = params;
 
-  const exposureRate = formatRate(exposureCount, totalKeywords);
   const displayName = cronType.replace(/^멀티페이지 크론 /, '').replace(/^\[|\]$/g, '');
-
-  const prev = loadSnapshots()[cronType];
-  const expDiff = diffIndicator(exposureCount, prev?.exposureCount);
-
-  let text = '';
-  text += `[${displayName}] ${getKSTDateString()}\n`;
-  text += `노출 ${exposureCount}/${totalKeywords} (${exposureRate})${expDiff} | 소요 ${elapsedTime}\n`;
-
-  if (exposureCount > 0) {
-    const popDiff = diffIndicator(popularCount, prev?.popularCount);
-    const sblDiff = diffIndicator(sblCount, prev?.sblCount);
-    text += `인기 ${popularCount}${popDiff} | 스블 ${sblCount}${sblDiff}`;
-
-    if (typeof newLogicCount === 'number' && typeof oldLogicCount === 'number') {
-      const newDiff = diffIndicator(newLogicCount, prev?.newLogicCount);
-      const oldDiff = diffIndicator(oldLogicCount, prev?.oldLogicCount);
-      text += ` | 신규 ${newLogicCount}${newDiff} | 구 ${oldLogicCount}${oldDiff}`;
-    }
-    text += `\n`;
-
-    if (sheetStats && sheetStats.length > 0) {
-      const statParts = sheetStats.map((stat) => {
-        const prevStat = prev?.sheetStats?.find((s) => s.name === stat.name);
-        const statDiff = diffIndicator(stat.count, prevStat?.count);
-        return `${stat.name} ${stat.count}${statDiff}`;
-      });
-      text += `시트별: ${statParts.join(' | ')}\n`;
-    }
-  }
-
-  if (prev && exposureCount !== prev.exposureCount) {
-    const totalDiff = exposureCount - prev.exposureCount;
-    const sign = totalDiff > 0 ? '+' : '';
-    text += `전회 대비: ${prev.exposureCount} → ${exposureCount} (${sign}${totalDiff})\n`;
-  }
-
-  if (exposureCount > 0 && missingKeywords && missingKeywords.length > 0) {
-    const showCount = Math.min(missingKeywords.length, 5);
-    const remaining = missingKeywords.length - showCount;
-    text += `\n미노출 ${missingKeywords.length}건: ${missingKeywords.slice(0, showCount).join(', ')}`;
-    if (remaining > 0) text += ` 외 ${remaining}건`;
-    text += `\n`;
-  }
+  const missingCount = totalKeywords - exposureCount;
+  const text =
+    `[${displayName}] ${getKSTDateString()}\n` +
+    `노출 ${exposureCount}개 / 미노출 ${missingCount}개`;
 
   const result = await sendDoorayMessage(text);
 

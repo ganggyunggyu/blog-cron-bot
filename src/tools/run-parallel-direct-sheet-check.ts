@@ -35,6 +35,14 @@ import {
 
 dotenv.config();
 
+// Node는 리스너가 없으면 unhandled rejection에 프로세스를 죽임 — 대량 배치(루트 1000개+) 중
+// 동시 403이 겹치면 어디선가 놓친 rejection으로 로그 한 줄 없이 조용히 죽는 문제가 있었음.
+// 리스너를 등록해두면 그 죽는 동작 자체가 억제되고 원인을 로그로 남길 수 있음.
+process.on('unhandledRejection', (reason) => {
+  const message = reason instanceof Error ? reason.stack ?? reason.message : String(reason);
+  logger.error(`처리 안 된 Promise rejection (프로세스는 계속 진행): ${message}`);
+});
+
 type TargetType =
   | 'package'
   | 'dogmaru-exclude'

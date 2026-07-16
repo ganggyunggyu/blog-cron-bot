@@ -235,6 +235,41 @@ const getSheetRowNumber = (
   return fallbackRowNumber;
 };
 
+/**
+ * "OO 미전달 리스트" ~ "종료" 마커 사이에 낀 행 인덱스를 제외 대상으로 반환.
+ * 자료(소재)가 아직 전달되지 않아 실제로는 글이 없는 키워드 구간이라 노출체크 대상이 아님
+ * (예: 루트 "월보장 시트"의 "지료 미전달 리스트" ~ "종료" 구간). 순수 함수라 실제 시트 없이도
+ * 테스트 가능 — I/O(loadKeywordsFromWorksheet)와 분리해둠.
+ */
+export const findExcludedRowIndices = (
+  companyValues: readonly string[]
+): Set<number> => {
+  const excluded = new Set<number>();
+  let inExcludedBlock = false;
+
+  companyValues.forEach((company, index) => {
+    const normalized = company.trim();
+
+    if (normalized.includes('미전달')) {
+      inExcludedBlock = true;
+      excluded.add(index);
+      return;
+    }
+
+    if (normalized === '종료') {
+      inExcludedBlock = false;
+      excluded.add(index);
+      return;
+    }
+
+    if (inExcludedBlock) {
+      excluded.add(index);
+    }
+  });
+
+  return excluded;
+};
+
 export const loadKeywordsFromWorksheet = async (
   sheet: GoogleSpreadsheetWorksheet,
   sheetType: string
@@ -242,7 +277,15 @@ export const loadKeywordsFromWorksheet = async (
   await loadHeaderRowAutoDetect(sheet);
 
   const rows = await sheet.getRows<SheetRowRecord>();
+  const excludedIndices = findExcludedRowIndices(
+    rows.map((row) => getRowValue(row, '업체명'))
+  );
+
   const keywords = rows.flatMap((row, index) => {
+    if (excludedIndices.has(index)) {
+      return [];
+    }
+
     const keyword = getRowValue(row, '키워드');
 
     if (!keyword) {
