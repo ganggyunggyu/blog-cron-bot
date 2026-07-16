@@ -1,0 +1,93 @@
+{
+  "summary": {
+    "spreadsheetId": "1vrN5gvtokWxPs8CNaNcvZQLWyIMBOIcteYXQbyfiZl0",
+    "sheetTitle": "260714 스케줄",
+    "sheetGid": 126285763,
+    "checkedAt": "2026-07-16 12:36:28",
+    "scheduleRows": 3,
+    "uniqueKeywords": 1,
+    "retryFailedOnly": true,
+    "cafeSources": [
+      {
+        "name": "일상 소통마당",
+        "sourceId": "talkmadang702"
+      },
+      {
+        "name": "가중건다",
+        "sourceId": "healthhhh"
+      },
+      {
+        "name": "운연정",
+        "sourceId": "driveee"
+      },
+      {
+        "name": "육아 돌봄수첩",
+        "sourceId": "ahffkdlek12"
+      },
+      {
+        "name": "맛집 동네밥상",
+        "sourceId": "localtable702"
+      },
+      {
+        "name": "맛집 메뉴수첩",
+        "sourceId": "menunote702"
+      },
+      {
+        "name": "맛집 식탁모임",
+        "sourceId": "tableclub702"
+      },
+      {
+        "name": "애견 반려정보",
+        "sourceId": "petinfo183"
+      },
+      {
+        "name": "애견 산책이야기",
+        "sourceId": "dogwalk2m4"
+      },
+      {
+        "name": "건강 생활수첩",
+        "sourceId": "carelog702"
+      },
+      {
+        "name": "건강 습관노트",
+        "sourceId": "habitnote702"
+      },
+      {
+        "name": "생활 정보마당",
+        "sourceId": "infomadang702"
+      }
+    ],
+    "exposed": 3,
+    "unexposed": 0,
+    "failed": 0
+  },
+  "rows": [
+    {
+      "row": 15,
+      "keyword": "미용실드라이기",
+      "exposureStatus": "노출",
+      "rank": "2 | 4",
+      "name": "육아 돌봄수첩 | 애견 산책이야기",
+      "links": "https://cafe.naver.com/babycare702/15?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImJhYnljYXJlNzAyIiwiYXJ0aWNsZUlkIjoxNSwiaXNzdWVkQXQiOjE3ODQxNzI5ODk1NjF9.BRinwcm7WCsVs6zaDTR1p8XaZV7iX51_rM0lX_C6G-o | https://cafe.naver.com/dogwalk2m4/18?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImRvZ3dhbGsybTQiLCJhcnRpY2xlSWQiOjE4LCJpc3N1ZWRBdCI6MTc4NDE3Mjk4OTU2MX0.8gg8u0tmCOsHDWJcLqLMplB1p18Vq_MnK9QrV-vHOM4",
+      "note": ""
+    },
+    {
+      "row": 26,
+      "keyword": "미용실드라이기",
+      "exposureStatus": "노출",
+      "rank": "2 | 4",
+      "name": "육아 돌봄수첩 | 애견 산책이야기",
+      "links": "https://cafe.naver.com/babycare702/15?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImJhYnljYXJlNzAyIiwiYXJ0aWNsZUlkIjoxNSwiaXNzdWVkQXQiOjE3ODQxNzI5ODk1NjF9.BRinwcm7WCsVs6zaDTR1p8XaZV7iX51_rM0lX_C6G-o | https://cafe.naver.com/dogwalk2m4/18?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImRvZ3dhbGsybTQiLCJhcnRpY2xlSWQiOjE4LCJpc3N1ZWRBdCI6MTc4NDE3Mjk4OTU2MX0.8gg8u0tmCOsHDWJcLqLMplB1p18Vq_MnK9QrV-vHOM4",
+      "note": ""
+    },
+    {
+      "row": 114,
+      "keyword": "미용실드라이기",
+      "exposureStatus": "노출",
+      "rank": "2 | 4",
+      "name": "육아 돌봄수첩 | 애견 산책이야기",
+      "links": "https://cafe.naver.com/babycare702/15?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImJhYnljYXJlNzAyIiwiYXJ0aWNsZUlkIjoxNSwiaXNzdWVkQXQiOjE3ODQxNzI5ODk1NjF9.BRinwcm7WCsVs6zaDTR1p8XaZV7iX51_rM0lX_C6G-o | https://cafe.naver.com/dogwalk2m4/18?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImRvZ3dhbGsybTQiLCJhcnRpY2xlSWQiOjE4LCJpc3N1ZWRBdCI6MTc4NDE3Mjk4OTU2MX0.8gg8u0tmCOsHDWJcLqLMplB1p18Vq_MnK9QrV-vHOM4",
+      "note": ""
+    }
+  ]
+}
