@@ -72,11 +72,16 @@ const loadSourceRows = async (): Promise<CafeExportRow[]> => {
   }
   if (markerRowIndex < 0) throw new Error('A열 스케줄 제목을 찾지 못함');
 
-  const rows: CafeExportRow[] = [];
+  let lastScheduleRowIndex = markerRowIndex;
   for (let rowIndex = markerRowIndex + 1; rowIndex < sheet.rowCount; rowIndex += 1) {
     const keyword = text(sheet.getCell(rowIndex, 0).value);
     if (/스케[줄쥴]/.test(keyword)) break;
-    if (!keyword) continue;
+    if (keyword) lastScheduleRowIndex = rowIndex;
+  }
+
+  const rows: CafeExportRow[] = [];
+  for (let rowIndex = markerRowIndex + 1; rowIndex <= lastScheduleRowIndex; rowIndex += 1) {
+    const keyword = text(sheet.getCell(rowIndex, 0).value);
 
     rows.push({
       키워드: keyword,
