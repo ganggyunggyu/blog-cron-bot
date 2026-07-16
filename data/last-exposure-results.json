@@ -26,20 +26,20 @@
   "도그마루 노출체크": {
     "cronType": "도그마루 노출체크",
     "totalKeywords": 299,
-    "exposureCount": 86,
-    "popularCount": 86,
+    "exposureCount": 100,
+    "popularCount": 100,
     "sblCount": 0,
-    "timestamp": "2026-07-13T01:16:27.157Z"
+    "timestamp": "2026-07-16T00:47:38.310Z"
   },
   "패키지 노출체크": {
     "cronType": "패키지 노출체크",
-    "totalKeywords": 324,
-    "exposureCount": 7,
-    "popularCount": 7,
+    "totalKeywords": 167,
+    "exposureCount": 5,
+    "popularCount": 5,
     "sblCount": 0,
     "newLogicCount": 0,
-    "oldLogicCount": 7,
-    "timestamp": "2026-07-13T00:43:27.844Z"
+    "oldLogicCount": 5,
+    "timestamp": "2026-07-16T00:52:53.065Z"
   },
   "루트 키워드": {
     "cronType": "루트 키워드",
@@ -289,11 +289,11 @@
   },
   "루트 (직접병렬)": {
     "cronType": "루트 (직접병렬)",
-    "totalKeywords": 1,
-    "exposureCount": 0,
-    "popularCount": 0,
+    "totalKeywords": 1075,
+    "exposureCount": 4,
+    "popularCount": 4,
     "sblCount": 0,
-    "timestamp": "2026-07-15T15:46:27.079Z"
+    "timestamp": "2026-07-16T00:29:36.886Z"
   },
   "서리펫 (직접병렬)": {
     "cronType": "서리펫 (직접병렬)",
