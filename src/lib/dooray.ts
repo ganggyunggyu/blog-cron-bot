@@ -58,8 +58,8 @@ const saveSnapshot = (key: string, snapshot: ExposureSnapshot): void => {
   }
 };
 
-const getKSTDateString = (): string => {
-  const now = new Date();
+const getKSTDateString = (date: Date): string => {
+  const now = date;
   return now.toLocaleString('ko-KR', {
     timeZone: 'Asia/Seoul',
     year: 'numeric',
@@ -68,6 +68,28 @@ const getKSTDateString = (): string => {
     hour: '2-digit',
     minute: '2-digit',
   });
+};
+
+interface DoorayExposureSummary {
+  cronType: string;
+  totalKeywords: number;
+  exposureCount: number;
+}
+
+const getExposureDisplayName = (cronType: string): string =>
+  cronType.replace(/^멀티페이지 크론 /, '').replace(/^\[|\]$/g, '');
+
+export const formatDoorayExposureMessage = (
+  summary: DoorayExposureSummary,
+  date: Date = new Date()
+): string => {
+  const displayName = getExposureDisplayName(summary.cronType);
+  const missingCount = summary.totalKeywords - summary.exposureCount;
+
+  return (
+    `[${displayName}] ${getKSTDateString(date)}\n` +
+    `노출 ${summary.exposureCount}개 / 미노출 ${missingCount}개`
+  );
 };
 
 // ── 메시지 전송 ──
@@ -122,11 +144,11 @@ export const sendDoorayExposureResult = async (params: {
     oldLogicCount,
   } = params;
 
-  const displayName = cronType.replace(/^멀티페이지 크론 /, '').replace(/^\[|\]$/g, '');
-  const missingCount = totalKeywords - exposureCount;
-  const text =
-    `[${displayName}] ${getKSTDateString()}\n` +
-    `노출 ${exposureCount}개 / 미노출 ${missingCount}개`;
+  const text = formatDoorayExposureMessage({
+    cronType,
+    totalKeywords,
+    exposureCount,
+  });
 
   const result = await sendDoorayMessage(text);
 
