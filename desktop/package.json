@@ -1,0 +1,65 @@
+{
+  "name": "nochuljigi-desktop",
+  "version": "1.0.0",
+  "description": "노출지기 노출체크 제어판 데스크톱 앱",
+  "main": "src/main.cjs",
+  "author": "21Lab",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test test/*.test.cjs",
+    "package:dir": "electron-builder --dir --publish never",
+    "package:mac": "electron-builder --mac dmg zip --x64 --arm64 --publish never",
+    "package:win": "electron-builder --win nsis portable --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "43.1.1",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "kr.co.21lab.nochuljigi",
+    "productName": "Nochuljigi",
+    "asar": true,
+    "artifactName": "Nochuljigi-${version}-${os}-${arch}.${ext}",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.business",
+      "extendInfo": {
+        "CFBundleDisplayName": "노출지기"
+      },
+      "hardenedRuntime": true,
+      "identity": "-",
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "win": {
+      "executableName": "Nochuljigi",
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "artifactName": "Nochuljigi-Setup-${version}-${arch}.${ext}",
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "노출지기"
+    },
+    "portable": {
+      "artifactName": "Nochuljigi-Portable-${version}-${arch}.${ext}"
+    }
+  }
+}
