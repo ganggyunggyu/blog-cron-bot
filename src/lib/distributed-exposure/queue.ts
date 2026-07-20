@@ -1,0 +1,138 @@
+import type { ExposureTargetId } from '../exposure-suite/options';
+import {
+  DistributedExposureJob,
+  type DistributedJobStatus,
+  type IDistributedExposureJob,
+} from './models';
+
+const JOB_LEASE_MS = 60_000;
+
+export interface DistributedRunInput {
+  runId: string;
+  targets: ExposureTargetId[];
+  concurrency: number;
+  maxPages: number;
+  jobs: DistributedJobInput[];
+}
+
+export interface DistributedJobInput {
+  target: ExposureTargetId;
+  shardIndex?: number;
+  shardCount?: number;
+  keywordIds?: string[];
+}
+
+export interface DistributedRunSnapshot {
+  total: number;
+  pending: number;
+  running: number;
+  success: number;
+  failed: number;
+  jobs: Array<{
+    target: ExposureTargetId;
+    status: DistributedJobStatus;
+    shardIndex: number;
+    shardCount: number;
+  }>;
+}
+
+export const claimDistributedJob = async (
+  workerId: string,
+  runId?: string
+): Promise<IDistributedExposureJob | null> => {
+  const now = new Date();
+  const query = {
+    ...(runId ? { runId } : {}),
+    active: true,
+    attempts: { $lt: 2 },
+    $or: [
+      { status: 'pending' },
+      { status: 'running', leaseUntil: { $lte: now } },
+    ],
+  };
+
+  return DistributedExposureJob.findOneAndUpdate(
+    query,
+    {
+      $set: {
+        status: 'running',
+        workerId,
+        leaseUntil: new Date(now.getTime() + JOB_LEASE_MS),
+        startedAt: now,
+        error: '',
+      },
+      $inc: { attempts: 1 },
+    },
+    { new: true, sort: { order: 1, createdAt: 1 } }
+  ).exec();
+};
+
+export const heartbeatDistributedJob = async (
+  jobId: string,
+  workerId: string
+): Promise<boolean> => {
+  const result = await DistributedExposureJob.updateOne(
+    { _id: jobId, workerId, status: 'running' },
+    { $set: { leaseUntil: new Date(Date.now() + JOB_LEASE_MS) } }
+  );
+  return result.modifiedCount === 1;
+};
+
+export const completeDistributedJob = async (
+  jobId: string,
+  workerId: string
+): Promise<void> => {
+  await DistributedExposureJob.updateOne(
+    { _id: jobId, workerId, status: 'running' },
+    {
+      $set: { status: 'success', finishedAt: new Date() },
+      $unset: { leaseUntil: 1 },
+    }
+  );
+};
+
+export const failDistributedJob = async (
+  job: IDistributedExposureJob,
+  workerId: string,
+  error: string
+): Promise<void> => {
+  const shouldRetry = job.attempts < job.maxAttempts;
+  const statusUpdate = shouldRetry
+    ? { status: 'pending' as const, error }
+    : { status: 'failed' as const, finishedAt: new Date(), error };
+  await DistributedExposureJob.updateOne(
+    { _id: job._id, workerId, status: 'running' },
+    {
+      $set: {
+        ...statusUpdate,
+      },
+      $unset: { leaseUntil: 1, workerId: 1 },
+    }
+  );
+};
+
+export const getDistributedRunSnapshot = async (
+  runId: string
+): Promise<DistributedRunSnapshot> => {
+  const jobs = await DistributedExposureJob.find({ runId })
+    .sort({ order: 1 })
+    .select({ target: 1, status: 1, shardIndex: 1, shardCount: 1 })
+    .lean()
+    .exec();
+  const count = (status: DistributedJobStatus): number =>
+    jobs.filter((job) => job.status === status).length;
+
+  return {
+    total: jobs.length,
+    pending: count('pending'),
+    running: count('running'),
+    success: count('success'),
+    failed: count('failed'),
+    jobs: jobs.map((job) => ({
+      target: job.target as ExposureTargetId,
+      status: job.status,
+      shardIndex: job.shardIndex,
+      shardCount: job.shardCount,
+    })),
+  };
+};

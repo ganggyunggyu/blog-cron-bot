@@ -1,5 +1,8 @@
 import { InvalidJobInputError } from './job-errors';
 
+const IS_DISTRIBUTED_EXPOSURE_ENABLED =
+  process.env.DISTRIBUTED_EXPOSURE_ENABLED === 'true';
+
 export const EXPOSURE_SUITE_TARGETS = [
   { id: 'package', label: '패키지', description: '원본은 읽고 결과 시트에만 반영' },
   { id: 'general', label: '일반건', description: '일반건 전용 노출체크' },
@@ -16,7 +19,12 @@ export const EXPOSURE_SUITE_OPTION_DEFINITION = {
   targets: EXPOSURE_SUITE_TARGETS,
   concurrency: { label: '전체 요청 병렬 수', min: 1, max: 8, defaultValue: 8 },
   maxPages: { label: '애견·서리펫 최대 페이지', min: 1, max: 9, defaultValue: 4 },
-  targetConcurrency: { label: '동시 대상 수', min: 1, max: 3, defaultValue: 2 },
+  targetConcurrency: {
+    label: IS_DISTRIBUTED_EXPOSURE_ENABLED ? '예비 로컬 워커 수' : '동시 대상 수',
+    min: 1,
+    max: 3,
+    defaultValue: IS_DISTRIBUTED_EXPOSURE_ENABLED ? 1 : 2,
+  },
 } as const;
 
 interface ExposureSuiteOptions {

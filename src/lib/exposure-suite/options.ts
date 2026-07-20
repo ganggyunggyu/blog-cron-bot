@@ -107,7 +107,7 @@ export const parseExposureSuiteOptions = (
     findArgValue(args, 'target-concurrency') ??
       env.EXPOSURE_TARGET_CONCURRENCY,
     2,
-    '동시 대상 수',
+    '동시 대상 또는 예비 워커 수',
     1,
     3
   ),

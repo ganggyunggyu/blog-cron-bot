@@ -1,5 +1,8 @@
 import { EXPOSURE_SUITE_OPTION_DEFINITION } from './exposure-suite-options';
 
+const IS_DISTRIBUTED_EXPOSURE_ENABLED =
+  process.env.DISTRIBUTED_EXPOSURE_ENABLED === 'true';
+
 export type JobKind = 'standard' | 'exposure-suite';
 export type JobResourceGroup = 'exposure';
 
@@ -82,9 +85,15 @@ export const JOB_REGISTRY: JobDefinition[] = [
   },
   {
     id: 'exposure-suite',
-    label: '전체 빠른 노출체크',
-    script: 'exposure:suite',
-    description: '선택한 노출체크를 공통 병렬 예산 안에서 실행',
+    label: IS_DISTRIBUTED_EXPOSURE_ENABLED
+      ? '전체 다중 워커 노출체크'
+      : '전체 빠른 노출체크',
+    script: IS_DISTRIBUTED_EXPOSURE_ENABLED
+      ? 'exposure:distributed'
+      : 'exposure:suite',
+    description: IS_DISTRIBUTED_EXPOSURE_ENABLED
+      ? '선택한 노출체크를 여러 실행 서버에 자동 분배'
+      : '선택한 노출체크를 제어 서버에서 병렬 실행',
     kind: 'exposure-suite',
     resourceGroup: 'exposure',
     options: EXPOSURE_SUITE_OPTION_DEFINITION,

@@ -26,6 +26,7 @@ export const ExposureSuitePanel = () => {
   const { mutate: runJob, isPending, error, reset } = useRunJob();
   const setSelectedRunId = useSetAtom(selectedRunIdAtom);
   const suiteJob = jobs?.find((job) => job.kind === 'exposure-suite');
+  const isDistributed = suiteJob?.label.includes('다중 워커') ?? false;
   const definition = suiteJob?.options;
   const initializedRef = React.useRef(false);
   const [selectedTargets, setSelectedTargets] = React.useState<ExposureTargetId[]>([]);
@@ -90,10 +91,10 @@ export const ExposureSuitePanel = () => {
             </span>
             <div>
               <h2 className={cn('text-base font-semibold text-neutral-950 dark:text-white')}>
-                전체 빠른 노출체크
+                {suiteJob?.label ?? '전체 노출체크'}
               </h2>
               <p className={cn('mt-1 text-sm text-neutral-600 dark:text-neutral-300')}>
-                필요한 대상을 골라 각각 병렬 처리해 한 번에 실행합니다.
+                {suiteJob?.description ?? '필요한 노출체크 대상을 선택해 실행합니다.'}
               </p>
             </div>
           </div>
@@ -127,14 +128,14 @@ export const ExposureSuitePanel = () => {
         <section className={cn('flex flex-col gap-2')}>
           {definition ? (
             <React.Fragment>
-              <NumberOption {...definition.concurrency} value={concurrency} description="모든 대상이 함께 나눠 쓰는 최대 요청 수" onChange={setConcurrency} />
+              <NumberOption {...definition.concurrency} value={concurrency} description="각 실행 서버가 동시에 처리할 요청 수" onChange={setConcurrency} />
               <NumberOption {...definition.maxPages} value={maxPages} description="애견·서리펫에만 적용 (도그마루는 1페이지)" onChange={setMaxPages} />
-              <NumberOption {...definition.targetConcurrency} value={targetConcurrency} description="동시에 시작할 대상 수" onChange={setTargetConcurrency} />
+              <NumberOption {...definition.targetConcurrency} value={targetConcurrency} description={isDistributed ? '클라우드 워커가 없을 때 함께 처리할 예비 프로세스 수' : '동시에 시작할 대상 수'} onChange={setTargetConcurrency} />
             </React.Fragment>
           ) : null}
           <div className={cn('mt-1 flex gap-2 rounded-lg border border-blue-100 bg-blue-50/70 p-3 text-xs leading-5 text-blue-800 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-200')}>
             <ShieldCheck className={cn('mt-0.5 size-4 shrink-0')} />
-            <p>각 시트는 키워드 50개 단위로 나눠 병렬 처리합니다. 전체 요청 수는 모든 대상이 공유해 네이버 과부하를 막고, 같은 애견 키워드는 한 번만 검색합니다. 실행 후 아래 실시간 로그에서 대상별 진행 상태를 확인할 수 있습니다.</p>
+            <p>{isDistributed ? '대상 작업은 중앙 대기열에서 여러 워커가 하나씩 가져갑니다. 워커마다 최대 8개 요청만 처리해 차단을 줄이고, 원본 시트는 읽기만 하며 결과 반영은 대상별 한 번만 수행합니다.' : '각 시트는 키워드 50개 단위로 나누고 전체 요청 수를 공유해 과부하를 줄입니다. 실행 후 아래 로그에서 대상별 진행 상태를 확인할 수 있습니다.'}</p>
           </div>
           {isLoading ? <p className={cn('text-sm text-neutral-500')}>설정을 불러오는 중...</p> : null}
           {isError ? <p className={cn('text-sm text-red-600 dark:text-red-400')}>실행 설정을 불러오지 못함</p> : null}
@@ -142,7 +143,7 @@ export const ExposureSuitePanel = () => {
           {selectedTargets.length === 0 ? <p className={cn('text-xs text-amber-700 dark:text-amber-300')}>실행할 대상을 1개 이상 선택해 주세요.</p> : null}
           <Button className={cn('mt-auto min-h-11')} disabled={isDisabled} onClick={handleRun}>
             <Play className={cn('size-4')} />
-            {isPending ? '실행 요청 중...' : isRunning ? '실행 중' : '빠른 노출체크 실행'}
+            {isPending ? '실행 요청 중...' : isRunning ? '실행 중' : isDistributed ? '다중 워커로 실행' : '빠른 노출체크 실행'}
           </Button>
         </section>
       </div>

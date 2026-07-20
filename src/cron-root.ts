@@ -27,6 +27,8 @@ dotenv.config();
 
 const runRootWorkflow = async (): Promise<void> => {
   const startTime = Date.now();
+  const isDistributedShard =
+    process.env.DISTRIBUTED_EXPOSURE_SHARD === 'true';
 
   let loginStatus = await checkNaverLogin();
   logger.divider('로그인 상태');
@@ -50,38 +52,44 @@ const runRootWorkflow = async (): Promise<void> => {
   }
   logger.blank();
 
-  type RootResponseType = { deleted: number; inserted: number };
   const mongoUri = process.env.MONGODB_URI;
   if (!mongoUri) {
     logger.error('MONGODB_URI 환경 변수가 설정되지 않았습니다.');
     throw new Error('MONGODB_URI 환경 변수가 설정되지 않았습니다.');
   }
 
-  const response = await fetch(`${SHEET_APP_URL}/api/root-keywords/sync`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ sheetId: ROOT_CONFIG.SHEET_ID }),
-  });
-  if (!response.ok) {
-    throw new Error(`루트 원본 동기화 실패: HTTP ${response.status}`);
+  if (!isDistributedShard) {
+    await syncRootKeywordsFromSheet();
   }
-
-  const syncResult = (await response.json()) as RootResponseType;
-  logger.success(
-    `DB 동기화 완료! (삭제: ${syncResult.deleted}, 삽입: ${syncResult.inserted})`
-  );
 
   await connectDB(mongoUri);
 
   const allKeywords = await getAllRootKeywords();
+
+  const distributedKeywordIds = new Set(
+    String(process.env.DISTRIBUTED_EXPOSURE_KEYWORD_IDS ?? '')
+      .split(',')
+      .filter(Boolean)
+  );
+  if (isDistributedShard && distributedKeywordIds.size === 0) {
+    throw new Error('분산 루트 keyword ids 누락');
+  }
 
   const onlyCompany = (process.env.ONLY_COMPANY || '').trim();
   const onlyKeywordRegex = (process.env.ONLY_KEYWORD_REGEX || '').trim();
   const onlyId = (process.env.ONLY_ID || '').trim();
 
   let filtered = allKeywords as IRootKeyword[];
+  if (isDistributedShard) {
+    filtered = filtered.filter((keyword) =>
+      distributedKeywordIds.has(String(keyword._id))
+    );
+    if (filtered.length !== distributedKeywordIds.size) {
+      throw new Error(
+        `분산 루트 키워드 스냅샷 불일치: ${filtered.length}/${distributedKeywordIds.size}`
+      );
+    }
+  }
   const normalize = (s: unknown) =>
     String(s ?? '')
       .toLowerCase()
@@ -95,7 +103,9 @@ const runRootWorkflow = async (): Promise<void> => {
     try {
       const re = new RegExp(onlyKeywordRegex);
       filtered = filtered.filter((k) => re.test(k.keyword));
-    } catch {}
+    } catch (error) {
+      logger.warn(`ONLY_KEYWORD_REGEX 무시: ${(error as Error).message}`);
+    }
   }
   if (onlyId) {
     filtered = filtered.filter((k) => String(k._id) === onlyId);
@@ -130,6 +140,13 @@ const runRootWorkflow = async (): Promise<void> => {
     concurrency,
     allowAnyBlog: false,
   });
+
+  if (isDistributedShard) {
+    logger.success(
+      `[분산 루트] ${keywords.length}개 처리, ${allResults.length}개 노출 DB 반영 완료`
+    );
+    return;
+  }
 
   const timestamp = getKSTTimestamp();
   const filename = `root_${timestamp}.csv`;
@@ -196,7 +213,25 @@ const runRootWorkflow = async (): Promise<void> => {
     { label: '성공', value: `${stats.success}개` },
     { label: '실패', value: `${stats.failed}개` },
   ]);
+};
 
+export const syncRootKeywordsFromSheet = async (): Promise<void> => {
+  type RootResponseType = { deleted: number; inserted: number };
+  const response = await fetch(`${SHEET_APP_URL}/api/root-keywords/sync`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ sheetId: ROOT_CONFIG.SHEET_ID }),
+  });
+  if (!response.ok) {
+    throw new Error(`루트 원본 동기화 실패: HTTP ${response.status}`);
+  }
+
+  const syncResult = (await response.json()) as RootResponseType;
+  logger.success(
+    `DB 동기화 완료! (삭제: ${syncResult.deleted}, 삽입: ${syncResult.inserted})`
+  );
 };
 
 export async function main(): Promise<void> {

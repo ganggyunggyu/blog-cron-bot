@@ -341,7 +341,7 @@ function createUpdateFunction(sheetType: PageCheckSheetType) {
   };
 }
 
-async function processSheetKeywords(
+export async function processSheetKeywords(
   sheetType: PageCheckSheetType,
   keywords: IPageCheckKeyword[],
   isLoggedIn: boolean,
@@ -625,7 +625,11 @@ const runPageCheckWorkflow = async (
   }
 
   // 종합 탭 내보내기
-  await exportAllSheetsAPI();
+  if (process.env.SKIP_PAGE_CHECK_EXPORT_ALL !== 'true') {
+    await exportAllSheetsAPI();
+  } else {
+    logger.info('  종합: 다중 워커 조정 프로세스에서 마지막에 한 번만 반영');
+  }
 
   // 모든 페이지 결과 반영이 성공한 뒤 도그마루 결과를 반영한다. 알림은
   // 아래에서 한 번만 보내 재시도 시 중복 알림을 만들지 않는다.
