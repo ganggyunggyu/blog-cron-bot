@@ -7,6 +7,7 @@ import {
 } from './transient-failure';
 import { getCrawlResult } from './crawl-manager';
 import { runGuestRetry } from './guest-retry';
+import { processKeywords } from './index';
 import { createDetailedLogBuilder } from '../../logs';
 import type { CrawlCaches, SharedCrawlContext } from './types';
 
@@ -122,6 +123,37 @@ const run = async (): Promise<void> => {
       error instanceof TransientExposureCheckError && error.status === 403
   );
   assert.equal(updateCount, 0);
+
+  const deferredUpdates: string[] = [];
+  await assert.doesNotReject(
+    processKeywords(
+      [
+        { _id: 'deferred-1', keyword: '판정 보류 1' },
+        { _id: 'deferred-2', keyword: '판정 보류 2' },
+      ],
+      createDetailedLogBuilder(),
+      {
+        concurrency: 2,
+        updateFunction: async (_id) => {
+          deferredUpdates.push(String(_id));
+        },
+        sharedCrawlContext: {
+          coordinator: rejectingCoordinator,
+          plans: new Map([
+            [
+              '판정 보류 1',
+              { maxPages: 1, requirements: [{ maxPages: 1, blogIds: [] }] },
+            ],
+            [
+              '판정 보류 2',
+              { maxPages: 1, requirements: [{ maxPages: 1, blogIds: [] }] },
+            ],
+          ]),
+        },
+      }
+    )
+  );
+  assert.deepEqual(deferredUpdates, []);
 
   await assert.rejects(
     runGuestRetry({

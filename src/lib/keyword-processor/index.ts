@@ -522,9 +522,24 @@ const retryTransientKeywordGroups = async (
       `↻ "${batch.searchQuery}" 남은 ${batch.tasks.length}건 재실행 (${batch.error.message})`
     );
 
-    for (const task of batch.tasks) {
-      await processKeywordTaskWithRollback(task, shared);
-      shared.reportCompleted();
+    for (const [taskIndex, task] of batch.tasks.entries()) {
+      try {
+        await processKeywordTaskWithRollback(task, shared);
+        shared.reportCompleted();
+      } catch (error) {
+        if (!(error instanceof TransientExposureCheckError)) {
+          throw error;
+        }
+
+        const deferredCount = batch.tasks.length - taskIndex;
+        logger.error(
+          `판정 보류: "${batch.searchQuery}" 재시도 실패 (${deferredCount}건, 기존 시트 값 유지)`
+        );
+        for (let index = 0; index < deferredCount; index += 1) {
+          shared.reportCompleted();
+        }
+        break;
+      }
     }
   }
 };
