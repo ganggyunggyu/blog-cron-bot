@@ -52,18 +52,18 @@
   "멀티페이지 크론 [애견]": {
     "cronType": "멀티페이지 크론 [애견]",
     "totalKeywords": 300,
-    "exposureCount": 175,
-    "popularCount": 101,
+    "exposureCount": 174,
+    "popularCount": 157,
     "sblCount": 0,
     "newLogicCount": 53,
-    "oldLogicCount": 122,
+    "oldLogicCount": 121,
     "sheetStats": [
       {
         "name": "애견",
-        "count": 233
+        "count": 212
       }
     ],
-    "timestamp": "2026-07-01T02:17:45.925Z"
+    "timestamp": "2026-07-20T08:09:43.452Z"
   },
   "멀티페이지 크론 [서리펫]": {
     "cronType": "멀티페이지 크론 [서리펫]",

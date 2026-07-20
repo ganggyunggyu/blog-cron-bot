@@ -14,7 +14,7 @@ import { createDetailedLogBuilder, saveDetailedLogs } from './logs';
 import { processKeywords } from './lib/keyword-processor';
 import { checkNaverLogin } from './lib/check-naver-login';
 import { logger } from './lib/logger';
-import { closeBrowser } from './lib/playwright-crawler';
+import { closeBrowser, launchBrowser } from './lib/playwright-crawler';
 import { getKSTTimestamp } from './utils';
 import { ExposureResult } from './matcher';
 import { sendDoorayExposureResult } from './lib/dooray';
@@ -72,6 +72,20 @@ const parsePageCheckMaxPages = (): number | undefined => {
 };
 
 const ENV_MAX_PAGES = parsePageCheckMaxPages();
+
+const parsePageCheckConcurrency = (): number | undefined => {
+  const rawConcurrency = process.env.PAGE_CHECK_CONCURRENCY?.trim();
+  if (!rawConcurrency) {
+    return undefined;
+  }
+
+  const concurrency = Number(rawConcurrency);
+  return Number.isInteger(concurrency) && concurrency > 0
+    ? concurrency
+    : undefined;
+};
+
+const ENV_CONCURRENCY = parsePageCheckConcurrency();
 
 const getMaxPagesForSheet = (sheetType: PageCheckSheetType): number =>
   ENV_MAX_PAGES ?? MAX_PAGES_BY_SHEET[sheetType] ?? DEFAULT_MAX_PAGES;
@@ -228,10 +242,15 @@ async function processSheetKeywords(
     `[${typeName}] 🚀 ${keywords.length}개 키워드 처리 시작 (${maxPages}페이지)`
   );
 
+  if (ENV_CONCURRENCY && ENV_CONCURRENCY > 1) {
+    await launchBrowser();
+  }
+
   const results = await processKeywords(keywords as any, logBuilder, {
     updateFunction: createUpdateFunction(sheetType),
     isLoggedIn,
     maxPages,
+    concurrency: ENV_CONCURRENCY,
     blogIds,
     keywordLogicMap,
   });
