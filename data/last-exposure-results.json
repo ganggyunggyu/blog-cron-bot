@@ -18,28 +18,28 @@
   "일반건 노출체크": {
     "cronType": "일반건 노출체크",
     "totalKeywords": 123,
-    "exposureCount": 5,
-    "popularCount": 5,
+    "exposureCount": 6,
+    "popularCount": 6,
     "sblCount": 0,
-    "timestamp": "2026-07-16T01:00:14.032Z"
+    "timestamp": "2026-07-20T00:50:50.731Z"
   },
   "도그마루 노출체크": {
     "cronType": "도그마루 노출체크",
     "totalKeywords": 299,
-    "exposureCount": 100,
-    "popularCount": 100,
+    "exposureCount": 103,
+    "popularCount": 103,
     "sblCount": 0,
-    "timestamp": "2026-07-16T00:47:38.310Z"
+    "timestamp": "2026-07-20T00:56:11.549Z"
   },
   "패키지 노출체크": {
     "cronType": "패키지 노출체크",
     "totalKeywords": 167,
-    "exposureCount": 5,
-    "popularCount": 5,
+    "exposureCount": 2,
+    "popularCount": 2,
     "sblCount": 0,
     "newLogicCount": 0,
-    "oldLogicCount": 5,
-    "timestamp": "2026-07-16T00:52:53.065Z"
+    "oldLogicCount": 2,
+    "timestamp": "2026-07-20T00:51:25.185Z"
   },
   "루트 키워드": {
     "cronType": "루트 키워드",
@@ -47,7 +47,7 @@
     "exposureCount": 2,
     "popularCount": 2,
     "sblCount": 0,
-    "timestamp": "2026-07-17T11:35:02.188Z"
+    "timestamp": "2026-07-20T00:53:54.669Z"
   },
   "멀티페이지 크론 [애견]": {
     "cronType": "멀티페이지 크론 [애견]",
