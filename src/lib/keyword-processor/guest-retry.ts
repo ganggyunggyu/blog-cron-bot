@@ -174,6 +174,22 @@ export const runGuestRetry = async (
       searchQuery,
     });
     progressLogger.retry(`재시도 실패: ${transientError.message.slice(0, 30)}`);
+
+    if (
+      process.env.FAST_EXPOSURE_MODE === 'true' &&
+      transientError.status === 403
+    ) {
+      logger.warn(
+        `빠른 모드 비로그인 비교 생략: "${searchQuery}" HTTP 403`
+      );
+      return {
+        attempted: false,
+        recovered: false,
+        guestMatchesCount: 0,
+        addedMatchesCount: 0,
+      };
+    }
+
     logger.error(transientError.message);
     throw transientError;
   }

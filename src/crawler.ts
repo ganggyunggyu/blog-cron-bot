@@ -13,6 +13,7 @@ import {
   RETRY,
   PAGINATION,
 } from './constants/crawl-config';
+import { getExposureRetryDelayMs } from './lib/exposure-run-config';
 
 type GotScrapingClient = typeof import('got-scraping').gotScraping;
 
@@ -135,7 +136,8 @@ export const randomDelay = (min: number, max: number): Promise<void> =>
   delay(Math.floor(Math.random() * (max - min + 1)) + min);
 
 const calculateRetryDelay = (attempt: number, is403: boolean): number => {
-  const baseDelay = is403 ? RETRY.DELAY_ON_403 : RETRY.DELAY_ON_ERROR;
+  const defaultDelay = is403 ? RETRY.DELAY_ON_403 : RETRY.DELAY_ON_ERROR;
+  const baseDelay = getExposureRetryDelayMs(defaultDelay);
   const backoff = baseDelay * attempt;
   const jitter = Math.floor(Math.random() * DELAY.RETRY_JITTER_MAX);
   return backoff + jitter;

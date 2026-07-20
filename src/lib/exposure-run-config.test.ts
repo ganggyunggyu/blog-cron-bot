@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import {
   getExposureConcurrency,
   getExposureMaxPages,
+  getExposureRetryDelayMs,
   getGuestRetryAttempts,
+  getLoginRetryAttempts,
   splitConcurrencyBudget,
 } from './exposure-run-config';
 
@@ -33,6 +35,21 @@ assert.equal(
 assert.equal(getExposureMaxPages(4, { EXPOSURE_MAX_PAGES: 'invalid' }), 4);
 assert.equal(getGuestRetryAttempts({}), 2);
 assert.equal(getGuestRetryAttempts({ FAST_EXPOSURE_MODE: 'true' }), 1);
+assert.equal(getLoginRetryAttempts(5, {}), 5);
+assert.equal(getLoginRetryAttempts(5, { FAST_EXPOSURE_MODE: 'true' }), 2);
+assert.equal(
+  getLoginRetryAttempts(5, { EXPOSURE_LOGIN_RETRIES: '3' }),
+  3
+);
+assert.equal(getExposureRetryDelayMs(60_000, {}), 60_000);
+assert.equal(
+  getExposureRetryDelayMs(60_000, { FAST_EXPOSURE_MODE: 'true' }),
+  3_000
+);
+assert.equal(
+  getExposureRetryDelayMs(60_000, { EXPOSURE_RETRY_DELAY_MS: '1500' }),
+  1_500
+);
 
 assert.deepEqual(splitConcurrencyBudget(6, 1), {
   taskConcurrency: 1,

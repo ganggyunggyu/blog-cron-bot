@@ -1,6 +1,8 @@
 export const DEFAULT_EXPOSURE_CONCURRENCY = 8;
 export const MAX_EXPOSURE_CONCURRENCY = 8;
 export const MAX_EXPOSURE_PAGES = 9;
+export const FAST_EXPOSURE_LOGIN_RETRIES = 2;
+export const FAST_EXPOSURE_RETRY_DELAY_MS = 3_000;
 
 type ExposureEnvironment = Readonly<Record<string, string | undefined>>;
 
@@ -57,6 +59,30 @@ export const getExposureMaxPages = (
 export const getGuestRetryAttempts = (
   environment: ExposureEnvironment = process.env
 ): number => (environment.FAST_EXPOSURE_MODE === 'true' ? 1 : 2);
+
+export const getLoginRetryAttempts = (
+  defaultRetries: number,
+  environment: ExposureEnvironment = process.env
+): number => {
+  const configured = parsePositiveInteger(environment.EXPOSURE_LOGIN_RETRIES);
+  if (configured !== undefined) return configured;
+
+  return environment.FAST_EXPOSURE_MODE === 'true'
+    ? FAST_EXPOSURE_LOGIN_RETRIES
+    : defaultRetries;
+};
+
+export const getExposureRetryDelayMs = (
+  defaultDelayMs: number,
+  environment: ExposureEnvironment = process.env
+): number => {
+  const configured = parsePositiveInteger(environment.EXPOSURE_RETRY_DELAY_MS);
+  if (configured !== undefined) return configured;
+
+  return environment.FAST_EXPOSURE_MODE === 'true'
+    ? FAST_EXPOSURE_RETRY_DELAY_MS
+    : defaultDelayMs;
+};
 
 export interface ConcurrencyBudget {
   taskConcurrency: number;

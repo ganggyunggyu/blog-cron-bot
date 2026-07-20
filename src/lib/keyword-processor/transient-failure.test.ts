@@ -143,6 +143,33 @@ const run = async (): Promise<void> => {
       error.stage === 'guest-retry' &&
       error.status === 403
   );
+
+  const previousFastMode = process.env.FAST_EXPOSURE_MODE;
+  process.env.FAST_EXPOSURE_MODE = 'true';
+  try {
+    const fastModeResult = await runGuestRetry({
+      searchQuery: '빠른 게스트 실패',
+      query: '빠른 게스트 실패',
+      keywordDoc: { _id: 'fast-guest-id', keyword: '빠른 게스트 실패' },
+      topicNamesArray: [],
+      matchQueue: [],
+      blogIds: [],
+      vendorTarget: '',
+      restaurantName: '',
+      caches: createCaches(),
+      baseMatchesCount: 0,
+      existingLinks: new Set(),
+      sharedCrawlCoordinator: rejectingCoordinator,
+    });
+    assert.equal(fastModeResult.attempted, false);
+    assert.equal(fastModeResult.recovered, false);
+  } finally {
+    if (previousFastMode === undefined) {
+      delete process.env.FAST_EXPOSURE_MODE;
+    } else {
+      process.env.FAST_EXPOSURE_MODE = previousFastMode;
+    }
+  }
 };
 
 run()

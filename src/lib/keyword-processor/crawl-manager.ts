@@ -1,4 +1,4 @@
-import { crawlWithRetry, randomDelay } from '../../crawler';
+import { randomDelay } from '../../crawler';
 import { extractPopularItems, PopularItem } from '../../parser';
 import { matchBlogs } from '../../matcher';
 import { DetailedLogBuilder } from '../../logs/detailed-log';
@@ -27,6 +27,8 @@ import {
   assertUsableNaverHtml,
   wrapTransientExposureError,
 } from './transient-failure';
+import { getLoginRetryAttempts } from '../exposure-run-config';
+import { loadSinglePageHtml } from './single-page-loader';
 
 interface CrawlResult {
   items: any[];
@@ -92,7 +94,10 @@ const loadCrawlSnapshot = async (
       `📄 ${htmls.length}/${plan.maxPages}페이지 크롤링 완료: ${items.length}개 아이템`
     );
   } else {
-    html = await crawlWithRetry(searchQuery, CRAWL_CONFIG.maxRetries);
+    html = await loadSinglePageHtml(
+      searchQuery,
+      getLoginRetryAttempts(CRAWL_CONFIG.maxRetries)
+    );
     assertUsableNaverHtml(html, searchQuery, 'crawl');
     items = extractPopularItems(html);
     if (includeGenericBlogResults) {
