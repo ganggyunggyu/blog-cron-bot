@@ -26,6 +26,8 @@ src/tools/*
 !src/tools/blog-ids.test.ts
 !src/tools/dry-run-root-individual-exposure.ts
 !src/tools/run-parallel-direct-sheet-check.ts
+!src/tools/direct-sheet-targets.ts
+!src/tools/direct-sheet-targets.test.ts
 !src/tools/blog-share-report.ts
 !src/tools/export-blog-share-sheet.ts
 !src/tools/check-cafe-bot-published-exposure.ts

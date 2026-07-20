@@ -33,6 +33,11 @@ import {
   writeResultsToWorksheet,
 } from '../lib/google-sheets/direct-exposure-sheet';
 import { assertWritableSheetId } from '../lib/google-sheets/write-target-guard';
+import {
+  DIRECT_SHEET_TARGETS,
+  DirectSheetTarget,
+  parseDirectSheetTargets,
+} from './direct-sheet-targets';
 
 dotenv.config();
 
@@ -44,12 +49,7 @@ process.on('unhandledRejection', (reason) => {
   logger.error(`처리 안 된 Promise rejection (프로세스는 계속 진행): ${message}`);
 });
 
-type TargetType =
-  | 'package'
-  | 'dogmaru-exclude'
-  | 'dogmaru'
-  | 'seoripet'
-  | 'root';
+type TargetType = DirectSheetTarget;
 
 interface TargetConfig {
   target: TargetType;
@@ -88,13 +88,7 @@ interface TargetRunResult {
   missingKeywords: string[];
 }
 
-const ALL_TARGETS: TargetType[] = [
-  'package',
-  'dogmaru-exclude',
-  'dogmaru',
-  'seoripet',
-  'root',
-];
+const ALL_TARGETS: TargetType[] = [...DIRECT_SHEET_TARGETS];
 
 const DEFAULT_TARGET_CONCURRENCY = 2;
 
@@ -103,7 +97,6 @@ const TARGET_DEDUP_PRIORITY: Record<TargetType, number> = {
   package: 2,
   dogmaru: 3,
   seoripet: 4,
-  root: 5,
 };
 
 const TARGET_CONFIGS: Record<TargetType, TargetConfig> = {
@@ -141,46 +134,6 @@ const TARGET_CONFIGS: Record<TargetType, TargetConfig> = {
     csvPrefix: 'direct-seoripet',
     blogIds: SURI_PET_BLOG_IDS,
   },
-  root: {
-    target: 'root',
-    label: '루트',
-    sheetId: EXPOSURE_SHEET_LOCATIONS.루트.sheetId,
-    tabName: EXPOSURE_SHEET_LOCATIONS.루트.tabTitle,
-    sheetType: 'root',
-    csvPrefix: 'direct-root',
-    allowAnyBlog: false,
-  },
-};
-
-const normalizeTarget = (value: string): TargetType | null => {
-  const normalized = String(value).trim().toLowerCase();
-
-  if (normalized === 'package') return 'package';
-  if (normalized === 'dogmaru-exclude' || normalized === 'general')
-    return 'dogmaru-exclude';
-  if (normalized === 'dogmaru') return 'dogmaru';
-  if (
-    normalized === 'seoripet' ||
-    normalized === '서리펫' ||
-    normalized === 'suripet'
-  )
-    return 'seoripet';
-  if (normalized === 'root') return 'root';
-
-  return null;
-};
-
-const parseTargets = (raw: string): TargetType[] => {
-  const values = raw
-    .split(',')
-    .map((value) => normalizeTarget(value))
-    .filter((value): value is TargetType => value !== null);
-
-  if (values.length === 0) {
-    throw new Error(`유효한 target이 없음: ${raw}`);
-  }
-
-  return Array.from(new Set(values));
 };
 
 const parsePositiveNumber = (value: string): number => {
@@ -208,7 +161,7 @@ const parseArgs = (): CliOptions => {
     const nextArg = args[index + 1];
 
     if ((arg === '--targets' || arg === '--target') && nextArg) {
-      targets = parseTargets(nextArg);
+      targets = parseDirectSheetTargets(nextArg);
       index += 1;
       continue;
     }

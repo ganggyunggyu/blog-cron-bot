@@ -42,7 +42,7 @@ export const JOB_REGISTRY: JobDefinition[] = [
   {
     id: 'root-exposure',
     label: '루트 노출체크',
-    script: 'exposure:root',
+    script: 'cron:root',
     description: '루트 키워드 전용 노출을 확인',
     kind: 'standard',
     resourceGroup: 'exposure',
