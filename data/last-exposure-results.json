@@ -21,7 +21,7 @@
     "exposureCount": 5,
     "popularCount": 5,
     "sblCount": 0,
-    "timestamp": "2026-07-20T15:02:11.121Z"
+    "timestamp": "2026-07-20T23:17:50.149Z"
   },
   "도그마루 노출체크": {
     "cronType": "도그마루 노출체크",
@@ -39,7 +39,7 @@
     "sblCount": 0,
     "newLogicCount": 0,
     "oldLogicCount": 4,
-    "timestamp": "2026-07-20T15:00:00.783Z"
+    "timestamp": "2026-07-20T23:15:58.409Z"
   },
   "루트 키워드": {
     "cronType": "루트 키워드",
@@ -47,7 +47,7 @@
     "exposureCount": 1,
     "popularCount": 1,
     "sblCount": 0,
-    "timestamp": "2026-07-20T15:01:47.699Z"
+    "timestamp": "2026-07-20T23:13:25.560Z"
   },
   "멀티페이지 크론 [애견]": {
     "cronType": "멀티페이지 크론 [애견]",
@@ -308,10 +308,10 @@
   "카페 블로그 통합 노출체크": {
     "cronType": "카페 블로그 통합 노출체크",
     "totalKeywords": 135,
-    "exposureCount": 29,
+    "exposureCount": 24,
     "popularCount": 0,
     "sblCount": 0,
-    "timestamp": "2026-07-20T14:57:03.896Z"
+    "timestamp": "2026-07-20T23:07:07.363Z"
   },
   "멀티페이지 크론 [애견 + 서리펫]": {
     "cronType": "멀티페이지 크론 [애견 + 서리펫]",
