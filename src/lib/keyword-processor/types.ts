@@ -1,6 +1,10 @@
 import { ExposureResult } from '../../matcher';
 import { DetailedLogBuilder } from '../../logs/detailed-log';
 import { VendorMatchDetails, GuestRetryComparison } from '../../types';
+import type {
+  SharedCrawlCoordinator,
+  SharedCrawlPlan,
+} from './shared-crawl-coordinator';
 
 export type KeywordType = 'restaurant' | 'pet' | 'basic';
 
@@ -31,6 +35,13 @@ export interface ProcessKeywordsOptions {
   consumeMatches?: boolean;
   includeGenericBlogResults?: boolean;
   keywordLogicMap?: Map<string, boolean>;
+  sharedCrawlContext?: SharedCrawlContext;
+  progressTarget?: string;
+}
+
+export interface SharedCrawlContext {
+  coordinator: SharedCrawlCoordinator;
+  plans: ReadonlyMap<string, SharedCrawlPlan>;
 }
 
 export interface KeywordDoc {
@@ -92,6 +103,7 @@ export interface GuestRetryParams {
   existingLinks: Set<string>;
   logNewMatches?: boolean;
   includeGenericBlogResults?: boolean;
+  sharedCrawlCoordinator?: SharedCrawlCoordinator;
 }
 
 export interface GuestRetryResult {

@@ -7,10 +7,26 @@ import { CRAWL_CONFIG } from '../../constants';
 import { BLOG_IDS } from '../../constants/blog-ids';
 import { logger } from '../logger';
 import { getAllowAnyBlog } from './allow-any-blog';
-import { KeywordDoc, KeywordType, CrawlCaches, UpdateFunction } from './types';
+import {
+  KeywordDoc,
+  KeywordType,
+  CrawlCaches,
+  UpdateFunction,
+  SharedCrawlContext,
+} from './types';
 import { extractRestaurantName } from './keyword-classifier';
 import { crawlMultiPagesPlaywright } from '../playwright-crawler';
 import { appendGenericBlogItems } from './generic-blog-results';
+import {
+  createSharedCrawlStopPredicate,
+  filterSnapshotItemsByMaxPages,
+  type SharedCrawlPlan,
+  type SharedCrawlSnapshot,
+} from './shared-crawl-coordinator';
+import {
+  assertUsableNaverHtml,
+  wrapTransientExposureError,
+} from './transient-failure';
 
 interface CrawlResult {
   items: any[];
@@ -18,6 +34,87 @@ interface CrawlResult {
   uniqueGroupsSize: number;
   topicNamesArray: string[];
 }
+
+const createTargetCrawlPlan = (
+  maxPages: number,
+  blogIds: readonly string[]
+): SharedCrawlPlan => ({
+  maxPages,
+  requirements: [{ maxPages, blogIds }],
+});
+
+const loadCrawlSnapshot = async (
+  searchQuery: string,
+  plan: SharedCrawlPlan,
+  includeGenericBlogResults: boolean
+): Promise<SharedCrawlSnapshot> => {
+  let html: string;
+  let items: PopularItem[];
+  let topicNamesArray: string[];
+
+  if (plan.maxPages > 1) {
+    const htmls = await crawlMultiPagesPlaywright(
+      searchQuery,
+      plan.maxPages,
+      createSharedCrawlStopPredicate(plan)
+    );
+    htmls.forEach((pageHtml) =>
+      assertUsableNaverHtml(pageHtml, searchQuery, 'crawl')
+    );
+    html = htmls[0];
+
+    const firstPageItems = extractPopularItems(html);
+    if (includeGenericBlogResults) {
+      appendGenericBlogItems(firstPageItems, html, 1);
+    }
+    topicNamesArray = Array.from(
+      new Set(firstPageItems.map((item: PopularItem) => item.group))
+    );
+
+    items = [];
+    const seenLinks = new Set<string>();
+    htmls.forEach((pageHtml, pageIndex) => {
+      const pageNumber = pageIndex + 1;
+
+      if (pageNumber === 1) {
+        firstPageItems.forEach((item) => {
+          if (seenLinks.has(item.link)) return;
+          seenLinks.add(item.link);
+          items.push({ ...item, page: pageNumber });
+        });
+        return;
+      }
+
+      appendGenericBlogItems(items, pageHtml, pageNumber);
+    });
+
+    logger.info(
+      `📄 ${htmls.length}/${plan.maxPages}페이지 크롤링 완료: ${items.length}개 아이템`
+    );
+  } else {
+    html = await crawlWithRetry(searchQuery, CRAWL_CONFIG.maxRetries);
+    assertUsableNaverHtml(html, searchQuery, 'crawl');
+    items = extractPopularItems(html);
+    if (includeGenericBlogResults) {
+      appendGenericBlogItems(items, html, 1);
+    }
+    topicNamesArray = Array.from(new Set(items.map((item) => item.group)));
+  }
+
+  const uniqueGroupsSize = new Set(topicNamesArray).size;
+  await randomDelay(
+    CRAWL_CONFIG.delayBetweenQueries,
+    CRAWL_CONFIG.delayBetweenQueries * 2
+  );
+
+  return {
+    html,
+    items,
+    isPopular: uniqueGroupsSize === 1,
+    uniqueGroupsSize,
+    topicNamesArray,
+  };
+};
 
 export const getCrawlResult = async (
   searchQuery: string,
@@ -33,8 +130,9 @@ export const getCrawlResult = async (
   maxPages: number = 1,
   blogIds: string[] = BLOG_IDS,
   allowAnyBlogOverride?: boolean,
-  includeGenericBlogResults: boolean = false
-): Promise<CrawlResult | null> => {
+  includeGenericBlogResults: boolean = false,
+  sharedCrawlContext?: SharedCrawlContext
+): Promise<CrawlResult> => {
   const { crawlCache, itemsCache, matchQueueMap, htmlStructureCache } = caches;
 
   let items: any[];
@@ -44,57 +142,24 @@ export const getCrawlResult = async (
 
   if (!crawlCache.has(searchQuery)) {
     try {
-      let html: string;
+      const plan =
+        sharedCrawlContext?.plans.get(searchQuery) ??
+        createTargetCrawlPlan(maxPages, blogIds);
+      const cacheKey = `${searchQuery}\u0000generic=${includeGenericBlogResults}`;
+      const loadSnapshot = (): Promise<SharedCrawlSnapshot> =>
+        loadCrawlSnapshot(searchQuery, plan, includeGenericBlogResults);
+      const snapshot = sharedCrawlContext
+        ? await sharedCrawlContext.coordinator.getCrawlSnapshot(
+            cacheKey,
+            loadSnapshot
+          )
+        : await loadSnapshot();
 
-      if (maxPages > 1) {
-        const checkBlogMatch = (pageHtml: string): boolean => {
-          for (const blogId of blogIds) {
-            if (pageHtml.includes(`blog.naver.com/${blogId}/`) ||
-                pageHtml.includes(`blog.naver.com/${blogId}"`)) {
-              return true;
-            }
-          }
-          return false;
-        };
-
-        const htmls = await crawlMultiPagesPlaywright(searchQuery, maxPages, checkBlogMatch);
-        html = htmls[0];
-
-        // 1페이지에서 신규로직 여부 먼저 판단
-        const firstPageItems = extractPopularItems(html);
-        if (includeGenericBlogResults) {
-          appendGenericBlogItems(firstPageItems, html, 1);
-        }
-        const firstPageGroups = new Set(firstPageItems.map((item: any) => item.group));
-        topicNamesArray = Array.from(firstPageGroups);
-
-        const allItems: PopularItem[] = [];
-        const seenLinks = new Set<string>();
-
-        htmls.forEach((pageHtml, pageIndex) => {
-          const pageNumber = pageIndex + 1;
-
-          if (pageNumber === 1) {
-            for (const item of firstPageItems) {
-              if (!seenLinks.has(item.link)) {
-                seenLinks.add(item.link);
-                allItems.push({ ...item, page: pageNumber });
-              }
-            }
-          } else {
-            appendGenericBlogItems(allItems, pageHtml, pageNumber);
-          }
-        });
-
-        items = allItems;
-        logger.info(`📄 ${maxPages}페이지 크롤링 완료: ${items.length}개 아이템`);
-      } else {
-        html = await crawlWithRetry(searchQuery, CRAWL_CONFIG.maxRetries);
-        items = extractPopularItems(html);
-        if (includeGenericBlogResults) {
-          appendGenericBlogItems(items, html, 1);
-        }
-      }
+      const html = snapshot.html;
+      items = filterSnapshotItemsByMaxPages(snapshot.items, maxPages);
+      isPopular = snapshot.isPopular;
+      uniqueGroupsSize = snapshot.uniqueGroupsSize;
+      topicNamesArray = snapshot.topicNamesArray;
 
       const allowAnyBlog = getAllowAnyBlog(
         keywordDoc.sheetType,
@@ -102,17 +167,6 @@ export const getCrawlResult = async (
       );
 
       const allMatches = matchBlogs(query, items, { allowAnyBlog, blogIds });
-
-      // 멀티페이지가 아닐 때만 topicNamesArray 계산 (멀티페이지는 1페이지에서 이미 설정됨)
-      if (maxPages <= 1) {
-        const uniqueGroups = new Set(items.map((item: any) => item.group));
-        topicNamesArray = Array.from(uniqueGroups);
-      }
-
-      // isPopular와 uniqueGroupsSize는 1페이지 기준으로 계산
-      const firstPageGroups = new Set(topicNamesArray);
-      isPopular = firstPageGroups.size === 1;
-      uniqueGroupsSize = firstPageGroups.size;
 
       const typeStr = isPopular ? '인기글' : '스블';
       progressLogger.newCrawl(searchQuery, items.length, allMatches.length, typeStr);
@@ -127,10 +181,14 @@ export const getCrawlResult = async (
       });
 
       progressLogger.queueChange(0, allMatches.length, 'init');
-
-      await randomDelay(CRAWL_CONFIG.delayBetweenQueries, CRAWL_CONFIG.delayBetweenQueries * 2);
     } catch (error) {
-      logger.error(`검색어 "${searchQuery}" 크롤링 에러: ${(error as Error).message}`);
+      const transientError = wrapTransientExposureError(error, {
+        stage: 'crawl',
+        searchQuery,
+      });
+      logger.error(
+        `검색어 "${searchQuery}" 크롤링 에러: ${transientError.message}`
+      );
 
       const restaurantName = extractRestaurantName(keywordDoc, query);
 
@@ -142,23 +200,6 @@ export const getCrawlResult = async (
         reason: '크롤링 에러',
       });
 
-      await updateFunction(
-        String(keywordDoc._id),
-        false,
-        '',
-        '',
-        keywordType,
-        restaurantName,
-        '',
-        0,
-        '',
-        0,
-        false,
-        undefined,
-        0,
-        ''
-      );
-
       const crawlErrorLog = logBuilder.createCrawlError({
         index: globalIndex,
         keyword: query,
@@ -166,11 +207,11 @@ export const getCrawlResult = async (
         restaurantName,
         vendorTarget: '',
         startTime: keywordStartTime,
-        error: error as Error,
+        error: transientError,
       });
       logBuilder.push(crawlErrorLog);
 
-      return null;
+      throw transientError;
     }
   } else {
     progressLogger.cacheUsed({

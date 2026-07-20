@@ -100,4 +100,30 @@ assert.match(sheetLines[2], /^"업체B","중복","스블주제",2,o,,,,https:\/\
 assert.match(sheetLines[3], /^"업체C","미노출",+구,3$/);
 removeFileIfExists(sheetFilePath);
 
+const crossCompanyFilename = 'test-unit-cross-company.csv';
+const crossCompanyFilePath = resolveOutputFilePath(crossCompanyFilename);
+removeFileIfExists(crossCompanyFilePath);
+saveToSheetCSV(
+  [
+    { keyword: '공유키워드', company: '애견' },
+    { keyword: '공유키워드', company: '서리펫' },
+  ],
+  [
+    {
+      ...exposureResult,
+      query: '공유키워드',
+      company: '서리펫',
+      postLink: 'https://blog.naver.com/suripet/result',
+    },
+  ],
+  crossCompanyFilename
+);
+const crossCompanyLines = readCsvWithoutBom(crossCompanyFilePath);
+assert.match(crossCompanyLines[1], /^"애견","공유키워드",+1$/);
+assert.match(
+  crossCompanyLines[2],
+  /^"서리펫","공유키워드".*https:\/\/blog\.naver\.com\/suripet\/result/
+);
+removeFileIfExists(crossCompanyFilePath);
+
 process.stdout.write('csv output tests passed\n');

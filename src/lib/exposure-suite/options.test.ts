@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import {
   DEFAULT_EXPOSURE_TARGETS,
+  buildTargetEnvironment,
+  planExposureTargetJobs,
   parseExposureSuiteOptions,
   resolveTargetCommand,
 } from './options';
@@ -42,6 +44,18 @@ assert.deepEqual(resolveTargetCommand('package'), {
   script: 'cron:sheet',
   args: ['package'],
 });
+assert.deepEqual(resolveTargetCommand('general'), {
+  script: 'cron:exclude',
+  args: [],
+});
+assert.deepEqual(resolveTargetCommand('dogmaru'), {
+  script: 'cron:dogmaru',
+  args: [],
+});
+assert.deepEqual(resolveTargetCommand('root'), {
+  script: 'cron:root',
+  args: [],
+});
 assert.deepEqual(resolveTargetCommand('pet'), {
   script: 'cron:pages',
   args: ['pet'],
@@ -50,5 +64,108 @@ assert.deepEqual(resolveTargetCommand('cafe'), {
   script: 'cafe:schedule:run',
   args: [],
 });
+
+assert.deepEqual(
+  planExposureTargetJobs(['cafe', 'pet', 'suripet', 'root']),
+  [
+    {
+      targets: ['cafe'],
+      command: { script: 'cafe:schedule:run', args: [] },
+    },
+    {
+      targets: ['pet', 'suripet'],
+      command: { script: 'cron:pages', args: ['pet,suripet'] },
+    },
+    {
+      targets: ['root'],
+      command: { script: 'cron:root', args: [] },
+    },
+  ]
+);
+assert.deepEqual(
+  planExposureTargetJobs(['cafe', 'pet', 'dogmaru', 'suripet', 'root']),
+  [
+    {
+      targets: ['cafe'],
+      command: { script: 'cafe:schedule:run', args: [] },
+    },
+    {
+      targets: ['dogmaru', 'pet', 'suripet'],
+      command: {
+        script: 'cron:pages',
+        args: ['dogmaru,pet,suripet'],
+      },
+    },
+    {
+      targets: ['root'],
+      command: { script: 'cron:root', args: [] },
+    },
+  ]
+);
+assert.deepEqual(planExposureTargetJobs(['dogmaru', 'pet']), [
+  {
+    targets: ['dogmaru'],
+    command: { script: 'cron:dogmaru', args: [] },
+  },
+  {
+    targets: ['pet'],
+    command: { script: 'cron:pages', args: ['pet'] },
+  },
+]);
+assert.deepEqual(planExposureTargetJobs(['suripet']), [
+  {
+    targets: ['suripet'],
+    command: { script: 'cron:pages', args: ['suripet'] },
+  },
+]);
+
+const inheritedEnvironment = {
+  KEEP_ME: 'yes',
+  ONLY_SHEET_TYPE: 'should-not-leak',
+  EXPOSURE_MAX_PAGES: '9',
+  PAGE_CHECK_MAX_PAGES: '9',
+};
+const rootEnvironment = buildTargetEnvironment(
+  inheritedEnvironment,
+  ['root'],
+  8,
+  4
+);
+assert.equal(rootEnvironment.KEEP_ME, 'yes');
+assert.equal(rootEnvironment.EXPOSURE_MAX_PAGES, undefined);
+assert.equal(rootEnvironment.PAGE_CHECK_MAX_PAGES, undefined);
+assert.equal(rootEnvironment.ONLY_SHEET_TYPE, undefined);
+
+for (const target of ['general', 'dogmaru', 'root', 'cafe'] as const) {
+  const environment = buildTargetEnvironment(
+    inheritedEnvironment,
+    [target],
+    8,
+    4
+  );
+  assert.equal(environment.EXPOSURE_MAX_PAGES, undefined);
+  assert.equal(environment.PAGE_CHECK_MAX_PAGES, undefined);
+}
+
+const packageEnvironment = buildTargetEnvironment(
+  inheritedEnvironment,
+  ['package'],
+  8,
+  4
+);
+assert.equal(packageEnvironment.ONLY_SHEET_TYPE, undefined);
+assert.equal(packageEnvironment.EXPOSURE_MAX_PAGES, undefined);
+assert.equal(packageEnvironment.PAGE_CHECK_MAX_PAGES, undefined);
+
+const petEnvironment = buildTargetEnvironment(
+  inheritedEnvironment,
+  ['pet', 'suripet'],
+  8,
+  4
+);
+assert.equal(petEnvironment.EXPOSURE_MAX_PAGES, '4');
+assert.equal(petEnvironment.PAGE_CHECK_MAX_PAGES, '4');
+assert.equal(petEnvironment.EXPOSURE_CONCURRENCY, '8');
+assert.equal(petEnvironment.FAST_EXPOSURE_MODE, 'true');
 
 process.stdout.write('exposure suite option tests passed\n');

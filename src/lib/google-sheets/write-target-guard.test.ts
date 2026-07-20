@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { PRODUCT_SHEET_ID, ROOT_CONFIG, TEST_CONFIG } from '../../constants';
 import { assertWritableSheetId, isReadOnlySourceSheet } from './write-target-guard';
+import { importKeywords } from '../../api';
 
 assert.equal(isReadOnlySourceSheet(PRODUCT_SHEET_ID), true);
 assert.equal(isReadOnlySourceSheet(ROOT_CONFIG.SHEET_ID), true);
@@ -18,4 +19,14 @@ assert.doesNotThrow(() =>
   assertWritableSheetId(TEST_CONFIG.SHEET_ID, '결과 내보내기')
 );
 
-process.stdout.write('write target guard tests passed\n');
+void assert.rejects(
+  importKeywords({
+    sheetId: PRODUCT_SHEET_ID,
+    sheetName: '패키지',
+    sheetType: 'package',
+    mode: 'rewrite',
+  }),
+  /읽기 전용 원본 시트/
+).then(() => {
+  process.stdout.write('write target guard tests passed\n');
+});

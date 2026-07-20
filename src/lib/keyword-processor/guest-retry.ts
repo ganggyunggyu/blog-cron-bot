@@ -9,6 +9,10 @@ import { getAllowAnyBlog } from './allow-any-blog';
 import { appendGenericBlogItems } from './generic-blog-results';
 import { GuestRetryParams, GuestRetryResult } from './types';
 import { getGuestRetryAttempts } from '../exposure-run-config';
+import {
+  assertUsableNaverHtml,
+  wrapTransientExposureError,
+} from './transient-failure';
 
 export const runGuestRetry = async (
   params: GuestRetryParams
@@ -28,15 +32,18 @@ export const runGuestRetry = async (
     existingLinks,
     logNewMatches,
     includeGenericBlogResults,
+    sharedCrawlCoordinator,
   } = params;
 
   try {
     progressLogger.retry('비로그인 재시도');
 
-    const guestHtml = await crawlWithRetryWithoutCookie(
-      searchQuery,
-      getGuestRetryAttempts()
-    );
+    const loadGuestHtml = (): Promise<string> =>
+      crawlWithRetryWithoutCookie(searchQuery, getGuestRetryAttempts());
+    const guestHtml = sharedCrawlCoordinator
+      ? await sharedCrawlCoordinator.getGuestHtml(searchQuery, loadGuestHtml)
+      : await loadGuestHtml();
+    assertUsableNaverHtml(guestHtml, searchQuery, 'guest-retry');
     const guestItems = extractPopularItems(guestHtml);
     if (includeGenericBlogResults) {
       appendGenericBlogItems(guestItems, guestHtml, 1);
@@ -162,13 +169,12 @@ export const runGuestRetry = async (
       guestRetryComparison,
     };
   } catch (err) {
-    progressLogger.retry(`재시도 실패: ${(err as Error).message.slice(0, 30)}`);
+    const transientError = wrapTransientExposureError(err, {
+      stage: 'guest-retry',
+      searchQuery,
+    });
+    progressLogger.retry(`재시도 실패: ${transientError.message.slice(0, 30)}`);
+    logger.error(transientError.message);
+    throw transientError;
   }
-
-  return {
-    attempted: false,
-    recovered: false,
-    guestMatchesCount: 0,
-    addedMatchesCount: 0,
-  };
 };

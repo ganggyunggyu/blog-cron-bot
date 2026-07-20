@@ -4,6 +4,7 @@ import {
   SyncRequest,
   ImportRequest,
 } from '../../constants';
+import { assertWritableSheetId } from '../../lib/google-sheets/write-target-guard';
 
 interface SyncResponse {
   success: boolean;
@@ -21,6 +22,7 @@ export const syncKeywords = async (request: SyncRequest): Promise<SyncResponse> 
 };
 
 export const importKeywords = async (request: ImportRequest): Promise<ImportResponse> => {
+  assertWritableSheetId(request.sheetId, `키워드 결과 반영(${request.sheetName})`);
   const response = await axios.post(`${SHEET_APP_URL}/api/keywords/import`, request);
   return response.data;
 };

@@ -32,19 +32,45 @@ const SHEET_HEADER = [
   '행',
 ].join(',');
 
-const getResultQueueMap = (
-  results: ExposureResult[]
-): Map<string, ExposureResult[]> => {
-  const resultMap = new Map<string, ExposureResult[]>();
+interface ResultQueueMaps {
+  companyScoped: Map<string, ExposureResult[]>;
+  unscoped: Map<string, ExposureResult[]>;
+}
+
+const getCompanyResultKey = (query: string, company: string): string =>
+  `${query}\u0000${company}`;
+
+const addResultToQueue = (
+  queues: Map<string, ExposureResult[]>,
+  key: string,
+  result: ExposureResult
+): void => {
+  const existingQueue = queues.get(key);
+  if (existingQueue) {
+    existingQueue.push(result);
+    return;
+  }
+  queues.set(key, [result]);
+};
+
+const getResultQueueMaps = (results: ExposureResult[]): ResultQueueMaps => {
+  const companyScoped = new Map<string, ExposureResult[]>();
+  const unscoped = new Map<string, ExposureResult[]>();
+
   for (const result of results) {
-    const existingQueue = resultMap.get(result.query);
-    if (existingQueue) {
-      existingQueue.push(result);
+    const company = String(result.company || '').trim();
+    if (company) {
+      addResultToQueue(
+        companyScoped,
+        getCompanyResultKey(result.query, company),
+        result
+      );
       continue;
     }
-    resultMap.set(result.query, [result]);
+    addResultToQueue(unscoped, result.query, result);
   }
-  return resultMap;
+
+  return { companyScoped, unscoped };
 };
 
 const formatExposureLogicType = (isNewLogic: boolean | undefined): string => {
@@ -117,10 +143,16 @@ export const saveToSheetCSV = (
   keywordLogicMap?: Map<string, boolean>
 ): void => {
   const filePath = resolveOutputFilePath(filename);
-  const resultMap = getResultQueueMap(results);
+  const resultMaps = getResultQueueMaps(results);
   const rows = keywords.map((keywordInfo, index) => {
-    const resultQueue = resultMap.get(keywordInfo.keyword);
-    const result = resultQueue?.shift();
+    const company = String(keywordInfo.company || '').trim();
+    const scopedQueue = company
+      ? resultMaps.companyScoped.get(
+          getCompanyResultKey(keywordInfo.keyword, company)
+        )
+      : undefined;
+    const result = scopedQueue?.shift() ??
+      resultMaps.unscoped.get(keywordInfo.keyword)?.shift();
     return formatSheetRow(keywordInfo, result, index + 1, keywordLogicMap);
   });
 

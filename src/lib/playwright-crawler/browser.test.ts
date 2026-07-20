@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
-import { Browser, BrowserContext, chromium } from 'playwright';
-import { closeBrowser, launchBrowser } from './browser';
+import { Browser, BrowserContext, Route, chromium } from 'playwright';
+import {
+  closeBrowser,
+  launchBrowser,
+  shouldBlockBrowserResource,
+} from './browser';
 
 const main = async (): Promise<void> => {
   const originalLaunchDescriptor = Object.getOwnPropertyDescriptor(
@@ -13,9 +17,18 @@ const main = async (): Promise<void> => {
   });
   let launchCount = 0;
   let contextCount = 0;
+  let registeredRoutePattern = '';
+  let registeredRouteHandler: ((route: Route) => Promise<void>) | undefined;
 
   const fakeContext = {
     addCookies: async () => {},
+    route: async (
+      pattern: string,
+      handler: (route: Route) => Promise<void>
+    ) => {
+      registeredRoutePattern = pattern;
+      registeredRouteHandler = handler;
+    },
     close: async () => {},
   } as unknown as BrowserContext;
   const fakeBrowser = {
@@ -49,6 +62,13 @@ const main = async (): Promise<void> => {
     assert.equal(firstContext, fakeContext);
     assert.equal(secondContext, fakeContext);
     assert.equal(contextCount, 1);
+    assert.equal(registeredRoutePattern, '**/*');
+    assert.ok(registeredRouteHandler);
+    assert.equal(shouldBlockBrowserResource('image'), true);
+    assert.equal(shouldBlockBrowserResource('font'), true);
+    assert.equal(shouldBlockBrowserResource('media'), true);
+    assert.equal(shouldBlockBrowserResource('document'), false);
+    assert.equal(shouldBlockBrowserResource('xhr'), false);
   } finally {
     releaseLaunch?.();
     await Promise.allSettled([firstLaunch, secondLaunch]);

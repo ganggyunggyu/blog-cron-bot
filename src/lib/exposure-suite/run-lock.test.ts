@@ -15,6 +15,7 @@ assert.throws(
 );
 first.release();
 assert.equal(fs.existsSync(lockPath), false);
+assert.doesNotThrow(() => first.release());
 
 fs.writeFileSync(lockPath, '303', 'utf8');
 const recovered = acquireRunLock(lockPath, 404, () => false);

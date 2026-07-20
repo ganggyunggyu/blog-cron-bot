@@ -26,9 +26,14 @@ export interface TargetCommand {
   args: string[];
 }
 
+export interface ExposureTargetJob {
+  targets: ExposureTargetId[];
+  command: TargetCommand;
+}
+
 const TARGET_COMMANDS: Record<ExposureTargetId, TargetCommand> = {
   package: { script: 'cron:sheet', args: ['package'] },
-  general: { script: 'cron:sheet', args: ['general'] },
+  general: { script: 'cron:exclude', args: [] },
   dogmaru: { script: 'cron:dogmaru', args: [] },
   root: { script: 'cron:root', args: [] },
   pet: { script: 'cron:pages', args: ['pet'] },
@@ -114,3 +119,90 @@ export const resolveTargetCommand = (
   script: TARGET_COMMANDS[target].script,
   args: [...TARGET_COMMANDS[target].args],
 });
+
+export const planExposureTargetJobs = (
+  targets: readonly ExposureTargetId[]
+): ExposureTargetJob[] => {
+  const dogPetCompositeTargets: ExposureTargetId[] = [
+    'dogmaru',
+    'pet',
+    'suripet',
+  ];
+  const shouldCombineDogPetTargets = dogPetCompositeTargets.every((target) =>
+    targets.includes(target)
+  );
+  const shouldCombinePetTargets =
+    !shouldCombineDogPetTargets &&
+    targets.includes('pet') &&
+    targets.includes('suripet');
+  let combinedDogPetTargetsAdded = false;
+  let combinedPetTargetsAdded = false;
+
+  return targets.flatMap((target) => {
+    if (
+      shouldCombineDogPetTargets &&
+      dogPetCompositeTargets.includes(target)
+    ) {
+      if (combinedDogPetTargetsAdded) return [];
+      combinedDogPetTargetsAdded = true;
+      return [
+        {
+          targets: [...dogPetCompositeTargets],
+          command: {
+            script: 'cron:pages',
+            args: ['dogmaru,pet,suripet'],
+          },
+        },
+      ];
+    }
+
+    if (
+      shouldCombinePetTargets &&
+      (target === 'pet' || target === 'suripet')
+    ) {
+      if (combinedPetTargetsAdded) return [];
+      combinedPetTargetsAdded = true;
+      return [
+        {
+          targets: ['pet', 'suripet'],
+          command: { script: 'cron:pages', args: ['pet,suripet'] },
+        },
+      ];
+    }
+
+    return [{ targets: [target], command: resolveTargetCommand(target) }];
+  });
+};
+
+export const buildTargetEnvironment = (
+  baseEnvironment: NodeJS.ProcessEnv,
+  targets: readonly ExposureTargetId[],
+  concurrency: number,
+  maxPages: number
+): NodeJS.ProcessEnv => {
+  const environment: NodeJS.ProcessEnv = {
+    ...baseEnvironment,
+    EXPOSURE_CONCURRENCY: String(concurrency),
+    PAGE_CHECK_CONCURRENCY: String(concurrency),
+    CHECK_CONCURRENCY: String(concurrency),
+    CAFE_CHECK_CONCURRENCY: String(concurrency),
+    FAST_EXPOSURE_MODE: 'true',
+  };
+
+  delete environment.EXPOSURE_MAX_PAGES;
+  delete environment.PAGE_CHECK_MAX_PAGES;
+  delete environment.ONLY_SHEET_TYPE;
+
+  if (targets.some((target) => target === 'pet' || target === 'suripet')) {
+    environment.EXPOSURE_MAX_PAGES = String(maxPages);
+    environment.PAGE_CHECK_MAX_PAGES = String(maxPages);
+  }
+
+  if (targets.length === 1) {
+    environment.EXPOSURE_PROGRESS_TARGET = targets[0];
+  } else {
+    delete environment.EXPOSURE_PROGRESS_TARGET;
+  }
+
+  return environment;
+};

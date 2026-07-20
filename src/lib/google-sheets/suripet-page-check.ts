@@ -1,6 +1,9 @@
 import { GoogleSpreadsheet } from 'google-spreadsheet';
 import { JWT } from 'google-auth-library';
-import { TEST_CONFIG } from '../../constants/api';
+import {
+  EXPOSURE_SHEET_LOCATIONS,
+  TEST_CONFIG,
+} from '../../constants/api';
 import { logger } from '../logger';
 import {
   DirectSheetUpdate,
@@ -11,6 +14,7 @@ import {
   openSpreadsheet,
   writeResultsToWorksheet,
 } from './direct-exposure-sheet';
+import { assertWritableSheetId } from './write-target-guard';
 
 type SuripetSheetRow = Record<string, string>;
 
@@ -28,7 +32,13 @@ export interface SuripetPageCheckKeywordInput {
   foundPage: number;
 }
 
-const SURIPET_SHEET_NAME = '서리펫';
+export const SURIPET_SOURCE_SHEET_ID =
+  EXPOSURE_SHEET_LOCATIONS.서리펫.sheetId;
+export const SURIPET_RESULT_SHEET_ID = TEST_CONFIG.SHEET_ID;
+
+const SURIPET_SOURCE_SHEET_NAME =
+  EXPOSURE_SHEET_LOCATIONS.서리펫.tabTitle;
+const SURIPET_RESULT_SHEET_NAME = TEST_CONFIG.SHEET_NAMES.SERIPET;
 
 const getAuth = (): JWT => {
   const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
@@ -74,12 +84,12 @@ export const loadSuripetKeywordsFromSheet = async (): Promise<
   SuripetPageCheckKeywordInput[]
 > => {
   const auth = getAuth();
-  const doc = new GoogleSpreadsheet(TEST_CONFIG.SHEET_ID, auth);
+  const doc = new GoogleSpreadsheet(SURIPET_SOURCE_SHEET_ID, auth);
   await doc.loadInfo();
 
-  const sheet = doc.sheetsByTitle[SURIPET_SHEET_NAME];
+  const sheet = doc.sheetsByTitle[SURIPET_SOURCE_SHEET_NAME];
   if (!sheet) {
-    throw new Error(`"${SURIPET_SHEET_NAME}" 시트를 찾을 수 없음`);
+    throw new Error(`"${SURIPET_SOURCE_SHEET_NAME}" 시트를 찾을 수 없음`);
   }
 
   await sheet.loadHeaderRow();
@@ -137,9 +147,10 @@ export interface SuripetResultInput {
 export const writeSuripetResultsToSheet = async (
   results: SuripetResultInput[]
 ): Promise<void> => {
+  assertWritableSheetId(SURIPET_RESULT_SHEET_ID, '서리펫 결과 반영');
   const auth = getGoogleSheetAuth();
-  const doc = await openSpreadsheet(TEST_CONFIG.SHEET_ID, auth);
-  const sheet = getWorksheetByTitle(doc, SURIPET_SHEET_NAME);
+  const doc = await openSpreadsheet(SURIPET_RESULT_SHEET_ID, auth);
+  const sheet = getWorksheetByTitle(doc, SURIPET_RESULT_SHEET_NAME);
   const sheetKeywords = await loadKeywordsFromWorksheet(sheet, 'suripet');
   const queueMap = buildKeywordQueueMap(sheetKeywords);
   const updates = new Map<string, DirectSheetUpdate>();

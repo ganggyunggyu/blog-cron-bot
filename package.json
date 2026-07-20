@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "test": "pnpm test:unit",
-    "test:unit": "ts-node src/lib/csv-output/csv-output.test.ts && ts-node src/lib/scheduler-runner/time.test.ts && ts-node src/lib/google-sheets/direct-exposure-sheet.test.ts && ts-node src/lib/google-sheets/write-target-guard.test.ts && ts-node src/lib/exposure-suite/options.test.ts && ts-node src/lib/exposure-suite/run-lock.test.ts && ts-node src/lib/cafe-schedule-export/index.test.ts && ts-node src/lib/exposure-run-config.test.ts && ts-node src/lib/playwright-crawler/block-coordinator.test.ts && ts-node src/lib/playwright-crawler/browser.test.ts && ts-node src/constants/api/index.test.ts",
+    "test:unit": "ts-node src/cron-pages.test.ts && ts-node src/lib/exposure-summary.test.ts && ts-node src/lib/csv-output/csv-output.test.ts && ts-node src/lib/scheduler-runner/time.test.ts && ts-node src/lib/google-sheets/direct-exposure-sheet.test.ts && ts-node src/lib/google-sheets/write-target-guard.test.ts && ts-node src/lib/exposure-suite/options.test.ts && ts-node src/lib/exposure-suite/run-lock.test.ts && ts-node src/lib/exposure-suite/request-broker.test.ts && ts-node src/lib/exposure-suite/recovery-delay.test.ts && ts-node src/lib/exposure-suite/settle.test.ts && ts-node src/lib/keyword-processor/shared-crawl-coordinator.test.ts && ts-node --files src/lib/keyword-processor/transient-failure.test.ts && ts-node src/lib/cafe-schedule-export/index.test.ts && ts-node src/lib/exposure-run-config.test.ts && ts-node src/lib/playwright-crawler/block-coordinator.test.ts && ts-node src/lib/playwright-crawler/browser.test.ts && ts-node src/tools/blog-ids.test.ts && ts-node src/constants/api/index.test.ts",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
     "cron": "ts-node src/cron.ts",
@@ -32,6 +32,13 @@
     "cookie:auto": "ts-node src/tools/auto-login.ts",
     "parallel:check": "ts-node src/tools/run-parallel-direct-sheet-check.ts --dry-run",
     "exposure:suite": "ts-node src/cron-exposure-suite.ts",
+    "exposure:package": "pnpm exposure:suite -- --targets=package",
+    "exposure:general": "pnpm exposure:suite -- --targets=general",
+    "exposure:dogmaru": "pnpm exposure:suite -- --targets=dogmaru",
+    "exposure:root": "pnpm exposure:suite -- --targets=root",
+    "exposure:pet": "pnpm exposure:suite -- --targets=pet --max-pages=4",
+    "exposure:suripet": "pnpm exposure:suite -- --targets=suripet --max-pages=4",
+    "exposure:cafe": "pnpm exposure:suite -- --targets=cafe",
     "root:individual:sync": "ts-node src/tools/dry-run-root-individual-exposure.ts",
     "root:individual:dry-run": "ts-node src/tools/dry-run-root-individual-exposure.ts --dry-run",
     "keyword:report": "ts-node src/tools/keyword-report.ts",
@@ -43,20 +50,21 @@
     "alibaba:check": "ts-node src/tools/run-alibaba-check.ts",
     "alibaba:logic": "ts-node src/tools/check-alibaba-logic-type.ts",
     "old-logic:more-check": "ts-node src/tools/check-old-logic-more-exposure.ts",
+    "old-logic:more-check:root": "cross-env EXPOSURE_PROGRESS_TARGET=root-more ts-node src/tools/check-old-logic-more-exposure.ts --sources 루트",
     "old-logic:more-check:daily": "ts-node src/tools/check-old-logic-more-exposure.ts --sources 패키지,일반건,도그마루,루트",
     "blog:share": "ts-node src/tools/blog-share-report.ts",
     "blog:share:export": "ts-node src/tools/export-blog-share-sheet.ts",
     "cafe-bot:published:exposure": "ts-node src/tools/check-cafe-bot-published-exposure.ts"
   },
   "dependencies": {
-    "axios": "^1.13.2",
+    "axios": "^1.18.1",
     "chalk": "^4.1.2",
-    "cheerio": "^1.0.0",
+    "cheerio": "^1.2.0",
     "dotenv": "^16.0.0",
     "google-auth-library": "^10.6.1",
     "google-spreadsheet": "^5.2.0",
-    "got-scraping": "^4.1.2",
-    "mongoose": "^8.0.0",
+    "got-scraping": "^4.2.1",
+    "mongoose": "^8.24.1",
     "node-cron": "^4.2.1",
     "playwright": "^1.57.0",
     "winston": "^3.19.0"
@@ -67,5 +75,11 @@
     "cross-env": "^10.1.0",
     "ts-node": "^10.9.0",
     "typescript": "^5.0.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "adm-zip": "0.6.0",
+      "undici": "7.28.0"
+    }
   }
 }

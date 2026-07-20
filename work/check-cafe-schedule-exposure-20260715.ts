@@ -11,6 +11,7 @@ import {
 import { extractPopularItems } from '../src/parser';
 import { matchBlogs } from '../src/matcher';
 import { BLOG_IDS } from '../src/constants/blog-ids';
+import { emitExposureProgress } from '../src/lib/exposure-progress';
 
 dotenv.config();
 
@@ -203,6 +204,7 @@ const runChecks = async (
 ): Promise<Map<string, CheckResult>> => {
   const results = new Map<string, CheckResult>();
   let nextIndex = 0;
+  let completedCount = 0;
   const configuredWorkers = Number(
     process.env.CHECK_CONCURRENCY ??
       process.env.CAFE_CHECK_CONCURRENCY ??
@@ -225,6 +227,12 @@ const runChecks = async (
       const keyword = keywords[index];
       process.stdout.write(`[${index + 1}/${keywords.length}] ${keyword}\n`);
       results.set(keyword, await checkKeyword(keyword, targets));
+      completedCount += 1;
+      // The failed-only pass is appended to the same dashboard run. Emitting a
+      // smaller retry total here would replace the completed full-run progress.
+      if (!RETRY_FAILED_ONLY) {
+        emitExposureProgress('cafe', completedCount, keywords.length, 'running');
+      }
       await randomDelay(300, 700);
     }
   };

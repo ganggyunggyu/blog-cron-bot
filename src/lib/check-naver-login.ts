@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import * as cheerio from 'cheerio';
+import { acquireRequestPermit } from './exposure-suite/request-broker-client';
 
 export interface LoginStatus {
   isLoggedIn: boolean;
@@ -30,6 +31,7 @@ export async function checkNaverLogin(): Promise<LoginStatus> {
   let cookie = `NID_AUT=${nidAut}; NID_SES=${nidSes}`;
   if (mLoc) cookie += `; m_loc=${mLoc}`;
 
+  const permit = await acquireRequestPermit();
   try {
     const res = await gotScraping.get(
       'https://nid.naver.com/user2/help/myInfoV2?lang=ko_KR',
@@ -65,5 +67,7 @@ export async function checkNaverLogin(): Promise<LoginStatus> {
     return { isLoggedIn: false };
   } catch {
     return { isLoggedIn: false };
+  } finally {
+    await permit?.release();
   }
 }

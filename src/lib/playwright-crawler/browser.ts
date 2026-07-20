@@ -8,6 +8,11 @@ let browserLaunchPromise: Promise<BrowserContext> | null = null;
 const browserInstances = new Map<string, Browser>();
 const contextInstances = new Map<string, BrowserContext>();
 
+const BLOCKED_RESOURCE_TYPES = new Set(['image', 'media', 'font']);
+
+export const shouldBlockBrowserResource = (resourceType: string): boolean =>
+  BLOCKED_RESOURCE_TYPES.has(resourceType);
+
 const createContext = async (browser: Browser): Promise<BrowserContext> => {
   const cookie = buildNaverCookie();
   const cookies = cookie
@@ -27,6 +32,14 @@ const createContext = async (browser: Browser): Promise<BrowserContext> => {
   if (cookies.length > 0) {
     await ctx.addCookies(cookies);
   }
+
+  await ctx.route('**/*', async (route) => {
+    if (shouldBlockBrowserResource(route.request().resourceType())) {
+      await route.abort();
+      return;
+    }
+    await route.continue();
+  });
 
   return ctx;
 };

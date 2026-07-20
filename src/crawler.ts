@@ -1,6 +1,7 @@
 import { getSearchQuery } from './utils';
 import 'dotenv/config';
 import { logger } from './lib/logger';
+import { withRequestPermit } from './lib/exposure-suite/request-broker-client';
 import {
   NAVER_SEARCH_BASE_URL,
   NAVER_REFERER_URL,
@@ -14,6 +15,11 @@ import {
 } from './constants/crawl-config';
 
 type GotScrapingClient = typeof import('got-scraping').gotScraping;
+
+interface NaverHttpResponse {
+  statusCode?: number;
+  body: string;
+}
 
 export const buildNaverCookie = (): string | undefined => {
   const { NAVER_NID_AUT: nidAut, NAVER_NID_SES: nidSes, NAVER_M_LOC: mLoc } = process.env;
@@ -75,12 +81,15 @@ export const fetchHtml = async (url: string): Promise<string> => {
     headers.Cookie = cookie;
   }
 
-  const response = await client.get(url, {
-    headerGeneratorOptions: HEADER_GENERATOR_OPTIONS,
-    headers,
-    http2: true,
-    timeout: { request: TIMEOUT.REQUEST },
-    throwHttpErrors: false,
+  const response = await withRequestPermit<NaverHttpResponse>(async () => {
+    const result = await client.get<string>(url, {
+      headerGeneratorOptions: HEADER_GENERATOR_OPTIONS,
+      headers,
+      http2: true,
+      timeout: { request: TIMEOUT.REQUEST },
+      throwHttpErrors: false,
+    });
+    return { statusCode: result.statusCode, body: result.body };
   });
 
   const status = response.statusCode ?? 0;
@@ -96,14 +105,17 @@ export const fetchHtml = async (url: string): Promise<string> => {
 export const fetchHtmlWithoutCookie = async (url: string): Promise<string> => {
   const client = await getGotScrapingClient();
 
-  const response = await client.get(url, {
-    headerGeneratorOptions: HEADER_GENERATOR_OPTIONS,
-    headers: {
-      Referer: NAVER_REFERER_URL,
-    },
-    http2: true,
-    timeout: { request: TIMEOUT.REQUEST },
-    throwHttpErrors: false,
+  const response = await withRequestPermit<NaverHttpResponse>(async () => {
+    const result = await client.get<string>(url, {
+      headerGeneratorOptions: HEADER_GENERATOR_OPTIONS,
+      headers: {
+        Referer: NAVER_REFERER_URL,
+      },
+      http2: true,
+      timeout: { request: TIMEOUT.REQUEST },
+      throwHttpErrors: false,
+    });
+    return { statusCode: result.statusCode, body: result.body };
   });
 
   const status = response.statusCode ?? 0;

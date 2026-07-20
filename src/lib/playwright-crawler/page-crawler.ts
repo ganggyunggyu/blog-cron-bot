@@ -1,6 +1,7 @@
 import { Page } from 'playwright';
 import { launchBrowser, launchBrowserInstance } from './browser';
 import { coordinateBlockRecovery } from './block-coordinator';
+import { withRequestPermit } from '../exposure-suite/request-broker-client';
 import { getSearchQuery } from '../../utils';
 import { logger } from '../logger';
 import {
@@ -35,7 +36,7 @@ const checkBlocked = async (page: Page): Promise<boolean> => {
 };
 
 const reloadAfterBlockRecovery = async (page: Page): Promise<void> => {
-  await page.reload();
+  await withRequestPermit(() => page.reload());
   await waitForContent(page);
 };
 
@@ -44,7 +45,7 @@ const recoverBlockedPage = async (page: Page): Promise<void> => {
 
   const releaseButton = page.locator(SELECTORS.RELEASE_BUTTON);
   if ((await releaseButton.count()) > 0) {
-    await releaseButton.click();
+    await withRequestPermit(() => releaseButton.click());
     await page.waitForTimeout(DELAY.BUTTON_CLICK);
     logger.info('제한 해제 버튼 클릭 완료');
   }
@@ -79,10 +80,12 @@ export const crawlMultiPagesPlaywright = async (
   try {
     const firstUrl = buildSearchUrl(query, 1);
     logger.info(`1페이지 URL: ${firstUrl}`);
-    await page.goto(firstUrl, {
-      waitUntil: 'domcontentloaded',
-      timeout: TIMEOUT.PAGE_LOAD,
-    });
+    await withRequestPermit(() =>
+      page.goto(firstUrl, {
+        waitUntil: 'domcontentloaded',
+        timeout: TIMEOUT.PAGE_LOAD,
+      })
+    );
     await waitForContent(page);
 
     if (await checkBlocked(page)) {
@@ -109,8 +112,10 @@ export const crawlMultiPagesPlaywright = async (
         break;
       }
 
-      await pageButton.click();
-      await page.waitForLoadState('domcontentloaded');
+      await withRequestPermit(async () => {
+        await pageButton.click();
+        await page.waitForLoadState('domcontentloaded');
+      });
       await waitForContent(page);
 
       if (await checkBlocked(page)) {
@@ -145,10 +150,12 @@ export const crawlMultiPagesWithInstance = async (
 
   try {
     const firstUrl = buildSearchUrl(query, 1);
-    await page.goto(firstUrl, {
-      waitUntil: 'domcontentloaded',
-      timeout: TIMEOUT.PAGE_LOAD,
-    });
+    await withRequestPermit(() =>
+      page.goto(firstUrl, {
+        waitUntil: 'domcontentloaded',
+        timeout: TIMEOUT.PAGE_LOAD,
+      })
+    );
     await waitForContent(page);
 
     if (await checkBlocked(page)) {
@@ -172,8 +179,10 @@ export const crawlMultiPagesWithInstance = async (
         break;
       }
 
-      await pageButton.click();
-      await page.waitForLoadState('domcontentloaded');
+      await withRequestPermit(async () => {
+        await pageButton.click();
+        await page.waitForLoadState('domcontentloaded');
+      });
       await waitForContent(page);
 
       if (await checkBlocked(page)) {
@@ -213,10 +222,12 @@ export const crawlViewTabPlaywright = async (
     for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
       const url = buildViewTabSearchUrl(query, pageNum);
 
-      await page.goto(url, {
-        waitUntil: 'domcontentloaded',
-        timeout: TIMEOUT.PAGE_LOAD,
-      });
+      await withRequestPermit(() =>
+        page.goto(url, {
+          waitUntil: 'domcontentloaded',
+          timeout: TIMEOUT.PAGE_LOAD,
+        })
+      );
       await waitForContent(page);
 
       const html = await page.content();

@@ -14,6 +14,7 @@ import {
   ProcessKeywordsOptions,
   UpdateFunction,
   OrderedExposureResult,
+  SharedCrawlContext,
 } from './types';
 import {
   handleExcluded,
@@ -30,6 +31,8 @@ import {
 } from './keyword-classifier';
 import { getCrawlResult } from './crawl-manager';
 import { runGuestRetry } from './guest-retry';
+import { TransientExposureCheckError } from './transient-failure';
+import { emitExposureProgress } from '../exposure-progress';
 
 interface KeywordTask {
   globalIndex: number;
@@ -39,6 +42,19 @@ interface KeywordTask {
 interface KeywordTaskGroup {
   searchQuery: string;
   tasks: KeywordTask[];
+}
+
+interface SearchQueryStateSnapshot {
+  matchQueue?: ExposureResult[];
+  guestAddedLinks?: Set<string>;
+  usedLinks?: Set<string>;
+}
+
+interface TransientKeywordRetryBatch {
+  groupIndex: number;
+  searchQuery: string;
+  tasks: KeywordTask[];
+  error: TransientExposureCheckError;
 }
 
 interface SharedProcessContext {
@@ -52,8 +68,10 @@ interface SharedProcessContext {
   consumeMatches: boolean;
   includeGenericBlogResults: boolean;
   keywordLogicMap?: Map<string, boolean>;
+  sharedCrawlContext?: SharedCrawlContext;
   caches: CrawlCaches;
   allResults: OrderedExposureResult[];
+  reportCompleted: () => void;
 }
 
 const DEFAULT_CONCURRENCY = 1;
@@ -101,6 +119,52 @@ const groupKeywordsBySearchQuery = (
   return groups;
 };
 
+const cloneExposureResults = (
+  results?: ExposureResult[]
+): ExposureResult[] | undefined => (results ? [...results] : undefined);
+
+const cloneLinkSet = (
+  links?: Set<string>
+): Set<string> | undefined => (links ? new Set(links) : undefined);
+
+const captureSearchQueryState = (
+  searchQuery: string,
+  caches: CrawlCaches
+): SearchQueryStateSnapshot => ({
+  matchQueue: cloneExposureResults(caches.matchQueueMap.get(searchQuery)),
+  guestAddedLinks: cloneLinkSet(
+    caches.guestAddedLinksCache.get(searchQuery)
+  ),
+  usedLinks: cloneLinkSet(caches.usedLinksCache.get(searchQuery)),
+});
+
+const restoreSearchQueryState = (
+  searchQuery: string,
+  caches: CrawlCaches,
+  snapshot: SearchQueryStateSnapshot
+): void => {
+  if (snapshot.matchQueue) {
+    caches.matchQueueMap.set(searchQuery, [...snapshot.matchQueue]);
+  } else {
+    caches.matchQueueMap.delete(searchQuery);
+  }
+
+  if (snapshot.guestAddedLinks) {
+    caches.guestAddedLinksCache.set(
+      searchQuery,
+      new Set(snapshot.guestAddedLinks)
+    );
+  } else {
+    caches.guestAddedLinksCache.delete(searchQuery);
+  }
+
+  if (snapshot.usedLinks) {
+    caches.usedLinksCache.set(searchQuery, new Set(snapshot.usedLinks));
+  } else {
+    caches.usedLinksCache.delete(searchQuery);
+  }
+};
+
 const processSingleKeyword = async (
   task: KeywordTask,
   shared: SharedProcessContext
@@ -117,6 +181,7 @@ const processSingleKeyword = async (
     consumeMatches,
     includeGenericBlogResults,
     keywordLogicMap,
+    sharedCrawlContext,
     caches,
     allResults,
   } = shared;
@@ -144,12 +209,9 @@ const processSingleKeyword = async (
     maxPages,
     blogIds,
     allowAnyBlog,
-    includeGenericBlogResults
+    includeGenericBlogResults,
+    sharedCrawlContext
   );
-
-  if (!crawlResult) {
-    return;
-  }
 
   const { items, isPopular, uniqueGroupsSize, topicNamesArray } = crawlResult;
   const isNewLogic = getIsNewLogicFromItems(items);
@@ -225,6 +287,7 @@ const processSingleKeyword = async (
         baseMatchesCount: 0,
         existingLinks,
         includeGenericBlogResults,
+        sharedCrawlCoordinator: sharedCrawlContext?.coordinator,
       });
 
       if (guestRetryResult.recovered && guestRetryResult.retryResult?.match) {
@@ -333,6 +396,7 @@ const processSingleKeyword = async (
       existingLinks,
       logNewMatches: true,
       includeGenericBlogResults,
+      sharedCrawlCoordinator: sharedCrawlContext?.coordinator,
     });
 
     guestRetryInfo = guestRetryResult.guestRetryComparison;
@@ -380,34 +444,87 @@ const processSingleKeyword = async (
   }
 };
 
+const processKeywordTaskWithRollback = async (
+  task: KeywordTask,
+  shared: SharedProcessContext
+): Promise<void> => {
+  const searchQuery = getSearchQuery(task.keywordDoc.keyword || '');
+  const snapshot = captureSearchQueryState(searchQuery, shared.caches);
+
+  try {
+    await processSingleKeyword(task, shared);
+  } catch (error) {
+    if (error instanceof TransientExposureCheckError) {
+      restoreSearchQueryState(searchQuery, shared.caches, snapshot);
+    }
+    throw error;
+  }
+};
+
 const runKeywordGroupsWithConcurrency = async (
   groups: KeywordTaskGroup[],
   concurrency: number,
   shared: SharedProcessContext
-): Promise<void> => {
+): Promise<TransientKeywordRetryBatch[]> => {
+  const retryBatches: TransientKeywordRetryBatch[] = [];
   let nextGroupIndex = 0;
-  const workerCount = Math.min(concurrency, groups.length);
-
-  const runWorker = async (): Promise<void> => {
-    while (nextGroupIndex < groups.length) {
-      const currentGroupIndex = nextGroupIndex;
-      nextGroupIndex += 1;
-
-      const group = groups[currentGroupIndex];
-
-      if (!group) {
-        return;
-      }
-
-      for (const task of group.tasks) {
-        await processSingleKeyword(task, shared);
-      }
-    }
-  };
+  const workerCount = Math.min(getEffectiveConcurrency(concurrency), groups.length);
 
   await Promise.all(
-    Array.from({ length: workerCount }, async () => runWorker())
+    Array.from({ length: workerCount }, async () => {
+      while (nextGroupIndex < groups.length) {
+        const groupIndex = nextGroupIndex;
+        nextGroupIndex += 1;
+        const group = groups[groupIndex];
+
+        for (const [taskIndex, task] of group.tasks.entries()) {
+          try {
+            await processKeywordTaskWithRollback(task, shared);
+            shared.reportCompleted();
+          } catch (error) {
+            if (error instanceof TransientExposureCheckError) {
+              retryBatches.push({
+                groupIndex,
+                searchQuery: group.searchQuery,
+                tasks: group.tasks.slice(taskIndex),
+                error,
+              });
+              break;
+            }
+            throw error;
+          }
+        }
+      }
+    })
   );
+
+  return retryBatches.sort((left, right) => left.groupIndex - right.groupIndex);
+};
+
+const retryTransientKeywordGroups = async (
+  retryBatches: readonly TransientKeywordRetryBatch[],
+  shared: SharedProcessContext
+): Promise<void> => {
+  if (retryBatches.length === 0) return;
+
+  const retryKeywordCount = retryBatches.reduce(
+    (sum, batch) => sum + batch.tasks.length,
+    0
+  );
+  logger.warn(
+    `일시 실패 검색어 ${retryKeywordCount}건을 키워드당 병렬 1로 재실행합니다.`
+  );
+
+  for (const batch of retryBatches) {
+    logger.warn(
+      `↻ "${batch.searchQuery}" 남은 ${batch.tasks.length}건 재실행 (${batch.error.message})`
+    );
+
+    for (const task of batch.tasks) {
+      await processKeywordTaskWithRollback(task, shared);
+      shared.reportCompleted();
+    }
+  }
 };
 
 export const processKeywords = async (
@@ -425,7 +542,11 @@ export const processKeywords = async (
   const consumeMatches = options?.consumeMatches ?? true;
   const includeGenericBlogResults = options?.includeGenericBlogResults ?? false;
   const keywordLogicMap = options?.keywordLogicMap;
+  const sharedCrawlContext = options?.sharedCrawlContext;
+  const progressTarget =
+    options?.progressTarget ?? process.env.EXPOSURE_PROGRESS_TARGET;
   const allResults: OrderedExposureResult[] = [];
+  let completedKeywords = 0;
 
   const caches: CrawlCaches = {
     crawlCache: new Map<string, string>(),
@@ -450,8 +571,18 @@ export const processKeywords = async (
     consumeMatches,
     includeGenericBlogResults,
     keywordLogicMap,
+    sharedCrawlContext,
     caches,
     allResults,
+    reportCompleted: () => {
+      completedKeywords += 1;
+      emitExposureProgress(
+        progressTarget,
+        completedKeywords,
+        keywords.length,
+        'running'
+      );
+    },
   };
 
   logger.info(`🔍 총 ${keywords.length}개 키워드 처리`);
@@ -466,17 +597,23 @@ export const processKeywords = async (
 
   if (concurrency === 1 || keywords.length <= 1) {
     for (const [index, keywordDoc] of keywords.entries()) {
-      await processSingleKeyword(
+      await processKeywordTaskWithRollback(
         {
           globalIndex: index + 1,
           keywordDoc,
         },
         shared
       );
+      shared.reportCompleted();
     }
   } else {
     const groups = groupKeywordsBySearchQuery(keywords);
-    await runKeywordGroupsWithConcurrency(groups, concurrency, shared);
+    const retryBatches = await runKeywordGroupsWithConcurrency(
+      groups,
+      concurrency,
+      shared
+    );
+    await retryTransientKeywordGroups(retryBatches, shared);
   }
 
   logger.statusLine.done();

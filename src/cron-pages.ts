@@ -15,7 +15,7 @@ import { processKeywords } from './lib/keyword-processor';
 import { checkNaverLogin } from './lib/check-naver-login';
 import { logger } from './lib/logger';
 import { closeBrowser, launchBrowser } from './lib/playwright-crawler';
-import { getKSTTimestamp } from './utils';
+import { getKSTTimestamp, getSearchQuery } from './utils';
 import { ExposureResult } from './matcher';
 import type { DetailedLog } from './types';
 import { sendDoorayExposureResult } from './lib/dooray';
@@ -29,6 +29,20 @@ import {
   getExposureMaxPages,
   splitConcurrencyBudget,
 } from './lib/exposure-run-config';
+import {
+  SharedCrawlCoordinator,
+  buildSharedCrawlPlans,
+} from './lib/keyword-processor/shared-crawl-coordinator';
+import type { SharedCrawlContext } from './lib/keyword-processor/types';
+import { buildDogPetCompositeCrawlInputs } from './lib/exposure-suite/dog-pet-composite';
+import {
+  finalizeDogmaruCompositeTarget,
+  processDogmaruCompositeTarget,
+  syncAndLoadDogmaruKeywords,
+  type DogmaruCompositeResult,
+} from './lib/exposure-suite/dogmaru-composite-target';
+import { waitForAllOrThrow } from './lib/exposure-suite/settle';
+import { summarizeExposureRows } from './lib/exposure-summary';
 
 dotenv.config();
 
@@ -46,6 +60,14 @@ const SHEET_TYPES: PageCheckSheetType[] = [
   'suripet',
 ];
 
+type PageCheckRunTarget = PageCheckSheetType | 'dogmaru';
+
+const DOG_PET_COMPOSITE_TARGETS: readonly PageCheckRunTarget[] = [
+  'dogmaru',
+  'pet',
+  'suripet',
+];
+
 const SHEET_TYPE_NAMES: Record<PageCheckSheetType, string> = {
   'black-goat-new': '흑염소 신규',
   'black-goat-old': '흑염소 구',
@@ -58,6 +80,11 @@ const SHEET_TYPE_NAMES: Record<PageCheckSheetType, string> = {
   suripet: '서리펫',
 };
 
+const RUN_TARGET_NAMES: Record<PageCheckRunTarget, string> = {
+  ...SHEET_TYPE_NAMES,
+  dogmaru: '도그마루',
+};
+
 // 시트별 최대 페이지 수 설정 (기본값: 4)
 const MAX_PAGES_BY_SHEET: Partial<Record<PageCheckSheetType, number>> = {
   'black-goat-old': 1,
@@ -68,8 +95,50 @@ const MAX_PAGES_BY_SHEET: Partial<Record<PageCheckSheetType, number>> = {
 const DEFAULT_MAX_PAGES = 4;
 
 interface SheetProcessResult {
+  sheetType: PageCheckSheetType;
   results: ExposureResult[];
   logs: DetailedLog[];
+}
+
+interface ImportAllResponse {
+  data: {
+    stats: Array<{ label: string; inserted: number }>;
+    totalInserted: number;
+  };
+}
+
+interface SheetCountResponse {
+  data: {
+    inserted?: number;
+    count?: number;
+  };
+}
+
+interface SheetExportResponse {
+  data: {
+    totalRows?: number;
+    count?: number;
+    updatedCells?: string | number;
+  };
+}
+
+type ImportAllRequest = () => Promise<ImportAllResponse>;
+type ImportSheetRequest = (
+  sheetType: PageCheckSheetType
+) => Promise<SheetCountResponse>;
+type ExportSheetRequest = (
+  sheetType: PageCheckSheetType
+) => Promise<SheetExportResponse>;
+type ExportAllRequest = () => Promise<SheetExportResponse>;
+
+interface ImportSheetDependencies {
+  importPageSheet: ImportSheetRequest;
+  importSuripet: () => Promise<number>;
+}
+
+interface ExportSheetDependencies {
+  exportPageSheet: ExportSheetRequest;
+  exportSuripet: () => Promise<void>;
 }
 
 const getMaxPagesForSheet = (sheetType: PageCheckSheetType): number =>
@@ -77,9 +146,16 @@ const getMaxPagesForSheet = (sheetType: PageCheckSheetType): number =>
     MAX_PAGES_BY_SHEET[sheetType] ?? DEFAULT_MAX_PAGES
   );
 
-async function syncAllSheetsAPI(): Promise<number> {
+const isPageCheckSheetType = (
+  target: PageCheckRunTarget
+): target is PageCheckSheetType => target !== 'dogmaru';
+
+export async function syncAllSheetsAPI(
+  request: ImportAllRequest = () =>
+    axios.post(`${PAGE_CHECK_API}/api/page-check/import-all`)
+): Promise<number> {
   try {
-    const res = await axios.post(`${PAGE_CHECK_API}/api/page-check/import-all`);
+    const res = await request();
     const { stats, totalInserted } = res.data;
 
     for (const r of stats) {
@@ -89,59 +165,61 @@ async function syncAllSheetsAPI(): Promise<number> {
     return totalInserted;
   } catch (error) {
     logger.error(`시트 동기화 실패: ${(error as Error).message}`);
-    return 0;
+    throw error;
   }
 }
 
 // 서리펫은 PAGE_CHECK_API(외부 서버)에 의존하지 않고 direct-write로 시트에 바로 반영함
-async function exportSuripetSheetDirect(): Promise<boolean> {
-  try {
-    const keywords = await getPageCheckKeywords('suripet');
-    await writeSuripetResultsToSheet(
-      keywords.map((keyword) => ({
-        keyword: keyword.keyword,
-        visibility: keyword.visibility,
-        popularTopic: keyword.popularTopic,
-        url: keyword.url,
-        postPublishedAt: keyword.postPublishedAt,
-        keywordType: keyword.keywordType,
-        matchedTitle: keyword.matchedTitle,
-        rank: keyword.rank,
-        rankWithCafe: keyword.rankWithCafe,
-        isUpdateRequired: keyword.isUpdateRequired,
-        isNewLogic: keyword.isNewLogic,
-        foundPage: keyword.foundPage,
-      }))
-    );
-    return true;
-  } catch (error) {
-    logger.error(
-      `  ${SHEET_TYPE_NAMES.suripet} 내보내기 실패: ${(error as Error).message}`
-    );
-    return false;
-  }
+async function exportSuripetSheetDirect(): Promise<void> {
+  const keywords = await getPageCheckKeywords('suripet');
+  await writeSuripetResultsToSheet(
+    keywords.map((keyword) => ({
+      keyword: keyword.keyword,
+      visibility: keyword.visibility,
+      popularTopic: keyword.popularTopic,
+      url: keyword.url,
+      postPublishedAt: keyword.postPublishedAt,
+      keywordType: keyword.keywordType,
+      matchedTitle: keyword.matchedTitle,
+      rank: keyword.rank,
+      rankWithCafe: keyword.rankWithCafe,
+      isUpdateRequired: keyword.isUpdateRequired,
+      isNewLogic: keyword.isNewLogic,
+      foundPage: keyword.foundPage,
+    }))
+  );
 }
 
-async function exportSheetAPI(sheetType: PageCheckSheetType): Promise<boolean> {
-  if (sheetType === 'suripet') {
-    return exportSuripetSheetDirect();
-  }
+export async function exportSheetAPI(
+  sheetType: PageCheckSheetType,
+  dependencies: Partial<ExportSheetDependencies> = {}
+): Promise<void> {
+  const exportPageSheet =
+    dependencies.exportPageSheet ??
+    ((targetSheetType: PageCheckSheetType) =>
+      axios.post(`${PAGE_CHECK_API}/api/page-check/export`, {
+        sheetType: targetSheetType,
+      }));
+  const exportSuripet =
+    dependencies.exportSuripet ?? exportSuripetSheetDirect;
 
   try {
-    const res = await axios.post(`${PAGE_CHECK_API}/api/page-check/export`, {
-      sheetType,
-    });
+    if (sheetType === 'suripet') {
+      await exportSuripet();
+      return;
+    }
+
+    const res = await exportPageSheet(sheetType);
     const totalRows = res.data.totalRows ?? res.data.count ?? 0;
     const updatedCells = res.data.updatedCells ?? '';
     logger.success(
       `  ${SHEET_TYPE_NAMES[sheetType]}: ${totalRows}개 내보내기${updatedCells ? ` (${updatedCells}셀)` : ''}`
     );
-    return true;
   } catch (error) {
     logger.error(
       `  ${SHEET_TYPE_NAMES[sheetType]} 내보내기 실패: ${(error as Error).message}`
     );
-    return false;
+    throw error;
   }
 }
 
@@ -154,17 +232,25 @@ export const syncSuripetKeywordsFromSheetToDB = async (): Promise<number> => {
   return synced;
 };
 
-async function importSheetAPI(sheetType: PageCheckSheetType): Promise<number> {
+export async function importSheetAPI(
+  sheetType: PageCheckSheetType,
+  dependencies: Partial<ImportSheetDependencies> = {}
+): Promise<number> {
+  const importPageSheet =
+    dependencies.importPageSheet ??
+    ((targetSheetType: PageCheckSheetType) =>
+      axios.post(`${PAGE_CHECK_API}/api/page-check/import`, {
+        sheetType: targetSheetType,
+      }));
+  const importSuripet =
+    dependencies.importSuripet ?? syncSuripetKeywordsFromSheetToDB;
+
   try {
     if (sheetType === 'suripet') {
-      return await syncSuripetKeywordsFromSheetToDB();
+      return await importSuripet();
     }
 
-    // suripet은 전용 API 사용
-    const url = `${PAGE_CHECK_API}/api/page-check/import`;
-    const body = { sheetType };
-
-    const res = await axios.post(url, body);
+    const res = await importPageSheet(sheetType);
     const inserted = res.data.inserted ?? res.data.count ?? 0;
     logger.success(`  ${SHEET_TYPE_NAMES[sheetType]}: ${inserted}개 동기화`);
     return inserted;
@@ -172,9 +258,51 @@ async function importSheetAPI(sheetType: PageCheckSheetType): Promise<number> {
     logger.error(
       `  ${SHEET_TYPE_NAMES[sheetType]} 불러오기 실패: ${(error as Error).message}`
     );
-    return 0;
+    throw error;
   }
 }
+
+export async function exportAllSheetsAPI(
+  request: ExportAllRequest = () =>
+    axios.post(`${PAGE_CHECK_API}/api/page-check/export-all`)
+): Promise<void> {
+  try {
+    const res = await request();
+    const totalRows = res.data.totalRows ?? res.data.count ?? 0;
+    const updatedCells = res.data.updatedCells ?? '';
+    logger.success(
+      `  종합: ${totalRows}개 내보내기${updatedCells ? ` (${updatedCells}셀)` : ''}`
+    );
+  } catch (error) {
+    logger.error(`  종합 내보내기 실패: ${(error as Error).message}`);
+    throw error;
+  }
+}
+
+const syncPageSheetTypes = async (
+  activeSheetTypes: PageCheckSheetType[]
+): Promise<void> => {
+  if (activeSheetTypes.length === 0) return;
+
+  if (activeSheetTypes.length === SHEET_TYPES.length) {
+    const totalSynced = await syncAllSheetsAPI();
+    if (activeSheetTypes.includes('suripet')) {
+      const suripetSynced = await syncSuripetKeywordsFromSheetToDB();
+      logger.info(
+        `📥 총 ${totalSynced}개 키워드 동기화 완료 + 서리펫 ${suripetSynced}개 직접 동기화`
+      );
+    } else {
+      logger.info(`📥 총 ${totalSynced}개 키워드 동기화 완료`);
+    }
+    return;
+  }
+
+  const syncedCounts = await Promise.all(
+    activeSheetTypes.map((sheetType) => importSheetAPI(sheetType))
+  );
+  const totalSynced = syncedCounts.reduce((sum, count) => sum + count, 0);
+  logger.info(`📥 ${totalSynced}개 키워드 동기화 완료`);
+};
 
 function createUpdateFunction(sheetType: PageCheckSheetType) {
   return async (
@@ -218,7 +346,8 @@ async function processSheetKeywords(
   keywords: IPageCheckKeyword[],
   isLoggedIn: boolean,
   concurrency: number,
-  keywordLogicMap?: Map<string, boolean>
+  keywordLogicMap?: Map<string, boolean>,
+  sharedCrawlContext?: SharedCrawlContext
 ): Promise<SheetProcessResult> {
   const typeName = SHEET_TYPE_NAMES[sheetType];
   const maxPages = getMaxPagesForSheet(sheetType);
@@ -239,25 +368,30 @@ async function processSheetKeywords(
     keywordLogicMap,
     // 애견/서리펫의 같은 키워드 행은 같은 계정 범위를 확인하므로 첫 매칭을 재사용한다.
     consumeMatches: sheetType !== 'pet' && sheetType !== 'suripet',
+    sharedCrawlContext,
+    progressTarget: sheetType,
   });
 
   logger.success(`[${typeName}] ✅ 완료: ${results.length}개 노출 발견`);
 
-  // 완료 즉시 시트 내보내기
-  await exportSheetAPI(sheetType);
-
-  return { results, logs: logBuilder.getLogs() };
+  return { sheetType, results, logs: logBuilder.getLogs() };
 }
 
 const runPageCheckWorkflow = async (
-  targetSheetTypes?: PageCheckSheetType[]
+  targetSheetTypes?: PageCheckRunTarget[]
 ): Promise<void> => {
   const startTime = Date.now();
-  const activeSheetTypes = targetSheetTypes ?? SHEET_TYPES;
-  const isSingleSheet = activeSheetTypes.length === 1;
-  const sheetLabel = isSingleSheet
-    ? SHEET_TYPE_NAMES[activeSheetTypes[0]]
+  const activeTargets: PageCheckRunTarget[] = targetSheetTypes ?? SHEET_TYPES;
+  const activeSheetTypes = activeTargets.filter(isPageCheckSheetType);
+  const includesDogmaru = activeTargets.includes('dogmaru');
+  const sheetLabel = targetSheetTypes
+    ? activeTargets
+        .map((target) => RUN_TARGET_NAMES[target])
+        .join(' + ')
     : '전체';
+  const pageSheetLabel = activeSheetTypes
+    .map((sheetType) => SHEET_TYPE_NAMES[sheetType])
+    .join(' + ');
 
   logger.divider(`📄 멀티페이지 크론 [${sheetLabel}]`);
 
@@ -283,20 +417,12 @@ const runPageCheckWorkflow = async (
 
   // 1. 시트 → DB 동기화 (외부 API)
   logger.divider('시트 동기화');
-  if (isSingleSheet) {
-    const synced = await importSheetAPI(activeSheetTypes[0]);
-    logger.info(`📥 ${synced}개 키워드 동기화 완료`);
-  } else {
-    const totalSynced = await syncAllSheetsAPI();
-    if (activeSheetTypes.includes('suripet')) {
-      const suripetSynced = await syncSuripetKeywordsFromSheetToDB();
-      logger.info(
-        `📥 총 ${totalSynced}개 키워드 동기화 완료 + 서리펫 ${suripetSynced}개 직접 동기화`
-      );
-    } else {
-      logger.info(`📥 총 ${totalSynced}개 키워드 동기화 완료`);
-    }
-  }
+  const [dogmaruKeywords = []] = await waitForAllOrThrow([
+    includesDogmaru
+      ? syncAndLoadDogmaruKeywords()
+      : Promise.resolve([]),
+    syncPageSheetTypes(activeSheetTypes).then(() => []),
+  ]);
   logger.blank();
 
   // 2. DB 연결 및 키워드 조회
@@ -319,10 +445,14 @@ const runPageCheckWorkflow = async (
     logger.info(`  ${SHEET_TYPE_NAMES[sheetType]}: ${keywords.length}개`);
   }
 
-  const totalKeywords = Object.values(keywordsBySheet).reduce(
-    (sum, kws) => sum + kws.length,
+  const totalPageKeywords = Object.values(keywordsBySheet).reduce(
+    (sum, keywords) => sum + keywords.length,
     0
   );
+  const totalKeywords = totalPageKeywords + dogmaruKeywords.length;
+  if (includesDogmaru) {
+    logger.info(`  도그마루: ${dogmaruKeywords.length}개`);
+  }
   logger.info(`📋 총 ${totalKeywords}개 키워드 로드 완료`);
   logger.blank();
 
@@ -332,7 +462,7 @@ const runPageCheckWorkflow = async (
   }
 
   // 3. 시트 병렬 노출체크
-  logger.divider(`노출체크 시작 (${activeSheetTypes.length}개 시트 병렬)`);
+  logger.divider(`노출체크 시작 (${activeTargets.length}개 대상 병렬)`);
 
   const keywordLogicMap = new Map<string, boolean>();
 
@@ -342,12 +472,63 @@ const runPageCheckWorkflow = async (
   const totalConcurrency = getExposureConcurrency();
   const { taskConcurrency, perTaskConcurrency } = splitConcurrencyBudget(
     totalConcurrency,
-    nonEmptySheetTypes.length
+    nonEmptySheetTypes.length + (dogmaruKeywords.length > 0 ? 1 : 0)
   );
 
-  logger.info(
-    `⚡ 총 동시성 ${totalConcurrency}: 시트 ${taskConcurrency}개 × 시트당 키워드 ${perTaskConcurrency}개`
-  );
+  const isDogPetComposite =
+    includesDogmaru &&
+    activeSheetTypes.length === 2 &&
+    activeSheetTypes.includes('pet') &&
+    activeSheetTypes.includes('suripet');
+  const isPetComposite =
+    !includesDogmaru &&
+    nonEmptySheetTypes.length === 2 &&
+    nonEmptySheetTypes.includes('pet') &&
+    nonEmptySheetTypes.includes('suripet');
+  const sharedPlanInputs = isDogPetComposite
+    ? buildDogPetCompositeCrawlInputs(
+        {
+          dogmaru: dogmaruKeywords.map((keyword) =>
+            getSearchQuery(keyword.keyword)
+          ),
+          pet: keywordsBySheet.pet.map((keyword) =>
+            getSearchQuery(keyword.keyword)
+          ),
+          suripet: keywordsBySheet.suripet.map((keyword) =>
+            getSearchQuery(keyword.keyword)
+          ),
+        },
+        getMaxPagesForSheet('pet'),
+        getMaxPagesForSheet('suripet')
+      )
+    : isPetComposite
+      ? (['pet', 'suripet'] as const).map((sheetType) => ({
+          searchQueries: keywordsBySheet[sheetType].map((keyword) =>
+            getSearchQuery(keyword.keyword)
+          ),
+          maxPages: getMaxPagesForSheet(sheetType),
+          blogIds: PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE[sheetType],
+        }))
+      : undefined;
+  const sharedCrawlContext: SharedCrawlContext | undefined = sharedPlanInputs
+    ? {
+        coordinator: new SharedCrawlCoordinator(totalConcurrency),
+        plans: buildSharedCrawlPlans(sharedPlanInputs),
+      }
+    : undefined;
+
+  if (sharedCrawlContext) {
+    logger.info(
+      `⚡ ${isDogPetComposite ? '도그마루·애견·서리펫' : '애견·서리펫'} 처리 워커 각 ${totalConcurrency}, 외부 요청 합계 최대 ${totalConcurrency}`
+    );
+    logger.info(
+      `♻️ ${sharedCrawlContext.plans.size}개 고유 검색어 크롤 결과 공유`
+    );
+  } else {
+    logger.info(
+      `⚡ 총 동시성 ${totalConcurrency}: 시트 ${taskConcurrency}개 × 시트당 키워드 ${perTaskConcurrency}개`
+    );
+  }
 
   const shouldPrewarmBrowser = nonEmptySheetTypes.some(
     (sheetType) => getMaxPagesForSheet(sheetType) > 1
@@ -357,28 +538,69 @@ const runPageCheckWorkflow = async (
   }
 
   const sheetResults: SheetProcessResult[] = [];
-  for (
-    let startIndex = 0;
-    startIndex < nonEmptySheetTypes.length;
-    startIndex += taskConcurrency
-  ) {
-    const sheetBatch = nonEmptySheetTypes.slice(
-      startIndex,
-      startIndex + taskConcurrency
-    );
-    const batchResults = await Promise.all(
-      sheetBatch.map((sheetType) =>
-        processSheetKeywords(
+  let dogmaruResult: DogmaruCompositeResult | undefined;
+
+  if (sharedCrawlContext) {
+    type SharedTargetResult =
+      | { target: 'page'; result: SheetProcessResult }
+      | { target: 'dogmaru'; result: DogmaruCompositeResult };
+    const sharedTargetPromises: Promise<SharedTargetResult>[] =
+      nonEmptySheetTypes.map(async (sheetType) => ({
+        target: 'page' as const,
+        result: await processSheetKeywords(
           sheetType,
           keywordsBySheet[sheetType],
           loginStatus.isLoggedIn,
-          perTaskConcurrency,
-          keywordLogicMap
+          totalConcurrency,
+          keywordLogicMap,
+          sharedCrawlContext
+        ),
+      }));
+
+    if (dogmaruKeywords.length > 0) {
+      sharedTargetPromises.push(
+        processDogmaruCompositeTarget(
+          dogmaruKeywords,
+          loginStatus.isLoggedIn,
+          totalConcurrency,
+          sharedCrawlContext
+        ).then((result) => ({ target: 'dogmaru' as const, result }))
+      );
+    }
+
+    const targetResults = await waitForAllOrThrow(sharedTargetPromises);
+    targetResults.forEach((targetResult) => {
+      if (targetResult.target === 'dogmaru') {
+        dogmaruResult = targetResult.result;
+      } else {
+        sheetResults.push(targetResult.result);
+      }
+    });
+  } else {
+    for (
+      let startIndex = 0;
+      startIndex < nonEmptySheetTypes.length;
+      startIndex += taskConcurrency
+    ) {
+      const sheetBatch = nonEmptySheetTypes.slice(
+        startIndex,
+        startIndex + taskConcurrency
+      );
+      const batchResults = await waitForAllOrThrow(
+        sheetBatch.map((sheetType) =>
+          processSheetKeywords(
+            sheetType,
+            keywordsBySheet[sheetType],
+            loginStatus.isLoggedIn,
+            perTaskConcurrency,
+            keywordLogicMap
+          )
         )
-      )
-    );
-    sheetResults.push(...batchResults);
+      );
+      sheetResults.push(...batchResults);
+    }
   }
+
   const allResults = sheetResults.flatMap(({ results }) => results);
 
   logger.blank();
@@ -403,15 +625,12 @@ const runPageCheckWorkflow = async (
   }
 
   // 종합 탭 내보내기
-  try {
-    const res = await axios.post(`${PAGE_CHECK_API}/api/page-check/export-all`);
-    const totalRows = res.data.totalRows ?? res.data.count ?? 0;
-    const updatedCells = res.data.updatedCells ?? '';
-    logger.success(
-      `  종합: ${totalRows}개 내보내기${updatedCells ? ` (${updatedCells}셀)` : ''}`
-    );
-  } catch (error) {
-    logger.error(`  종합 내보내기 실패: ${(error as Error).message}`);
+  await exportAllSheetsAPI();
+
+  // 모든 페이지 결과 반영이 성공한 뒤 도그마루 결과를 반영한다. 알림은
+  // 아래에서 한 번만 보내 재시도 시 중복 알림을 만들지 않는다.
+  if (dogmaruResult) {
+    await finalizeDogmaruCompositeTarget(dogmaruResult, startTime);
   }
   logger.blank();
 
@@ -434,8 +653,8 @@ const runPageCheckWorkflow = async (
   const newLogicCount = allResults.filter((r) => r.isNewLogic === true).length;
   const oldLogicCount = allResults.filter((r) => r.isNewLogic === false).length;
 
-  logger.summary.complete(`📄 멀티페이지 크론 [${sheetLabel}] 완료 요약`, [
-    { label: '총 검색어', value: `${totalKeywords}개` },
+  logger.summary.complete(`📄 멀티페이지 크론 [${pageSheetLabel}] 완료 요약`, [
+    { label: '총 검색어', value: `${totalPageKeywords}개` },
     { label: '총 노출 발견', value: `${allResults.length}개` },
     { label: '인기글', value: `${popularCount}개` },
     { label: '스블', value: `${sblCount}개` },
@@ -445,33 +664,64 @@ const runPageCheckWorkflow = async (
   ]);
 
   // 7. Dooray 메시지 전송
-  const sheetStats = activeSheetTypes
-    .map((st) => ({
-      name: SHEET_TYPE_NAMES[st],
-      count: keywordsBySheet[st].filter((k) =>
-        allResults.some((r) => r.query === k.keyword)
-      ).length,
-    }))
-    .filter((s) => s.count > 0);
-
-  // 미노출 키워드 (변경=false인 것만)
-  const exposedKeywords = new Set(allResults.map((r) => r.query));
-  const allKeywords = activeSheetTypes.flatMap((st) => keywordsBySheet[st]);
-  const missingKeywords = allKeywords
-    .filter((k) => !exposedKeywords.has(k.keyword) && !k.isUpdateRequired)
-    .map((k) => k.keyword);
+  const resultsBySheetType = new Map(
+    sheetResults.map(({ sheetType, results }) => [sheetType, results])
+  );
+  const pageSummaries = new Map(
+    activeSheetTypes.map((sheetType) => [
+      sheetType,
+      summarizeExposureRows(
+        keywordsBySheet[sheetType],
+        resultsBySheetType.get(sheetType) ?? []
+      ),
+    ])
+  );
+  const dogmaruSummary = dogmaruResult
+    ? summarizeExposureRows(dogmaruResult.keywords, dogmaruResult.results)
+    : undefined;
+  const sheetStats = [
+    ...activeSheetTypes.map((sheetType) => ({
+      name: SHEET_TYPE_NAMES[sheetType],
+      count: pageSummaries.get(sheetType)?.exposedCount ?? 0,
+    })),
+    ...(dogmaruSummary
+      ? [{ name: RUN_TARGET_NAMES.dogmaru, count: dogmaruSummary.exposedCount }]
+      : []),
+  ].filter((summary) => summary.count > 0);
+  const missingKeywords = [
+    ...activeSheetTypes.flatMap(
+      (sheetType) => pageSummaries.get(sheetType)?.missingKeywords ?? []
+    ),
+    ...(dogmaruSummary?.missingKeywords ?? []),
+  ];
+  const notificationResults = [
+    ...allResults,
+    ...(dogmaruResult?.results ?? []),
+  ];
+  const notificationPopularCount = notificationResults.filter(
+    (result) => result.exposureType === '인기글'
+  ).length;
+  const notificationSblCount = notificationResults.filter(
+    (result) => result.exposureType === '스블'
+  ).length;
+  const notificationNewLogicCount = notificationResults.filter(
+    (result) => result.isNewLogic === true
+  ).length;
+  const notificationOldLogicCount = notificationResults.filter(
+    (result) => result.isNewLogic === false
+  ).length;
 
   await sendDoorayExposureResult({
     cronType: `멀티페이지 크론 [${sheetLabel}]`,
     totalKeywords,
-    exposureCount: allResults.length,
-    popularCount,
-    sblCount,
+    exposureCount: notificationResults.length,
+    popularCount: notificationPopularCount,
+    sblCount: notificationSblCount,
     elapsedTime: elapsedTimeStr,
     sheetStats,
     missingKeywords,
-    newLogicCount,
-    oldLogicCount,
+    newLogicCount: notificationNewLogicCount,
+    oldLogicCount: notificationOldLogicCount,
   });
 
   const logs = sheetResults.flatMap((result) => result.logs);
@@ -479,7 +729,7 @@ const runPageCheckWorkflow = async (
 };
 
 export async function main(
-  targetSheetTypes?: PageCheckSheetType[]
+  targetSheetTypes?: PageCheckRunTarget[]
 ): Promise<void> {
   try {
     await runPageCheckWorkflow(targetSheetTypes);
@@ -495,7 +745,7 @@ export async function main(
 if (require.main === module) {
   const args = process.argv.slice(2);
 
-  let targetSheetTypes: PageCheckSheetType[] | undefined;
+  let targetSheetTypes: PageCheckRunTarget[] | undefined;
 
   // --exclude 옵션 처리
   const excludeIndex = args.indexOf('--exclude');
@@ -510,14 +760,48 @@ if (require.main === module) {
       process.exit(1);
     }
   } else {
-    const sheetTypeArg = args[0] as PageCheckSheetType | undefined;
+    const sheetTypeArg = args[0];
+    const requestedSheetTypes = Array.from(
+      new Set(
+        (sheetTypeArg ?? '')
+          .split(',')
+          .map((value) => value.trim())
+          .filter(Boolean)
+      )
+    );
+    const availableTargets: PageCheckRunTarget[] = [
+      ...SHEET_TYPES,
+      'dogmaru',
+    ];
+    const invalidSheetTypes = requestedSheetTypes.filter(
+      (sheetType) => !availableTargets.includes(sheetType as PageCheckRunTarget)
+    );
+    const requestsDogmaru = requestedSheetTypes.includes('dogmaru');
+    const isExactDogPetComposite =
+      requestedSheetTypes.length === DOG_PET_COMPOSITE_TARGETS.length &&
+      DOG_PET_COMPOSITE_TARGETS.every((target) =>
+        requestedSheetTypes.includes(target)
+      );
+    const hasValidDogmaruScope =
+      !requestsDogmaru || isExactDogPetComposite;
 
-    if (sheetTypeArg && SHEET_TYPES.includes(sheetTypeArg)) {
-      targetSheetTypes = [sheetTypeArg];
-      logger.info(`🎯 단일 시트 모드: ${SHEET_TYPE_NAMES[sheetTypeArg]}`);
+    if (
+      requestedSheetTypes.length > 0 &&
+      invalidSheetTypes.length === 0 &&
+      hasValidDogmaruScope
+    ) {
+      targetSheetTypes = requestedSheetTypes as PageCheckRunTarget[];
+      logger.info(
+        `🎯 대상 시트: ${targetSheetTypes
+          .map((target) => RUN_TARGET_NAMES[target])
+          .join(', ')}`
+      );
     } else if (sheetTypeArg) {
-      logger.error(`❌ 유효하지 않은 sheetType: ${sheetTypeArg}`);
-      logger.info(`사용 가능: ${SHEET_TYPES.join(', ')}`);
+      const invalidScope = invalidSheetTypes.join(', ') || sheetTypeArg;
+      logger.error(`❌ 유효하지 않은 sheetType 조합: ${invalidScope}`);
+      logger.info(
+        `사용 가능: ${SHEET_TYPES.join(', ')} 또는 dogmaru,pet,suripet`
+      );
       process.exit(1);
     }
   }

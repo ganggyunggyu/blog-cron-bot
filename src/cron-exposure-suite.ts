@@ -3,10 +3,21 @@ import * as dotenv from 'dotenv';
 import { logger } from './lib/logger';
 import {
   ExposureTargetId,
+  ExposureTargetJob,
+  buildTargetEnvironment,
   parseExposureSuiteOptions,
-  resolveTargetCommand,
+  planExposureTargetJobs,
 } from './lib/exposure-suite/options';
-import { acquireRunLock } from './lib/exposure-suite/run-lock';
+import {
+  acquireRunLock,
+  type RunLock,
+} from './lib/exposure-suite/run-lock';
+import {
+  startRequestBroker,
+  type RequestBroker,
+} from './lib/exposure-suite/request-broker';
+import { waitForRecoveryDelay } from './lib/exposure-suite/recovery-delay';
+import { emitExposureProgress } from './lib/exposure-progress';
 
 dotenv.config();
 
@@ -32,6 +43,13 @@ const TARGET_PRIORITY: Record<ExposureTargetId, number> = {
 
 const activeChildren = new Set<ChildProcess>();
 let isStopping = false;
+let activeSuiteLock: RunLock | undefined;
+let recoveryDelayController: AbortController | undefined;
+
+const releaseSuiteLock = (): void => {
+  activeSuiteLock?.release();
+  activeSuiteLock = undefined;
+};
 
 const stopChildProcessGroup = (child: ChildProcess): void => {
   if (child.pid === undefined) return;
@@ -49,23 +67,33 @@ const stopChildProcessGroup = (child: ChildProcess): void => {
 
 const stopChildren = (): void => {
   isStopping = true;
+  recoveryDelayController?.abort();
   activeChildren.forEach(stopChildProcessGroup);
 };
 
 process.once('SIGINT', stopChildren);
 process.once('SIGTERM', stopChildren);
+process.once('exit', releaseSuiteLock);
 
 const runTarget = async (
-  target: ExposureTargetId,
+  job: ExposureTargetJob,
   concurrency: number,
-  maxPages: number
+  maxPages: number,
+  brokerEnvironment: NodeJS.ProcessEnv,
+  isRecoveryRun = false
 ): Promise<void> => {
-  const command = resolveTargetCommand(target);
-  const label = TARGET_LABELS[target];
+  const { command, targets } = job;
+  const label = targets.map((target) => TARGET_LABELS[target]).join(' + ');
+  const effectiveMaxPages = targets.some(
+    (target) => target === 'pet' || target === 'suripet'
+  )
+    ? maxPages
+    : 1;
 
   logger.info(
-    `▶ ${label} 시작 (병렬 ${concurrency}, 최대 ${maxPages}페이지)`
+    `▶ ${label} 시작 (병렬 ${concurrency}, 최대 ${effectiveMaxPages}페이지)`
   );
+  targets.forEach((target) => emitExposureProgress(target, 0, 0, 'running'));
 
   await new Promise<void>((resolve, reject) => {
     const child = spawn(
@@ -80,14 +108,14 @@ const runTarget = async (
         stdio: 'inherit',
         detached: process.platform !== 'win32',
         env: {
-          ...process.env,
-          EXPOSURE_CONCURRENCY: String(concurrency),
-          PAGE_CHECK_CONCURRENCY: String(concurrency),
-          CHECK_CONCURRENCY: String(concurrency),
-          CAFE_CHECK_CONCURRENCY: String(concurrency),
-          FAST_EXPOSURE_MODE: 'true',
-          EXPOSURE_MAX_PAGES: String(maxPages),
-          PAGE_CHECK_MAX_PAGES: String(maxPages),
+          ...buildTargetEnvironment(
+            process.env,
+            targets,
+            concurrency,
+            maxPages
+          ),
+          FAST_EXPOSURE_MODE: isRecoveryRun ? 'false' : 'true',
+          ...brokerEnvironment,
         },
       }
     );
@@ -100,6 +128,7 @@ const runTarget = async (
     child.once('close', (code) => {
       activeChildren.delete(child);
       if (code === 0) {
+        targets.forEach((target) => emitExposureProgress(target, 0, 0, 'success'));
         logger.success(`✓ ${label} 완료`);
         resolve();
         return;
@@ -113,26 +142,41 @@ const main = async (): Promise<void> => {
   const suiteLock = acquireRunLock(
     `${process.cwd()}/work/exposure-suite.lock`
   );
+  activeSuiteLock = suiteLock;
+  let requestBroker: RequestBroker | undefined;
 
   try {
     const options = parseExposureSuiteOptions(
       process.argv.slice(2),
       process.env
     );
+    const targetJobs = planExposureTargetJobs(options.targets);
     const workerCount = Math.min(
       options.targetConcurrency,
       options.concurrency,
-      options.targets.length
+      targetJobs.length
     );
     const workerConcurrency = Array.from(
       { length: workerCount },
       () => options.concurrency
     );
-    const scheduledTargets = [...options.targets].sort(
-      (left, right) => TARGET_PRIORITY[left] - TARGET_PRIORITY[right]
+    const scheduledJobs = [...targetJobs].sort(
+      (left, right) =>
+        Math.min(...left.targets.map((target) => TARGET_PRIORITY[target])) -
+        Math.min(...right.targets.map((target) => TARGET_PRIORITY[target]))
     );
-    const failures: Array<{ target: ExposureTargetId; message: string }> = [];
+    const failures: Array<{
+      job: ExposureTargetJob;
+      label: string;
+      message: string;
+    }> = [];
     let nextTargetIndex = 0;
+    const broker = await startRequestBroker(options.concurrency);
+    requestBroker = broker;
+
+    options.targets.forEach((target) =>
+      emitExposureProgress(target, 0, 0, 'pending')
+    );
 
     logger.summary.start('전체 빠른 노출체크', [
       {
@@ -145,24 +189,38 @@ const main = async (): Promise<void> => {
       { label: '동시 대상', value: `${workerCount}` },
       {
         label: '최대 동시 요청',
-        value: `${options.concurrency * workerCount}`,
+        value: `${options.concurrency}`,
       },
-      { label: '최대 페이지', value: `${options.maxPages}` },
+      {
+        label: '애견·서리펫 최대 페이지',
+        value: `${options.maxPages}`,
+      },
     ]);
 
     const worker = async (concurrency: number): Promise<void> => {
-      while (!isStopping && nextTargetIndex < scheduledTargets.length) {
+      while (!isStopping && nextTargetIndex < scheduledJobs.length) {
         const targetIndex = nextTargetIndex;
         nextTargetIndex += 1;
-        const target = scheduledTargets[targetIndex];
+        const job = scheduledJobs[targetIndex];
+        const label = job.targets
+          .map((target) => TARGET_LABELS[target])
+          .join(' + ');
 
         try {
-          await runTarget(target, concurrency, options.maxPages);
+          await runTarget(
+            job,
+            concurrency,
+            options.maxPages,
+            broker.environment
+          );
         } catch (error) {
           const message =
             error instanceof Error ? error.message : String(error);
-          failures.push({ target, message });
-          logger.error(`${TARGET_LABELS[target]} 실패: ${message}`);
+          failures.push({ job, label, message });
+          job.targets.forEach((target) =>
+            emitExposureProgress(target, 0, 0, 'failed')
+          );
+          logger.error(`${label} 실패: ${message}`);
         }
       }
     };
@@ -175,10 +233,42 @@ const main = async (): Promise<void> => {
       throw new Error('사용자 요청으로 실행 중지');
     }
 
+    const retryFailures: Array<{ label: string; message: string }> = [];
     if (failures.length > 0) {
+      logger.warn(
+        `일시 실패 ${failures.length}개 대상은 65초 차단 해제 대기 후 병렬 1로 순차 재실행합니다.`
+      );
+      recoveryDelayController = new AbortController();
+      try {
+        await waitForRecoveryDelay(65_000, recoveryDelayController.signal);
+      } finally {
+        recoveryDelayController = undefined;
+      }
+
+      for (const { job, label } of failures) {
+        if (isStopping) break;
+        try {
+          await runTarget(job, 1, options.maxPages, broker.environment, true);
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : String(error);
+          retryFailures.push({ label, message });
+          job.targets.forEach((target) =>
+            emitExposureProgress(target, 0, 0, 'failed')
+          );
+          logger.error(`${label} 저속 재실행 실패: ${message}`);
+        }
+      }
+    }
+
+    if (isStopping) {
+      throw new Error('사용자 요청으로 실행 중지');
+    }
+
+    if (retryFailures.length > 0) {
       throw new Error(
-        failures
-          .map(({ target, message }) => `${TARGET_LABELS[target]}=${message}`)
+        retryFailures
+          .map(({ label, message }) => `${label}=${message}`)
           .join(', ')
       );
     }
@@ -187,7 +277,12 @@ const main = async (): Promise<void> => {
       { label: '성공 대상', value: `${options.targets.length}개` },
     ]);
   } finally {
-    suiteLock.release();
+    try {
+      await requestBroker?.close();
+    } finally {
+      suiteLock.release();
+      if (activeSuiteLock === suiteLock) activeSuiteLock = undefined;
+    }
   }
 };
 

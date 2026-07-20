@@ -26,6 +26,7 @@ import {
   extractAllBlogLinks,
 } from '../lib/playwright-crawler/blog-extractor';
 import { logger } from '../lib/logger';
+import { emitExposureProgress } from '../lib/exposure-progress';
 import { resolveNaverSearchResultUrl } from '../lib/naver-source';
 import { ExposureResult } from '../matcher';
 
@@ -3463,6 +3464,14 @@ const main = async (): Promise<void> => {
     (target) => !resultMap.has(target.targetKey)
   );
   let results: CheckResult[] = [];
+  let completedTargets = uniqueTargets.length - pendingTargets.length;
+
+  emitExposureProgress(
+    process.env.EXPOSURE_PROGRESS_TARGET,
+    completedTargets,
+    uniqueTargets.length,
+    'running'
+  );
 
   logger.info(
     `체크포인트 재사용 ${uniqueTargets.length - pendingTargets.length}개, 신규 체크 ${pendingTargets.length}개`
@@ -3523,6 +3532,13 @@ const main = async (): Promise<void> => {
         );
 
         resultMap.set(target.targetKey, result);
+        completedTargets += 1;
+        emitExposureProgress(
+          process.env.EXPOSURE_PROGRESS_TARGET,
+          completedTargets,
+          uniqueTargets.length,
+          'running'
+        );
         if (options.useCheckpoint) {
           saveCheckpoint(resultMap);
         }

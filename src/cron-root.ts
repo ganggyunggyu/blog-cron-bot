@@ -9,7 +9,7 @@ import {
 import { saveToCSV, saveToSheetCSV } from './csv-writer';
 import { createDetailedLogBuilder, saveDetailedLogs } from './logs';
 import { processKeywords } from './lib/keyword-processor';
-import { ROOT_CONFIG, SHEET_APP_URL } from './constants';
+import { ROOT_CONFIG, SHEET_APP_URL, TEST_CONFIG } from './constants';
 import { checkNaverLogin } from './lib/check-naver-login';
 import { logger } from './lib/logger';
 import axios from 'axios';
@@ -21,6 +21,7 @@ import {
   getExposureConcurrency,
   getExposureMaxPages,
 } from './lib/exposure-run-config';
+import { assertWritableSheetId } from './lib/google-sheets/write-target-guard';
 
 dotenv.config();
 
@@ -56,22 +57,21 @@ const runRootWorkflow = async (): Promise<void> => {
     throw new Error('MONGODB_URI 환경 변수가 설정되지 않았습니다.');
   }
 
-  try {
-    const response = await fetch(`${SHEET_APP_URL}/api/root-keywords/sync`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ sheetId: ROOT_CONFIG.SHEET_ID }),
-    });
-
-    const result = (await response.json()) as RootResponseType;
-    logger.success(
-      `DB 동기화 완료! (삭제: ${result.deleted}, 삽입: ${result.inserted})`
-    );
-  } catch (error) {
-    logger.error(`동기화 에러: ${(error as Error).message}`);
+  const response = await fetch(`${SHEET_APP_URL}/api/root-keywords/sync`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ sheetId: ROOT_CONFIG.SHEET_ID }),
+  });
+  if (!response.ok) {
+    throw new Error(`루트 원본 동기화 실패: HTTP ${response.status}`);
   }
+
+  const syncResult = (await response.json()) as RootResponseType;
+  logger.success(
+    `DB 동기화 완료! (삭제: ${syncResult.deleted}, 삽입: ${syncResult.inserted})`
+  );
 
   await connectDB(mongoUri);
 
@@ -170,6 +170,13 @@ const runRootWorkflow = async (): Promise<void> => {
     .filter((k) => !exposedKeywords.has(k.keyword) && !k.isUpdateRequired)
     .map((k) => k.keyword);
 
+  assertWritableSheetId(TEST_CONFIG.SHEET_ID, '루트 결과 반영');
+  const importResponse = await axios.post(`${SHEET_APP_URL}/api/root-keywords/import`, {
+    expectedSheetId: TEST_CONFIG.SHEET_ID,
+    expectedSheetName: TEST_CONFIG.SHEET_NAMES.ROOT,
+  });
+  logger.info(`시트 반영 결과: ${JSON.stringify(importResponse.data)}`);
+
   await sendDoorayExposureResult({
     cronType: '루트 키워드',
     totalKeywords: keywords.length,
@@ -179,9 +186,6 @@ const runRootWorkflow = async (): Promise<void> => {
     elapsedTime: elapsedTimeStr,
     missingKeywords,
   });
-
-  const result = await axios.post(`${SHEET_APP_URL}/api/root-keywords/import`);
-  logger.info(`시트 반영 결과: ${JSON.stringify(result.data)}`);
 
   const logs = logBuilder.getLogs();
   saveDetailedLogs(logs, `root_${timestamp}`, elapsedTimeStr);
