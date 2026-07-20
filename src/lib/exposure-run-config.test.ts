@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {
   getExposureConcurrency,
+  getExposureKeywordBatchSize,
   getExposureMaxPages,
   getExposureRetryDelayMs,
   getGuestRetryAttempts,
@@ -20,6 +21,15 @@ assert.equal(
 );
 assert.equal(getExposureConcurrency({ EXPOSURE_CONCURRENCY: '99' }), 8);
 assert.equal(getExposureConcurrency({ EXPOSURE_CONCURRENCY: '1.5' }), 8);
+assert.equal(getExposureKeywordBatchSize({}), 50);
+assert.equal(
+  getExposureKeywordBatchSize({ EXPOSURE_KEYWORD_BATCH_SIZE: '25' }),
+  25
+);
+assert.equal(
+  getExposureKeywordBatchSize({ EXPOSURE_KEYWORD_BATCH_SIZE: 'invalid' }),
+  50
+);
 
 assert.equal(getExposureMaxPages(1, {}), 1);
 assert.equal(getExposureMaxPages(4, { EXPOSURE_MAX_PAGES: '7' }), 7);

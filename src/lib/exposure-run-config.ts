@@ -1,6 +1,7 @@
 export const DEFAULT_EXPOSURE_CONCURRENCY = 8;
 export const MAX_EXPOSURE_CONCURRENCY = 8;
 export const MAX_EXPOSURE_PAGES = 9;
+export const DEFAULT_EXPOSURE_KEYWORD_BATCH_SIZE = 50;
 export const FAST_EXPOSURE_LOGIN_RETRIES = 2;
 export const FAST_EXPOSURE_RETRY_DELAY_MS = 3_000;
 
@@ -55,6 +56,12 @@ export const getExposureMaxPages = (
 
   return Math.min(configured ?? defaultMaxPages, MAX_EXPOSURE_PAGES);
 };
+
+export const getExposureKeywordBatchSize = (
+  environment: ExposureEnvironment = process.env
+): number =>
+  parsePositiveInteger(environment.EXPOSURE_KEYWORD_BATCH_SIZE) ??
+  DEFAULT_EXPOSURE_KEYWORD_BATCH_SIZE;
 
 export const getGuestRetryAttempts = (
   environment: ExposureEnvironment = process.env

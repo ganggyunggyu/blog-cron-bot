@@ -186,6 +186,7 @@ export const buildTargetEnvironment = (
     PAGE_CHECK_CONCURRENCY: String(concurrency),
     CHECK_CONCURRENCY: String(concurrency),
     CAFE_CHECK_CONCURRENCY: String(concurrency),
+    EXPOSURE_KEYWORD_BATCH_SIZE: '50',
     FAST_EXPOSURE_MODE: 'true',
   };
 

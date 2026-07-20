@@ -166,6 +166,7 @@ const petEnvironment = buildTargetEnvironment(
 assert.equal(petEnvironment.EXPOSURE_MAX_PAGES, '4');
 assert.equal(petEnvironment.PAGE_CHECK_MAX_PAGES, '4');
 assert.equal(petEnvironment.EXPOSURE_CONCURRENCY, '8');
+assert.equal(petEnvironment.EXPOSURE_KEYWORD_BATCH_SIZE, '50');
 assert.equal(petEnvironment.FAST_EXPOSURE_MODE, 'true');
 
 process.stdout.write('exposure suite option tests passed\n');

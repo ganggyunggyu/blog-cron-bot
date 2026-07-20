@@ -134,7 +134,7 @@ export const ExposureSuitePanel = () => {
           ) : null}
           <div className={cn('mt-1 flex gap-2 rounded-lg border border-blue-100 bg-blue-50/70 p-3 text-xs leading-5 text-blue-800 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-200')}>
             <ShieldCheck className={cn('mt-0.5 size-4 shrink-0')} />
-            <p>전체 요청 수를 공유해 네이버 과부하를 막고, 같은 애견 키워드는 한 번만 검색합니다. 실행 후 아래 실시간 로그에서 대상별 진행 상태를 확인할 수 있습니다.</p>
+            <p>각 시트는 키워드 50개 단위로 나눠 병렬 처리합니다. 전체 요청 수는 모든 대상이 공유해 네이버 과부하를 막고, 같은 애견 키워드는 한 번만 검색합니다. 실행 후 아래 실시간 로그에서 대상별 진행 상태를 확인할 수 있습니다.</p>
           </div>
           {isLoading ? <p className={cn('text-sm text-neutral-500')}>설정을 불러오는 중...</p> : null}
           {isError ? <p className={cn('text-sm text-red-600 dark:text-red-400')}>실행 설정을 불러오지 못함</p> : null}

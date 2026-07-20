@@ -33,6 +33,8 @@ import { getCrawlResult } from './crawl-manager';
 import { runGuestRetry } from './guest-retry';
 import { TransientExposureCheckError } from './transient-failure';
 import { emitExposureProgress } from '../exposure-progress';
+import { getExposureKeywordBatchSize } from '../exposure-run-config';
+import { chunkByItemBudget } from './keyword-batches';
 
 interface KeywordTask {
   globalIndex: number;
@@ -608,12 +610,31 @@ export const processKeywords = async (
     }
   } else {
     const groups = groupKeywordsBySearchQuery(keywords);
-    const retryBatches = await runKeywordGroupsWithConcurrency(
+    const keywordBatchSize = getExposureKeywordBatchSize();
+    const groupBatches = chunkByItemBudget(
       groups,
-      concurrency,
-      shared
+      keywordBatchSize,
+      (group) => group.tasks.length
     );
-    await retryTransientKeywordGroups(retryBatches, shared);
+
+    logger.info(
+      `📦 시트 키워드 ${keywordBatchSize}개 단위 배치: ${groupBatches.length}개`
+    );
+
+    for (const [batchIndex, groupBatch] of groupBatches.entries()) {
+      logger.info(
+        `▶ 배치 ${batchIndex + 1}/${groupBatches.length} (${groupBatch.reduce(
+          (sum, group) => sum + group.tasks.length,
+          0
+        )}개)`
+      );
+      const retryBatches = await runKeywordGroupsWithConcurrency(
+        groupBatch,
+        concurrency,
+        shared
+      );
+      await retryTransientKeywordGroups(retryBatches, shared);
+    }
   }
 
   logger.statusLine.done();
