@@ -1,0 +1,20 @@
+import { PRODUCT_SHEET_ID, ROOT_CONFIG } from '../../constants';
+
+const READ_ONLY_SOURCE_SHEET_IDS = new Set([
+  PRODUCT_SHEET_ID,
+  ROOT_CONFIG.SHEET_ID,
+]);
+
+export const isReadOnlySourceSheet = (sheetId: string): boolean =>
+  READ_ONLY_SOURCE_SHEET_IDS.has(sheetId.trim());
+
+export const assertWritableSheetId = (
+  sheetId: string,
+  operation: string
+): void => {
+  if (isReadOnlySourceSheet(sheetId)) {
+    throw new Error(
+      `${operation}: 읽기 전용 원본 시트(${sheetId})에는 쓸 수 없음`
+    );
+  }
+};

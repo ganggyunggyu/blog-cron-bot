@@ -1,7 +1,6 @@
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
-import { GoogleSpreadsheet, GoogleSpreadsheetWorksheet } from 'google-spreadsheet';
 import { JWT } from 'google-auth-library';
 import { crawlWithRetryWithoutCookie, randomDelay } from '../src/crawler';
 import {
@@ -16,16 +15,8 @@ import { BLOG_IDS } from '../src/constants/blog-ids';
 dotenv.config();
 
 const SHEET_ID = '1vrN5gvtokWxPs8CNaNcvZQLWyIMBOIcteYXQbyfiZl0';
-const SHEET_GID = 126285763;
-const OUTPUT_START_COLUMN = 16; // Q
+const SHEET_TITLE = '카페 발행스케줄';
 // 카페 + 블로그(우리 블로그 전부) 둘 중 하나라도 노출되면 "노출"로 판정한다.
-const OUTPUT_HEADERS = [
-  '노출체크일시',
-  '노출여부',
-  '순위',
-  '카페블로그명',
-  '링크',
-];
 const RETRY_FAILED_ONLY = process.env.RETRY_FAILED_ONLY === 'true';
 
 interface ScheduleKeyword {
@@ -47,6 +38,15 @@ interface CombinedMatch {
   link: string;
 }
 
+interface SavedResultRow extends CheckResult {
+  row: number;
+  keyword: string;
+}
+
+interface SavedResultArtifact {
+  rows: SavedResultRow[];
+}
+
 const cellText = (value: unknown): string => String(value ?? '').trim();
 
 const getAuth = (): JWT => {
@@ -63,14 +63,17 @@ const getAuth = (): JWT => {
   return new JWT({
     email,
     key,
-    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
   });
 };
 
-const openSpreadsheet = async (sheetId: string): Promise<GoogleSpreadsheet> => {
-  const doc = new GoogleSpreadsheet(sheetId, getAuth());
-  await doc.loadInfo();
-  return doc;
+const loadSourceValues = async (): Promise<unknown[][]> => {
+  const range = encodeURIComponent(`'${SHEET_TITLE}'!A:P`);
+  const response = await getAuth().request<{ values?: unknown[][] }>({
+    url: `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}`,
+    method: 'GET',
+  });
+  return response.data.values ?? [];
 };
 
 const sourceIdFromCafeUrl = (cafeUrl: string): string => {
@@ -81,7 +84,7 @@ const sourceIdFromCafeUrl = (cafeUrl: string): string => {
 const unique = (values: string[]): string[] =>
   Array.from(new Set(values.filter((value) => value.length > 0)));
 
-const loadLatestFailedKeywords = (): Set<string> => {
+const loadLatestResultArtifact = (): SavedResultArtifact => {
   const outputDir = path.join(process.cwd(), 'outputs');
   const latest = fs
     .readdirSync(outputDir)
@@ -94,47 +97,38 @@ const loadLatestFailedKeywords = (): Set<string> => {
     throw new Error('재시도할 카페 노출체크 결과 파일이 없음');
   }
 
-  const parsed = JSON.parse(fs.readFileSync(path.join(outputDir, latest), 'utf8')) as {
-    rows?: Array<{ keyword?: string; exposureStatus?: string }>;
-  };
-  return new Set(
-    (parsed.rows ?? [])
-      .filter((row) => row.exposureStatus === '확인실패')
-      .map((row) => cellText(row.keyword))
-      .filter(Boolean)
-  );
+  const parsed = JSON.parse(
+    fs.readFileSync(path.join(outputDir, latest), 'utf8')
+  ) as SavedResultArtifact;
+  if (!Array.isArray(parsed.rows)) {
+    throw new Error(`카페 노출체크 결과 형식이 올바르지 않음: ${latest}`);
+  }
+  return parsed;
 };
 
 const loadSchedule = async (
-  sheet: GoogleSpreadsheetWorksheet
+  values: unknown[][]
 ): Promise<{ title: string; rows: ScheduleKeyword[]; targets: CafeTarget[] }> => {
-  await sheet.loadCells({
-    startRowIndex: 0,
-    endRowIndex: sheet.rowCount,
-    startColumnIndex: 0,
-    endColumnIndex: 16,
-  });
-
-  const markerRowIndex = Array.from({ length: sheet.rowCount }, (_, rowIndex) => rowIndex).find(
-    (rowIndex) => /스케[줄쥴]/.test(cellText(sheet.getCell(rowIndex, 0).value))
+  const markerRowIndex = values.findIndex((row) =>
+    /스케[줄쥴]/.test(cellText(row?.[0]))
   );
 
-  if (markerRowIndex === undefined) {
+  if (markerRowIndex < 0) {
     throw new Error('A열에서 스케줄 제목을 찾지 못함');
   }
 
-  const title = cellText(sheet.getCell(markerRowIndex, 0).value);
+  const title = cellText(values[markerRowIndex]?.[0]);
   const rows: ScheduleKeyword[] = [];
-  for (let rowIndex = markerRowIndex + 1; rowIndex < sheet.rowCount; rowIndex += 1) {
-    const keyword = cellText(sheet.getCell(rowIndex, 0).value);
+  for (let rowIndex = markerRowIndex + 1; rowIndex < values.length; rowIndex += 1) {
+    const keyword = cellText(values[rowIndex]?.[0]);
     if (/스케[줄쥴]/.test(keyword)) break;
     if (keyword) rows.push({ rowIndex, keyword });
   }
 
   const targets: CafeTarget[] = [];
-  for (let rowIndex = 0; rowIndex < sheet.rowCount; rowIndex += 1) {
-    const name = cellText(sheet.getCell(rowIndex, 14).value);
-    const sourceId = sourceIdFromCafeUrl(cellText(sheet.getCell(rowIndex, 15).value));
+  for (let rowIndex = 0; rowIndex < values.length; rowIndex += 1) {
+    const name = cellText(values[rowIndex]?.[14]);
+    const sourceId = sourceIdFromCafeUrl(cellText(values[rowIndex]?.[15]));
     if (name && sourceId) targets.push({ name, ids: [sourceId] });
   }
 
@@ -209,9 +203,16 @@ const runChecks = async (
 ): Promise<Map<string, CheckResult>> => {
   const results = new Map<string, CheckResult>();
   let nextIndex = 0;
-  const configuredWorkers = Number(process.env.CHECK_CONCURRENCY ?? 3);
+  const configuredWorkers = Number(
+    process.env.CHECK_CONCURRENCY ??
+      process.env.CAFE_CHECK_CONCURRENCY ??
+      process.env.EXPOSURE_CONCURRENCY ??
+      3
+  );
   const workerCount = Math.min(
-    Number.isInteger(configuredWorkers) && configuredWorkers > 0 ? configuredWorkers : 3,
+    Number.isInteger(configuredWorkers) && configuredWorkers > 0
+      ? Math.min(configuredWorkers, 8)
+      : 3,
     keywords.length
   );
 
@@ -241,64 +242,24 @@ const runChecks = async (
   return results;
 };
 
-// 이전 포맷(카페소스ID, 비고 포함 7열)에서 남은 열까지 지우기 위한 폭
-const LEGACY_MAX_COLUMNS = 7;
-
-const writeResults = async (
-  sheet: GoogleSpreadsheetWorksheet,
-  scheduleRows: ScheduleKeyword[],
-  checkedAt: string,
-  results: Map<string, CheckResult>
-): Promise<void> => {
-  const lastRowIndex = Math.max(...scheduleRows.map((row) => row.rowIndex));
-  const clearedColumnCount = Math.max(OUTPUT_HEADERS.length, LEGACY_MAX_COLUMNS);
-  const requiredColumnCount = OUTPUT_START_COLUMN + clearedColumnCount;
-  if (sheet.columnCount < requiredColumnCount) {
-    await sheet.resize({ rowCount: sheet.rowCount, columnCount: requiredColumnCount });
-  }
-
-  await sheet.loadCells({
-    startRowIndex: 0,
-    endRowIndex: lastRowIndex + 1,
-    startColumnIndex: OUTPUT_START_COLUMN,
-    endColumnIndex: requiredColumnCount,
-  });
-
-  for (let offset = 0; offset < clearedColumnCount; offset += 1) {
-    sheet.getCell(0, OUTPUT_START_COLUMN + offset).value = OUTPUT_HEADERS[offset] ?? '';
-  }
-
-  scheduleRows.forEach(({ rowIndex, keyword }) => {
-    const result = results.get(keyword);
-    if (!result) throw new Error(`${keyword} 결과 누락`);
-    const values = [
-      checkedAt,
-      result.exposureStatus === '노출' ? 'o' : '',
-      result.rank,
-      result.name,
-      result.links,
-    ];
-    for (let offset = 0; offset < clearedColumnCount; offset += 1) {
-      sheet.getCell(rowIndex, OUTPUT_START_COLUMN + offset).value = values[offset] ?? '';
-    }
-  });
-
-  await sheet.saveUpdatedCells();
-};
-
 const main = async (): Promise<void> => {
-  const doc = await openSpreadsheet(SHEET_ID);
-  const sheet = doc.sheetsById[SHEET_GID];
-  if (!sheet) throw new Error(`gid=${SHEET_GID} 탭을 찾지 못함`);
-
-  const { title, rows, targets } = await loadSchedule(sheet);
-  const retryKeywords = RETRY_FAILED_ONLY ? loadLatestFailedKeywords() : null;
+  const sourceValues = await loadSourceValues();
+  const { title, rows, targets } = await loadSchedule(sourceValues);
+  const retryArtifact = RETRY_FAILED_ONLY ? loadLatestResultArtifact() : null;
+  const retryKeywords = retryArtifact
+    ? new Set(
+        retryArtifact.rows
+          .filter((row) => row.exposureStatus === '확인실패')
+          .map((row) => row.keyword)
+      )
+    : null;
   const targetRows = retryKeywords
     ? rows.filter((row) => retryKeywords.has(row.keyword))
     : rows;
   const keywords = unique(targetRows.map((row) => row.keyword));
   if (keywords.length === 0) {
-    throw new Error('실행할 키워드가 없음');
+    process.stdout.write('재시도할 확인실패 키워드가 없음\n');
+    return;
   }
   const checkedAt = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Seoul' }).replace(' ', ' ');
   process.stdout.write(
@@ -306,21 +267,29 @@ const main = async (): Promise<void> => {
   );
 
   const results = await runChecks(keywords, targets);
-  await writeResults(sheet, targetRows, checkedAt, results);
 
-  const outputRows = targetRows.map((row) => ({
-    row: row.rowIndex + 1,
-    keyword: row.keyword,
-    ...results.get(row.keyword),
-  }));
+  const checkedRows: SavedResultRow[] = targetRows.map((row) => {
+    const result = results.get(row.keyword);
+    if (!result) throw new Error(`${row.keyword} 결과 누락`);
+    return {
+      row: row.rowIndex + 1,
+      keyword: row.keyword,
+      ...result,
+    };
+  });
+  const checkedRowMap = new Map(checkedRows.map((row) => [row.row, row]));
+  const outputRows = retryArtifact
+    ? retryArtifact.rows.map((row) => checkedRowMap.get(row.row) ?? row)
+    : checkedRows;
   const summary = {
     spreadsheetId: SHEET_ID,
     sheetTitle: title,
-    sheetGid: SHEET_GID,
+    sourceTab: SHEET_TITLE,
     checkedAt,
-    scheduleRows: targetRows.length,
-    uniqueKeywords: keywords.length,
+    scheduleRows: outputRows.length,
+    uniqueKeywords: unique(outputRows.map((row) => row.keyword)).length,
     retryFailedOnly: RETRY_FAILED_ONLY,
+    sourceWrite: false,
     cafeSources: targets.map((target) => ({ name: target.name, sourceId: target.ids?.[0] })),
     exposed: outputRows.filter((row) => row.exposureStatus === '노출').length,
     unexposed: outputRows.filter((row) => row.exposureStatus === '미노출').length,
@@ -331,11 +300,12 @@ const main = async (): Promise<void> => {
     'outputs',
     `cafe-schedule-exposure-${new Date().toISOString().replace(/[:.]/g, '-')}.json`
   );
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   fs.writeFileSync(outputPath, `${JSON.stringify({ summary, rows: outputRows }, null, 2)}\n`);
   process.stdout.write(`${JSON.stringify({ summary, outputPath }, null, 2)}\n`);
 };
 
 main().catch((error) => {
-  console.error(error);
+  console.error(error instanceof Error ? error.message : String(error));
   process.exit(1);
 });

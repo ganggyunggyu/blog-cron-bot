@@ -1,5 +1,6 @@
 import { Page } from 'playwright';
 import { launchBrowser, launchBrowserInstance } from './browser';
+import { coordinateBlockRecovery } from './block-coordinator';
 import { getSearchQuery } from '../../utils';
 import { logger } from '../logger';
 import {
@@ -33,7 +34,12 @@ const checkBlocked = async (page: Page): Promise<boolean> => {
   return BLOCKED_INDICATORS.some((indicator) => content.includes(indicator));
 };
 
-const handleBlocked = async (page: Page): Promise<void> => {
+const reloadAfterBlockRecovery = async (page: Page): Promise<void> => {
+  await page.reload();
+  await waitForContent(page);
+};
+
+const recoverBlockedPage = async (page: Page): Promise<void> => {
   logger.warn('⚠️ 차단 감지! 5초 대기 후 재시도...');
 
   const releaseButton = page.locator(SELECTORS.RELEASE_BUTTON);
@@ -45,8 +51,17 @@ const handleBlocked = async (page: Page): Promise<void> => {
 
   await page.waitForTimeout(DELAY.BLOCKED_WAIT);
   logger.info('5초 대기 완료, 페이지 새로고침...');
-  await page.reload();
-  await waitForContent(page);
+  await reloadAfterBlockRecovery(page);
+};
+
+const handleBlocked = async (page: Page): Promise<void> => {
+  await coordinateBlockRecovery(
+    () => recoverBlockedPage(page),
+    async () => {
+      logger.info('공유 차단 복구 완료, 현재 페이지 새로고침...');
+      await reloadAfterBlockRecovery(page);
+    }
+  );
 };
 
 const getPageButtonSelector = (pageNum: number): string =>

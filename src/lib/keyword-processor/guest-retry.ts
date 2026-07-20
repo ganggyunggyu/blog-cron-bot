@@ -8,6 +8,7 @@ import { findMatchingPost } from '../post-filter';
 import { getAllowAnyBlog } from './allow-any-blog';
 import { appendGenericBlogItems } from './generic-blog-results';
 import { GuestRetryParams, GuestRetryResult } from './types';
+import { getGuestRetryAttempts } from '../exposure-run-config';
 
 export const runGuestRetry = async (
   params: GuestRetryParams
@@ -32,7 +33,10 @@ export const runGuestRetry = async (
   try {
     progressLogger.retry('비로그인 재시도');
 
-    const guestHtml = await crawlWithRetryWithoutCookie(searchQuery, 2);
+    const guestHtml = await crawlWithRetryWithoutCookie(
+      searchQuery,
+      getGuestRetryAttempts()
+    );
     const guestItems = extractPopularItems(guestHtml);
     if (includeGenericBlogResults) {
       appendGenericBlogItems(guestItems, guestHtml, 1);

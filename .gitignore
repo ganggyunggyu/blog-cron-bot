@@ -36,6 +36,7 @@ src/tools/*
 logs/
 debug/
 *.log
+work/*.lock
 
 # Environment & System
 .env

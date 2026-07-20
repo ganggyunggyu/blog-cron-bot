@@ -11,6 +11,11 @@ import { sendDoorayExposureResult } from './lib/dooray';
 import { syncKeywords, importKeywords } from './api';
 import { requests, importRes } from './constants';
 import { ExposureResult } from './matcher';
+import { closeBrowser, launchBrowser } from './lib/playwright-crawler';
+import {
+  getExposureConcurrency,
+  getExposureMaxPages,
+} from './lib/exposure-run-config';
 
 dotenv.config();
 
@@ -21,7 +26,7 @@ const formatDuration = (ms: number): string => {
   return `${sec}초`;
 };
 
-const runDogmaruExcludeWorkflow = async () => {
+const executeDogmaruExcludeWorkflow = async (): Promise<void> => {
   const startTime = Date.now();
 
   logger.summary.start('일반건 CRON START', [
@@ -43,7 +48,7 @@ const runDogmaruExcludeWorkflow = async () => {
   const mongoUri = process.env.MONGODB_URI;
   if (!mongoUri) {
     logger.error('MONGODB_URI 환경 변수가 설정되지 않았습니다.');
-    process.exit(1);
+    throw new Error('MONGODB_URI 환경 변수가 설정되지 않았습니다.');
   }
 
   await connectDB(mongoUri);
@@ -64,8 +69,17 @@ const runDogmaruExcludeWorkflow = async () => {
 
   if (excludeKeywords.length === 0) {
     logger.warn('일반건 키워드가 없습니다.');
-    await disconnectDB();
     return;
+  }
+
+  const concurrency = getExposureConcurrency();
+  const maxPages = getExposureMaxPages(1);
+  logger.info(
+    `⚡ 키워드 동시 처리: 최대 ${concurrency}개 / 최대 ${maxPages}페이지`
+  );
+
+  if (concurrency > 1 && maxPages > 1) {
+    await launchBrowser();
   }
 
   // 노출 체크 (기본 BLOG_IDS 사용)
@@ -76,6 +90,8 @@ const runDogmaruExcludeWorkflow = async () => {
     logBuilder,
     {
       isLoggedIn: loginStatus.isLoggedIn,
+      maxPages,
+      concurrency,
     }
   );
   logger.step(2, 3, '일반건 노출 체크', 'done');
@@ -135,11 +151,23 @@ const runDogmaruExcludeWorkflow = async () => {
   // 상세 로그 저장
   const logs = logBuilder.getLogs();
   saveDetailedLogs(logs, timestamp, elapsedTimeStr);
-
-  await disconnectDB();
 };
 
-runDogmaruExcludeWorkflow().catch((error) => {
-  logger.error(`일반건 크론 오류: ${(error as Error).message}`);
-  process.exit(1);
-});
+export const runDogmaruExcludeWorkflow = async (): Promise<void> => {
+  try {
+    await executeDogmaruExcludeWorkflow();
+  } finally {
+    try {
+      await closeBrowser();
+    } finally {
+      await disconnectDB();
+    }
+  }
+};
+
+if (require.main === module) {
+  runDogmaruExcludeWorkflow().catch((error) => {
+    logger.error(`일반건 크론 오류: ${(error as Error).message}`);
+    process.exit(1);
+  });
+}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { LogoutButton } from '@/features/auth-login';
 import { DaemonStatusPanel } from '@/widgets/daemon-status-panel';
+import { ExposureSuitePanel } from '@/widgets/exposure-suite-panel';
 import { JobRunnerPanel } from '@/widgets/job-runner-panel';
 import { LiveLogViewer } from '@/widgets/live-log-viewer';
 import { OutputBrowser } from '@/widgets/output-browser';
@@ -16,6 +17,7 @@ const HomePage = () => {
           <LogoutButton />
         </header>
         <DaemonStatusPanel />
+        <ExposureSuitePanel />
         <JobRunnerPanel />
         <LiveLogViewer />
         <OutputBrowser />

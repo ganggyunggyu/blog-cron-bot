@@ -32,6 +32,7 @@ import {
   openSpreadsheet,
   writeResultsToWorksheet,
 } from '../lib/google-sheets/direct-exposure-sheet';
+import { assertWritableSheetId } from '../lib/google-sheets/write-target-guard';
 
 dotenv.config();
 
@@ -589,6 +590,7 @@ const finalizeTarget = async (
   );
 
   if (!options.dryRun) {
+    assertWritableSheetId(target.sheetId, `${target.label} 직접 노출체크`);
     await writeResultsToWorksheet(sheet, keywords, updates);
   }
 
@@ -651,6 +653,12 @@ const finalizeTarget = async (
 
 const main = async (): Promise<void> => {
   const options = parseArgs();
+  if (!options.dryRun && !options.printOnly) {
+    options.targets.forEach((target) => {
+      const config = TARGET_CONFIGS[target];
+      assertWritableSheetId(config.sheetId, `${config.label} 직접 노출체크`);
+    });
+  }
   const startTime = Date.now();
   const context: RunContext = {
     runId: getKSTTimestamp(),

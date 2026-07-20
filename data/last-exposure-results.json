@@ -304,5 +304,13 @@
     "popularCount": 2,
     "sblCount": 0,
     "timestamp": "2026-07-20T01:31:23.652Z"
+  },
+  "카페 블로그 통합 노출체크": {
+    "cronType": "카페 블로그 통합 노출체크",
+    "totalKeywords": 135,
+    "exposureCount": 28,
+    "popularCount": 0,
+    "sblCount": 0,
+    "timestamp": "2026-07-20T09:13:17.825Z"
   }
 }

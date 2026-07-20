@@ -91,10 +91,8 @@ export const ROOT_CONFIG = {
 };
 
 /**
- * 패키지/일반건/도그마루/루트 노출체크가 실제로 키워드를 읽고 써야 하는 진짜 운영 시트 위치.
- * 예전에 이 매핑이 run-parallel-direct-sheet-check.ts와 check-old-logic-more-exposure.ts에
- * 각각 따로 정의돼 있다가 스크래치 시트(TEST_CONFIG.SHEET_ID)를 기본값으로 잘못 가리키는
- * 버그가 있었음 — 단일 소스로 통합해서 재발을 막음.
+ * 노출체크 키워드를 읽는 원본 위치. 모두 읽기 전용이며 결과는 TEST_CONFIG 등 별도
+ * 결과 시트로만 내보낸다. 쓰기 경로에서는 write-target-guard를 반드시 통과해야 한다.
  */
 export const EXPOSURE_SHEET_LOCATIONS = {
   패키지: { sheetId: PRODUCT_SHEET_ID, tabTitle: '패키지' },

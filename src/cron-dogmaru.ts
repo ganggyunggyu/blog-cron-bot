@@ -12,6 +12,11 @@ import { DOGMARU_PAGE_CHECK_BLOG_IDS } from './constants/blog-ids';
 import { syncKeywords, importKeywords } from './api';
 import { requests, importRes } from './constants';
 import { ExposureResult } from './matcher';
+import { closeBrowser, launchBrowser } from './lib/playwright-crawler';
+import {
+  getExposureConcurrency,
+  getExposureMaxPages,
+} from './lib/exposure-run-config';
 
 dotenv.config();
 
@@ -22,7 +27,7 @@ const formatDuration = (ms: number): string => {
   return `${sec}초`;
 };
 
-const runDogmaruWorkflow = async () => {
+const executeDogmaruWorkflow = async (): Promise<void> => {
   const startTime = Date.now();
 
   logger.summary.start('DOGMARU CRON START', [
@@ -44,7 +49,7 @@ const runDogmaruWorkflow = async () => {
   const mongoUri = process.env.MONGODB_URI;
   if (!mongoUri) {
     logger.error('MONGODB_URI 환경 변수가 설정되지 않았습니다.');
-    process.exit(1);
+    throw new Error('MONGODB_URI 환경 변수가 설정되지 않았습니다.');
   }
 
   await connectDB(mongoUri);
@@ -65,8 +70,17 @@ const runDogmaruWorkflow = async () => {
 
   if (dogmaruKeywords.length === 0) {
     logger.warn('도그마루 키워드가 없습니다.');
-    await disconnectDB();
     return;
+  }
+
+  const concurrency = getExposureConcurrency();
+  const maxPages = getExposureMaxPages(1);
+  logger.info(
+    `⚡ 키워드 동시 처리: 최대 ${concurrency}개 / 최대 ${maxPages}페이지`
+  );
+
+  if (concurrency > 1 && maxPages > 1) {
+    await launchBrowser();
   }
 
   // 노출 체크
@@ -77,6 +91,8 @@ const runDogmaruWorkflow = async () => {
     logBuilder,
     {
       isLoggedIn: loginStatus.isLoggedIn,
+      maxPages,
+      concurrency,
       blogIds: DOGMARU_PAGE_CHECK_BLOG_IDS,
     }
   );
@@ -137,11 +153,23 @@ const runDogmaruWorkflow = async () => {
   // 상세 로그 저장
   const logs = logBuilder.getLogs();
   saveDetailedLogs(logs, timestamp, elapsedTimeStr);
-
-  await disconnectDB();
 };
 
-runDogmaruWorkflow().catch((error) => {
-  logger.error(`도그마루 크론 오류: ${(error as Error).message}`);
-  process.exit(1);
-});
+export const runDogmaruWorkflow = async (): Promise<void> => {
+  try {
+    await executeDogmaruWorkflow();
+  } finally {
+    try {
+      await closeBrowser();
+    } finally {
+      await disconnectDB();
+    }
+  }
+};
+
+if (require.main === module) {
+  runDogmaruWorkflow().catch((error) => {
+    logger.error(`도그마루 크론 오류: ${(error as Error).message}`);
+    process.exit(1);
+  });
+}

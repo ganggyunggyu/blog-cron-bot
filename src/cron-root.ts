@@ -16,10 +16,15 @@ import axios from 'axios';
 import { getKSTTimestamp } from './utils';
 import { sendDoorayExposureResult } from './lib/dooray';
 import { autoLogin } from './tools/auto-login';
+import { closeBrowser, launchBrowser } from './lib/playwright-crawler';
+import {
+  getExposureConcurrency,
+  getExposureMaxPages,
+} from './lib/exposure-run-config';
 
 dotenv.config();
 
-export async function main() {
+const runRootWorkflow = async (): Promise<void> => {
   const startTime = Date.now();
 
   let loginStatus = await checkNaverLogin();
@@ -29,7 +34,7 @@ export async function main() {
     const loginSuccess = await autoLogin();
     if (!loginSuccess) {
       logger.error('❌ 자동 로그인 실패');
-      process.exit(1);
+      throw new Error('자동 로그인 실패');
     }
     loginStatus = await checkNaverLogin();
   }
@@ -40,7 +45,7 @@ export async function main() {
     );
   } else {
     logger.error('❌ 로그인 확인 실패');
-    process.exit(1);
+    throw new Error('로그인 확인 실패');
   }
   logger.blank();
 
@@ -48,7 +53,7 @@ export async function main() {
   const mongoUri = process.env.MONGODB_URI;
   if (!mongoUri) {
     logger.error('MONGODB_URI 환경 변수가 설정되지 않았습니다.');
-    process.exit(1);
+    throw new Error('MONGODB_URI 환경 변수가 설정되지 않았습니다.');
   }
 
   try {
@@ -102,16 +107,27 @@ export async function main() {
     : 0;
 
   const keywords = filtered.slice(startIndex);
+  const concurrency = getExposureConcurrency();
+  const maxPages = getExposureMaxPages(1);
   logger.info(
     `📋 루트 키워드 ${keywords.length}개 처리 예정 (필터 applied, start=${startIndex})`
   );
+  logger.info(
+    `⚡ 키워드 동시 처리: 최대 ${concurrency}개 / 최대 ${maxPages}페이지`
+  );
   logger.blank();
+
+  if (concurrency > 1 && maxPages > 1 && keywords.length > 0) {
+    await launchBrowser();
+  }
 
   const logBuilder = createDetailedLogBuilder();
 
   const allResults = await processKeywords(keywords, logBuilder, {
     updateFunction: updateRootKeywordResult,
     isLoggedIn: loginStatus.isLoggedIn,
+    maxPages,
+    concurrency,
     allowAnyBlog: false,
   });
 
@@ -177,7 +193,18 @@ export async function main() {
     { label: '실패', value: `${stats.failed}개` },
   ]);
 
-  await disconnectDB();
+};
+
+export async function main(): Promise<void> {
+  try {
+    await runRootWorkflow();
+  } finally {
+    try {
+      await closeBrowser();
+    } finally {
+      await disconnectDB();
+    }
+  }
 }
 
 if (require.main === module) {

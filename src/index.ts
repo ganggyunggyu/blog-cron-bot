@@ -6,7 +6,11 @@ import { createDetailedLogBuilder, saveDetailedLogs } from './logs';
 import { processKeywords } from './lib/keyword-processor';
 import { checkNaverLogin } from './lib/check-naver-login';
 import { logger } from './lib/logger';
-import { closeBrowser } from './lib/playwright-crawler';
+import { closeBrowser, launchBrowser } from './lib/playwright-crawler';
+import {
+  getExposureConcurrency,
+  getExposureMaxPages,
+} from './lib/exposure-run-config';
 import { getKSTTimestamp } from './utils';
 import { sendDoorayExposureResult } from './lib/dooray';
 import { ExposureResult } from './matcher';
@@ -14,21 +18,7 @@ import { DOGMARU_PAGE_CHECK_BLOG_IDS } from './constants/blog-ids';
 
 dotenv.config();
 
-const parsePositiveIntegerEnv = (...names: string[]): number | undefined => {
-  for (const name of names) {
-    const value = process.env[name]?.trim();
-    if (!value) continue;
-
-    const parsed = Number(value);
-    if (Number.isInteger(parsed) && parsed > 0) {
-      return parsed;
-    }
-  }
-
-  return undefined;
-};
-
-export async function main() {
+const runExposureWorkflow = async (): Promise<void> => {
   const startTime = Date.now();
 
   const loginStatus = await checkNaverLogin();
@@ -45,7 +35,7 @@ export async function main() {
   const mongoUri = process.env.MONGODB_URI;
   if (!mongoUri) {
     logger.error('MONGODB_URI 환경 변수가 설정되지 않았습니다.');
-    process.exit(1);
+    throw new Error('MONGODB_URI 환경 변수가 설정되지 않았습니다.');
   }
 
   await connectDB(mongoUri);
@@ -56,8 +46,8 @@ export async function main() {
   const onlyCompany = (process.env.ONLY_COMPANY || '').trim();
   const onlyKeywordRegex = (process.env.ONLY_KEYWORD_REGEX || '').trim();
   const onlyId = (process.env.ONLY_ID || '').trim();
-  const maxPages =
-    parsePositiveIntegerEnv('EXPOSURE_MAX_PAGES', 'PAGE_CHECK_MAX_PAGES') ?? 1;
+  const concurrency = getExposureConcurrency();
+  const maxPages = getExposureMaxPages(1);
 
   let filtered = allKeywords;
   const normalize = (s: unknown) =>
@@ -95,7 +85,12 @@ export async function main() {
   if (maxPages > 1) {
     logger.info(`📄 멀티페이지 검색 활성화: 최대 ${maxPages}페이지`);
   }
+  logger.info(`⚡ 키워드 동시 처리: 최대 ${concurrency}개`);
   logger.blank();
+
+  if (concurrency > 1 && maxPages > 1 && keywords.length > 0) {
+    await launchBrowser();
+  }
 
   const logBuilder = createDetailedLogBuilder();
   const keywordLogicMap = new Map<string, boolean>();
@@ -110,6 +105,7 @@ export async function main() {
     const results = await processKeywords(otherKeywords, logBuilder, {
       isLoggedIn: loginStatus.isLoggedIn,
       maxPages,
+      concurrency,
       keywordLogicMap,
     });
     allResults.push(...results);
@@ -120,6 +116,7 @@ export async function main() {
     const results = await processKeywords(dogmaruKeywords, logBuilder, {
       isLoggedIn: loginStatus.isLoggedIn,
       maxPages,
+      concurrency,
       blogIds: DOGMARU_PAGE_CHECK_BLOG_IDS,
       keywordLogicMap,
     });
@@ -204,9 +201,18 @@ export async function main() {
     { label: '성공', value: `${stats.success}개` },
     { label: '실패', value: `${stats.failed}개` },
   ]);
+};
 
-  await closeBrowser();
-  await disconnectDB();
+export async function main(): Promise<void> {
+  try {
+    await runExposureWorkflow();
+  } finally {
+    try {
+      await closeBrowser();
+    } finally {
+      await disconnectDB();
+    }
+  }
 }
 
 if (require.main === module) {

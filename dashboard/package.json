@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "pnpm test:unit",
+    "test:unit": "tsx --test src/server/*.test.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.2",
@@ -29,6 +31,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
     "tailwindcss": "^4",
+    "tsx": "^4.23.1",
     "typescript": "^5"
   }
 }

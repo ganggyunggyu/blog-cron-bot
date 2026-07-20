@@ -7,7 +7,9 @@ logs
 output
 outputs
 debug
-work
+work/*
+!work/check-cafe-schedule-exposure-20260715.ts
+!work/export-cafe-schedule-exposure-20260715.ts
 data
 
 .git

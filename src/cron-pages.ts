@@ -17,12 +17,18 @@ import { logger } from './lib/logger';
 import { closeBrowser, launchBrowser } from './lib/playwright-crawler';
 import { getKSTTimestamp } from './utils';
 import { ExposureResult } from './matcher';
+import type { DetailedLog } from './types';
 import { sendDoorayExposureResult } from './lib/dooray';
 import { PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE } from './constants/blog-ids';
 import {
   loadSuripetKeywordsFromSheet,
   writeSuripetResultsToSheet,
 } from './lib/google-sheets/suripet-page-check';
+import {
+  getExposureConcurrency,
+  getExposureMaxPages,
+  splitConcurrencyBudget,
+} from './lib/exposure-run-config';
 
 dotenv.config();
 
@@ -61,34 +67,15 @@ const MAX_PAGES_BY_SHEET: Partial<Record<PageCheckSheetType, number>> = {
 
 const DEFAULT_MAX_PAGES = 4;
 
-const parsePageCheckMaxPages = (): number | undefined => {
-  const rawMaxPages = process.env.PAGE_CHECK_MAX_PAGES?.trim();
-  if (!rawMaxPages) {
-    return undefined;
-  }
-
-  const maxPages = Number(rawMaxPages);
-  return Number.isInteger(maxPages) && maxPages > 0 ? maxPages : undefined;
-};
-
-const ENV_MAX_PAGES = parsePageCheckMaxPages();
-
-const parsePageCheckConcurrency = (): number | undefined => {
-  const rawConcurrency = process.env.PAGE_CHECK_CONCURRENCY?.trim();
-  if (!rawConcurrency) {
-    return undefined;
-  }
-
-  const concurrency = Number(rawConcurrency);
-  return Number.isInteger(concurrency) && concurrency > 0
-    ? concurrency
-    : undefined;
-};
-
-const ENV_CONCURRENCY = parsePageCheckConcurrency();
+interface SheetProcessResult {
+  results: ExposureResult[];
+  logs: DetailedLog[];
+}
 
 const getMaxPagesForSheet = (sheetType: PageCheckSheetType): number =>
-  ENV_MAX_PAGES ?? MAX_PAGES_BY_SHEET[sheetType] ?? DEFAULT_MAX_PAGES;
+  getExposureMaxPages(
+    MAX_PAGES_BY_SHEET[sheetType] ?? DEFAULT_MAX_PAGES
+  );
 
 async function syncAllSheetsAPI(): Promise<number> {
   try {
@@ -230,8 +217,9 @@ async function processSheetKeywords(
   sheetType: PageCheckSheetType,
   keywords: IPageCheckKeyword[],
   isLoggedIn: boolean,
+  concurrency: number,
   keywordLogicMap?: Map<string, boolean>
-): Promise<ExposureResult[]> {
+): Promise<SheetProcessResult> {
   const typeName = SHEET_TYPE_NAMES[sheetType];
   const maxPages = getMaxPagesForSheet(sheetType);
   const logBuilder = createDetailedLogBuilder();
@@ -242,17 +230,15 @@ async function processSheetKeywords(
     `[${typeName}] 🚀 ${keywords.length}개 키워드 처리 시작 (${maxPages}페이지)`
   );
 
-  if (ENV_CONCURRENCY && ENV_CONCURRENCY > 1) {
-    await launchBrowser();
-  }
-
   const results = await processKeywords(keywords as any, logBuilder, {
     updateFunction: createUpdateFunction(sheetType),
     isLoggedIn,
     maxPages,
-    concurrency: ENV_CONCURRENCY,
+    concurrency,
     blogIds,
     keywordLogicMap,
+    // 애견/서리펫의 같은 키워드 행은 같은 계정 범위를 확인하므로 첫 매칭을 재사용한다.
+    consumeMatches: sheetType !== 'pet' && sheetType !== 'suripet',
   });
 
   logger.success(`[${typeName}] ✅ 완료: ${results.length}개 노출 발견`);
@@ -260,10 +246,12 @@ async function processSheetKeywords(
   // 완료 즉시 시트 내보내기
   await exportSheetAPI(sheetType);
 
-  return results;
+  return { results, logs: logBuilder.getLogs() };
 }
 
-export async function main(targetSheetTypes?: PageCheckSheetType[]) {
+const runPageCheckWorkflow = async (
+  targetSheetTypes?: PageCheckSheetType[]
+): Promise<void> => {
   const startTime = Date.now();
   const activeSheetTypes = targetSheetTypes ?? SHEET_TYPES;
   const isSingleSheet = activeSheetTypes.length === 1;
@@ -288,7 +276,7 @@ export async function main(targetSheetTypes?: PageCheckSheetType[]) {
   const mongoUri = process.env.MONGODB_URI;
   if (!mongoUri) {
     logger.error('MONGODB_URI 환경 변수가 설정되지 않았습니다.');
-    process.exit(1);
+    throw new Error('MONGODB_URI 환경 변수가 설정되지 않았습니다.');
   }
 
   await connectDB(mongoUri);
@@ -340,7 +328,6 @@ export async function main(targetSheetTypes?: PageCheckSheetType[]) {
 
   if (totalKeywords === 0) {
     logger.warn('처리할 키워드가 없습니다.');
-    await disconnectDB();
     return;
   }
 
@@ -349,19 +336,50 @@ export async function main(targetSheetTypes?: PageCheckSheetType[]) {
 
   const keywordLogicMap = new Map<string, boolean>();
 
-  const crawlPromises = activeSheetTypes
-    .filter((st) => keywordsBySheet[st].length > 0)
-    .map((sheetType) =>
-      processSheetKeywords(
-        sheetType,
-        keywordsBySheet[sheetType],
-        loginStatus.isLoggedIn,
-        keywordLogicMap
+  const nonEmptySheetTypes = activeSheetTypes.filter(
+    (sheetType) => keywordsBySheet[sheetType].length > 0
+  );
+  const totalConcurrency = getExposureConcurrency();
+  const { taskConcurrency, perTaskConcurrency } = splitConcurrencyBudget(
+    totalConcurrency,
+    nonEmptySheetTypes.length
+  );
+
+  logger.info(
+    `⚡ 총 동시성 ${totalConcurrency}: 시트 ${taskConcurrency}개 × 시트당 키워드 ${perTaskConcurrency}개`
+  );
+
+  const shouldPrewarmBrowser = nonEmptySheetTypes.some(
+    (sheetType) => getMaxPagesForSheet(sheetType) > 1
+  );
+  if (totalConcurrency > 1 && shouldPrewarmBrowser) {
+    await launchBrowser();
+  }
+
+  const sheetResults: SheetProcessResult[] = [];
+  for (
+    let startIndex = 0;
+    startIndex < nonEmptySheetTypes.length;
+    startIndex += taskConcurrency
+  ) {
+    const sheetBatch = nonEmptySheetTypes.slice(
+      startIndex,
+      startIndex + taskConcurrency
+    );
+    const batchResults = await Promise.all(
+      sheetBatch.map((sheetType) =>
+        processSheetKeywords(
+          sheetType,
+          keywordsBySheet[sheetType],
+          loginStatus.isLoggedIn,
+          perTaskConcurrency,
+          keywordLogicMap
+        )
       )
     );
-
-  const resultsArray = await Promise.all(crawlPromises);
-  const allResults = resultsArray.flat();
+    sheetResults.push(...batchResults);
+  }
+  const allResults = sheetResults.flatMap(({ results }) => results);
 
   logger.blank();
 
@@ -456,12 +474,22 @@ export async function main(targetSheetTypes?: PageCheckSheetType[]) {
     oldLogicCount,
   });
 
-  const logBuilder = createDetailedLogBuilder();
-  const logs = logBuilder.getLogs();
+  const logs = sheetResults.flatMap((result) => result.logs);
   saveDetailedLogs(logs, `pages_${timestamp}`, elapsedTimeStr);
+};
 
-  await closeBrowser();
-  await disconnectDB();
+export async function main(
+  targetSheetTypes?: PageCheckSheetType[]
+): Promise<void> {
+  try {
+    await runPageCheckWorkflow(targetSheetTypes);
+  } finally {
+    try {
+      await closeBrowser();
+    } finally {
+      await disconnectDB();
+    }
+  }
 }
 
 if (require.main === module) {

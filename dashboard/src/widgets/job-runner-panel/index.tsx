@@ -21,7 +21,7 @@ export const JobRunnerPanel = () => {
   const setSelectedRunId = useSetAtom(selectedRunIdAtom);
 
   const handleRun = (jobId: string) => {
-    runJob(jobId, {
+    runJob({ jobId }, {
       onSuccess: (result) => {
         setSelectedRunId(result.runId);
       },
@@ -40,8 +40,8 @@ export const JobRunnerPanel = () => {
         <p className="text-sm text-red-600 dark:text-red-400">잡 목록을 불러오지 못함</p>
       ) : null}
       <div className="flex flex-col">
-        {jobs?.map((job) => {
-          const isBusy = isPending && variables === job.id;
+        {jobs?.filter((job) => job.kind === 'standard').map((job) => {
+          const isBusy = isPending && variables?.jobId === job.id;
           return (
             <div
               key={job.id}
@@ -53,6 +53,7 @@ export const JobRunnerPanel = () => {
                     {job.label}
                   </span>
                   {job.isRunning ? <Badge tone="success">실행 중</Badge> : null}
+                  {job.isBlocked ? <Badge tone="warning">다른 노출체크 실행 중</Badge> : null}
                 </div>
                 <span className="text-xs text-neutral-500 dark:text-neutral-400">
                   {job.description}
@@ -65,7 +66,7 @@ export const JobRunnerPanel = () => {
               </div>
               <Button
                 variant="secondary"
-                disabled={job.isRunning || isBusy}
+                disabled={job.isRunning || job.isBlocked || isBusy}
                 onClick={() => handleRun(job.id)}
               >
                 <Play className="size-4" />

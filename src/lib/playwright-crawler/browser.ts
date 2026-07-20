@@ -3,6 +3,7 @@ import { buildNaverCookie } from '../../crawler';
 
 let browser: Browser | null = null;
 let context: BrowserContext | null = null;
+let browserLaunchPromise: Promise<BrowserContext> | null = null;
 
 const browserInstances = new Map<string, Browser>();
 const contextInstances = new Map<string, BrowserContext>();
@@ -30,15 +31,33 @@ const createContext = async (browser: Browser): Promise<BrowserContext> => {
   return ctx;
 };
 
-export const launchBrowser = async (): Promise<BrowserContext> => {
-  if (context) return context;
-
-  browser = await chromium.launch({
+const createSharedBrowserContext = async (): Promise<BrowserContext> => {
+  const newBrowser = await chromium.launch({
     headless: true,
   });
 
-  context = await createContext(browser);
-  return context;
+  try {
+    const newContext = await createContext(newBrowser);
+    browser = newBrowser;
+    context = newContext;
+    return newContext;
+  } catch (error) {
+    await newBrowser.close();
+    throw error;
+  }
+};
+
+export const launchBrowser = async (): Promise<BrowserContext> => {
+  if (context) return context;
+  if (browserLaunchPromise) return browserLaunchPromise;
+
+  browserLaunchPromise = createSharedBrowserContext();
+
+  try {
+    return await browserLaunchPromise;
+  } finally {
+    browserLaunchPromise = null;
+  }
 };
 
 export const launchBrowserInstance = async (
@@ -85,6 +104,10 @@ export const closeAllBrowserInstances = async (): Promise<void> => {
 };
 
 export const closeBrowser = async (): Promise<void> => {
+  if (browserLaunchPromise) {
+    await Promise.allSettled([browserLaunchPromise]);
+  }
+
   if (context) {
     await context.close();
     context = null;
