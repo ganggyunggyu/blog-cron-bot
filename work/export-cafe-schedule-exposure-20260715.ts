@@ -85,10 +85,10 @@ const loadSourceRows = async (): Promise<CafeExportRow[]> => {
 
     rows.push({
       키워드: keyword,
-      노출여부: text(sheet.getCell(rowIndex, 17).value),
-      순위: text(sheet.getCell(rowIndex, 18).value),
-      카페블로그명: text(sheet.getCell(rowIndex, 19).value),
-      링크: text(sheet.getCell(rowIndex, 20).value),
+      노출여부: keyword ? text(sheet.getCell(rowIndex, 17).value) : '',
+      순위: keyword ? text(sheet.getCell(rowIndex, 18).value) : '',
+      카페블로그명: keyword ? text(sheet.getCell(rowIndex, 19).value) : '',
+      링크: keyword ? text(sheet.getCell(rowIndex, 20).value) : '',
     });
   }
 

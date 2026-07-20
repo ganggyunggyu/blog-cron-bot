@@ -68,18 +68,18 @@
   "멀티페이지 크론 [서리펫]": {
     "cronType": "멀티페이지 크론 [서리펫]",
     "totalKeywords": 123,
-    "exposureCount": 61,
-    "popularCount": 61,
+    "exposureCount": 60,
+    "popularCount": 60,
     "sblCount": 0,
-    "newLogicCount": 14,
-    "oldLogicCount": 47,
+    "newLogicCount": 15,
+    "oldLogicCount": 45,
     "sheetStats": [
       {
         "name": "서리펫",
-        "count": 61
+        "count": 60
       }
     ],
-    "timestamp": "2026-07-16T00:54:00.590Z"
+    "timestamp": "2026-07-20T01:45:32.394Z"
   },
   "멀티페이지 크론 [흑염소 신규]": {
     "cronType": "멀티페이지 크론 [흑염소 신규]",
@@ -157,33 +157,27 @@
   },
   "패키지": {
     "cronType": "패키지",
-    "totalKeywords": 189,
-    "exposureCount": 70,
-    "popularCount": 19,
-    "sblCount": 51,
-    "newLogicCount": 3,
-    "oldLogicCount": 67,
-    "timestamp": "2026-05-18T01:57:19.472Z"
+    "totalKeywords": 166,
+    "exposureCount": 2,
+    "popularCount": 2,
+    "sblCount": 0,
+    "timestamp": "2026-07-20T01:31:23.578Z"
   },
   "일반건": {
     "cronType": "일반건",
-    "totalKeywords": 97,
-    "exposureCount": 49,
-    "popularCount": 16,
-    "sblCount": 33,
-    "newLogicCount": 5,
-    "oldLogicCount": 44,
-    "timestamp": "2026-05-18T01:57:19.484Z"
+    "totalKeywords": 123,
+    "exposureCount": 6,
+    "popularCount": 6,
+    "sblCount": 0,
+    "timestamp": "2026-07-20T01:31:23.592Z"
   },
   "도그마루": {
     "cronType": "도그마루",
-    "totalKeywords": 300,
-    "exposureCount": 109,
-    "popularCount": 79,
-    "sblCount": 30,
-    "newLogicCount": 51,
-    "oldLogicCount": 58,
-    "timestamp": "2026-05-18T01:57:19.773Z"
+    "totalKeywords": 299,
+    "exposureCount": 103,
+    "popularCount": 103,
+    "sblCount": 0,
+    "timestamp": "2026-07-20T01:31:23.639Z"
   },
   "흑염소 구": {
     "cronType": "흑염소 구",
@@ -302,5 +296,13 @@
     "popularCount": 64,
     "sblCount": 0,
     "timestamp": "2026-07-15T23:09:54.644Z"
+  },
+  "루트": {
+    "cronType": "루트",
+    "totalKeywords": 196,
+    "exposureCount": 2,
+    "popularCount": 2,
+    "sblCount": 0,
+    "timestamp": "2026-07-20T01:31:23.652Z"
   }
 }
