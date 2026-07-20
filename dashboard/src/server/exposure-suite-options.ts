@@ -1,9 +1,9 @@
 import { InvalidJobInputError } from './job-errors';
 
 export const EXPOSURE_SUITE_TARGETS = [
-  { id: 'package', label: '패키지', description: '패키지 시트 페이지 노출체크' },
-  { id: 'general', label: '일반건', description: '일반 시트 페이지 노출체크' },
-  { id: 'dogmaru', label: '도그마루', description: '도그마루 전용 노출체크' },
+  { id: 'package', label: '패키지', description: '원본은 읽고 결과 시트에만 반영' },
+  { id: 'general', label: '일반건', description: '일반건 전용 노출체크' },
+  { id: 'dogmaru', label: '도그마루', description: '애견 검색 공유·전용 결과 반영' },
   { id: 'root', label: '루트', description: '루트 키워드 전용 노출체크' },
   { id: 'pet', label: '애견', description: '애견 시트 페이지 노출체크' },
   { id: 'suripet', label: '서리펫', description: '서리펫 시트 페이지 노출체크' },
@@ -14,8 +14,8 @@ export type ExposureTargetId = (typeof EXPOSURE_SUITE_TARGETS)[number]['id'];
 
 export const EXPOSURE_SUITE_OPTION_DEFINITION = {
   targets: EXPOSURE_SUITE_TARGETS,
-  concurrency: { label: '대상별 병렬 수', min: 1, max: 8, defaultValue: 8 },
-  maxPages: { label: '최대 페이지', min: 1, max: 9, defaultValue: 4 },
+  concurrency: { label: '전체 요청 병렬 수', min: 1, max: 8, defaultValue: 8 },
+  maxPages: { label: '애견·서리펫 최대 페이지', min: 1, max: 9, defaultValue: 4 },
   targetConcurrency: { label: '동시 대상 수', min: 1, max: 3, defaultValue: 2 },
 } as const;
 

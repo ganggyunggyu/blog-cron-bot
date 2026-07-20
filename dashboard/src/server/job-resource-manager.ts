@@ -13,6 +13,9 @@ export interface JobResourceReservation {
 
 const activeResourceRuns = new Map<JobResourceGroup, string>();
 
+export const usesSuiteRunLock = (job: JobDefinition): boolean =>
+  job.kind === 'exposure-suite' || job.script.startsWith('exposure:');
+
 const hasResourceConflict = (job: JobDefinition): boolean => {
   if (!job.resourceGroup) return false;
   if (activeResourceRuns.has(job.resourceGroup)) return true;
@@ -36,7 +39,7 @@ export const reserveJobResource = (
 
   let fileLock: ExposureResourceFileLock | undefined;
   try {
-    if (job.kind !== 'exposure-suite') {
+    if (!usesSuiteRunLock(job)) {
       fileLock = acquireExposureResourceFileLock();
     }
   } catch (error) {

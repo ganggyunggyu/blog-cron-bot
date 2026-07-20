@@ -6,11 +6,30 @@ import { Eye, EyeOff, Square } from 'lucide-react';
 import { Badge, Button, Card, cn, selectedRunIdAtom } from '@/shared';
 import {
   findLatestProgress,
+  findTargetProgress,
   parseLogLine,
   useRunLogStream,
   useStopRun,
   type LogLineKind,
 } from '@/entities/run';
+
+const TARGET_LABELS: Record<string, string> = {
+  package: '패키지',
+  general: '일반건',
+  dogmaru: '도그마루',
+  root: '루트',
+  'root-more': '루트 더보기',
+  pet: '애견',
+  suripet: '서리펫',
+  cafe: '카페 + 블로그',
+};
+
+const TARGET_STATUS_LABELS: Record<string, string> = {
+  pending: '대기',
+  running: '진행 중',
+  success: '완료',
+  failed: '재시도/실패',
+};
 
 const STATUS_TONE: Record<string, 'success' | 'warning' | 'danger' | 'neutral'> = {
   running: 'warning',
@@ -43,6 +62,7 @@ export const LiveLogViewer = () => {
     [parsedLines, showDetail],
   );
   const latestProgress = React.useMemo(() => findLatestProgress(parsedLines), [parsedLines]);
+  const targetProgress = React.useMemo(() => findTargetProgress(parsedLines), [parsedLines]);
   const successCount = React.useMemo(
     () => parsedLines.filter((line) => line.kind === 'success').length,
     [parsedLines],
@@ -116,7 +136,39 @@ export const LiveLogViewer = () => {
         </div>
       </div>
 
-      {latestProgress ? (
+      {targetProgress.length > 0 ? (
+        <div className="mb-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {targetProgress.map((target) => {
+            const percent = target.status === 'success'
+              ? 100
+              : target.total > 0
+                ? Math.min(100, Math.round((target.current / target.total) * 100))
+                : 0;
+            return (
+              <div key={target.target} className="rounded-lg border border-neutral-200 p-2.5 dark:border-neutral-800">
+                <div className="mb-1.5 flex items-center justify-between gap-2 text-xs">
+                  <span className="font-medium text-neutral-800 dark:text-neutral-200">
+                    {TARGET_LABELS[target.target] ?? target.target}
+                  </span>
+                  <span className="text-neutral-500 dark:text-neutral-400">
+                    {target.total > 0 ? `${target.current}/${target.total} · ` : ''}
+                    {TARGET_STATUS_LABELS[target.status] ?? target.status}
+                  </span>
+                </div>
+                <div className="h-1.5 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800">
+                  <div
+                    className={cn(
+                      'h-full rounded-full transition-all duration-300',
+                      target.status === 'failed' ? 'bg-red-500' : target.status === 'success' ? 'bg-emerald-500' : 'bg-blue-500',
+                    )}
+                    style={{ width: `${percent}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : latestProgress ? (
         <div className="mb-2">
           <div className="mb-1 flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
             <span>

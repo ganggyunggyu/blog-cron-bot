@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useSetAtom } from 'jotai';
-import { Play } from 'lucide-react';
+import { PlayCircle } from 'lucide-react';
 import { Badge, Button, Card, formatDateTime, selectedRunIdAtom } from '@/shared';
 import { useJobList, useRunJob } from '@/entities/job';
 import { useRunList } from '@/entities/run';
@@ -31,7 +31,7 @@ export const JobRunnerPanel = () => {
   return (
     <Card>
       <h2 className="mb-3 text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-        잡 실행
+        한 클릭 노출체크
       </h2>
       {isLoading ? (
         <p className="text-sm text-neutral-500 dark:text-neutral-400">불러오는 중...</p>
@@ -39,13 +39,16 @@ export const JobRunnerPanel = () => {
       {isError ? (
         <p className="text-sm text-red-600 dark:text-red-400">잡 목록을 불러오지 못함</p>
       ) : null}
-      <div className="flex flex-col">
+      <p className="mb-3 text-xs text-neutral-500 dark:text-neutral-400">
+        원하는 카드의 실행 버튼만 누르면 결과 저장과 알림까지 이어집니다.
+      </p>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {jobs?.filter((job) => job.kind === 'standard').map((job) => {
           const isBusy = isPending && variables?.jobId === job.id;
           return (
-            <div
+            <article
               key={job.id}
-              className="flex flex-col gap-3 border-b border-neutral-100 py-3 last:border-0 sm:flex-row sm:items-center sm:justify-between dark:border-neutral-800"
+              className="flex min-h-44 flex-col rounded-xl border border-neutral-200 bg-white p-4 shadow-sm transition hover:border-blue-300 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-blue-800"
             >
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
@@ -65,14 +68,15 @@ export const JobRunnerPanel = () => {
                 ) : null}
               </div>
               <Button
+                className="mt-auto w-full"
                 variant="secondary"
                 disabled={job.isRunning || job.isBlocked || isBusy}
                 onClick={() => handleRun(job.id)}
               >
-                <Play className="size-4" />
-                실행
+                <PlayCircle className="size-4" />
+                한 번에 실행
               </Button>
-            </div>
+            </article>
           );
         })}
       </div>

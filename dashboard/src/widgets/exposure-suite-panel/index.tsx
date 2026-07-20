@@ -127,14 +127,14 @@ export const ExposureSuitePanel = () => {
         <section className={cn('flex flex-col gap-2')}>
           {definition ? (
             <React.Fragment>
-              <NumberOption {...definition.concurrency} value={concurrency} description="대상 하나가 동시에 처리할 키워드 수" onChange={setConcurrency} />
-              <NumberOption {...definition.maxPages} value={maxPages} description="페이지형 체크의 검색 범위" onChange={setMaxPages} />
+              <NumberOption {...definition.concurrency} value={concurrency} description="모든 대상이 함께 나눠 쓰는 최대 요청 수" onChange={setConcurrency} />
+              <NumberOption {...definition.maxPages} value={maxPages} description="애견·서리펫에만 적용 (도그마루는 1페이지)" onChange={setMaxPages} />
               <NumberOption {...definition.targetConcurrency} value={targetConcurrency} description="동시에 시작할 대상 수" onChange={setTargetConcurrency} />
             </React.Fragment>
           ) : null}
           <div className={cn('mt-1 flex gap-2 rounded-lg border border-blue-100 bg-blue-50/70 p-3 text-xs leading-5 text-blue-800 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-200')}>
             <ShieldCheck className={cn('mt-0.5 size-4 shrink-0')} />
-            <p>별도 노출체크의 중복 실행은 차단됩니다. 실행 후 아래 실시간 로그에서 대상별 진행 상태를 확인할 수 있습니다.</p>
+            <p>전체 요청 수를 공유해 네이버 과부하를 막고, 같은 애견 키워드는 한 번만 검색합니다. 실행 후 아래 실시간 로그에서 대상별 진행 상태를 확인할 수 있습니다.</p>
           </div>
           {isLoading ? <p className={cn('text-sm text-neutral-500')}>설정을 불러오는 중...</p> : null}
           {isError ? <p className={cn('text-sm text-red-600 dark:text-red-400')}>실행 설정을 불러오지 못함</p> : null}
