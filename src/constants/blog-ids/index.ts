@@ -390,22 +390,25 @@ export const PACKAGE_GENERAL_MORE_CHECK_BLOG_IDS = Array.from(
   new Set([...BLOG_IDS, ...PACKAGE_GENERAL_MORE_CHECK_EXTRA_BLOG_IDS])
 );
 
-// 도그마루 전용 블로그
+// 도그마루 노출체크 전용 블로그
 export const DOGMARU_BLOG_IDS = dedupeBlogIds([
-  ...PAGE_PET_BLOG_IDS,
-  ...TAGGED_DOGMARU_BLOG_IDS,
+  'tpeany',
+  'nanugi99',
+  'v3se',
+  'mirca1004',
+  'wandookong2',
+  'yaboo_171022',
+  'dudtjsdh159',
 ]);
 
-// 도그마루 노출체크용 전체 블로그 + 도그마루 전용 블로그
-export const DOGMARU_PAGE_CHECK_BLOG_IDS = dedupeBlogIds([
-  ...BLOG_IDS,
-  ...DOGMARU_BLOG_IDS,
-]).filter((blogId) => !DOGMARU_PAGE_CHECK_EXCLUDED_BLOG_ID_SET.has(blogId));
+// 도그마루는 전용 ID만 확인한다.
+export const DOGMARU_PAGE_CHECK_BLOG_IDS = [...DOGMARU_BLOG_IDS];
 
 // 서리펫 전용 블로그
 export const SURI_PET_BLOG_IDS = dedupeBlogIds([
-  ...PAGE_SURI_PET_BLOG_IDS,
-  ...TAGGED_SURI_PET_BLOG_IDS,
+  'hotelelena',
+  'pjwon03',
+  'ylk3516',
 ]);
 
 // 페이지 애견 노출체크용 전체 블로그 + 도그마루 전용 + 서리펫 전용 블로그
@@ -415,11 +418,8 @@ export const PET_PAGE_CHECK_BLOG_IDS = dedupeBlogIds([
   ...SURI_PET_BLOG_IDS,
 ]);
 
-// 서리펫 노출체크용 전체 블로그 + 서리펫 전용 블로그
-export const SURI_PET_PAGE_CHECK_BLOG_IDS = dedupeBlogIds([
-  ...BLOG_IDS,
-  ...SURI_PET_BLOG_IDS,
-]);
+// 서리펫은 전용 ID만 확인한다.
+export const SURI_PET_PAGE_CHECK_BLOG_IDS = [...SURI_PET_BLOG_IDS];
 
 export const PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE: Record<
   PageCheckSheetType,
