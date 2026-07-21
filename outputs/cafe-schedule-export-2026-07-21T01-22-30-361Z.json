@@ -1,0 +1,815 @@
+{
+  "summary": {
+    "sourceSheetId": "1vrN5gvtokWxPs8CNaNcvZQLWyIMBOIcteYXQbyfiZl0",
+    "sourceGid": 126285763,
+    "sourceTab": "카페 발행스케줄",
+    "targetSheetId": "1T9PHu-fH6HPmyYA9dtfXaDLm20XAPN-9mzlE2QTPkF0",
+    "targetGid": 1406050962,
+    "targetTitle": "카페노출체크",
+    "rows": 114,
+    "exposed": 17,
+    "failed": 0,
+    "artifactPath": "/Users/ganggyunggyu/Programing/blog-cron-bot/outputs/cafe-schedule-exposure-2026-07-20T23-07-03-712Z.json",
+    "dooraySent": true
+  },
+  "rows": [
+    {
+      "키워드": "회사 답례품",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "결혼 답례품",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "삼척카페",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "강아지 눈 영양제",
+      "노출여부": "o",
+      "순위": "3",
+      "카페블로그명": "육아 돌봄수첩",
+      "링크": "https://cafe.naver.com/babycare702/69?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImJhYnljYXJlNzAyIiwiYXJ0aWNsZUlkIjo2OSwiaXNzdWVkQXQiOjE3ODQ1ODg2OTAzNDh9.zHg4f__moVC-DpLTh83IAJQ4X_DxHQqIK619T-3ZIPM"
+    },
+    {
+      "키워드": "강아지 영양제",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "대구사진관",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "천안내성발톱",
+      "노출여부": "o",
+      "순위": "5 | 7",
+      "카페블로그명": "맛집 식탁모임 | 육아 돌봄수첩",
+      "링크": "https://cafe.naver.com/tableclub702/49?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6InRhYmxlY2x1YjcwMiIsImFydGljbGVJZCI6NDksImlzc3VlZEF0IjoxNzg0NTg4NjMyNTM5fQ.3DZXqZK-0w4SSIFMBrZX-S_tAQY4yFFg7blSprsTgbM | https://cafe.naver.com/babycare702/70?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImJhYnljYXJlNzAyIiwiYXJ0aWNsZUlkIjo3MCwiaXNzdWVkQXQiOjE3ODQ1ODg2MzI1Mzl9._6eHnRqSo-C3QgHFjC58DFsDltb0VsSgMFW2-XNV5h0"
+    },
+    {
+      "키워드": "올리브오일",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "대구 가족사진",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "강아지 관절 영양제",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "대구사진관",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "천안내성발톱",
+      "노출여부": "o",
+      "순위": "5 | 7",
+      "카페블로그명": "맛집 식탁모임 | 육아 돌봄수첩",
+      "링크": "https://cafe.naver.com/tableclub702/49?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6InRhYmxlY2x1YjcwMiIsImFydGljbGVJZCI6NDksImlzc3VlZEF0IjoxNzg0NTg4NjMyNTM5fQ.3DZXqZK-0w4SSIFMBrZX-S_tAQY4yFFg7blSprsTgbM | https://cafe.naver.com/babycare702/70?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImJhYnljYXJlNzAyIiwiYXJ0aWNsZUlkIjo3MCwiaXNzdWVkQXQiOjE3ODQ1ODg2MzI1Mzl9._6eHnRqSo-C3QgHFjC58DFsDltb0VsSgMFW2-XNV5h0"
+    },
+    {
+      "키워드": "올리브오일",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "대구 가족사진",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "강아지 관절 영양제",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "먹는 위고비",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "알파cd",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "울산위고비",
+      "노출여부": "o",
+      "순위": "2 | 6",
+      "카페블로그명": "애견 산책이야기 | 맛집 식탁모임",
+      "링크": "https://cafe.naver.com/dogwalk2m4/34?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImRvZ3dhbGsybTQiLCJhcnRpY2xlSWQiOjM0LCJpc3N1ZWRBdCI6MTc4NDU4ODYzMjU5OH0.KFdIccy0iWP70HUlD8TGXcve0xU4a0OzAZVlN39IWLs | https://cafe.naver.com/tableclub702/28?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6InRhYmxlY2x1YjcwMiIsImFydGljbGVJZCI6MjgsImlzc3VlZEF0IjoxNzg0NTg4NjMyNTk5fQ.gns0ogp-ihXSKBMIKzspD01EjOymsb2z1cK1FoS3rMg"
+    },
+    {
+      "키워드": "나비약",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "베르베린 효능",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "위고비 후기",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "거북목교정기",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "족저근막염깔창",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "올리브오일",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "접이식카트",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "장바구니캐리어",
+      "노출여부": "o",
+      "순위": "2 | 3",
+      "카페블로그명": "맛집 식탁모임 | 애견 산책이야기",
+      "링크": "https://cafe.naver.com/tableclub702/26?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6InRhYmxlY2x1YjcwMiIsImFydGljbGVJZCI6MjYsImlzc3VlZEF0IjoxNzg0NTg4NjUwNDc3fQ.RflG25XFjUsBrorPUae0ppBZGfiYfoLtdWz1Srunp-Y | https://cafe.naver.com/dogwalk2m4/32?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImRvZ3dhbGsybTQiLCJhcnRpY2xlSWQiOjMyLCJpc3N1ZWRBdCI6MTc4NDU4ODY1MDQ3N30.DhXewmcngvj_5L5WKLLvXhbct7c1UW2BnhKDiOYaNa4"
+    },
+    {
+      "키워드": "손가락 관절통증",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "손가락 마디통증",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "나비약",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "베르베린 효능",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "위고비 후기",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "드라이기",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "헤어드라이기",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "드라이기 추천",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "미용실드라이기",
+      "노출여부": "o",
+      "순위": "1 | 5",
+      "카페블로그명": "육아 돌봄수첩 | 건강 습관노트",
+      "링크": "https://cafe.naver.com/babycare702/15?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImJhYnljYXJlNzAyIiwiYXJ0aWNsZUlkIjoxNSwiaXNzdWVkQXQiOjE3ODQ1ODg2NjMwOTZ9.Ol0bntjG_fS47sKeCS69ShD5jHQ8WZCsnfu7d0fWL88 | https://cafe.naver.com/habitnote702/27?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImhhYml0bm90ZTcwMiIsImFydGljbGVJZCI6MjcsImlzc3VlZEF0IjoxNzg0NTg4NjYzMDk2fQ.5aLurTdlhe5Ef8iY8ozwftKn5UslqUNLBgYr55dnGkU"
+    },
+    {
+      "키워드": "선풍기",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "날개없는 선풍기",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "손가락 관절통증",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "손가락 마디통증",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "드라이기 추천",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "헤어드라이어",
+      "노출여부": "o",
+      "순위": "3",
+      "카페블로그명": "육아 돌봄수첩",
+      "링크": "https://cafe.naver.com/babycare702/46?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImJhYnljYXJlNzAyIiwiYXJ0aWNsZUlkIjo0NiwiaXNzdWVkQXQiOjE3ODQ1ODg2Njk1OTh9.Ptsutc1b6IbDHVQ_5g1qvKT2KOtulpw1t6sxq_BXnZU"
+    },
+    {
+      "키워드": "미용실드라이기",
+      "노출여부": "o",
+      "순위": "1 | 5",
+      "카페블로그명": "육아 돌봄수첩 | 건강 습관노트",
+      "링크": "https://cafe.naver.com/babycare702/15?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImJhYnljYXJlNzAyIiwiYXJ0aWNsZUlkIjoxNSwiaXNzdWVkQXQiOjE3ODQ1ODg2NjMwOTZ9.Ol0bntjG_fS47sKeCS69ShD5jHQ8WZCsnfu7d0fWL88 | https://cafe.naver.com/habitnote702/27?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImhhYml0bm90ZTcwMiIsImFydGljbGVJZCI6MjcsImlzc3VlZEF0IjoxNzg0NTg4NjYzMDk2fQ.5aLurTdlhe5Ef8iY8ozwftKn5UslqUNLBgYr55dnGkU"
+    },
+    {
+      "키워드": "헤어에센스추천",
+      "노출여부": "o",
+      "순위": "5",
+      "카페블로그명": "육아 돌봄수첩",
+      "링크": "https://cafe.naver.com/babycare702/2?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImJhYnljYXJlNzAyIiwiYXJ0aWNsZUlkIjoyLCJpc3N1ZWRBdCI6MTc4NDU4ODY3MTkzMH0.AYFW6mCYAT0ioaoqD1F8q653EEbgkF3BbxIreMiDQB4"
+    },
+    {
+      "키워드": "여성청바지",
+      "노출여부": "o",
+      "순위": "6",
+      "카페블로그명": "Never Mind, Then.새 창 열림",
+      "링크": "https://blog.naver.com/introsm/224323571831"
+    },
+    {
+      "키워드": "답례품",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "군대깔창",
+      "노출여부": "o",
+      "순위": "2 | 4",
+      "카페블로그명": "운연정 | 가중건다",
+      "링크": "https://cafe.naver.com/driveee/54?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImRyaXZlZWUiLCJhcnRpY2xlSWQiOjU0LCJpc3N1ZWRBdCI6MTc4NDU4ODgwODY1M30.m-IeHjTsoaLbtjZu0ONRhQ9771FLmCM730QwHgFNJGU | https://cafe.naver.com/healthhhh/40?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImhlYWx0aGhoaCIsImFydGljbGVJZCI6NDAsImlzc3VlZEF0IjoxNzg0NTg4ODA4NjU0fQ.2T8hSi4y2fAwRiRDKrnr_O6m9nAJELl2ZrXvg2T7qDU"
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "강아지 눈 영양제",
+      "노출여부": "o",
+      "순위": "3",
+      "카페블로그명": "육아 돌봄수첩",
+      "링크": "https://cafe.naver.com/babycare702/69?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImJhYnljYXJlNzAyIiwiYXJ0aWNsZUlkIjo2OSwiaXNzdWVkQXQiOjE3ODQ1ODg2OTAzNDh9.zHg4f__moVC-DpLTh83IAJQ4X_DxHQqIK619T-3ZIPM"
+    },
+    {
+      "키워드": "강아지 영양제",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "강아지 관절 영양제",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "선풍기",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "먹는 위고비",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "위고비 알약",
+      "노출여부": "o",
+      "순위": "5",
+      "카페블로그명": "murmur새 창 열림",
+      "링크": "https://blog.naver.com/i_thinkkkk/224313881780"
+    },
+    {
+      "키워드": "베르가못",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "마운자로 요요",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "파운다요",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "거북목교정기",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "족저근막염깔창",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "올리브오일",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "조문 답례품",
+      "노출여부": "o",
+      "순위": "3",
+      "카페블로그명": "운연정",
+      "링크": "https://cafe.naver.com/driveee/88?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImRyaXZlZWUiLCJhcnRpY2xlSWQiOjg4LCJpc3N1ZWRBdCI6MTc4NDU4ODcwMjU1NH0.5tcqwuafSeJgDP2WvpT8Wu-7KHrfGEzfTG2_yiPcXy0"
+    },
+    {
+      "키워드": "밀크씨슬",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "부천pt",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "sat학원 ",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "무지외반증 교정기",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "족저근막염 신발",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "신발깔창",
+      "노출여부": "o",
+      "순위": "3 | 6",
+      "카페블로그명": "가중건다 | 운연정",
+      "링크": "https://cafe.naver.com/healthhhh/22?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImhlYWx0aGhoaCIsImFydGljbGVJZCI6MjIsImlzc3VlZEF0IjoxNzg0NTg4NzE0OTU5fQ.0nEPf8Q__NJUAdjqlzvr_WFNoOc5sNHyaio12_lc7nE | https://cafe.naver.com/driveee/20?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImRyaXZlZWUiLCJhcnRpY2xlSWQiOjIwLCJpc3N1ZWRBdCI6MTc4NDU4ODcxNDk1OX0.qptna98YRD7dysN9GffdyT05OxjuiQcIRQlTtpV738Q"
+    },
+    {
+      "키워드": "올리브오일",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "깔창",
+      "노출여부": "o",
+      "순위": "4",
+      "카페블로그명": "murmur새 창 열림",
+      "링크": "https://blog.naver.com/i_thinkkkk/224339146964"
+    },
+    {
+      "키워드": "평발깔창",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "푸룬주스",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "장에좋은음식",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "군대깔창",
+      "노출여부": "o",
+      "순위": "2 | 4",
+      "카페블로그명": "운연정 | 가중건다",
+      "링크": "https://cafe.naver.com/driveee/54?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImRyaXZlZWUiLCJhcnRpY2xlSWQiOjU0LCJpc3N1ZWRBdCI6MTc4NDU4ODgwODY1M30.m-IeHjTsoaLbtjZu0ONRhQ9771FLmCM730QwHgFNJGU | https://cafe.naver.com/healthhhh/40?art=ZXh0ZXJuYWwtc2VydmljZS1uYXZlci1zZWFyY2gtY2FmZS1wcg.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjYWZlVHlwZSI6IkNBRkVfVVJMIiwiY2FmZVVybCI6ImhlYWx0aGhoaCIsImFydGljbGVJZCI6NDAsImlzc3VlZEF0IjoxNzg0NTg4ODA4NjU0fQ.2T8hSi4y2fAwRiRDKrnr_O6m9nAJELl2ZrXvg2T7qDU"
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "음식물처리기",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "음식물분쇄기",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "모니터추천",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "그래픽카드",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    },
+    {
+      "키워드": "블루투스스피커",
+      "노출여부": "",
+      "순위": "",
+      "카페블로그명": "",
+      "링크": ""
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "verifiedAt": "2026-07-21T09:39:01+09:00",
+  "resultSpreadsheetId": "1T9PHu-fH6HPmyYA9dtfXaDLm20XAPN-9mzlE2QTPkF0",
+  "checks": [
+    { "sheet": "루트", "rows": 196, "exposed": 1, "keywordMultisetDiff": 0, "exposureLinkDiff": 0 },
+    { "sheet": "패키지", "rows": 166, "exposed": 4, "keywordMultisetDiff": 0, "exposureLinkDiff": 0 },
+    { "sheet": "일반건", "rows": 123, "exposed": 5, "keywordMultisetDiff": 0, "exposureLinkDiff": 0 },
+    { "sheet": "도그마루", "rows": 299, "exposed": 106, "keywordMultisetDiff": 0, "exposureLinkDiff": 0 },
+    { "sheet": "애견(전체블로그)", "rows": 300, "exposed": 174 },
+    { "sheet": "서리펫", "rows": 131, "exposed": 83 },
+    {
+      "sheet": "카페노출체크",
+      "rowsIncludingBlanks": 165,
+      "blankRows": 30,
+      "exposed": 24,
+      "exactCellRowMismatches": 0
+    }
+  ],
+  "notes": [
+    "애견과 서리펫 통합 CSV는 중복 노출 결과를 포함하므로 개별 탭의 노출 행 합계와 단순 비교하지 않는다.",
+    "원본 시트는 읽기 전용으로 조회만 했으며 결과 시트만 readback 검증했다."
+  ]
+}
