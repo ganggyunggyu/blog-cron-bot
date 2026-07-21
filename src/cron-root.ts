@@ -9,7 +9,6 @@ import {
 import { saveToCSV, saveToSheetCSV } from './csv-writer';
 import { createDetailedLogBuilder, saveDetailedLogs } from './logs';
 import { processKeywords } from './lib/keyword-processor';
-import { ROOT_CONFIG, SHEET_APP_URL } from './constants';
 import { checkNaverLogin } from './lib/check-naver-login';
 import { logger } from './lib/logger';
 import { getKSTTimestamp } from './utils';
@@ -21,6 +20,7 @@ import {
   getExposureMaxPages,
 } from './lib/exposure-run-config';
 import { rewriteOrderedResultSheet } from './lib/google-sheets/ordered-result-sheet';
+import { syncRootKeywordsFromSheet } from './lib/root-keyword-sync';
 
 dotenv.config();
 
@@ -57,11 +57,14 @@ const runRootWorkflow = async (): Promise<void> => {
     throw new Error('MONGODB_URI 환경 변수가 설정되지 않았습니다.');
   }
 
-  if (!isDistributedShard) {
-    await syncRootKeywordsFromSheet();
-  }
-
   await connectDB(mongoUri);
+
+  if (!isDistributedShard) {
+    const syncResult = await syncRootKeywordsFromSheet();
+    logger.success(
+      `DB 동기화 완료! (삭제: ${syncResult.deleted}, 삽입: ${syncResult.inserted}, 경로: ${syncResult.source})`
+    );
+  }
 
   const allKeywords = await getAllRootKeywords();
 
@@ -216,25 +219,6 @@ const runRootWorkflow = async (): Promise<void> => {
     { label: '성공', value: `${stats.success}개` },
     { label: '실패', value: `${stats.failed}개` },
   ]);
-};
-
-export const syncRootKeywordsFromSheet = async (): Promise<void> => {
-  type RootResponseType = { deleted: number; inserted: number };
-  const response = await fetch(`${SHEET_APP_URL}/api/root-keywords/sync`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ sheetId: ROOT_CONFIG.SHEET_ID }),
-  });
-  if (!response.ok) {
-    throw new Error(`루트 원본 동기화 실패: HTTP ${response.status}`);
-  }
-
-  const syncResult = (await response.json()) as RootResponseType;
-  logger.success(
-    `DB 동기화 완료! (삭제: ${syncResult.deleted}, 삽입: ${syncResult.inserted})`
-  );
 };
 
 export async function main(): Promise<void> {
