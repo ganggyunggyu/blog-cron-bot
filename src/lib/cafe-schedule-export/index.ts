@@ -27,16 +27,20 @@ export const buildCafeScheduleExportRows = (
   allowMissingResults = false
 ): CafeScheduleExportRow[] => {
   const resultQueues = new Map<string, CafeScheduleCheckRow[]>();
+  const fallbackResults = new Map<string, CafeScheduleCheckRow>();
   checkedRows.forEach((row) => {
     const key = keywordKey(row.keyword);
     const queue = resultQueues.get(key) ?? [];
     queue.push(row);
     resultQueues.set(key, queue);
+    if (!fallbackResults.has(key)) fallbackResults.set(key, row);
   });
 
   return sourceRows.map(({ row, keyword }) => {
     const key = keywordKey(keyword);
-    const result = key ? resultQueues.get(key)?.shift() : undefined;
+    const result = key
+      ? resultQueues.get(key)?.shift() ?? fallbackResults.get(key)
+      : undefined;
 
     if (key && !result && !allowMissingResults) {
       throw new Error(`${row}행 ${keyword} 결과가 artifact에 없음`);
