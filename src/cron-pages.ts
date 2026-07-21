@@ -365,6 +365,7 @@ export async function processSheetKeywords(
     maxPages,
     concurrency,
     blogIds,
+    allowAnyBlog: false,
     keywordLogicMap,
     // 애견/서리펫의 같은 키워드 행은 같은 계정 범위를 확인하므로 첫 매칭을 재사용한다.
     consumeMatches: sheetType !== 'pet' && sheetType !== 'suripet',

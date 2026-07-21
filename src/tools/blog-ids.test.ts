@@ -16,15 +16,15 @@ import {
 } from '../constants/blog-ids';
 
 const REQUIRED_DOGMARU_BLOG_IDS = [
-  'mw_mj',
-  'janaggena',
-  'wandookong2',
+  'tpeany',
+  'nanugi99',
+  'v3se',
   'mirca1004',
-  'dudtjsdh159',
+  'wandookong2',
   'yaboo_171022',
-  'artistjunga',
+  'dudtjsdh159',
 ];
-const REQUIRED_SURI_PET_BLOG_IDS = ['pjwon03'];
+const REQUIRED_SURI_PET_BLOG_IDS = ['hotelelena', 'pjwon03', 'ylk3516'];
 const REQUIRED_ALIBABA_BLOG_IDS = ['introsm'];
 const REQUIRED_BASE_BLOG_IDS = ['introsm'];
 const REQUIRED_REACTIVATED_BLOG_IDS = ['durysuk'];
@@ -119,12 +119,8 @@ assertContainsAll(
   REQUIRED_PACKAGE_GENERAL_MORE_CHECK_BLOG_IDS
 );
 assertContainsAll(PAGES_BLOG_IDS, REQUIRED_BASE_BLOG_IDS);
-assertContainsAll(DOGMARU_PAGE_CHECK_BLOG_IDS, REQUIRED_BASE_BLOG_IDS);
-assertContainsAll(DOGMARU_PAGE_CHECK_BLOG_IDS, REQUIRED_REACTIVATED_BLOG_IDS);
 assertContainsAll(PET_PAGE_CHECK_BLOG_IDS, REQUIRED_BASE_BLOG_IDS);
 assertContainsAll(PET_PAGE_CHECK_BLOG_IDS, REQUIRED_REACTIVATED_BLOG_IDS);
-assertContainsAll(SURI_PET_PAGE_CHECK_BLOG_IDS, REQUIRED_BASE_BLOG_IDS);
-assertContainsAll(SURI_PET_PAGE_CHECK_BLOG_IDS, REQUIRED_REACTIVATED_BLOG_IDS);
 
 assert.equal(ALIBABA_BLOG_IDS.length, 14);
 assert.equal(new Set(ALIBABA_BLOG_IDS).size, ALIBABA_BLOG_IDS.length);
@@ -138,11 +134,17 @@ for (const sectionName of ALIBABA_SECTION_NAMES) {
   );
 }
 
-assertContainsAll(SURI_PET_PAGE_CHECK_BLOG_IDS, BLOG_IDS);
-assertContainsAll(SURI_PET_PAGE_CHECK_BLOG_IDS, SURI_PET_BLOG_IDS);
+assert.deepEqual(DOGMARU_BLOG_IDS, REQUIRED_DOGMARU_BLOG_IDS);
+assert.deepEqual(DOGMARU_PAGE_CHECK_BLOG_IDS, DOGMARU_BLOG_IDS);
+assert.deepEqual(SURI_PET_PAGE_CHECK_BLOG_IDS, SURI_PET_BLOG_IDS);
 assert.deepEqual(
   PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE.suripet,
   SURI_PET_BLOG_IDS
+);
+assert.deepEqual(SURI_PET_BLOG_IDS, REQUIRED_SURI_PET_BLOG_IDS);
+assert.deepEqual(
+  SURI_PET_BLOG_IDS.filter((blogId) => DOGMARU_BLOG_IDS.includes(blogId)),
+  []
 );
 assert.equal(
   new Set(SURI_PET_PAGE_CHECK_BLOG_IDS).size,
