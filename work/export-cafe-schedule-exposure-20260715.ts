@@ -13,6 +13,7 @@ import { assertWritableSheetId } from '../src/lib/google-sheets/write-target-gua
 dotenv.config();
 
 const SOURCE_SHEET_ID = '1vrN5gvtokWxPs8CNaNcvZQLWyIMBOIcteYXQbyfiZl0';
+const SOURCE_GID = 126285763;
 const SOURCE_TITLE = '카페 발행스케줄';
 const TARGET_SHEET_ID = '1T9PHu-fH6HPmyYA9dtfXaDLm20XAPN-9mzlE2QTPkF0';
 const TARGET_GID = 1406050962;
@@ -66,8 +67,20 @@ const getAuth = (readOnly: boolean): JWT => {
 };
 
 const loadSourceValues = async (): Promise<unknown[][]> => {
-  const range = encodeURIComponent(`'${SOURCE_TITLE}'!A:A`);
-  const response = await getAuth(true).request<{ values?: unknown[][] }>({
+  const auth = getAuth(true);
+  const metadata = await auth.request<TargetSpreadsheetMetadata>({
+    url: `https://sheets.googleapis.com/v4/spreadsheets/${SOURCE_SHEET_ID}?fields=sheets.properties`,
+    method: 'GET',
+  });
+  const source = metadata.data.sheets
+    ?.map((sheet) => sheet.properties)
+    .find((sheet) => sheet?.sheetId === SOURCE_GID);
+  if (!source || source.title !== SOURCE_TITLE) {
+    throw new Error(`원본 gid=${SOURCE_GID} 탭을 찾지 못했거나 탭명이 다름`);
+  }
+
+  const range = encodeURIComponent(`${SOURCE_TITLE}!A:A`);
+  const response = await auth.request<{ values?: unknown[][] }>({
     url: `https://sheets.googleapis.com/v4/spreadsheets/${SOURCE_SHEET_ID}/values/${range}`,
     method: 'GET',
   });
@@ -103,34 +116,31 @@ const loadSourceRows = async (
   artifact: CheckArtifact
 ): Promise<CafeScheduleExportRow[]> => {
   const values = await loadSourceValues();
-
-  let markerRowIndex = -1;
-  for (let rowIndex = 0; rowIndex < values.length; rowIndex += 1) {
-    if (/스케[줄쥴]/.test(text(values[rowIndex]?.[0]))) {
-      markerRowIndex = rowIndex;
-      break;
-    }
-  }
+  const markerRowIndex = values.findIndex((row) =>
+    /스케[줄쥴]/.test(text(row?.[0]))
+  );
   if (markerRowIndex < 0) throw new Error('A열 스케줄 제목을 찾지 못함');
 
   let lastScheduleRowIndex = markerRowIndex;
   for (let rowIndex = markerRowIndex + 1; rowIndex < values.length; rowIndex += 1) {
-    const keyword = text(values[rowIndex]?.[0]);
-    if (/스케[줄쥴]/.test(keyword)) break;
+    const keyword = String(values[rowIndex]?.[0] ?? '');
+    if (/스케[줄쥴]/.test(keyword.trim())) break;
     if (keyword) lastScheduleRowIndex = rowIndex;
   }
 
   const sourceRows: Array<{ row: number; keyword: string }> = [];
-  for (let rowIndex = markerRowIndex + 1; rowIndex <= lastScheduleRowIndex; rowIndex += 1) {
-    const keyword = text(values[rowIndex]?.[0]);
-    sourceRows.push({ row: rowIndex + 1, keyword });
+  for (
+    let rowIndex = markerRowIndex + 1;
+    rowIndex <= lastScheduleRowIndex;
+    rowIndex += 1
+  ) {
+    sourceRows.push({
+      row: rowIndex + 1,
+      keyword: String(values[rowIndex]?.[0] ?? ''),
+    });
   }
 
-  return buildCafeScheduleExportRows(
-    sourceRows,
-    artifact.rows,
-    artifact.summary.retryFailedOnly === true
-  );
+  return buildCafeScheduleExportRows(sourceRows, artifact.rows, true);
 };
 
 const exportRows = async (rows: CafeScheduleExportRow[]): Promise<void> => {
@@ -211,6 +221,26 @@ const exportRows = async (rows: CafeScheduleExportRow[]): Promise<void> => {
     method: 'POST',
     data: { requests },
   });
+
+  const readbackRange = encodeURIComponent(
+    `${TARGET_TITLE}!A1:E${values.length}`
+  );
+  const readback = await getAuth(true).request<{ values?: unknown[][] }>({
+    url: `https://sheets.googleapis.com/v4/spreadsheets/${TARGET_SHEET_ID}/values/${readbackRange}`,
+    method: 'GET',
+  });
+  const actual = readback.data.values ?? [];
+  values.forEach((expectedRow, rowIndex) => {
+    expectedRow.forEach((expectedValue, columnIndex) => {
+      const actualValue = String(actual[rowIndex]?.[columnIndex] ?? '');
+      if (actualValue !== expectedValue) {
+        throw new Error(
+          `${TARGET_TITLE} 재조회 불일치: ${rowIndex + 1}행 ${columnIndex + 1}열 ` +
+            `(기대=${expectedValue}, 실제=${actualValue})`
+        );
+      }
+    });
+  });
 };
 
 const main = async (): Promise<void> => {
@@ -223,6 +253,7 @@ const main = async (): Promise<void> => {
 
   const summary = {
     sourceSheetId: SOURCE_SHEET_ID,
+    sourceGid: SOURCE_GID,
     sourceTab: SOURCE_TITLE,
     targetSheetId: TARGET_SHEET_ID,
     targetGid: TARGET_GID,

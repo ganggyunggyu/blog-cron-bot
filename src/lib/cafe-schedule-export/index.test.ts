@@ -67,4 +67,19 @@ const reorderedRows = buildCafeScheduleExportRows(
 assert.deepEqual(reorderedRows.map((row) => row.키워드), ['둘째', '', '첫째']);
 assert.equal(reorderedRows[0].링크, 'https://example.com/b');
 
+const whitespaceRows = buildCafeScheduleExportRows(
+  [{ row: 97, keyword: 'sat학원 ' }],
+  [
+    {
+      row: 97,
+      keyword: 'sat학원',
+      exposureStatus: '미노출',
+      rank: '',
+      name: '',
+      links: '',
+    },
+  ]
+);
+assert.equal(whitespaceRows[0].키워드, 'sat학원 ');
+
 process.stdout.write('cafe schedule export tests passed\n');
