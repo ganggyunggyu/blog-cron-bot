@@ -82,4 +82,24 @@ const whitespaceRows = buildCafeScheduleExportRows(
 );
 assert.equal(whitespaceRows[0].키워드, 'sat학원 ');
 
+const repeatedRows = buildCafeScheduleExportRows(
+  [
+    { row: 2, keyword: '대구사진관' },
+    { row: 12, keyword: '대구사진관' },
+  ],
+  [
+    {
+      row: 2,
+      keyword: '대구사진관',
+      exposureStatus: '노출',
+      rank: '3',
+      name: '카페C',
+      links: 'https://example.com/c',
+    },
+  ],
+  true
+);
+assert.deepEqual(repeatedRows.map((row) => row.노출여부), ['o', 'o']);
+assert.deepEqual(repeatedRows.map((row) => row.순위), ['3', '3']);
+
 process.stdout.write('cafe schedule export tests passed\n');
