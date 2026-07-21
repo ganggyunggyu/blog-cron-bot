@@ -336,25 +336,25 @@
   "멀티페이지 크론 [도그마루 + 애견 + 서리펫]": {
     "cronType": "멀티페이지 크론 [도그마루 + 애견 + 서리펫]",
     "totalKeywords": 730,
-    "exposureCount": 412,
-    "popularCount": 332,
-    "sblCount": 27,
-    "newLogicCount": 121,
-    "oldLogicCount": 291,
+    "exposureCount": 401,
+    "popularCount": 321,
+    "sblCount": 24,
+    "newLogicCount": 113,
+    "oldLogicCount": 288,
     "sheetStats": [
       {
         "name": "애견",
-        "count": 219
+        "count": 213
       },
       {
         "name": "서리펫",
-        "count": 85
+        "count": 82
       },
       {
         "name": "도그마루",
-        "count": 108
+        "count": 106
       }
     ],
-    "timestamp": "2026-07-20T15:43:43.975Z"
+    "timestamp": "2026-07-20T23:34:42.452Z"
   }
 }
