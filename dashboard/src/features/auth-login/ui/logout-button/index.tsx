@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import { LogOut } from 'lucide-react';
 import { Button, api } from '@/shared';
 
 export const LogoutButton = () => {
@@ -14,7 +15,8 @@ export const LogoutButton = () => {
   };
 
   return (
-    <Button variant="ghost" onClick={handleLogout}>
+    <Button size="sm" variant="ghost" onClick={handleLogout}>
+      <LogOut className="size-4" />
       로그아웃
     </Button>
   );

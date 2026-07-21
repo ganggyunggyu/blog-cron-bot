@@ -10,10 +10,11 @@
 - 등록된 블로그 ID/업체명 기준 매칭 (지점명이 다른 경우까지 고려한 브랜드 매칭)
 - 게시글 본문에 접근해 업체명을 추출하고 검색 결과와 교차 검증
 - 시트타입(패키지/도그마루/일반 등)별로 매칭 허용 범위, 재시도 횟수, 딜레이를 다르게 적용
-- Google Sheets ↔ MongoDB 양방향 동기화 (`syncKeywords` → 크롤링 → `importKeywords`)
+- 원본 Google Sheets는 읽기 전용으로 동기화하고, 노출 결과는 별도 결과 시트에 기록한 뒤 재조회 검증
 - CSV 결과 파일 저장, Dooray 웹훅으로 실행 결과 알림
 - 네이버 차단 대응: User-Agent 로테이션, 403 전용 백오프, 로그인/비로그인 재시도
-- PM2 기반 스케줄러 3종(키워드/루트/전체시트) + Next.js 대시보드로 운영 상태 확인 및 수동 실행
+- Next.js 대시보드에서 대상별 원클릭 실행, SSE 실시간 로그·진행률, 결과 다운로드 제공
+- MongoDB 작업 큐와 Railway 다중 워커로 키워드를 50개 단위 분산 처리
 
 ## 기술 스택
 
@@ -46,6 +47,42 @@ Shared (src/constants/*, src/logs/*, src/lib/utils/*, src/types.ts)
 ```
 
 `dashboard/`는 봇 제어용 웹 UI로, `src/`와 완전히 분리된 자체 Next.js 프로젝트다(자체 `package.json`, `tsconfig.json`). 봇 프로세스를 PM2로 start/stop/restart 하거나, 크론 스크립트를 수동으로 한 번 실행하고 SSE로 실시간 로그를 스트리밍하는 용도로 쓴다.
+
+### 운영 인프라
+
+Railway에서는 같은 Docker 이미지를 역할별로 나눠 실행한다. 제어 서비스는 대시보드, 실행 잠금, 작업 분할, 진행률 집계와 최종 반영을 담당하고, 5개의 워커 서비스는 MongoDB 대기열에서 작업을 원자적으로 가져가 네이버 검색을 처리한다. 루트·애견·서리펫 키워드는 같은 검색어 행을 유지한 채 50개 기준으로 분할한다.
+
+```mermaid
+flowchart TB
+    USER["사용자 · 웹 원클릭"] --> DASH["Railway 제어 서비스<br/>Next.js 대시보드 · Job Runner · SSE"]
+    CODEX["Codex 예약<br/>매일 08:00"] --> DASH
+    SOURCE["Google Sheets 원본<br/>읽기 전용"] --> PLAN["작업 동기화 · 50개 단위 분할"]
+    DASH --> LOCK["노출체크 실행 잠금"]
+    LOCK --> DIRECT["개별 실행<br/>패키지 · 일반건 · 도그마루 · 루트 · 카페"]
+    LOCK --> PLAN
+    PLAN --> MONGO[("MongoDB Atlas<br/>키워드 · 결과 · 작업 큐")]
+    MONGO --> W1["Worker 1"]
+    MONGO --> W2["Worker 2"]
+    MONGO --> W3["Worker 3"]
+    MONGO --> W4["Worker 4"]
+    MONGO --> W5["Worker 5"]
+    DIRECT --> NAVER["Naver 검색<br/>HTTP + Playwright"]
+    W1 --> NAVER
+    W2 --> NAVER
+    W3 --> NAVER
+    W4 --> NAVER
+    W5 --> NAVER
+    NAVER --> MONGO
+    MONGO --> FINAL["제어 서비스 최종 반영<br/>병합 · 검증 · 알림"]
+    DIRECT --> FINAL
+    FINAL --> VOLUME[("Railway Volume<br/>CSV · 로그")]
+    FINAL --> RESULT["Google Sheets 결과 시트<br/>쓰기 후 재조회"]
+    FINAL --> DOORAY["Dooray<br/>결과 요약 + 시트 링크"]
+    MONGO --> SSE["진행 상태 집계"]
+    SSE --> DASH
+```
+
+워커는 작업을 가져갈 때 60초 임대를 설정하고 15초마다 heartbeat를 갱신한다. 워커가 종료되면 임대 만료 후 다른 워커가 이어받으며, 작업은 최대 2회 시도한다. 개별 워커는 원본 시트나 최종 결과 시트를 수정하지 않고 MongoDB 결과만 갱신한다. 모든 조각이 성공한 뒤 제어 서비스 한 곳에서만 CSV 생성, 결과 시트 쓰기·재조회 검증, Dooray 알림을 수행해 중복 반영을 막는다. 상세 운영 계약은 [`docs/DISTRIBUTED_EXPOSURE.md`](docs/DISTRIBUTED_EXPOSURE.md)에 정리돼 있다.
 
 ### 데이터 파이프라인
 
@@ -96,7 +133,7 @@ blog-cron-bot/
 ├── output/                       # 생성된 CSV 결과
 ├── docs/                         # 운영 문서 (EC2/Railway 배포 가이드 등)
 ├── ecosystem.config.cjs          # EC2용 PM2 설정
-├── ecosystem.railway.config.cjs  # Railway용 PM2 설정 (봇 3개 + 대시보드)
+├── ecosystem.railway.config.cjs  # Railway 역할별 PM2 설정 (control / worker)
 └── Dockerfile                    # Railway 배포용 (Playwright 베이스 이미지)
 ```
 

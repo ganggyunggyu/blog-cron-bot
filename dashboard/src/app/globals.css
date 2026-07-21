@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #f7f8fa;
   --foreground: #171717;
 }
 
@@ -14,13 +14,28 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #0a0b0d;
     --foreground: #ededed;
+  }
+}
+
+* {
+  scrollbar-color: var(--scrollbar-thumb, #d4d4d4) transparent;
+  scrollbar-width: thin;
+}
+
+@media (prefers-color-scheme: dark) {
+  * {
+    --scrollbar-thumb: #3f3f46;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+::selection {
+  background: color-mix(in srgb, #2563eb 30%, transparent);
 }

@@ -4,9 +4,9 @@ import {
   type PageCheckSheetType,
 } from '../../database';
 import { importSheetAPI } from '../../cron-pages';
-import { syncRootKeywordsFromSheet } from '../../cron-root';
 import type { ExposureTargetId } from '../exposure-suite/options';
 import { logger } from '../logger';
+import { syncRootKeywordsFromSheet } from '../root-keyword-sync';
 import { buildPageKeywordShards } from './page-shards';
 import type { DistributedJobInput } from './queue';
 

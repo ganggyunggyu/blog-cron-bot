@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { useAtomValue } from 'jotai';
-import { Eye, EyeOff, Square } from 'lucide-react';
-import { Badge, Button, Card, cn, selectedRunIdAtom } from '@/shared';
+import { Eye, EyeOff, Square, Terminal } from 'lucide-react';
+import { Badge, Button, Card, SectionHeader, cn, selectedRunIdAtom } from '@/shared';
 import {
   findLatestProgress,
   findTargetProgress,
@@ -96,9 +96,7 @@ export const LiveLogViewer = () => {
   if (!runId) {
     return (
       <Card>
-        <h2 className="mb-2 text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-          실시간 로그
-        </h2>
+        <SectionHeader icon={Terminal} title="실시간 로그" />
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
           잡을 실행하거나 실행 이력을 선택하면 여기에 로그가 표시됨.
         </p>
@@ -113,28 +111,28 @@ export const LiveLogViewer = () => {
 
   return (
     <Card>
-      <div className="mb-2 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h2 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-            실시간 로그
-          </h2>
-          <span className="text-xs text-emerald-500">✓ {successCount}</span>
-          {failureCount > 0 ? <span className="text-xs text-red-500">✖ {failureCount}</span> : null}
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge tone={STATUS_TONE[status ?? 'running'] ?? 'neutral'}>{status ?? 'running'}</Badge>
-          <Button variant="ghost" onClick={handleToggleDetail}>
-            {showDetail ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-            {showDetail ? '간결히 보기' : '상세 보기'}
-          </Button>
-          {isRunning ? (
-            <Button variant="danger" disabled={isPending} onClick={handleStop}>
-              <Square className="size-4" />
-              정지
+      <SectionHeader
+        icon={Terminal}
+        title="실시간 로그"
+        description={`성공 ${successCount}건${failureCount > 0 ? ` · 실패 ${failureCount}건` : ''}`}
+        action={
+          <div className="flex items-center gap-2">
+            <Badge withDot tone={STATUS_TONE[status ?? 'running'] ?? 'neutral'}>
+              {status ?? 'running'}
+            </Badge>
+            <Button size="sm" variant="ghost" onClick={handleToggleDetail}>
+              {showDetail ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              {showDetail ? '간결히 보기' : '상세 보기'}
             </Button>
-          ) : null}
-        </div>
-      </div>
+            {isRunning ? (
+              <Button size="sm" variant="danger" disabled={isPending} onClick={handleStop}>
+                <Square className="size-4" />
+                정지
+              </Button>
+            ) : null}
+          </div>
+        }
+      />
 
       {targetProgress.length > 0 ? (
         <div className="mb-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -185,20 +183,27 @@ export const LiveLogViewer = () => {
         </div>
       ) : null}
 
-      <div
-        ref={logContainerRef}
-        onScroll={handleScroll}
-        className="h-80 overflow-y-auto rounded-md bg-neutral-950 p-3 font-mono text-xs"
-      >
-        {visibleLines.length === 0 ? (
-          <p className="text-neutral-500">로그 대기 중...</p>
-        ) : (
-          visibleLines.map((line, index) => (
-            <div key={index} className={cn('whitespace-pre-wrap break-all', LINE_TONE[line.kind])}>
-              {line.raw}
-            </div>
-          ))
-        )}
+      <div className="overflow-hidden rounded-xl border border-neutral-800 bg-neutral-950">
+        <div className="flex items-center gap-1.5 border-b border-neutral-800 px-3 py-2">
+          <span className="size-2.5 rounded-full bg-neutral-700" />
+          <span className="size-2.5 rounded-full bg-neutral-700" />
+          <span className="size-2.5 rounded-full bg-neutral-700" />
+        </div>
+        <div
+          ref={logContainerRef}
+          onScroll={handleScroll}
+          className="h-80 overflow-y-auto p-3 font-mono text-xs"
+        >
+          {visibleLines.length === 0 ? (
+            <p className="text-neutral-500">로그 대기 중...</p>
+          ) : (
+            visibleLines.map((line, index) => (
+              <div key={index} className={cn('whitespace-pre-wrap break-all', LINE_TONE[line.kind])}>
+                {line.raw}
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </Card>
   );
