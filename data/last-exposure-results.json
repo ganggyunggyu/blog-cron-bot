@@ -356,5 +356,27 @@
       }
     ],
     "timestamp": "2026-07-20T23:34:42.452Z"
+  },
+  "서리펫": {
+    "cronType": "서리펫",
+    "totalKeywords": 131,
+    "exposureCount": 86,
+    "popularCount": 0,
+    "sblCount": 0,
+    "sheetStats": [
+      {
+        "name": "서리펫",
+        "count": 86
+      }
+    ],
+    "timestamp": "2026-07-21T03:14:49.359Z"
+  },
+  "애견": {
+    "cronType": "애견",
+    "totalKeywords": 300,
+    "exposureCount": 210,
+    "popularCount": 135,
+    "sblCount": 0,
+    "timestamp": "2026-07-21T03:27:08.551Z"
   }
 }
