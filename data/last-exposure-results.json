@@ -21,7 +21,7 @@
     "exposureCount": 5,
     "popularCount": 5,
     "sblCount": 0,
-    "timestamp": "2026-07-20T23:17:50.149Z"
+    "timestamp": "2026-07-21T23:19:23.786Z"
   },
   "도그마루 노출체크": {
     "cronType": "도그마루 노출체크",
@@ -39,15 +39,15 @@
     "sblCount": 0,
     "newLogicCount": 0,
     "oldLogicCount": 4,
-    "timestamp": "2026-07-20T23:15:58.409Z"
+    "timestamp": "2026-07-21T23:17:30.743Z"
   },
   "루트 키워드": {
     "cronType": "루트 키워드",
-    "totalKeywords": 196,
+    "totalKeywords": 193,
     "exposureCount": 1,
     "popularCount": 1,
     "sblCount": 0,
-    "timestamp": "2026-07-20T23:13:25.560Z"
+    "timestamp": "2026-07-21T23:14:57.008Z"
   },
   "멀티페이지 크론 [애견]": {
     "cronType": "멀티페이지 크론 [애견]",
@@ -308,10 +308,10 @@
   "카페 블로그 통합 노출체크": {
     "cronType": "카페 블로그 통합 노출체크",
     "totalKeywords": 76,
-    "exposureCount": 17,
+    "exposureCount": 16,
     "popularCount": 0,
     "sblCount": 0,
-    "timestamp": "2026-07-21T01:22:30.610Z"
+    "timestamp": "2026-07-21T23:08:45.852Z"
   },
   "멀티페이지 크론 [애견 + 서리펫]": {
     "cronType": "멀티페이지 크론 [애견 + 서리펫]",
@@ -336,26 +336,26 @@
   "멀티페이지 크론 [도그마루 + 애견 + 서리펫]": {
     "cronType": "멀티페이지 크론 [도그마루 + 애견 + 서리펫]",
     "totalKeywords": 730,
-    "exposureCount": 401,
-    "popularCount": 321,
-    "sblCount": 24,
-    "newLogicCount": 113,
-    "oldLogicCount": 288,
+    "exposureCount": 385,
+    "popularCount": 320,
+    "sblCount": 25,
+    "newLogicCount": 118,
+    "oldLogicCount": 267,
     "sheetStats": [
       {
         "name": "애견",
-        "count": 213
+        "count": 204
       },
       {
         "name": "서리펫",
-        "count": 82
+        "count": 78
       },
       {
         "name": "도그마루",
-        "count": 106
+        "count": 103
       }
     ],
-    "timestamp": "2026-07-20T23:34:42.452Z"
+    "timestamp": "2026-07-21T23:41:09.762Z"
   },
   "서리펫": {
     "cronType": "서리펫",
