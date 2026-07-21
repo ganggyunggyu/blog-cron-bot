@@ -39,22 +39,32 @@ assert.deepEqual(rows, [
   { 키워드: '나비약', 노출여부: '', 순위: '', 카페블로그명: '', 링크: '' },
 ]);
 
-assert.throws(
-  () =>
-    buildCafeScheduleExportRows(
-      [{ row: 10, keyword: '원본' }],
-      [
-        {
-          row: 10,
-          keyword: '다른값',
-          exposureStatus: '노출',
-          rank: '1',
-          name: '카페A',
-          links: 'https://example.com/a',
-        },
-      ]
-    ),
-  /키워드 불일치/
+const reorderedRows = buildCafeScheduleExportRows(
+  [
+    { row: 20, keyword: '둘째' },
+    { row: 21, keyword: '' },
+    { row: 22, keyword: '첫째' },
+  ],
+  [
+    {
+      row: 10,
+      keyword: '첫째',
+      exposureStatus: '미노출',
+      rank: '',
+      name: '',
+      links: '',
+    },
+    {
+      row: 11,
+      keyword: '둘째',
+      exposureStatus: '노출',
+      rank: '2',
+      name: '카페B',
+      links: 'https://example.com/b',
+    },
+  ]
 );
+assert.deepEqual(reorderedRows.map((row) => row.키워드), ['둘째', '', '첫째']);
+assert.equal(reorderedRows[0].링크, 'https://example.com/b');
 
 process.stdout.write('cafe schedule export tests passed\n');

@@ -24,18 +24,18 @@ export const buildCafeScheduleExportRows = (
   checkedRows: CafeScheduleCheckRow[],
   allowMissingResults = false
 ): CafeScheduleExportRow[] => {
-  const resultByRow = new Map(checkedRows.map((row) => [row.row, row]));
+  const resultQueues = new Map<string, CafeScheduleCheckRow[]>();
+  checkedRows.forEach((row) => {
+    const queue = resultQueues.get(row.keyword) ?? [];
+    queue.push(row);
+    resultQueues.set(row.keyword, queue);
+  });
 
   return sourceRows.map(({ row, keyword }) => {
-    const result = resultByRow.get(row);
+    const result = keyword ? resultQueues.get(keyword)?.shift() : undefined;
 
     if (keyword && !result && !allowMissingResults) {
       throw new Error(`${row}행 ${keyword} 결과가 artifact에 없음`);
-    }
-    if (result && result.keyword !== keyword) {
-      throw new Error(
-        `${row}행 키워드 불일치: 시트=${keyword}, artifact=${result.keyword}`
-      );
     }
 
     return {
