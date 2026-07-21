@@ -15,6 +15,10 @@ import { getKSTTimestamp } from './utils';
 import { sendDoorayExposureResult } from './lib/dooray';
 import { ExposureResult } from './matcher';
 import { DOGMARU_PAGE_CHECK_BLOG_IDS } from './constants/blog-ids';
+import {
+  OrderedResultTarget,
+  rewriteOrderedResultSheet,
+} from './lib/google-sheets/ordered-result-sheet';
 
 dotenv.config();
 
@@ -137,6 +141,24 @@ const runExposureWorkflow = async (): Promise<void> => {
     `${csvPrefix}_sheet_${timestamp}.csv`,
     keywordLogicMap
   );
+
+  const orderedTargetBySheetType: Record<string, OrderedResultTarget> = {
+    package: 'package',
+    'dogmaru-exclude': 'general',
+    dogmaru: 'dogmaru',
+  };
+  const orderedTarget = orderedTargetBySheetType[onlySheetType];
+  if (orderedTarget) {
+    await rewriteOrderedResultSheet(
+      orderedTarget,
+      allResults,
+      keywordLogicMap,
+      keywords.map((keyword) => ({
+        keyword: keyword.keyword,
+        company: keyword.company,
+      }))
+    );
+  }
 
   const elapsedMs = Date.now() - startTime;
   const hours = Math.floor(elapsedMs / (1000 * 60 * 60));

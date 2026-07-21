@@ -9,10 +9,9 @@ import {
 import { saveToCSV, saveToSheetCSV } from './csv-writer';
 import { createDetailedLogBuilder, saveDetailedLogs } from './logs';
 import { processKeywords } from './lib/keyword-processor';
-import { ROOT_CONFIG, SHEET_APP_URL, TEST_CONFIG } from './constants';
+import { ROOT_CONFIG, SHEET_APP_URL } from './constants';
 import { checkNaverLogin } from './lib/check-naver-login';
 import { logger } from './lib/logger';
-import axios from 'axios';
 import { getKSTTimestamp } from './utils';
 import { sendDoorayExposureResult } from './lib/dooray';
 import { autoLogin } from './tools/auto-login';
@@ -21,7 +20,7 @@ import {
   getExposureConcurrency,
   getExposureMaxPages,
 } from './lib/exposure-run-config';
-import { assertWritableSheetId } from './lib/google-sheets/write-target-guard';
+import { rewriteOrderedResultSheet } from './lib/google-sheets/ordered-result-sheet';
 
 dotenv.config();
 
@@ -187,12 +186,16 @@ const runRootWorkflow = async (): Promise<void> => {
     .filter((k) => !exposedKeywords.has(k.keyword) && !k.isUpdateRequired)
     .map((k) => k.keyword);
 
-  assertWritableSheetId(TEST_CONFIG.SHEET_ID, '루트 결과 반영');
-  const importResponse = await axios.post(`${SHEET_APP_URL}/api/root-keywords/import`, {
-    expectedSheetId: TEST_CONFIG.SHEET_ID,
-    expectedSheetName: TEST_CONFIG.SHEET_NAMES.ROOT,
-  });
-  logger.info(`시트 반영 결과: ${JSON.stringify(importResponse.data)}`);
+  const rewriteResult = await rewriteOrderedResultSheet(
+    'root',
+    allResults,
+    undefined,
+    keywords.map((keyword) => ({
+      keyword: keyword.keyword,
+      company: keyword.company,
+    }))
+  );
+  logger.info(`시트 반영 결과: ${rewriteResult.rowCount}건, 원본 순서 재조회 완료`);
 
   await sendDoorayExposureResult({
     cronType: '루트 키워드',

@@ -1,6 +1,6 @@
-import { syncKeywords, importKeywords } from '../../api';
+import { syncKeywords } from '../../api';
 import { DOGMARU_PAGE_CHECK_BLOG_IDS } from '../../constants/blog-ids';
-import { requests, importRes } from '../../constants';
+import { requests } from '../../constants';
 import { getAllKeywords, type IKeyword } from '../../database';
 import { saveToCSV, saveToSheetCSV } from '../../csv-writer';
 import { createDetailedLogBuilder, saveDetailedLogs } from '../../logs';
@@ -9,6 +9,7 @@ import { getKSTTimestamp } from '../../utils';
 import { processKeywords } from '../keyword-processor';
 import type { SharedCrawlContext } from '../keyword-processor/types';
 import { logger } from '../logger';
+import { rewriteOrderedResultSheet } from '../google-sheets/ordered-result-sheet';
 import { DOGMARU_COMPOSITE_MAX_PAGES } from './dog-pet-composite';
 
 export interface DogmaruCompositeResult {
@@ -64,8 +65,16 @@ export const finalizeDogmaruCompositeTarget = async (
   startedAt: number
 ): Promise<void> => {
   logger.step(3, 3, '도그마루 시트 반영');
-  const importResult = await importKeywords(importRes[2]);
-  const updatedCount = importResult.updated ?? 0;
+  const rewriteResult = await rewriteOrderedResultSheet(
+    'dogmaru',
+    result.results,
+    undefined,
+    result.keywords.map((keyword) => ({
+      keyword: keyword.keyword,
+      company: keyword.company,
+    }))
+  );
+  const updatedCount = rewriteResult.rowCount;
   logger.result('도그마루', `${updatedCount}건`);
   logger.step(3, 3, '도그마루 시트 반영', 'done');
 

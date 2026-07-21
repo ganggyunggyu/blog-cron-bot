@@ -37,6 +37,8 @@ interface ResultQueueMaps {
   unscoped: Map<string, ExposureResult[]>;
 }
 
+export type SheetCellValue = string | number;
+
 const getCompanyResultKey = (query: string, company: string): string =>
   `${query}\u0000${company}`;
 
@@ -94,16 +96,16 @@ const formatUnexposedLogicType = (
   return '';
 };
 
-const formatSheetRow = (
+const buildSheetRow = (
   keywordInfo: KeywordInfo,
   result: ExposureResult | undefined,
   rowNumber: number,
   keywordLogicMap?: Map<string, boolean>
-): string => {
+): SheetCellValue[] => {
   if (!result) {
     return [
-      escapeCsvValue(keywordInfo.company || ''),
-      escapeCsvValue(keywordInfo.keyword),
+      keywordInfo.company || '',
+      keywordInfo.keyword,
       '',
       '',
       '',
@@ -114,26 +116,61 @@ const formatSheetRow = (
       '',
       formatUnexposedLogicType(keywordInfo.keyword, keywordLogicMap),
       rowNumber,
-    ].join(',');
+    ];
   }
 
   const isPopular = result.exposureType === '인기글';
   const popularRank = isPopular ? result.position : '';
 
   return [
-    escapeCsvValue(keywordInfo.company || ''),
-    escapeCsvValue(keywordInfo.keyword),
-    escapeCsvValue(result.topicName || result.exposureType),
+    keywordInfo.company || '',
+    keywordInfo.keyword,
+    result.topicName || result.exposureType,
     result.position,
     'o',
     '',
     popularRank,
     '',
     result.postLink,
-    escapeCsvValue(result.postPublishedAt || ''),
+    result.postPublishedAt || '',
     formatSheetExposureLogicType(result.isNewLogic),
     rowNumber,
-  ].join(',');
+  ];
+};
+
+export const buildSheetRows = (
+  keywords: KeywordInfo[],
+  results: ExposureResult[],
+  keywordLogicMap?: Map<string, boolean>
+): SheetCellValue[][] => {
+  const resultMaps = getResultQueueMaps(results);
+
+  return keywords.map((keywordInfo, index) => {
+    const company = String(keywordInfo.company || '').trim();
+    const scopedQueue = company
+      ? resultMaps.companyScoped.get(
+          getCompanyResultKey(keywordInfo.keyword, company)
+        )
+      : undefined;
+    const result =
+      scopedQueue?.shift() ??
+      resultMaps.unscoped.get(keywordInfo.keyword)?.shift();
+
+    return buildSheetRow(keywordInfo, result, index + 1, keywordLogicMap);
+  });
+};
+
+const ESCAPED_SHEET_COLUMNS = new Set([0, 1, 2, 9]);
+
+const formatSheetCellForCsv = (
+  value: SheetCellValue,
+  columnIndex: number
+): string => {
+  const stringValue = String(value);
+  if (stringValue === '') return '';
+  return ESCAPED_SHEET_COLUMNS.has(columnIndex)
+    ? escapeCsvValue(stringValue)
+    : stringValue;
 };
 
 export const saveToSheetCSV = (
@@ -143,18 +180,9 @@ export const saveToSheetCSV = (
   keywordLogicMap?: Map<string, boolean>
 ): void => {
   const filePath = resolveOutputFilePath(filename);
-  const resultMaps = getResultQueueMaps(results);
-  const rows = keywords.map((keywordInfo, index) => {
-    const company = String(keywordInfo.company || '').trim();
-    const scopedQueue = company
-      ? resultMaps.companyScoped.get(
-          getCompanyResultKey(keywordInfo.keyword, company)
-        )
-      : undefined;
-    const result = scopedQueue?.shift() ??
-      resultMaps.unscoped.get(keywordInfo.keyword)?.shift();
-    return formatSheetRow(keywordInfo, result, index + 1, keywordLogicMap);
-  });
+  const rows = buildSheetRows(keywords, results, keywordLogicMap).map((row) =>
+    row.map(formatSheetCellForCsv).join(',')
+  );
 
   writeBomCsvFile(filePath, [SHEET_HEADER, ...rows]);
   logger.success(`시트 형식 CSV 저장 완료: ${filePath}`);

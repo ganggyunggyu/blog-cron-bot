@@ -278,7 +278,9 @@ export const loadKeywordsFromWorksheet = async (
 
   const rows = await sheet.getRows<SheetRowRecord>();
   const excludedIndices = findExcludedRowIndices(
-    rows.map((row) => getRowValue(row, '업체명'))
+    rows.map((row) =>
+      `${getRowValue(row, '업체명')} ${getRowValue(row, '키워드')}`.trim()
+    )
   );
 
   const keywords = rows.flatMap((row, index) => {

@@ -9,14 +9,15 @@ import { logger } from './lib/logger';
 import { getKSTTimestamp } from './utils';
 import { sendDoorayExposureResult } from './lib/dooray';
 import { DOGMARU_PAGE_CHECK_BLOG_IDS } from './constants/blog-ids';
-import { syncKeywords, importKeywords } from './api';
-import { requests, importRes } from './constants';
+import { syncKeywords } from './api';
+import { requests } from './constants';
 import { ExposureResult } from './matcher';
 import { closeBrowser, launchBrowser } from './lib/playwright-crawler';
 import {
   getExposureConcurrency,
   getExposureMaxPages,
 } from './lib/exposure-run-config';
+import { rewriteOrderedResultSheet } from './lib/google-sheets/ordered-result-sheet';
 
 dotenv.config();
 
@@ -100,8 +101,16 @@ const executeDogmaruWorkflow = async (): Promise<void> => {
 
   // 시트 반영
   logger.step(3, 3, '도그마루 시트 반영');
-  const dogmaruImportRes = await importKeywords(importRes[2]);
-  logger.result('도그마루', `${dogmaruImportRes.updated || 0}건`);
+  const rewriteResult = await rewriteOrderedResultSheet(
+    'dogmaru',
+    results,
+    undefined,
+    dogmaruKeywords.map((keyword) => ({
+      keyword: keyword.keyword,
+      company: keyword.company,
+    }))
+  );
+  logger.result('도그마루', `${rewriteResult.rowCount}건`);
   logger.step(3, 3, '도그마루 시트 반영', 'done');
 
   // CSV 저장
@@ -128,7 +137,7 @@ const executeDogmaruWorkflow = async (): Promise<void> => {
     { label: '인기글', value: `${popularCount}개` },
     { label: '스블', value: `${sblCount}개` },
     { label: '처리 시간', value: elapsedTimeStr },
-    { label: '시트 업데이트', value: `${dogmaruImportRes.updated || 0}건` },
+    { label: '시트 업데이트', value: `${rewriteResult.rowCount}건` },
   ]);
 
   // 미노출 키워드

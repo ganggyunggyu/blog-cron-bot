@@ -1,9 +1,14 @@
 import assert from 'node:assert/strict';
 import * as fs from 'fs';
 import * as path from 'path';
-import { saveToCSV, saveToSheetCSV } from '../../csv-writer';
+import {
+  buildSheetRows,
+  saveToCSV,
+  saveToSheetCSV,
+} from '../../csv-writer';
 import type { ExposureResult } from '../../matcher';
 import { escapeCsvValue } from './format';
+import { parseCsv } from './parse';
 import { resolveOutputFilePath } from './output-path';
 
 const removeFileIfExists = (filePath: string): void => {
@@ -19,6 +24,10 @@ const readCsvWithoutBom = (filePath: string): string[] => {
 };
 
 assert.equal(escapeCsvValue('a "quoted" value'), '"a ""quoted"" value"');
+assert.deepEqual(parseCsv('\uFEFF"업체,명","키""워드"\r\nA,B'), [
+  ['업체,명', '키"워드'],
+  ['A', 'B'],
+]);
 
 const exposureFilename = 'test-unit-exposure_2026-07-01-10-00-00.csv';
 const exposureFilePath = resolveOutputFilePath(exposureFilename);
@@ -125,5 +134,36 @@ assert.match(
   /^"서리펫","공유키워드".*https:\/\/blog\.naver\.com\/suripet\/result/
 );
 removeFileIfExists(crossCompanyFilePath);
+
+const orderedRows = buildSheetRows(
+  [
+    { keyword: '중복', company: '첫업체' },
+    { keyword: '사이', company: '다른업체' },
+    { keyword: '중복', company: '둘째업체' },
+  ],
+  [
+    {
+      ...exposureResult,
+      query: '중복',
+      company: '둘째업체',
+      postLink: 'https://blog.naver.com/second/2',
+    },
+    {
+      ...exposureResult,
+      query: '중복',
+      company: '첫업체',
+      postLink: 'https://blog.naver.com/first/1',
+    },
+  ]
+);
+
+assert.deepEqual(
+  orderedRows.map((row) => [row[0], row[1], row[8], row[11]]),
+  [
+    ['첫업체', '중복', 'https://blog.naver.com/first/1', 1],
+    ['다른업체', '사이', '', 2],
+    ['둘째업체', '중복', 'https://blog.naver.com/second/2', 3],
+  ]
+);
 
 process.stdout.write('csv output tests passed\n');

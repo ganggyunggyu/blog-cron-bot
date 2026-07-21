@@ -1,5 +1,9 @@
 import assert from 'node:assert/strict';
-import { findHeaderRowIndex } from './direct-exposure-sheet';
+import {
+  findExcludedRowIndices,
+  findHeaderRowIndex,
+} from './direct-exposure-sheet';
+import { selectIncludedKeywordsInSourceOrder } from './ordered-result-sheet';
 
 // 헤더가 1행에 바로 있는 일반적인 경우 (패키지/도그마루 제외/도그마루 탭)
 assert.equal(
@@ -29,6 +33,27 @@ assert.equal(
 
 // 빈 그리드
 assert.equal(findHeaderRowIndex([], '키워드'), null);
+
+assert.deepEqual(
+  [...findExcludedRowIndices(['정상 업체 키워드', '지료 미전달 리스트', '미전달 키워드', '종료', '다시 정상'])],
+  [1, 2, 3]
+);
+
+assert.deepEqual(
+  selectIncludedKeywordsInSourceOrder(
+    'root',
+    [
+      { company: 'A', keyword: '첫 키워드' },
+      { company: 'B', keyword: '제외 대상' },
+      { company: 'A', keyword: '둘째 키워드' },
+    ],
+    [
+      { company: 'A', keyword: '둘째 키워드(A)' },
+      { company: 'A', keyword: '첫 키워드(A)' },
+    ]
+  ).map(({ keyword }) => keyword),
+  ['첫 키워드(A)', '둘째 키워드(A)']
+);
 
 // "키워드"가 여러 행에 걸쳐 나오면 가장 먼저 나오는 행을 채택
 assert.equal(
