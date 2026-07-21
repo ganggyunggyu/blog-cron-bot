@@ -1,22 +1,11 @@
 import { InvalidJobInputError } from './job-errors';
+import { EXPOSURE_TARGETS, type ExposureTargetId } from '@/shared';
 
 const IS_DISTRIBUTED_EXPOSURE_ENABLED =
   process.env.DISTRIBUTED_EXPOSURE_ENABLED === 'true';
 
-export const EXPOSURE_SUITE_TARGETS = [
-  { id: 'package', label: '패키지', description: '원본은 읽고 결과 시트에만 반영' },
-  { id: 'general', label: '일반건', description: '일반건 전용 노출체크' },
-  { id: 'dogmaru', label: '도그마루', description: '애견 검색 공유·전용 결과 반영' },
-  { id: 'root', label: '루트', description: '루트 키워드 전용 노출체크' },
-  { id: 'pet', label: '애견', description: '애견 시트 페이지 노출체크' },
-  { id: 'suripet', label: '서리펫', description: '서리펫 시트 페이지 노출체크' },
-  { id: 'cafe', label: '카페', description: '카페 발행 스케줄 노출체크' },
-] as const;
-
-export type ExposureTargetId = (typeof EXPOSURE_SUITE_TARGETS)[number]['id'];
-
 export const EXPOSURE_SUITE_OPTION_DEFINITION = {
-  targets: EXPOSURE_SUITE_TARGETS,
+  targets: EXPOSURE_TARGETS,
   concurrency: { label: '전체 요청 병렬 수', min: 1, max: 8, defaultValue: 8 },
   maxPages: { label: '애견·서리펫 최대 페이지', min: 1, max: 9, defaultValue: 4 },
   targetConcurrency: {
@@ -41,7 +30,7 @@ const ALLOWED_OPTION_KEYS = new Set([
   'targetConcurrency',
 ]);
 const ALLOWED_TARGET_IDS = new Set<ExposureTargetId>(
-  EXPOSURE_SUITE_TARGETS.map(({ id }) => id),
+  EXPOSURE_TARGETS.map(({ id }) => id),
 );
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -49,7 +38,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 
 const parseTargets = (value: unknown): ExposureTargetId[] => {
   if (value === undefined) {
-    return EXPOSURE_SUITE_TARGETS.map(({ id }) => id);
+    return EXPOSURE_TARGETS.map(({ id }) => id);
   }
   if (!Array.isArray(value) || value.length === 0) {
     throw new InvalidJobInputError('노출체크 대상을 1개 이상 선택해야 함');

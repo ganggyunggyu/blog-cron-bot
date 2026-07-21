@@ -39,6 +39,8 @@ logs/
 debug/
 *.log
 work/*.lock
+work/dashboard-runs.json
+work/dashboard-runs/
 
 # Environment & System
 .env

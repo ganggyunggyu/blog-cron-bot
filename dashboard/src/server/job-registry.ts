@@ -1,4 +1,5 @@
 import { EXPOSURE_SUITE_OPTION_DEFINITION } from './exposure-suite-options';
+import type { ExposureExecutionMode } from '@/shared';
 
 const IS_DISTRIBUTED_EXPOSURE_ENABLED =
   process.env.DISTRIBUTED_EXPOSURE_ENABLED === 'true';
@@ -15,6 +16,7 @@ export interface JobDefinition {
   kind: JobKind;
   resourceGroup?: JobResourceGroup;
   options?: typeof EXPOSURE_SUITE_OPTION_DEFINITION;
+  executionMode?: ExposureExecutionMode;
 }
 
 export const JOB_REGISTRY: JobDefinition[] = [
@@ -97,6 +99,7 @@ export const JOB_REGISTRY: JobDefinition[] = [
     kind: 'exposure-suite',
     resourceGroup: 'exposure',
     options: EXPOSURE_SUITE_OPTION_DEFINITION,
+    executionMode: IS_DISTRIBUTED_EXPOSURE_ENABLED ? 'distributed' : 'local',
   },
 ];
 

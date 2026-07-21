@@ -70,6 +70,7 @@ export const OutputBrowser = () => {
             <div className="relative">
               <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-neutral-400" />
               <input
+                aria-label="결과 파일명 검색"
                 value={search}
                 onChange={handleSearchChange}
                 placeholder="파일명 검색"
@@ -96,9 +97,11 @@ export const OutputBrowser = () => {
               {search ? '검색 결과가 없음.' : '생성된 결과 파일이 없음.'}
             </p>
           ) : null}
-          {filteredFiles.map((file) => (
-            <OutputFileRow key={file.relativePath} file={file} />
-          ))}
+          <div className="flex max-h-96 flex-col overflow-y-auto">
+            {filteredFiles.map((file) => (
+              <OutputFileRow key={file.relativePath} file={file} />
+            ))}
+          </div>
           {!search && data.totalCount > data.files.length ? (
             <p className="pt-2 text-xs text-neutral-400">
               {data.files.length}/{data.totalCount}개 표시됨 (최신순)

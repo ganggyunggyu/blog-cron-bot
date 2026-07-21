@@ -12,6 +12,7 @@ const RUN_STATUS_TONE: Record<string, 'success' | 'warning' | 'danger' | 'neutra
   success: 'success',
   failed: 'danger',
   stopped: 'neutral',
+  unknown: 'neutral',
 };
 
 export const JobRunnerPanel = () => {
@@ -30,52 +31,44 @@ export const JobRunnerPanel = () => {
 
   return (
     <Card>
-      <SectionHeader
-        icon={Zap}
-        title="한 클릭 노출체크"
-        description="원하는 카드의 실행 버튼만 누르면 결과 저장과 알림까지 이어짐"
-      />
+      <SectionHeader icon={Zap} title="개별 노출체크" description="목록에서 하나만 골라 바로 실행" />
       {isLoading ? (
         <p className="text-sm text-neutral-500 dark:text-neutral-400">불러오는 중...</p>
       ) : null}
       {isError ? (
         <p className="text-sm text-red-600 dark:text-red-400">잡 목록을 불러오지 못함</p>
       ) : null}
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="flex flex-col divide-y divide-neutral-100 dark:divide-neutral-800">
         {jobs?.filter((job) => job.kind === 'standard').map((job) => {
           const isBusy = isPending && variables?.jobId === job.id;
           return (
-            <article
-              key={job.id}
-              className="flex min-h-44 flex-col rounded-xl border border-neutral-200 bg-white p-4 transition hover:border-blue-300 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-blue-800"
-            >
-              <div className="flex flex-col gap-1">
+            <div key={job.id} className="flex items-center justify-between gap-3 py-2.5">
+              <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                  <span className="truncate text-sm font-medium text-neutral-900 dark:text-neutral-100">
                     {job.label}
                   </span>
                   {job.isRunning ? <Badge tone="success">실행 중</Badge> : null}
-                  {job.isBlocked ? <Badge tone="warning">다른 노출체크 실행 중</Badge> : null}
+                  {job.isBlocked ? <Badge tone="warning">대기</Badge> : null}
                 </div>
-                <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
                   {job.description}
-                </span>
-                {job.riskNote ? (
-                  <span className="text-xs text-amber-600 dark:text-amber-400">
-                    주의: {job.riskNote}
-                  </span>
-                ) : null}
+                  {job.riskNote ? (
+                    <span className="text-amber-600 dark:text-amber-400"> · 주의: {job.riskNote}</span>
+                  ) : null}
+                </p>
               </div>
               <Button
-                className="mt-auto w-full"
-                variant="secondary"
+                size="sm"
+                variant="ghost"
+                className="shrink-0"
                 disabled={job.isRunning || job.isBlocked || isBusy}
                 onClick={() => handleRun(job.id)}
               >
-                <PlayCircle className="size-4" />
-                한 번에 실행
+                <PlayCircle className="size-3.5" />
+                실행
               </Button>
-            </article>
+            </div>
           );
         })}
       </div>

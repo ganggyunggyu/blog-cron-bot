@@ -13,6 +13,7 @@ const RUN_STATUS_LABELS: Record<string, string> = {
   success: '성공',
   failed: '실패',
   stopped: '중지됨',
+  unknown: '상태 확인 필요',
 };
 
 const RUN_STATUS_TONE: Record<string, 'success' | 'warning' | 'danger' | 'neutral'> = {
@@ -20,6 +21,7 @@ const RUN_STATUS_TONE: Record<string, 'success' | 'warning' | 'danger' | 'neutra
   success: 'success',
   failed: 'danger',
   stopped: 'neutral',
+  unknown: 'neutral',
 };
 
 export const OverviewStats = () => {

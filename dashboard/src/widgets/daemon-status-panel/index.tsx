@@ -104,7 +104,7 @@ export const DaemonStatusPanel = () => {
         </p>
       ) : null}
       {data ? (
-        <div className="flex flex-col gap-2.5">
+        <div className="grid gap-2.5 sm:grid-cols-2">
           {data.map((daemon) => (
             <DaemonRow key={daemon.name} daemon={daemon} />
           ))}
