@@ -5,15 +5,11 @@ import {
   TEST_CONFIG,
 } from '../../constants/api';
 import { logger } from '../logger';
+import { type SheetCellValue } from '../csv-output';
 import {
-  DirectSheetUpdate,
-  buildKeywordQueueMap,
-  getGoogleSheetAuth,
-  getWorksheetByTitle,
-  loadKeywordsFromWorksheet,
-  openSpreadsheet,
-  writeResultsToWorksheet,
-} from './direct-exposure-sheet';
+  loadOrderedSourceKeywords,
+  rewriteResultSheetRows,
+} from './ordered-result-sheet';
 import { assertWritableSheetId } from './write-target-guard';
 
 type SuripetSheetRow = Record<string, string>;
@@ -38,7 +34,6 @@ export const SURIPET_RESULT_SHEET_ID = TEST_CONFIG.SHEET_ID;
 
 const SURIPET_SOURCE_SHEET_NAME =
   EXPOSURE_SHEET_LOCATIONS.서리펫.tabTitle;
-const SURIPET_RESULT_SHEET_NAME = TEST_CONFIG.SHEET_NAMES.SERIPET;
 
 const getAuth = (): JWT => {
   const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
@@ -148,42 +143,40 @@ export const writeSuripetResultsToSheet = async (
   results: SuripetResultInput[]
 ): Promise<void> => {
   assertWritableSheetId(SURIPET_RESULT_SHEET_ID, '서리펫 결과 반영');
-  const auth = getGoogleSheetAuth();
-  const doc = await openSpreadsheet(SURIPET_RESULT_SHEET_ID, auth);
-  const sheet = getWorksheetByTitle(doc, SURIPET_RESULT_SHEET_NAME);
-  const sheetKeywords = await loadKeywordsFromWorksheet(sheet, 'suripet');
-  const queueMap = buildKeywordQueueMap(sheetKeywords);
-  const updates = new Map<string, DirectSheetUpdate>();
-  let mappedCount = 0;
-  let unmatchedCount = 0;
-
+  const sourceKeywords = await loadOrderedSourceKeywords('suripet');
+  const resultQueues = new Map<string, SuripetResultInput[]>();
   results.forEach((result) => {
-    const queue = queueMap.get(normalizeCell(result.keyword));
-    const matched = queue?.shift();
-
-    if (!matched) {
-      unmatchedCount += 1;
-      return;
-    }
-
-    updates.set(matched._id, {
-      visibility: result.visibility,
-      popularTopic: result.popularTopic,
-      url: result.url,
-      postPublishedAt: result.postPublishedAt,
-      keywordType: result.keywordType,
-      matchedTitle: result.matchedTitle,
-      rank: result.rank,
-      rankWithCafe: result.rankWithCafe,
-      isUpdateRequired: result.isUpdateRequired,
-      isNewLogic: result.isNewLogic,
-      foundPage: result.foundPage,
-    });
-    mappedCount += 1;
+    const key = normalizeCell(result.keyword);
+    const queue = resultQueues.get(key) ?? [];
+    queue.push(result);
+    resultQueues.set(key, queue);
   });
 
-  await writeResultsToWorksheet(sheet, sheetKeywords, updates);
+  const rows: SheetCellValue[][] = sourceKeywords.map((source, index) => {
+    const result = resultQueues.get(normalizeCell(source.keyword))?.shift();
+    const visible = result?.visibility === true;
+    return [
+      source.company,
+      source.keyword,
+      visible ? result?.popularTopic ?? '' : '',
+      visible ? result?.rank ?? '' : '',
+      visible ? 'o' : '',
+      result?.isUpdateRequired ? 'o' : '',
+      visible ? result?.rankWithCafe ?? '' : '',
+      visible ? result?.matchedTitle ?? '' : '',
+      visible ? result?.url ?? '' : '',
+      visible ? result?.postPublishedAt ?? '' : '',
+      result?.isNewLogic ? 'o' : '',
+      index + 1,
+    ];
+  });
+  const unmatchedCount = Array.from(resultQueues.values()).reduce(
+    (count, queue) => count + queue.length,
+    0
+  );
+
+  await rewriteResultSheetRows('suripet', rows);
   logger.success(
-    `Google Sheets 서리펫 직접 반영 완료: ${mappedCount}/${sheetKeywords.length}행 (미매칭 ${unmatchedCount})`
+    `Google Sheets 서리펫 원본 순서 반영 완료: ${rows.length}행 (미매칭 ${unmatchedCount})`
   );
 };

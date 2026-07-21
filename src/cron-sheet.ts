@@ -1,8 +1,8 @@
 import * as dotenv from 'dotenv';
 import os from 'os';
 import { main as runCrawl } from './index';
-import { syncKeywords, importKeywords } from './api';
-import { importRes, requests, SHEET_TYPE, SheetType } from './constants';
+import { syncKeywords } from './api';
+import { requests, SHEET_TYPE, SheetType } from './constants';
 import { logger } from './lib/logger';
 
 dotenv.config();
@@ -47,7 +47,7 @@ const getTargetSheetType = (): SheetType => {
 const getSheetIndex = (sheetType: SheetType): number => {
   const index = requests.findIndex((request) => request.sheetType === sheetType);
 
-  if (index === -1 || !importRes[index]) {
+  if (index === -1) {
     logger.error(`시트 설정을 찾을 수 없습니다: ${sheetType}`);
     process.exit(1);
   }
@@ -91,14 +91,13 @@ const runSheetWorkflow = async () => {
   logger.step(2, 3, `${label} 노출 체크`, 'done');
 
   logger.step(3, 3, `${label} 시트 반영`);
-  const importResult = await importKeywords(importRes[sheetIndex]);
-  logger.result(label, `${importResult.updated || 0}건`);
+  logger.result(label, '원본 순서 직접 반영 완료');
   logger.step(3, 3, `${label} 시트 반영`, 'done');
 
   logger.summary.complete(`${label} PAGES CRON COMPLETE`, [
     { label: '완료', value: new Date().toLocaleString('ko-KR') },
     { label: '소요', value: formatDuration(Date.now() - startTime) },
-    { label: '시트 업데이트', value: `${importResult.updated || 0}건` },
+    { label: '시트 업데이트', value: '원본 순서 재조회 완료' },
   ]);
 };
 
