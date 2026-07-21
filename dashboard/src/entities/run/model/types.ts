@@ -1,4 +1,4 @@
-export type RunStatus = 'running' | 'success' | 'failed' | 'stopped';
+export type RunStatus = 'running' | 'success' | 'failed' | 'stopped' | 'unknown';
 
 export interface RunSummary {
   runId: string;

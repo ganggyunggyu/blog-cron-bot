@@ -1,4 +1,4 @@
-export type RunStatus = 'running' | 'success' | 'failed' | 'stopped';
+export type RunStatus = 'running' | 'success' | 'failed' | 'stopped' | 'unknown';
 
 export interface RunSummary {
   runId: string;
@@ -17,6 +17,9 @@ export interface RunSnapshot extends RunSummary {
 export type RunOutputStream = 'stdout' | 'stderr';
 
 export interface RunRecord extends RunSummary {
+  processId: number;
+  processIdentity: string | null;
+  logPath: string;
   logLines: string[];
   pendingText: Record<RunOutputStream, string>;
   logListeners: Set<(line: string) => void>;

@@ -47,6 +47,14 @@ Shared (src/constants/*, src/logs/*, src/lib/utils/*, src/types.ts)
 
 `dashboard/`는 봇 제어용 웹 UI로, `src/`와 완전히 분리된 자체 Next.js 프로젝트다(자체 `package.json`, `tsconfig.json`). 봇 프로세스를 PM2로 start/stop/restart 하거나, 크론 스크립트를 수동으로 한 번 실행하고 SSE로 실시간 로그를 스트리밍하는 용도로 쓴다.
 
+### 운영 인프라
+
+Railway에서는 같은 Docker 이미지를 역할별로 나눠 실행한다. 제어 서비스는 대시보드, 실행 잠금, 작업 분할, 진행률 집계와 최종 반영을 담당하고, 5개의 워커 서비스는 MongoDB 대기열에서 작업을 원자적으로 가져가 네이버 검색을 처리한다. 루트·애견·서리펫 키워드는 같은 검색어 행을 유지한 채 50개 기준으로 분할한다.
+
+![노출지기 운영 인프라 아키텍처](docs/images/exposure-architecture.svg)
+
+워커는 작업을 가져갈 때 60초 임대를 설정하고 15초마다 heartbeat를 갱신한다. 워커가 종료되면 임대 만료 후 다른 워커가 이어받으며, 작업은 최대 2회 시도한다. 개별 워커는 원본 시트나 최종 결과 시트를 수정하지 않고 MongoDB 결과만 갱신한다. 모든 조각이 성공한 뒤 제어 서비스 한 곳에서만 CSV 생성, 결과 시트 쓰기·재조회 검증, Dooray 알림을 수행해 중복 반영을 막는다. 상세 운영 계약은 [`docs/DISTRIBUTED_EXPOSURE.md`](docs/DISTRIBUTED_EXPOSURE.md)에 정리돼 있다.
+
 ### 데이터 파이프라인
 
 ```

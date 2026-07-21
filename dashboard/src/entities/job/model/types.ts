@@ -1,12 +1,8 @@
+import type { ExposureExecutionMode, ExposureTargetId } from '@/shared';
+
+export type { ExposureExecutionMode, ExposureTargetId } from '@/shared';
+
 export type JobKind = 'standard' | 'exposure-suite';
-export type ExposureTargetId =
-  | 'package'
-  | 'general'
-  | 'dogmaru'
-  | 'root'
-  | 'pet'
-  | 'suripet'
-  | 'cafe';
 
 export interface ExposureTargetDefinition {
   id: ExposureTargetId;
@@ -50,4 +46,5 @@ export interface JobDefinition {
   isRunning: boolean;
   isBlocked: boolean;
   blockReason?: string;
+  executionMode?: ExposureExecutionMode;
 }

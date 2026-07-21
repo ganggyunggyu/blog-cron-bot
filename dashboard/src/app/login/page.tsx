@@ -37,6 +37,7 @@ const LoginPage = () => {
         </h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <input
+            aria-label="대시보드 비밀번호"
             type="password"
             value={password}
             onChange={handlePasswordChange}

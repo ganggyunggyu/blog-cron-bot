@@ -12,6 +12,7 @@ const RUN_STATUS_TONE: Record<string, 'success' | 'warning' | 'danger' | 'neutra
   success: 'success',
   failed: 'danger',
   stopped: 'neutral',
+  unknown: 'neutral',
 };
 
 export const JobRunnerPanel = () => {

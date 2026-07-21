@@ -26,7 +26,7 @@ export const ExposureSuitePanel = () => {
   const { mutate: runJob, isPending, error, reset } = useRunJob();
   const setSelectedRunId = useSetAtom(selectedRunIdAtom);
   const suiteJob = jobs?.find((job) => job.kind === 'exposure-suite');
-  const isDistributed = suiteJob?.label.includes('다중 워커') ?? false;
+  const isDistributed = suiteJob?.executionMode === 'distributed';
   const definition = suiteJob?.options;
   const initializedRef = React.useRef(false);
   const [selectedTargets, setSelectedTargets] = React.useState<ExposureTargetId[]>([]);
