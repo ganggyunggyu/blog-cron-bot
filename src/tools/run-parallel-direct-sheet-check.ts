@@ -124,6 +124,7 @@ const TARGET_CONFIGS: Record<TargetType, TargetConfig> = {
     sheetType: 'dogmaru',
     csvPrefix: 'direct-dogmaru',
     blogIds: DOGMARU_PAGE_CHECK_BLOG_IDS,
+    allowAnyBlog: false,
   },
   seoripet: {
     target: 'seoripet',
@@ -133,6 +134,7 @@ const TARGET_CONFIGS: Record<TargetType, TargetConfig> = {
     sheetType: 'seoripet',
     csvPrefix: 'direct-seoripet',
     blogIds: SURI_PET_BLOG_IDS,
+    allowAnyBlog: false,
   },
 };
 
