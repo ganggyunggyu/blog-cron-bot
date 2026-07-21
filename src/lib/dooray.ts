@@ -2,6 +2,8 @@ import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
 import { logger } from './logger';
+import { resolveDooraySheetLinks } from './dooray-sheet-links';
+import type { DooraySheetLink } from './dooray-sheet-links';
 
 interface DoorayWebhookMessage {
   botName: string;
@@ -74,6 +76,7 @@ interface DoorayExposureSummary {
   cronType: string;
   totalKeywords: number;
   exposureCount: number;
+  sheetLinks?: DooraySheetLink[];
 }
 
 const getExposureDisplayName = (cronType: string): string =>
@@ -85,11 +88,17 @@ export const formatDoorayExposureMessage = (
 ): string => {
   const displayName = getExposureDisplayName(summary.cronType);
   const missingCount = summary.totalKeywords - summary.exposureCount;
+  const sheetLinks = summary.sheetLinks ?? [];
+  const sheetLines = sheetLinks.map(({ name, url }) =>
+    sheetLinks.length === 1 ? `시트: ${url}` : `시트(${name}): ${url}`
+  );
 
-  return (
+  const result = (
     `[${displayName}] ${getKSTDateString(date)}\n` +
     `노출 ${summary.exposureCount}개 / 미노출 ${missingCount}개`
   );
+
+  return sheetLines.length > 0 ? `${result}\n${sheetLines.join('\n')}` : result;
 };
 
 // ── 메시지 전송 ──
@@ -148,6 +157,10 @@ export const sendDoorayExposureResult = async (params: {
     cronType,
     totalKeywords,
     exposureCount,
+    sheetLinks: resolveDooraySheetLinks([
+      cronType,
+      ...(sheetStats?.map(({ name }) => name) ?? []),
+    ]),
   });
 
   const result = await sendDoorayMessage(text);
