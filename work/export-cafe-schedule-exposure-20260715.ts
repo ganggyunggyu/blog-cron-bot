@@ -7,6 +7,7 @@ import {
   buildCafeScheduleExportRows,
   CafeScheduleCheckRow,
   CafeScheduleExportRow,
+  extractLatestCafeScheduleSourceRows,
 } from '../src/lib/cafe-schedule-export';
 import { assertWritableSheetId } from '../src/lib/google-sheets/write-target-guard';
 
@@ -116,29 +117,7 @@ const loadSourceRows = async (
   artifact: CheckArtifact
 ): Promise<CafeScheduleExportRow[]> => {
   const values = await loadSourceValues();
-  const markerRowIndex = values.findIndex((row) =>
-    /스케[줄쥴]/.test(text(row?.[0]))
-  );
-  if (markerRowIndex < 0) throw new Error('A열 스케줄 제목을 찾지 못함');
-
-  let lastScheduleRowIndex = markerRowIndex;
-  for (let rowIndex = markerRowIndex + 1; rowIndex < values.length; rowIndex += 1) {
-    const keyword = String(values[rowIndex]?.[0] ?? '');
-    if (/스케[줄쥴]/.test(keyword.trim())) break;
-    if (keyword) lastScheduleRowIndex = rowIndex;
-  }
-
-  const sourceRows: Array<{ row: number; keyword: string }> = [];
-  for (
-    let rowIndex = markerRowIndex + 1;
-    rowIndex <= lastScheduleRowIndex;
-    rowIndex += 1
-  ) {
-    sourceRows.push({
-      row: rowIndex + 1,
-      keyword: String(values[rowIndex]?.[0] ?? ''),
-    });
-  }
+  const sourceRows = extractLatestCafeScheduleSourceRows(values);
 
   return buildCafeScheduleExportRows(sourceRows, artifact.rows, true);
 };
