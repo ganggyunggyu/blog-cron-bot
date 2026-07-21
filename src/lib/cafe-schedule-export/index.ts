@@ -19,6 +19,8 @@ export interface CafeScheduleExportRow {
   링크: string;
 }
 
+const keywordKey = (keyword: string): string => keyword.trim();
+
 export const buildCafeScheduleExportRows = (
   sourceRows: CafeScheduleSourceRow[],
   checkedRows: CafeScheduleCheckRow[],
@@ -26,15 +28,17 @@ export const buildCafeScheduleExportRows = (
 ): CafeScheduleExportRow[] => {
   const resultQueues = new Map<string, CafeScheduleCheckRow[]>();
   checkedRows.forEach((row) => {
-    const queue = resultQueues.get(row.keyword) ?? [];
+    const key = keywordKey(row.keyword);
+    const queue = resultQueues.get(key) ?? [];
     queue.push(row);
-    resultQueues.set(row.keyword, queue);
+    resultQueues.set(key, queue);
   });
 
   return sourceRows.map(({ row, keyword }) => {
-    const result = keyword ? resultQueues.get(keyword)?.shift() : undefined;
+    const key = keywordKey(keyword);
+    const result = key ? resultQueues.get(key)?.shift() : undefined;
 
-    if (keyword && !result && !allowMissingResults) {
+    if (key && !result && !allowMissingResults) {
       throw new Error(`${row}행 ${keyword} 결과가 artifact에 없음`);
     }
 
