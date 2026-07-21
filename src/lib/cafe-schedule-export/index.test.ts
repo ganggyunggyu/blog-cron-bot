@@ -1,5 +1,27 @@
 import assert from 'node:assert/strict';
-import { buildCafeScheduleExportRows } from './index';
+import {
+  buildCafeScheduleExportRows,
+  extractLatestCafeScheduleSourceRows,
+} from './index';
+
+const sourceRows = extractLatestCafeScheduleSourceRows([
+  ['260701 스케줄'],
+  ['이전 키워드'],
+  [],
+  ['260714 스케줄'],
+  ['회사 답례품'],
+  [],
+  ['회사 답례품'],
+  ['sat학원 '],
+  [],
+  [],
+]);
+assert.deepEqual(sourceRows, [
+  { row: 5, keyword: '회사 답례품' },
+  { row: 6, keyword: '' },
+  { row: 7, keyword: '회사 답례품' },
+  { row: 8, keyword: 'sat학원 ' },
+]);
 
 const rows = buildCafeScheduleExportRows(
   [

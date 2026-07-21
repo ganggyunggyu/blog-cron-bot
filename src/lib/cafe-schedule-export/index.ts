@@ -20,6 +20,33 @@ export interface CafeScheduleExportRow {
 }
 
 const keywordKey = (keyword: string): string => keyword.trim();
+const isScheduleMarker = (value: unknown): boolean =>
+  /스케[줄쥴]/.test(String(value ?? '').trim());
+
+export const extractLatestCafeScheduleSourceRows = (
+  values: unknown[][]
+): CafeScheduleSourceRow[] => {
+  let markerRowIndex = -1;
+  values.forEach((row, rowIndex) => {
+    if (isScheduleMarker(row?.[0])) markerRowIndex = rowIndex;
+  });
+  if (markerRowIndex < 0) throw new Error('A열 스케줄 제목을 찾지 못함');
+
+  let lastScheduleRowIndex = markerRowIndex;
+  for (let rowIndex = markerRowIndex + 1; rowIndex < values.length; rowIndex += 1) {
+    if (isScheduleMarker(values[rowIndex]?.[0])) break;
+    if (String(values[rowIndex]?.[0] ?? '').trim()) {
+      lastScheduleRowIndex = rowIndex;
+    }
+  }
+
+  return values
+    .slice(markerRowIndex + 1, lastScheduleRowIndex + 1)
+    .map((row, rowOffset) => ({
+      row: markerRowIndex + rowOffset + 2,
+      keyword: String(row?.[0] ?? ''),
+    }));
+};
 
 export const buildCafeScheduleExportRows = (
   sourceRows: CafeScheduleSourceRow[],
