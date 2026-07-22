@@ -31,6 +31,7 @@
     "cookie:login": "ts-node src/tools/login-and-get-cookie.ts",
     "cookie:auto": "ts-node src/tools/auto-login.ts",
     "parallel:check": "ts-node src/tools/run-parallel-direct-sheet-check.ts --dry-run",
+    "exposure:direct-sheet-worker": "ts-node src/tools/run-parallel-direct-sheet-check.ts",
     "exposure:suite": "ts-node src/cron-exposure-suite.ts",
     "exposure:distributed": "ts-node src/cron-distributed-exposure.ts",
     "exposure:worker": "ts-node src/exposure-worker.ts",

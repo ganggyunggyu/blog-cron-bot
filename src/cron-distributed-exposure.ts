@@ -47,13 +47,15 @@ process.once('SIGTERM', stopWorker);
 
 const startLocalWorkers = (runId: string, count: number): void => {
   if (process.env.DISTRIBUTED_EXPOSURE_LOCAL_WORKER === 'false') return;
+  const workerEnvironment = { ...process.env };
+  delete workerEnvironment.PORT;
   Array.from({ length: count }).forEach(() => {
     const worker = spawn(
       'pnpm',
       ['run', 'exposure:worker', '--', `--run-id=${runId}`],
       {
         cwd: process.cwd(),
-        env: process.env,
+        env: workerEnvironment,
         stdio: 'inherit',
         detached: process.platform !== 'win32',
       }

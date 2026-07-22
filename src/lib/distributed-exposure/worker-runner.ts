@@ -15,6 +15,12 @@ import { getWorkerEgressIp } from './worker-egress-ip';
 
 const HEARTBEAT_MS = 15_000;
 
+const DIRECT_SHEET_TARGETS = {
+  package: 'package',
+  general: 'dogmaru-exclude',
+  dogmaru: 'dogmaru',
+} as const;
+
 export interface WorkerChildController {
   stop: () => void;
 }
@@ -26,15 +32,33 @@ const runChild = (
   const isPageShard =
     job.keywordIds.length > 0 &&
     (job.target === 'pet' || job.target === 'suripet');
-  const command = isPageShard
+  const directSheetTarget =
+    job.target in DIRECT_SHEET_TARGETS
+      ? DIRECT_SHEET_TARGETS[
+          job.target as keyof typeof DIRECT_SHEET_TARGETS
+        ]
+      : undefined;
+  const command = directSheetTarget
     ? {
+        script: 'exposure:direct-sheet-worker',
+        args: [
+          '--target',
+          directSheetTarget,
+          '--concurrency',
+          String(job.concurrency),
+          '--skip-dooray',
+          '--result-sheet',
+        ],
+      }
+    : isPageShard
+      ? {
         script: 'exposure:page-shard',
         args: [
           job.target,
           `--keyword-ids=${job.keywordIds.join(',')}`,
         ],
-      }
-    : resolveTargetCommand(job.target);
+        }
+      : resolveTargetCommand(job.target);
   const environment = buildTargetEnvironment(
     process.env,
     [job.target],

@@ -35,6 +35,10 @@ import {
 } from '../lib/google-sheets/direct-exposure-sheet';
 import { assertWritableSheetId } from '../lib/google-sheets/write-target-guard';
 import {
+  type OrderedResultTarget,
+  rewriteOrderedResultSheet,
+} from '../lib/google-sheets/ordered-result-sheet';
+import {
   DIRECT_SHEET_TARGETS,
   DirectSheetTarget,
   parseDirectSheetTargets,
@@ -71,6 +75,7 @@ interface CliOptions {
   concurrency: number;
   maxPages?: number;
   skipDooray: boolean;
+  resultSheet: boolean;
 }
 
 interface RunContext {
@@ -171,6 +176,7 @@ const parseArgs = (): CliOptions => {
   let concurrency = DEFAULT_TARGET_CONCURRENCY;
   let maxPages: number | undefined;
   let skipDooray = false;
+  let resultSheet = false;
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -215,6 +221,11 @@ const parseArgs = (): CliOptions => {
       continue;
     }
 
+    if (arg === '--result-sheet') {
+      resultSheet = true;
+      continue;
+    }
+
     throw new Error(`알 수 없는 인자: ${arg}`);
   }
 
@@ -226,7 +237,15 @@ const parseArgs = (): CliOptions => {
     concurrency,
     maxPages,
     skipDooray,
+    resultSheet,
   };
+};
+
+const RESULT_TARGETS: Partial<Record<TargetType, OrderedResultTarget>> = {
+  package: 'package',
+  'dogmaru-exclude': 'general',
+  dogmaru: 'dogmaru',
+  seoripet: 'suripet',
 };
 
 const formatDuration = (ms: number): string => {
@@ -565,8 +584,18 @@ const finalizeTarget = async (
   );
 
   if (!options.dryRun) {
-    assertWritableSheetId(target.sheetId, `${target.label} 직접 노출체크`);
-    await writeResultsToWorksheet(sheet, keywords, updates);
+    const resultTarget = RESULT_TARGETS[target.target];
+    if (options.resultSheet && resultTarget) {
+      await rewriteOrderedResultSheet(
+        resultTarget,
+        results,
+        keywordLogicMap,
+        keywords.map(({ keyword, company }) => ({ keyword, company }))
+      );
+    } else {
+      assertWritableSheetId(target.sheetId, `${target.label} 직접 노출체크`);
+      await writeResultsToWorksheet(sheet, keywords, updates);
+    }
   }
 
   const elapsedTime = formatDuration(Date.now() - startedAt);
