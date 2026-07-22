@@ -658,10 +658,14 @@ const finalizeTarget = async (
 const main = async (): Promise<void> => {
   const options = parseArgs();
   if (!options.dryRun && !options.printOnly) {
-    options.targets.forEach((target) => {
-      const config = TARGET_CONFIGS[target];
-      assertWritableSheetId(config.sheetId, `${config.label} 직접 노출체크`);
-    });
+    if (options.resultSheet) {
+      assertWritableSheetId(TEST_CONFIG.SHEET_ID, '직접 노출체크 결과 반영');
+    } else {
+      options.targets.forEach((target) => {
+        const config = TARGET_CONFIGS[target];
+        assertWritableSheetId(config.sheetId, `${config.label} 직접 노출체크`);
+      });
+    }
   }
   const startTime = Date.now();
   const context: RunContext = {
