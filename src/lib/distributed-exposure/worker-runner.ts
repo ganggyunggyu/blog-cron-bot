@@ -39,27 +39,30 @@ const runChild = (
           job.target as keyof typeof DIRECT_SHEET_TARGETS
         ]
       : undefined;
-  const command = directSheetTarget
-    ? {
-        script: 'exposure:direct-sheet-worker',
-        args: [
-          '--target',
-          directSheetTarget,
-          '--concurrency',
-          String(job.concurrency),
-          '--skip-dooray',
-          '--result-sheet',
-        ],
-      }
-    : isPageShard
-      ? {
-        script: 'exposure:page-shard',
-        args: [
-          job.target,
-          `--keyword-ids=${job.keywordIds.join(',')}`,
-        ],
-        }
-      : resolveTargetCommand(job.target);
+  const command =
+    job.target === 'cafe'
+      ? { script: 'exposure:cafe-current', args: [] }
+      : directSheetTarget
+        ? {
+            script: 'exposure:direct-sheet-worker',
+            args: [
+              '--target',
+              directSheetTarget,
+              '--concurrency',
+              String(job.concurrency),
+              '--skip-dooray',
+              '--result-sheet',
+            ],
+          }
+        : isPageShard
+          ? {
+              script: 'exposure:page-shard',
+              args: [
+                job.target,
+                `--keyword-ids=${job.keywordIds.join(',')}`,
+              ],
+            }
+          : resolveTargetCommand(job.target);
   const environment = buildTargetEnvironment(
     process.env,
     [job.target],

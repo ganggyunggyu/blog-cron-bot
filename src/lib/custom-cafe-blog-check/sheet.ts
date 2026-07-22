@@ -16,7 +16,7 @@ const text = (value: unknown): string => String(value ?? '').trim();
 const sourceIdFromUrl = (url: string): string =>
   url.match(/cafe\.naver\.com\/([^/?#]+)/i)?.[1]?.trim() ?? '';
 
-const fallbackTargets: CafeTarget[] = [
+export const CAFE_FALLBACK_TARGETS: CafeTarget[] = [
   { name: '일상 소통마당', ids: ['talkmadang702'] },
   { name: '가중건다', ids: ['healthhhh'] },
   { name: '운연정', ids: ['driveee'] },
@@ -68,7 +68,7 @@ export const loadCafeExposureTargets = async (): Promise<CafeTarget[]> => {
   }))
     .filter(({ name, sourceId }) => name && sourceId)
     .map(({ name, sourceId }) => ({ name, ids: [sourceId] }));
-  return targets.length > 0 ? targets : fallbackTargets;
+  return targets.length > 0 ? targets : CAFE_FALLBACK_TARGETS;
 };
 
 export const writeCustomExposureResults = async (
