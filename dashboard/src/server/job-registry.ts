@@ -94,6 +94,14 @@ export const JOB_REGISTRY: JobDefinition[] = [
     resourceGroup: 'exposure',
   },
   {
+    id: 'reexport-current-cafe',
+    label: '카페 현재 결과 재내보내기',
+    script: 'exposure:reexport:cafe',
+    description: '노출 재검사 없이 카페 현재 결과만 원본 순서로 다시 반영',
+    kind: 'standard',
+    resourceGroup: 'exposure',
+  },
+  {
     id: 'exposure-suite',
     label: IS_DISTRIBUTED_EXPOSURE_ENABLED
       ? '전체 다중 워커 노출체크'

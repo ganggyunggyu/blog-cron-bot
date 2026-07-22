@@ -59,6 +59,7 @@
     "blog:share:export": "ts-node src/tools/export-blog-share-sheet.ts",
     "exposure:reexport": "ts-node src/tools/reexport-latest-ordered-results.ts",
     "exposure:reexport:current": "ts-node src/tools/reexport-current-results.ts",
+    "exposure:reexport:cafe": "ts-node src/tools/reexport-current-results.ts --targets=cafe",
     "cafe-bot:published:exposure": "ts-node src/tools/check-cafe-bot-published-exposure.ts"
   },
   "dependencies": {
