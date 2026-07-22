@@ -14,6 +14,7 @@ import { logger } from '../logger';
 import { getWorkerEgressIp } from './worker-egress-ip';
 
 const HEARTBEAT_MS = 15_000;
+const CHILD_ERROR_TAIL_LIMIT = 6_000;
 
 const DIRECT_SHEET_TARGETS = {
   package: 'package',
@@ -76,18 +77,35 @@ const runChild = (
   delete environment.EXPOSURE_REQUEST_BROKER_TOKEN;
 
   return new Promise<void>((resolve, reject) => {
+    let outputTail = '';
+    const appendOutput = (chunk: Buffer, isError: boolean): void => {
+      const value = chunk.toString();
+      if (isError) process.stderr.write(value);
+      else process.stdout.write(value);
+      outputTail = `${outputTail}${value}`.slice(-CHILD_ERROR_TAIL_LIMIT);
+    };
     const child = spawn('pnpm', ['run', command.script, ...command.args], {
       cwd: process.cwd(),
       env: environment,
-      stdio: 'inherit',
+      stdio: ['ignore', 'pipe', 'pipe'],
       detached: process.platform !== 'win32',
     });
     onChild(child);
+    child.stdout?.on('data', (chunk: Buffer) => appendOutput(chunk, false));
+    child.stderr?.on('data', (chunk: Buffer) => appendOutput(chunk, true));
     child.once('error', reject);
     child.once('close', (code) => {
       onChild(undefined);
       if (code === 0) resolve();
-      else reject(new Error(`${job.target} 종료 코드 ${code ?? 'unknown'}`));
+      else {
+        const detail = outputTail.trim();
+        reject(
+          new Error(
+            `${job.target} 종료 코드 ${code ?? 'unknown'}` +
+              (detail ? `\n${detail}` : '')
+          )
+        );
+      }
     });
   });
 };
