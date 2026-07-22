@@ -40,12 +40,19 @@ const checkKeyword = async (
 
 export const runCustomExposureChecks = async (
   keywords: string[],
-  targets: CafeTarget[]
+  targets: CafeTarget[],
+  concurrency = 8
 ): Promise<Map<string, CustomExposureCheckedResult>> => {
   const results = new Map<string, CustomExposureCheckedResult>();
   let nextIndex = 0;
   let completed = 0;
-  const workerCount = Math.min(8, keywords.length);
+  const requestedConcurrency = Number.isFinite(concurrency)
+    ? Math.floor(concurrency)
+    : 8;
+  const workerCount = Math.min(
+    Math.max(1, requestedConcurrency),
+    keywords.length
+  );
   const worker = async (): Promise<void> => {
     while (nextIndex < keywords.length) {
       const index = nextIndex++;

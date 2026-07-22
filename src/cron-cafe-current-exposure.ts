@@ -17,6 +17,10 @@ dotenv.config();
 
 const TARGET_TAB = '카페노출체크';
 const text = (value: unknown): string => String(value ?? '').trim();
+const getConcurrency = (): number => {
+  const value = Number(process.env.CAFE_CHECK_CONCURRENCY);
+  return Number.isFinite(value) && value >= 1 ? Math.floor(value) : 8;
+};
 
 const main = async (): Promise<void> => {
   assertWritableSheetId(TEST_CONFIG.SHEET_ID, TARGET_TAB);
@@ -38,7 +42,11 @@ const main = async (): Promise<void> => {
       `카페 ${CAFE_FALLBACK_TARGETS.length}개`
   );
 
-  const results = await runCustomExposureChecks(keywords, CAFE_FALLBACK_TARGETS);
+  const results = await runCustomExposureChecks(
+    keywords,
+    CAFE_FALLBACK_TARGETS,
+    getConcurrency()
+  );
   rows.forEach(({ rowIndex, keyword }) => {
     const result = results.get(keyword);
     if (!result) throw new Error(`${keyword} 결과 누락`);
