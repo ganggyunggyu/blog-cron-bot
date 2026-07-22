@@ -40,6 +40,7 @@
     "exposure:dogmaru": "pnpm exposure:suite -- --targets=dogmaru",
     "exposure:root": "pnpm cron:root",
     "exposure:pet": "pnpm exposure:suite -- --targets=pet --max-pages=4",
+    "exposure:pet:9-direct": "ts-node src/tools/run-parallel-direct-sheet-check.ts --target pet --concurrency 8 --max-pages 9 --skip-dooray",
     "exposure:suripet": "pnpm exposure:suite -- --targets=suripet --max-pages=4",
     "exposure:cafe": "pnpm exposure:suite -- --targets=cafe",
     "exposure:custom-cafe-0722": "ts-node src/tools/check-custom-cafe-blog-exposure.ts --tab=\"카페 노출체크 0722\"",

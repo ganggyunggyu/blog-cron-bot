@@ -9,12 +9,15 @@ assert.deepEqual(DIRECT_SHEET_TARGETS, [
   'dogmaru-exclude',
   'dogmaru',
   'seoripet',
+  'pet',
 ]);
-assert.deepEqual(parseDirectSheetTargets('package,general,suripet'), [
+assert.deepEqual(parseDirectSheetTargets('package,general,suripet,pet'), [
   'package',
   'dogmaru-exclude',
   'seoripet',
+  'pet',
 ]);
+assert.deepEqual(parseDirectSheetTargets('애견'), ['pet']);
 assert.throws(
   () => parseDirectSheetTargets('package,root'),
   /pnpm cron:root/

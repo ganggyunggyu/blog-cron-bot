@@ -70,6 +70,14 @@ export const JOB_REGISTRY: JobDefinition[] = [
     resourceGroup: 'exposure',
   },
   {
+    id: 'pet-exposure-9-direct',
+    label: '애견 1~9페이지 직접 노출체크',
+    script: 'exposure:pet:9-direct',
+    description: '애견(전체블로그) 300행을 원격에서 9페이지까지 병렬 확인',
+    kind: 'standard',
+    resourceGroup: 'exposure',
+  },
+  {
     id: 'suripet-exposure',
     label: '서리펫 노출체크',
     script: 'exposure:suripet',

@@ -10,9 +10,10 @@ import { closeBrowser } from '../lib/playwright-crawler';
 import { sendDoorayExposureResult } from '../lib/dooray';
 import { getKSTTimestamp } from '../utils';
 import { saveToCSV, saveToSheetCSV } from '../csv-writer';
-import { EXPOSURE_SHEET_LOCATIONS } from '../constants';
+import { EXPOSURE_SHEET_LOCATIONS, TEST_CONFIG } from '../constants';
 import {
   DOGMARU_PAGE_CHECK_BLOG_IDS,
+  PET_PAGE_CHECK_BLOG_IDS,
   SURI_PET_BLOG_IDS,
 } from '../constants/blog-ids';
 import { ExposureResult } from '../matcher';
@@ -69,6 +70,7 @@ interface CliOptions {
   limit: number;
   concurrency: number;
   maxPages?: number;
+  skipDooray: boolean;
 }
 
 interface RunContext {
@@ -97,6 +99,7 @@ const TARGET_DEDUP_PRIORITY: Record<TargetType, number> = {
   package: 2,
   dogmaru: 3,
   seoripet: 4,
+  pet: 5,
 };
 
 const TARGET_CONFIGS: Record<TargetType, TargetConfig> = {
@@ -136,6 +139,16 @@ const TARGET_CONFIGS: Record<TargetType, TargetConfig> = {
     blogIds: SURI_PET_BLOG_IDS,
     allowAnyBlog: false,
   },
+  pet: {
+    target: 'pet',
+    label: '애견',
+    sheetId: TEST_CONFIG.SHEET_ID,
+    tabName: '애견(전체블로그)',
+    sheetType: 'pet',
+    csvPrefix: 'direct-pet',
+    blogIds: PET_PAGE_CHECK_BLOG_IDS,
+    allowAnyBlog: false,
+  },
 };
 
 const parsePositiveNumber = (value: string): number => {
@@ -157,6 +170,7 @@ const parseArgs = (): CliOptions => {
   let limit = 0;
   let concurrency = DEFAULT_TARGET_CONCURRENCY;
   let maxPages: number | undefined;
+  let skipDooray = false;
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -196,6 +210,11 @@ const parseArgs = (): CliOptions => {
       continue;
     }
 
+    if (arg === '--skip-dooray') {
+      skipDooray = true;
+      continue;
+    }
+
     throw new Error(`알 수 없는 인자: ${arg}`);
   }
 
@@ -206,6 +225,7 @@ const parseArgs = (): CliOptions => {
     limit,
     concurrency,
     maxPages,
+    skipDooray,
   };
 };
 
@@ -581,7 +601,7 @@ const finalizeTarget = async (
 
   logger.summary.complete(`${target.label} 직접 노출체크 완료`, summaryItems);
 
-  if (!options.dryRun) {
+  if (!options.dryRun && !options.skipDooray) {
     await sendDoorayExposureResult({
       cronType: `${target.label} (직접병렬)`,
       totalKeywords: keywords.length,
