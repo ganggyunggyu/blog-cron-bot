@@ -86,6 +86,14 @@ export const JOB_REGISTRY: JobDefinition[] = [
     resourceGroup: 'exposure',
   },
   {
+    id: 'reexport-current-exposure',
+    label: '현재 결과 원본 순서 재내보내기',
+    script: 'exposure:reexport:current',
+    description: '노출체크 없이 현재 결과를 원본 키워드 순서로 다시 반영',
+    kind: 'standard',
+    resourceGroup: 'exposure',
+  },
+  {
     id: 'exposure-suite',
     label: IS_DISTRIBUTED_EXPOSURE_ENABLED
       ? '전체 다중 워커 노출체크'

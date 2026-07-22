@@ -33,6 +33,7 @@ src/tools/*
 !src/tools/check-cafe-bot-published-exposure.ts
 !src/tools/auto-login.ts
 !src/tools/check-old-logic-more-exposure.ts
+!src/tools/reexport-current-results.ts
 
 # Logs & Debug
 logs/

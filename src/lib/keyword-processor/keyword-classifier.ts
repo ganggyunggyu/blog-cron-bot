@@ -1,6 +1,6 @@
 import { normalizeSheetType } from '../../sheet-config';
 import { PopularItem } from '../../parser';
-import { KeywordType } from './types';
+import { KeywordDoc, KeywordType } from './types';
 
 export const extractRestaurantName = (
   keywordDoc: any,
@@ -46,6 +46,13 @@ export const getVendorTarget = (
     : '';
   return restaurantName || vendorBrand;
 };
+
+export const getMatchVendorTarget = (
+  keywordDoc: KeywordDoc,
+  restaurantName: string,
+  matchByBlogIdOnly: boolean
+): string =>
+  matchByBlogIdOnly ? '' : getVendorTarget(keywordDoc, restaurantName);
 
 export const getKeywordType = (
   keywordDoc: any,

@@ -21,6 +21,7 @@ import {
 } from './lib/exposure-run-config';
 import { rewriteOrderedResultSheet } from './lib/google-sheets/ordered-result-sheet';
 import { syncRootKeywordsFromSheet } from './lib/root-keyword-sync';
+import { BLOG_IDS } from './constants/blog-ids';
 
 dotenv.config();
 
@@ -127,6 +128,7 @@ const runRootWorkflow = async (): Promise<void> => {
   logger.info(
     `⚡ 키워드 동시 처리: 최대 ${concurrency}개 / 최대 ${maxPages}페이지`
   );
+  logger.info('🔐 루트 판정 기준: 등록 블로그 계정 ID (업체명 검사 생략)');
   logger.blank();
 
   if (concurrency > 1 && maxPages > 1 && keywords.length > 0) {
@@ -140,7 +142,10 @@ const runRootWorkflow = async (): Promise<void> => {
     isLoggedIn: loginStatus.isLoggedIn,
     maxPages,
     concurrency,
+    blogIds: [...BLOG_IDS],
     allowAnyBlog: false,
+    matchByBlogIdOnly: true,
+    consumeMatches: false,
   });
 
   if (isDistributedShard) {

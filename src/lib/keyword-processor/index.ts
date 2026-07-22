@@ -26,7 +26,7 @@ import {
   extractRestaurantName,
   shouldExclude,
   getKeywordType,
-  getVendorTarget,
+  getMatchVendorTarget,
   getIsNewLogicFromItems,
 } from './keyword-classifier';
 import { getCrawlResult } from './crawl-manager';
@@ -67,6 +67,7 @@ interface SharedProcessContext {
   maxPages: number;
   blogIds?: string[];
   allowAnyBlog?: boolean;
+  matchByBlogIdOnly: boolean;
   consumeMatches: boolean;
   includeGenericBlogResults: boolean;
   keywordLogicMap?: Map<string, boolean>;
@@ -180,6 +181,7 @@ const processSingleKeyword = async (
     maxPages,
     blogIds,
     allowAnyBlog,
+    matchByBlogIdOnly,
     consumeMatches,
     includeGenericBlogResults,
     keywordLogicMap,
@@ -247,7 +249,11 @@ const processSingleKeyword = async (
 
   const matchQueue = caches.matchQueueMap.get(searchQuery)!;
   const allMatchesCount = matchQueue.length;
-  const vendorTarget = getVendorTarget(keywordDoc, restaurantName);
+  const vendorTarget = getMatchVendorTarget(
+    keywordDoc,
+    restaurantName,
+    matchByBlogIdOnly
+  );
 
   const keywordCtx: KeywordContext = {
     keywordDoc,
@@ -556,6 +562,7 @@ export const processKeywords = async (
   const concurrency = getEffectiveConcurrency(options?.concurrency);
   const blogIds = options?.blogIds;
   const allowAnyBlog = options?.allowAnyBlog;
+  const matchByBlogIdOnly = options?.matchByBlogIdOnly ?? false;
   const consumeMatches = options?.consumeMatches ?? true;
   const includeGenericBlogResults = options?.includeGenericBlogResults ?? false;
   const keywordLogicMap = options?.keywordLogicMap;
@@ -585,6 +592,7 @@ export const processKeywords = async (
     maxPages,
     blogIds,
     allowAnyBlog,
+    matchByBlogIdOnly,
     consumeMatches,
     includeGenericBlogResults,
     keywordLogicMap,

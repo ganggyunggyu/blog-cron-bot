@@ -53,8 +53,14 @@ test('허용되지 않은 suite 입력을 거부함', () => {
 
 test('표준 잡은 임의 옵션을 받지 않고 unsafe 잡은 등록하지 않음', () => {
   const rootJob = getJobDefinition('root-exposure');
+  const reexportJob = getJobDefinition('reexport-current-exposure');
   assert.ok(rootJob);
+  assert.ok(reexportJob);
   assert.deepEqual(buildJobSpawnArgs(rootJob, undefined), ['run', 'cron:root']);
+  assert.deepEqual(buildJobSpawnArgs(reexportJob, undefined), [
+    'run',
+    'exposure:reexport:current',
+  ]);
   assert.throws(
     () => buildJobSpawnArgs(rootJob, { env: { EXTRA_COMMAND: '1' } }),
     InvalidJobInputError,
