@@ -28,6 +28,19 @@ export interface PetResultInput {
   isNewLogic?: boolean;
 }
 
+export interface PetPageCheckKeywordInput {
+  company: string;
+  keyword: string;
+  visibility: boolean;
+  popularTopic: string;
+  url: string;
+  keywordType: 'pet';
+  rank: number;
+  isUpdateRequired: boolean;
+  isNewLogic: boolean;
+  foundPage: number;
+}
+
 const normalizeKeyword = (value: unknown): string => String(value ?? '').trim();
 
 const createResultQueues = (
@@ -84,11 +97,31 @@ export const buildPetResultRows = (
 };
 
 const loadSourceKeywords = async (): Promise<string[]> => {
+  const keywords = await loadPetKeywordsFromSheet();
+  return keywords.map(({ keyword }) => keyword);
+};
+
+export const loadPetKeywordsFromSheet = async (): Promise<
+  PetPageCheckKeywordInput[]
+> => {
   const auth = getGoogleSheetAuth();
   const doc = await openSpreadsheet(PET_SOURCE_SHEET_ID, auth);
   const sheet = getWorksheetByTitle(doc, PET_SOURCE_SHEET_NAME);
   const keywords = await loadKeywordsFromWorksheet(sheet, 'pet');
-  return keywords.map(({ keyword }) => keyword);
+  logger.success(`Google Sheets 애견 동기화 원본 로드 완료: ${keywords.length}개`);
+
+  return keywords.map(({ keyword, company, isUpdateRequired }) => ({
+    company: company || '애견',
+    keyword,
+    visibility: false,
+    popularTopic: '',
+    url: '',
+    keywordType: 'pet',
+    rank: 0,
+    isUpdateRequired,
+    isNewLogic: false,
+    foundPage: 0,
+  }));
 };
 
 const writeRows = async (

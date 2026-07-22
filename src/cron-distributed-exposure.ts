@@ -5,10 +5,7 @@ import {
   connectDB,
   disconnectDB,
 } from './database';
-import {
-  exportAllSheetsAPI,
-  exportSheetAPI,
-} from './cron-pages';
+import { exportSheetAPI } from './cron-pages';
 import { logger } from './lib/logger';
 import { emitExposureProgress } from './lib/exposure-progress';
 import { parseExposureSuiteOptions } from './lib/exposure-suite/options';
@@ -24,6 +21,7 @@ import {
   prepareDistributedJobs,
 } from './lib/distributed-exposure/job-planner';
 import { waitForDistributedRun } from './lib/distributed-exposure/run-monitor';
+import { getDistributedRunSnapshot } from './lib/distributed-exposure/queue';
 
 dotenv.config();
 
@@ -101,6 +99,28 @@ const main = async (): Promise<void> => {
     startLocalWorkers(runId, options.targetConcurrency);
     await waitForDistributedRun(runId, getTimeoutMs(), () => stopping);
 
+    const completedSnapshot = await getDistributedRunSnapshot(runId);
+    const workerNetworks = new Map<string, string>();
+    completedSnapshot.jobs.forEach(({ workerId, egressIp }) => {
+      if (!workerId || !egressIp) {
+        throw new Error('완료 작업에 워커 또는 외부 IP 기록이 없음');
+      }
+      const previousIp = workerNetworks.get(workerId);
+      if (previousIp && previousIp !== egressIp) {
+        throw new Error(`${workerId} 외부 IP가 실행 중 변경됨`);
+      }
+      workerNetworks.set(workerId, egressIp);
+    });
+    const workerIps = Array.from(workerNetworks.values());
+    if (new Set(workerIps).size !== workerIps.length) {
+      throw new Error('서로 다른 워커가 같은 외부 IP를 사용함');
+    }
+    logger.info(
+      `[다중워커] 외부 IP 분리 확인: ${Array.from(workerNetworks.entries())
+        .map(([workerId, egressIp]) => `${workerId}=${egressIp}`)
+        .join(', ')}`
+    );
+
     const pageTargets = options.targets.filter(isDistributedPageTarget);
     const elapsedTime = `${Math.floor((Date.now() - startedAt) / 1000)}초`;
     if (options.targets.includes('root')) {
@@ -111,8 +131,7 @@ const main = async (): Promise<void> => {
       await finalizeDistributedPageTarget(target, elapsedTime);
     }
     if (pageTargets.length > 0) {
-      logger.info('[다중워커] 페이지 종합 결과를 마지막에 한 번만 반영');
-      await exportAllSheetsAPI();
+      logger.info('[다중워커] 애견·서리펫 개별 결과 탭 직접 반영 완료');
     }
 
     await finishDistributedRun(runId, 'success');

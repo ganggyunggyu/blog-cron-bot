@@ -33,6 +33,8 @@ export interface DistributedRunSnapshot {
     status: DistributedJobStatus;
     shardIndex: number;
     shardCount: number;
+    workerId?: string;
+    egressIp?: string;
   }>;
 }
 
@@ -78,6 +80,20 @@ export const heartbeatDistributedJob = async (
   return result.modifiedCount === 1;
 };
 
+export const recordDistributedJobWorker = async (
+  jobId: string,
+  workerId: string,
+  egressIp: string
+): Promise<void> => {
+  const result = await DistributedExposureJob.updateOne(
+    { _id: jobId, workerId, status: 'running' },
+    { $set: { egressIp } }
+  );
+  if (result.matchedCount !== 1) {
+    throw new Error(`워커 외부 IP 기록 실패: ${workerId}`);
+  }
+};
+
 export const completeDistributedJob = async (
   jobId: string,
   workerId: string
@@ -116,7 +132,14 @@ export const getDistributedRunSnapshot = async (
 ): Promise<DistributedRunSnapshot> => {
   const jobs = await DistributedExposureJob.find({ runId })
     .sort({ order: 1 })
-    .select({ target: 1, status: 1, shardIndex: 1, shardCount: 1 })
+    .select({
+      target: 1,
+      status: 1,
+      shardIndex: 1,
+      shardCount: 1,
+      workerId: 1,
+      egressIp: 1,
+    })
     .lean()
     .exec();
   const count = (status: DistributedJobStatus): number =>
@@ -133,6 +156,8 @@ export const getDistributedRunSnapshot = async (
       status: job.status,
       shardIndex: job.shardIndex,
       shardCount: job.shardCount,
+      workerId: job.workerId,
+      egressIp: job.egressIp,
     })),
   };
 };

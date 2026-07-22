@@ -4,12 +4,14 @@ import {
   completeDistributedJob,
   failDistributedJob,
   heartbeatDistributedJob,
+  recordDistributedJobWorker,
 } from './queue';
 import {
   buildTargetEnvironment,
   resolveTargetCommand,
 } from '../exposure-suite/options';
 import { logger } from '../logger';
+import { getWorkerEgressIp } from './worker-egress-ip';
 
 const HEARTBEAT_MS = 15_000;
 
@@ -72,9 +74,6 @@ export const executeDistributedJob = async (
   onChild: (child: ChildProcess | undefined) => void
 ): Promise<void> => {
   const jobId = String(job._id);
-  logger.info(
-    `[다중워커] ${workerId} → ${job.target} 시작 (${job.attempts}/${job.maxAttempts})`
-  );
   const heartbeat = setInterval(() => {
     void heartbeatDistributedJob(jobId, workerId).catch((error) => {
       logger.error(`[다중워커] heartbeat 실패: ${(error as Error).message}`);
@@ -83,6 +82,12 @@ export const executeDistributedJob = async (
   heartbeat.unref();
 
   try {
+    const egressIp = await getWorkerEgressIp();
+    await recordDistributedJobWorker(jobId, workerId, egressIp);
+    logger.info(
+      `[다중워커] ${workerId} (${egressIp}) → ${job.target} 시작 ` +
+        `(${job.attempts}/${job.maxAttempts})`
+    );
     await runChild(job, onChild);
     await completeDistributedJob(jobId, workerId);
     logger.success(`[다중워커] ${job.target} 완료`);

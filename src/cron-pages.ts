@@ -24,7 +24,10 @@ import {
   loadSuripetKeywordsFromSheet,
   writeSuripetResultsToSheet,
 } from './lib/google-sheets/suripet-page-check';
-import { writePetResultsToSheet } from './lib/google-sheets/pet-page-check';
+import {
+  loadPetKeywordsFromSheet,
+  writePetResultsToSheet,
+} from './lib/google-sheets/pet-page-check';
 import {
   getExposureConcurrency,
   getExposureMaxPages,
@@ -134,6 +137,7 @@ type ExportAllRequest = () => Promise<SheetExportResponse>;
 
 interface ImportSheetDependencies {
   importPageSheet: ImportSheetRequest;
+  importPet: () => Promise<number>;
   importSuripet: () => Promise<number>;
 }
 
@@ -255,6 +259,15 @@ export const syncSuripetKeywordsFromSheetToDB = async (): Promise<number> => {
   return synced;
 };
 
+export const syncPetKeywordsFromSheetToDB = async (): Promise<number> => {
+  const keywords = await loadPetKeywordsFromSheet();
+  const synced = await replacePageCheckKeywords('pet', keywords);
+
+  logger.success(`  ${SHEET_TYPE_NAMES.pet}: ${synced}개 직접 동기화`);
+
+  return synced;
+};
+
 export async function importSheetAPI(
   sheetType: PageCheckSheetType,
   dependencies: Partial<ImportSheetDependencies> = {}
@@ -267,8 +280,13 @@ export async function importSheetAPI(
       }));
   const importSuripet =
     dependencies.importSuripet ?? syncSuripetKeywordsFromSheetToDB;
+  const importPet = dependencies.importPet ?? syncPetKeywordsFromSheetToDB;
 
   try {
+    if (sheetType === 'pet') {
+      return await importPet();
+    }
+
     if (sheetType === 'suripet') {
       return await importSuripet();
     }

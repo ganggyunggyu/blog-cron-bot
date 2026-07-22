@@ -32,7 +32,7 @@ const run = async (): Promise<void> => {
 
   await assert.rejects(
     importSheetAPI('pet', {
-      importPageSheet: async () => {
+      importPet: async () => {
         throw sourceFailure;
       },
     }),

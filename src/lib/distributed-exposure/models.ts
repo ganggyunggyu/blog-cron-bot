@@ -37,6 +37,7 @@ export interface IDistributedExposureJob extends Document {
   maxAttempts: number;
   active: boolean;
   workerId?: string;
+  egressIp?: string;
   leaseUntil?: Date;
   startedAt?: Date;
   finishedAt?: Date;
@@ -72,6 +73,7 @@ const jobSchema = new Schema<IDistributedExposureJob>(
     maxAttempts: { type: Number, required: true, default: 2 },
     active: { type: Boolean, required: true, default: true, index: true },
     workerId: String,
+    egressIp: String,
     leaseUntil: Date,
     startedAt: Date,
     finishedAt: Date,
