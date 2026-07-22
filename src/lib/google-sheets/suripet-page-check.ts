@@ -6,10 +6,7 @@ import {
 } from '../../constants/api';
 import { logger } from '../logger';
 import { type SheetCellValue } from '../csv-output';
-import {
-  loadOrderedSourceKeywords,
-  rewriteResultSheetRows,
-} from './ordered-result-sheet';
+import { rewriteResultSheetRows } from './ordered-result-sheet';
 import { assertWritableSheetId } from './write-target-guard';
 
 type SuripetSheetRow = Record<string, string>;
@@ -31,6 +28,7 @@ export interface SuripetPageCheckKeywordInput {
 export const SURIPET_SOURCE_SHEET_ID =
   EXPOSURE_SHEET_LOCATIONS.서리펫.sheetId;
 export const SURIPET_RESULT_SHEET_ID = TEST_CONFIG.SHEET_ID;
+export const SURIPET_FALLBACK_SHEET_NAME = TEST_CONFIG.SHEET_NAMES.SERIPET;
 
 const SURIPET_SOURCE_SHEET_NAME =
   EXPOSURE_SHEET_LOCATIONS.서리펫.tabTitle;
@@ -79,12 +77,22 @@ export const loadSuripetKeywordsFromSheet = async (): Promise<
   SuripetPageCheckKeywordInput[]
 > => {
   const auth = getAuth();
-  const doc = new GoogleSpreadsheet(SURIPET_SOURCE_SHEET_ID, auth);
-  await doc.loadInfo();
-
-  const sheet = doc.sheetsByTitle[SURIPET_SOURCE_SHEET_NAME];
-  if (!sheet) {
-    throw new Error(`"${SURIPET_SOURCE_SHEET_NAME}" 시트를 찾을 수 없음`);
+  const openSheet = async (sheetId: string, sheetName: string) => {
+    const doc = new GoogleSpreadsheet(sheetId, auth);
+    await doc.loadInfo();
+    const sheet = doc.sheetsByTitle[sheetName];
+    if (!sheet) throw new Error(`"${sheetName}" 시트를 찾을 수 없음`);
+    return sheet;
+  };
+  let sheet;
+  try {
+    sheet = await openSheet(SURIPET_SOURCE_SHEET_ID, SURIPET_SOURCE_SHEET_NAME);
+  } catch (error) {
+    logger.warn(
+      `서리펫 원본 시트 접근 실패 (${(error as Error).message}), ` +
+        `${SURIPET_FALLBACK_SHEET_NAME} 결과 탭으로 전환`
+    );
+    sheet = await openSheet(SURIPET_RESULT_SHEET_ID, SURIPET_FALLBACK_SHEET_NAME);
   }
 
   await sheet.loadHeaderRow();
@@ -143,7 +151,9 @@ export const writeSuripetResultsToSheet = async (
   results: SuripetResultInput[]
 ): Promise<void> => {
   assertWritableSheetId(SURIPET_RESULT_SHEET_ID, '서리펫 결과 반영');
-  const sourceKeywords = await loadOrderedSourceKeywords('suripet');
+  const sourceKeywords = (await loadSuripetKeywordsFromSheet()).map(
+    ({ keyword, company }) => ({ keyword, company })
+  );
   const resultQueues = new Map<string, SuripetResultInput[]>();
   results.forEach((result) => {
     const key = normalizeCell(result.keyword);
