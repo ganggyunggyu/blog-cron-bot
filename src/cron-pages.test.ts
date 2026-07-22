@@ -50,7 +50,7 @@ const run = async (): Promise<void> => {
 
   await assert.rejects(
     exportSheetAPI('pet', {
-      exportPageSheet: async () => {
+      exportPet: async () => {
         throw pageExportFailure;
       },
     }),

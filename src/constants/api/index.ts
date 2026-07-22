@@ -90,6 +90,13 @@ export const ROOT_CONFIG = {
   },
 };
 
+export const PAGE_CHECK_SOURCE_CONFIG = {
+  SHEET_ID: '1c9TJ1gETtunuCmzfzap-2lyqXj1cwzITOb1k8W4tL8c',
+  SHEET_NAMES: {
+    PET: '애견',
+  },
+} as const;
+
 /**
  * 노출체크 키워드를 읽는 원본 위치. 모두 읽기 전용이며 결과는 TEST_CONFIG 등 별도
  * 결과 시트로만 내보낸다. 쓰기 경로에서는 write-target-guard를 반드시 통과해야 한다.
@@ -99,6 +106,10 @@ export const EXPOSURE_SHEET_LOCATIONS = {
   일반건: { sheetId: PRODUCT_SHEET_ID, tabTitle: '도그마루 제외' },
   도그마루: { sheetId: PRODUCT_SHEET_ID, tabTitle: '도그마루' },
   서리펫: { sheetId: PRODUCT_SHEET_ID, tabTitle: '서리펫' },
+  애견: {
+    sheetId: PAGE_CHECK_SOURCE_CONFIG.SHEET_ID,
+    tabTitle: PAGE_CHECK_SOURCE_CONFIG.SHEET_NAMES.PET,
+  },
   루트: { sheetId: ROOT_CONFIG.SHEET_ID, tabTitle: ROOT_CONFIG.SHEET_NAMES.PACKAGE },
 } as const;
 

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {
   EXPOSURE_SHEET_LOCATIONS,
+  PAGE_CHECK_SOURCE_CONFIG,
   PRODUCT_SHEET_ID,
   ROOT_CONFIG,
   TEST_CONFIG,
@@ -26,5 +27,12 @@ assert.equal(EXPOSURE_SHEET_LOCATIONS.도그마루.tabTitle, '도그마루');
 assert.equal(EXPOSURE_SHEET_LOCATIONS.루트.sheetId, ROOT_CONFIG.SHEET_ID);
 assert.equal(EXPOSURE_SHEET_LOCATIONS.루트.tabTitle, '월보장 시트');
 assert.notEqual(EXPOSURE_SHEET_LOCATIONS.루트.sheetId, PRODUCT_SHEET_ID);
+
+assert.equal(
+  EXPOSURE_SHEET_LOCATIONS.애견.sheetId,
+  PAGE_CHECK_SOURCE_CONFIG.SHEET_ID
+);
+assert.equal(EXPOSURE_SHEET_LOCATIONS.애견.tabTitle, '애견');
+assert.notEqual(EXPOSURE_SHEET_LOCATIONS.애견.sheetId, TEST_CONFIG.SHEET_ID);
 
 process.stdout.write('exposure sheet location tests passed\n');

@@ -24,6 +24,7 @@ import {
   loadSuripetKeywordsFromSheet,
   writeSuripetResultsToSheet,
 } from './lib/google-sheets/suripet-page-check';
+import { writePetResultsToSheet } from './lib/google-sheets/pet-page-check';
 import {
   getExposureConcurrency,
   getExposureMaxPages,
@@ -138,6 +139,7 @@ interface ImportSheetDependencies {
 
 interface ExportSheetDependencies {
   exportPageSheet: ExportSheetRequest;
+  exportPet: () => Promise<void>;
   exportSuripet: () => Promise<void>;
 }
 
@@ -190,6 +192,21 @@ async function exportSuripetSheetDirect(): Promise<void> {
   );
 }
 
+async function exportPetSheetDirect(): Promise<void> {
+  const keywords = await getPageCheckKeywords('pet');
+  await writePetResultsToSheet(
+    keywords.map((keyword) => ({
+      keyword: keyword.keyword,
+      visibility: keyword.visibility,
+      popularTopic: keyword.popularTopic,
+      url: keyword.url,
+      rank: keyword.rank,
+      rankWithCafe: keyword.rankWithCafe,
+      isNewLogic: keyword.isNewLogic,
+    }))
+  );
+}
+
 export async function exportSheetAPI(
   sheetType: PageCheckSheetType,
   dependencies: Partial<ExportSheetDependencies> = {}
@@ -202,8 +219,14 @@ export async function exportSheetAPI(
       }));
   const exportSuripet =
     dependencies.exportSuripet ?? exportSuripetSheetDirect;
+  const exportPet = dependencies.exportPet ?? exportPetSheetDirect;
 
   try {
+    if (sheetType === 'pet') {
+      await exportPet();
+      return;
+    }
+
     if (sheetType === 'suripet') {
       await exportSuripet();
       return;

@@ -1,8 +1,13 @@
-import { PRODUCT_SHEET_ID, ROOT_CONFIG } from '../../constants';
+import {
+  PAGE_CHECK_SOURCE_CONFIG,
+  PRODUCT_SHEET_ID,
+  ROOT_CONFIG,
+} from '../../constants';
 
 const READ_ONLY_SOURCE_SHEET_IDS = new Set([
   PRODUCT_SHEET_ID,
   ROOT_CONFIG.SHEET_ID,
+  PAGE_CHECK_SOURCE_CONFIG.SHEET_ID,
 ]);
 
 export const isReadOnlySourceSheet = (sheetId: string): boolean =>

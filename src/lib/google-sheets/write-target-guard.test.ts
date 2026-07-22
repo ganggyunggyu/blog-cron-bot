@@ -1,10 +1,16 @@
 import assert from 'node:assert/strict';
-import { PRODUCT_SHEET_ID, ROOT_CONFIG, TEST_CONFIG } from '../../constants';
+import {
+  PAGE_CHECK_SOURCE_CONFIG,
+  PRODUCT_SHEET_ID,
+  ROOT_CONFIG,
+  TEST_CONFIG,
+} from '../../constants';
 import { assertWritableSheetId, isReadOnlySourceSheet } from './write-target-guard';
 import { importKeywords } from '../../api';
 
 assert.equal(isReadOnlySourceSheet(PRODUCT_SHEET_ID), true);
 assert.equal(isReadOnlySourceSheet(ROOT_CONFIG.SHEET_ID), true);
+assert.equal(isReadOnlySourceSheet(PAGE_CHECK_SOURCE_CONFIG.SHEET_ID), true);
 assert.equal(isReadOnlySourceSheet(TEST_CONFIG.SHEET_ID), false);
 
 assert.throws(
@@ -13,6 +19,10 @@ assert.throws(
 );
 assert.throws(
   () => assertWritableSheetId(ROOT_CONFIG.SHEET_ID, '루트 노출체크'),
+  /읽기 전용 원본 시트/
+);
+assert.throws(
+  () => assertWritableSheetId(PAGE_CHECK_SOURCE_CONFIG.SHEET_ID, '애견 노출체크'),
   /읽기 전용 원본 시트/
 );
 assert.doesNotThrow(() =>
