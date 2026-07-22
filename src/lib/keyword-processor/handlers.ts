@@ -199,6 +199,7 @@ export const handleSuccess = async (params: SuccessParams): Promise<void> => {
     globalIndex,
     result: {
       ...nextMatch,
+      query,
       isNewLogic,
       company: String(keywordDoc.company || ''),
     },
