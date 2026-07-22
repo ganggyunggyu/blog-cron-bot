@@ -1,5 +1,9 @@
 import { BLOG_IDS } from '../../constants';
-import { crawlWithRetryWithoutCookie, randomDelay } from '../../crawler';
+import {
+  crawlWithRetry,
+  crawlWithRetryWithoutCookie,
+  randomDelay,
+} from '../../crawler';
 import { matchBlogs } from '../../matcher';
 import { extractPopularItems } from '../../parser';
 import { buildCombinedExposureResult } from '../cafe-blog-combined-result';
@@ -12,7 +16,13 @@ const checkKeyword = async (
   targets: CafeTarget[]
 ): Promise<CustomExposureCheckedResult> => {
   try {
-    const html = await crawlWithRetryWithoutCookie(keyword, 1);
+    let html: string;
+    try {
+      html = await crawlWithRetry(keyword, 1);
+    } catch {
+      await randomDelay(900, 1400);
+      html = await crawlWithRetryWithoutCookie(keyword, 1);
+    }
     const items = extractPopularItems(html, { includeCafe: true });
     return buildCombinedExposureResult(
       matchCafeTargets(items, targets),
