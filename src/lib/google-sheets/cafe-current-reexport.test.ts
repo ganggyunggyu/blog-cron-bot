@@ -4,7 +4,7 @@ import { buildCafeCurrentRows } from './cafe-current-reexport';
 const rows = buildCafeCurrentRows(
   [
     ['260722 스케줄'],
-    ['중복 키워드'],
+    ['중복 키워드', '', '계정A'],
     [''],
     ['중복 키워드'],
   ],
@@ -17,9 +17,9 @@ const rows = buildCafeCurrentRows(
 );
 
 assert.deepEqual(rows, [
-  ['중복 키워드', 'o', '1', '첫 결과', 'https://cafe.naver.com/1'],
-  ['', '', '', '', ''],
-  ['중복 키워드', '', '', '둘째 결과', 'https://cafe.naver.com/2'],
+  ['중복 키워드', 'o', '1', '첫 결과', 'https://cafe.naver.com/1', '계정A'],
+  ['', '', '', '', '', ''],
+  ['중복 키워드', '', '', '둘째 결과', 'https://cafe.naver.com/2', ''],
 ]);
 
 process.stdout.write('cafe current reexport tests passed\n');

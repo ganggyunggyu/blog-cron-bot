@@ -18,7 +18,15 @@ const SOURCE_SHEET_ID = '1vrN5gvtokWxPs8CNaNcvZQLWyIMBOIcteYXQbyfiZl0';
 const SOURCE_SHEET_NAME = '카페 발행스케줄';
 const TARGET_SHEET_ID = TEST_CONFIG.SHEET_ID;
 const TARGET_SHEET_NAME = '카페노출체크';
-const HEADERS = ['키워드', '노출여부', '순위', '카페블로그명', '링크'];
+const CURRENT_RESULT_COLUMN_COUNT = 5;
+const HEADERS = [
+  '키워드',
+  '노출여부',
+  '순위',
+  '카페블로그명',
+  '링크',
+  '카페계정',
+];
 
 const loadValues = async (
   sheet: GoogleSpreadsheetWorksheet,
@@ -67,14 +75,14 @@ const writeRows = async (
   rows: SheetCellValue[][]
 ): Promise<void> => {
   const values = [HEADERS, ...rows];
-  if (sheet.rowCount < values.length) {
+  if (sheet.rowCount < values.length || sheet.columnCount < HEADERS.length) {
     await sheet.resize({
-      rowCount: values.length,
+      rowCount: Math.max(sheet.rowCount, values.length),
       columnCount: Math.max(sheet.columnCount, HEADERS.length),
     });
   }
 
-  await sheet.clear(`A1:E${sheet.rowCount}`);
+  await sheet.clear(`A1:F${sheet.rowCount}`);
   await sheet.loadCells({
     startRowIndex: 0,
     endRowIndex: values.length,
@@ -117,8 +125,8 @@ export const reexportCurrentCafeResults = async (): Promise<number> => {
   const sourceSheet = getWorksheetByTitle(sourceDoc, SOURCE_SHEET_NAME);
   const targetSheet = getWorksheetByTitle(targetDoc, TARGET_SHEET_NAME);
   const [sourceValues, targetValues] = await Promise.all([
-    loadValues(sourceSheet, 1),
-    loadValues(targetSheet, HEADERS.length),
+    loadValues(sourceSheet, 3),
+    loadValues(targetSheet, CURRENT_RESULT_COLUMN_COUNT),
   ]);
   const rows = buildCafeCurrentRows(sourceValues, targetValues);
 
