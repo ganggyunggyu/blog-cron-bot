@@ -86,6 +86,14 @@ export const JOB_REGISTRY: JobDefinition[] = [
     resourceGroup: 'exposure',
   },
   {
+    id: 'custom-cafe-0722',
+    label: '카페 노출체크 0722',
+    script: 'exposure:custom-cafe-0722',
+    description: '업로드 키워드의 카페·블로그 노출을 통합 확인',
+    kind: 'standard',
+    resourceGroup: 'exposure',
+  },
+  {
     id: 'reexport-current-exposure',
     label: '현재 결과 원본 순서 재내보내기',
     script: 'exposure:reexport:current',
