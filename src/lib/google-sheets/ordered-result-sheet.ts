@@ -94,8 +94,18 @@ export const loadOrderedSourceKeywords = async (
 ): Promise<KeywordInfo[]> => {
   const config = getOrderedResultConfig(target);
   const auth = getGoogleSheetAuth();
-  const sourceDoc = await openSpreadsheet(config.sourceSheetId, auth);
-  const sourceSheet = getWorksheetByTitle(sourceDoc, config.sourceTab);
+  let sourceSheet: GoogleSpreadsheetWorksheet;
+  try {
+    const sourceDoc = await openSpreadsheet(config.sourceSheetId, auth);
+    sourceSheet = getWorksheetByTitle(sourceDoc, config.sourceTab);
+  } catch (error) {
+    logger.warn(
+      `${config.label} 원본 순서 로드 실패 (${(error as Error).message}), ` +
+        `${config.targetTab} 결과 탭으로 전환`
+    );
+    const resultDoc = await openSpreadsheet(TEST_CONFIG.SHEET_ID, auth);
+    sourceSheet = getWorksheetByTitle(resultDoc, config.targetTab);
+  }
   const sourceKeywords = await loadKeywordsFromWorksheet(
     sourceSheet,
     config.sourceSheetType

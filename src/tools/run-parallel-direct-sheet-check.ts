@@ -63,6 +63,7 @@ interface TargetConfig {
   tabName: string;
   sheetType: string;
   csvPrefix: string;
+  fallbackTabName?: string;
   blogIds?: string[];
   allowAnyBlog?: boolean;
 }
@@ -115,6 +116,7 @@ const TARGET_CONFIGS: Record<TargetType, TargetConfig> = {
     tabName: EXPOSURE_SHEET_LOCATIONS.패키지.tabTitle,
     sheetType: 'package',
     csvPrefix: 'direct-package',
+    fallbackTabName: TEST_CONFIG.SHEET_NAMES.PACKAGE,
   },
   'dogmaru-exclude': {
     target: 'dogmaru-exclude',
@@ -123,6 +125,7 @@ const TARGET_CONFIGS: Record<TargetType, TargetConfig> = {
     tabName: EXPOSURE_SHEET_LOCATIONS.일반건.tabTitle,
     sheetType: 'dogmaru-exclude',
     csvPrefix: 'direct-dogmaru-exclude',
+    fallbackTabName: TEST_CONFIG.SHEET_NAMES.DOGMARU_EXCLUDE,
   },
   dogmaru: {
     target: 'dogmaru',
@@ -131,6 +134,7 @@ const TARGET_CONFIGS: Record<TargetType, TargetConfig> = {
     tabName: EXPOSURE_SHEET_LOCATIONS.도그마루.tabTitle,
     sheetType: 'dogmaru',
     csvPrefix: 'direct-dogmaru',
+    fallbackTabName: TEST_CONFIG.SHEET_NAMES.DOGMARU,
     blogIds: DOGMARU_PAGE_CHECK_BLOG_IDS,
     allowAnyBlog: false,
   },
@@ -141,6 +145,7 @@ const TARGET_CONFIGS: Record<TargetType, TargetConfig> = {
     tabName: EXPOSURE_SHEET_LOCATIONS.서리펫.tabTitle,
     sheetType: 'seoripet',
     csvPrefix: 'direct-seoripet',
+    fallbackTabName: TEST_CONFIG.SHEET_NAMES.SERIPET,
     blogIds: SURI_PET_BLOG_IDS,
     allowAnyBlog: false,
   },
@@ -474,8 +479,19 @@ const runTargetCrawl = async (
 ): Promise<TargetCrawlOutcome> => {
   const startedAt = Date.now();
   const auth = getGoogleSheetAuth();
-  const doc = await openSpreadsheet(target.sheetId, auth);
-  const sheet = getWorksheetByTitle(doc, target.tabName);
+  let sheet: GoogleSpreadsheetWorksheet;
+  try {
+    const doc = await openSpreadsheet(target.sheetId, auth);
+    sheet = getWorksheetByTitle(doc, target.tabName);
+  } catch (error) {
+    if (!target.fallbackTabName) throw error;
+    logger.warn(
+      `[${target.label}] 원본 시트 접근 실패 (${(error as Error).message}), ` +
+        `${target.fallbackTabName} 결과 탭으로 전환`
+    );
+    const fallbackDoc = await openSpreadsheet(TEST_CONFIG.SHEET_ID, auth);
+    sheet = getWorksheetByTitle(fallbackDoc, target.fallbackTabName);
+  }
   const loadedKeywords = await loadKeywordsFromWorksheet(sheet, target.sheetType);
   const keywords = limitKeywords(loadedKeywords, options.limit);
 
