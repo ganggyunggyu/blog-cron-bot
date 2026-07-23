@@ -44,10 +44,10 @@
   "루트 키워드": {
     "cronType": "루트 키워드",
     "totalKeywords": 193,
-    "exposureCount": 5,
-    "popularCount": 5,
+    "exposureCount": 9,
+    "popularCount": 0,
     "sblCount": 0,
-    "timestamp": "2026-07-23T03:02:48.601Z"
+    "timestamp": "2026-07-23T07:10:54.428Z"
   },
   "멀티페이지 크론 [애견]": {
     "cronType": "멀티페이지 크론 [애견]",
@@ -360,23 +360,17 @@
   "서리펫": {
     "cronType": "서리펫",
     "totalKeywords": 131,
-    "exposureCount": 86,
-    "popularCount": 0,
+    "exposureCount": 67,
+    "popularCount": 56,
     "sblCount": 0,
-    "sheetStats": [
-      {
-        "name": "서리펫",
-        "count": 86
-      }
-    ],
-    "timestamp": "2026-07-21T03:14:49.359Z"
+    "timestamp": "2026-07-23T07:08:58.159Z"
   },
   "애견": {
     "cronType": "애견",
     "totalKeywords": 300,
-    "exposureCount": 210,
-    "popularCount": 135,
+    "exposureCount": 202,
+    "popularCount": 139,
     "sblCount": 0,
-    "timestamp": "2026-07-21T03:27:08.551Z"
+    "timestamp": "2026-07-23T07:08:51.489Z"
   }
 }
