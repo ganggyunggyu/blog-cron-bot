@@ -39,7 +39,14 @@ export const prepareDistributedJobs = async (
 
   for (const target of targets) {
     if (target === 'root') {
-      await syncRootKeywordsFromSheet();
+      const skipRootSheetSync = ['1', 'true', 'yes'].includes(
+        String(process.env.SKIP_ROOT_SHEET_SYNC ?? '').toLowerCase()
+      );
+      if (!skipRootSheetSync) {
+        await syncRootKeywordsFromSheet();
+      } else {
+        logger.warn('[다중워커] root 원본 동기화 건너뜀: 현재 API DB 스냅샷 사용');
+      }
       const keywords = await getAllRootKeywords();
       const shards = buildPageKeywordShards(keywords, PAGE_SHARD_SIZE);
       if (shards.length === 0) throw new Error('root 처리 키워드가 없음');

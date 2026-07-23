@@ -107,6 +107,12 @@ export const sendDoorayMessage = async (
   text: string,
   botName: string = '노출체크봇'
 ): Promise<boolean> => {
+  if (['1', 'true', 'yes'].includes(
+    String(process.env.DOORAY_DISABLED ?? '').toLowerCase()
+  )) {
+    logger.info('Dooray 전송 비활성화: 현재 실행은 결과 검증만 수행');
+    return true;
+  }
   const doorayWebhookUrl = process.env.DOORAY_WEBHOOK_URL;
 
   if (!doorayWebhookUrl) {

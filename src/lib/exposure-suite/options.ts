@@ -109,7 +109,7 @@ export const parseExposureSuiteOptions = (
     2,
     '동시 대상 또는 예비 워커 수',
     1,
-    3
+    12
   ),
 });
 

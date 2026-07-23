@@ -59,11 +59,16 @@ const runRootWorkflow = async (): Promise<void> => {
 
   await connectDB(mongoUri);
 
-  if (!isDistributedShard) {
+  const skipSheetSync = ['1', 'true', 'yes'].includes(
+    String(process.env.SKIP_ROOT_SHEET_SYNC ?? '').toLowerCase()
+  );
+  if (!isDistributedShard && !skipSheetSync) {
     const syncResult = await syncRootKeywordsFromSheet();
     logger.success(
       `DB 동기화 완료! (삭제: ${syncResult.deleted}, 삽입: ${syncResult.inserted}, 경로: ${syncResult.source})`
     );
+  } else if (skipSheetSync) {
+    logger.warn('루트 시트 동기화 건너뜀: 현재 API DB 스냅샷으로 노출체크 실행');
   }
 
   const allKeywords = await getAllRootKeywords();

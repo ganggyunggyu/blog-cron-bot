@@ -44,8 +44,13 @@ export const waitForDistributedRun = async (
         `[다중워커] 완료 ${snapshot.success}/${snapshot.total} · 실행 ${snapshot.running} · 대기 ${snapshot.pending}`
       );
     }
-    if (snapshot.failed > 0) throw new Error(`${snapshot.failed}개 작업 최종 실패`);
-    if (snapshot.total > 0 && snapshot.success === snapshot.total) return;
+    const settled = snapshot.success + snapshot.failed;
+    if (snapshot.total > 0 && settled === snapshot.total) {
+      if (snapshot.failed > 0) {
+        throw new Error(`${snapshot.failed}개 작업 최종 실패`);
+      }
+      return;
+    }
     await new Promise((resolve) => setTimeout(resolve, POLL_MS));
   }
 

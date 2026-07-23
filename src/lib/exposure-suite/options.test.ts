@@ -36,6 +36,10 @@ assert.throws(
   /1~8/
 );
 assert.throws(
+  () => parseExposureSuiteOptions(['--target-concurrency=13'], {}),
+  /1~12/
+);
+assert.throws(
   () => parseExposureSuiteOptions(['--max-pages=0'], {}),
   /1~9/
 );
