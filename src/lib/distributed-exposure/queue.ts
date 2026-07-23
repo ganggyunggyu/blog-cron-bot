@@ -74,7 +74,7 @@ export const heartbeatDistributedJob = async (
   workerId: string
 ): Promise<boolean> => {
   const result = await DistributedExposureJob.updateOne(
-    { _id: jobId, workerId, status: 'running' },
+    { _id: jobId, workerId, status: 'running', active: true },
     { $set: { leaseUntil: new Date(Date.now() + JOB_LEASE_MS) } }
   );
   return result.modifiedCount === 1;

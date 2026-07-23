@@ -37,16 +37,16 @@ export const finishDistributedRun = async (
   status: Extract<DistributedRunStatus, 'success' | 'failed'>,
   error?: string
 ): Promise<void> => {
-  if (status === 'failed') {
-    await DistributedExposureJob.updateMany(
-      { runId, status: 'pending' },
-      { $set: { status: 'failed', finishedAt: new Date(), error: error ?? '' } }
-    );
-  }
   await DistributedExposureJob.updateMany(
     { runId },
     { $set: { active: false } }
   );
+  if (status === 'failed') {
+    await DistributedExposureJob.updateMany(
+      { runId, status: { $in: ['pending', 'running'] } },
+      { $set: { status: 'failed', finishedAt: new Date(), error: error ?? '' } }
+    );
+  }
   await DistributedExposureRun.updateOne(
     { runId },
     { $set: { status, finishedAt: new Date(), error: error ?? '' } }
