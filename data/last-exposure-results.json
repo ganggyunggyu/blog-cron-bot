@@ -21,7 +21,7 @@
     "exposureCount": 5,
     "popularCount": 5,
     "sblCount": 0,
-    "timestamp": "2026-07-20T15:02:11.121Z"
+    "timestamp": "2026-07-21T23:19:23.786Z"
   },
   "도그마루 노출체크": {
     "cronType": "도그마루 노출체크",
@@ -39,15 +39,15 @@
     "sblCount": 0,
     "newLogicCount": 0,
     "oldLogicCount": 4,
-    "timestamp": "2026-07-20T15:00:00.783Z"
+    "timestamp": "2026-07-21T23:17:30.743Z"
   },
   "루트 키워드": {
     "cronType": "루트 키워드",
-    "totalKeywords": 196,
-    "exposureCount": 1,
-    "popularCount": 1,
+    "totalKeywords": 193,
+    "exposureCount": 5,
+    "popularCount": 0,
     "sblCount": 0,
-    "timestamp": "2026-07-20T15:01:47.699Z"
+    "timestamp": "2026-07-23T09:24:00.146Z"
   },
   "멀티페이지 크론 [애견]": {
     "cronType": "멀티페이지 크론 [애견]",
@@ -307,11 +307,11 @@
   },
   "카페 블로그 통합 노출체크": {
     "cronType": "카페 블로그 통합 노출체크",
-    "totalKeywords": 135,
-    "exposureCount": 29,
+    "totalKeywords": 40,
+    "exposureCount": 9,
     "popularCount": 0,
     "sblCount": 0,
-    "timestamp": "2026-07-20T14:57:03.896Z"
+    "timestamp": "2026-07-23T07:00:33.706Z"
   },
   "멀티페이지 크론 [애견 + 서리펫]": {
     "cronType": "멀티페이지 크론 [애견 + 서리펫]",
@@ -336,25 +336,41 @@
   "멀티페이지 크론 [도그마루 + 애견 + 서리펫]": {
     "cronType": "멀티페이지 크론 [도그마루 + 애견 + 서리펫]",
     "totalKeywords": 730,
-    "exposureCount": 412,
-    "popularCount": 332,
-    "sblCount": 27,
-    "newLogicCount": 121,
-    "oldLogicCount": 291,
+    "exposureCount": 385,
+    "popularCount": 320,
+    "sblCount": 25,
+    "newLogicCount": 118,
+    "oldLogicCount": 267,
     "sheetStats": [
       {
         "name": "애견",
-        "count": 219
+        "count": 204
       },
       {
         "name": "서리펫",
-        "count": 85
+        "count": 78
       },
       {
         "name": "도그마루",
-        "count": 108
+        "count": 103
       }
     ],
-    "timestamp": "2026-07-20T15:43:43.975Z"
+    "timestamp": "2026-07-21T23:41:09.762Z"
+  },
+  "서리펫": {
+    "cronType": "서리펫",
+    "totalKeywords": 131,
+    "exposureCount": 67,
+    "popularCount": 56,
+    "sblCount": 0,
+    "timestamp": "2026-07-23T07:08:58.159Z"
+  },
+  "애견": {
+    "cronType": "애견",
+    "totalKeywords": 300,
+    "exposureCount": 202,
+    "popularCount": 139,
+    "sblCount": 0,
+    "timestamp": "2026-07-23T07:08:51.489Z"
   }
 }
