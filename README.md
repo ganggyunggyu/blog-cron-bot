@@ -214,7 +214,7 @@ pnpm dev              # http://localhost:4500 (개발 모드)
 
 ### 8. 배포
 
-- **Railway** (운영): `Dockerfile` + `railway.toml`로 Docker 빌드하고, `pm2-runtime`이 `ecosystem.railway.config.cjs`를 읽어 대시보드를 띄운다. 매일 08:00 전체 빠른 실행은 중복 PM2 cron 대신 Codex 예약 한 곳에서 관리한다. 운영 대시보드는 [blog-cron-bot-production.up.railway.app](https://blog-cron-bot-production.up.railway.app)에서 로그인 후 사용할 수 있다.
+- **Railway** (운영): `Dockerfile` + `railway.toml`로 Docker 빌드하고, `pm2-runtime`이 `ecosystem.railway.config.cjs`를 읽는다. 매일 08:00에는 Codex 예약 한 곳이 원격 대시보드만 호출하며 로컬 크롤링이나 별도 PM2 노출체크 cron은 두지 않는다. 패키지·일반건·도그마루·루트·애견·서리펫·카페는 시트당 원격 서버 1개와 서로 다른 외부 IP를 사용한다. 운영 대시보드는 [blog-cron-bot-production.up.railway.app](https://blog-cron-bot-production.up.railway.app)에서 로그인 후 사용할 수 있다.
 - 전체 노출체크의 50개 단위 분산 대기열과 Railway 제어/워커 서비스 구성은 [`docs/DISTRIBUTED_EXPOSURE.md`](docs/DISTRIBUTED_EXPOSURE.md)를 따른다.
 - **EC2**: `ecosystem.config.cjs`로 PM2 4개 앱(keywords/root/all-sheets/dashboard) 관리. 절차는 `docs/ec2-ubuntu.md` 참고. 대시보드 앱은 `pnpm --dir dashboard build`를 먼저 실행해야 `pm2 start`가 정상 기동한다.
 

@@ -45,7 +45,7 @@ export const finalizeDistributedRootTarget = async (
     `분산 루트 시트 반영 결과: ${rewriteResult.rowCount}건, 원본 순서 재조회 완료`
   );
 
-  await sendDoorayExposureResult({
+  const sent = await sendDoorayExposureResult({
     cronType: '루트 키워드',
     totalKeywords: keywords.length,
     exposureCount: results.length,
@@ -56,4 +56,5 @@ export const finalizeDistributedRootTarget = async (
       .filter(({ visibility, isUpdateRequired }) => !visibility && !isUpdateRequired)
       .map(({ keyword }) => keyword),
   });
+  if (!sent) throw new Error('루트 Dooray 전송 실패');
 };

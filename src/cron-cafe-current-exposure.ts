@@ -142,17 +142,19 @@ const main = async (): Promise<void> => {
     `cafe_current_${getKSTTimestamp()}.json`
   );
   fs.writeFileSync(outputPath, `${JSON.stringify({ summary }, null, 2)}\n`);
-  await sendDoorayExposureResult({
-    cronType: TARGET_TAB,
-    totalKeywords: summary.checkedRows,
-    exposureCount: summary.exposed,
-    popularCount: 0,
-    sblCount: 0,
-    elapsedTime: formatDuration(Date.now() - startedAt),
-    missingKeywords: checkRows
-      .filter(({ keyword }) => results.get(keyword)?.exposureStatus !== '노출')
-      .map(({ keyword }) => keyword),
-  });
+  if (process.env.SKIP_DOORAY !== 'true') {
+    await sendDoorayExposureResult({
+      cronType: TARGET_TAB,
+      totalKeywords: summary.checkedRows,
+      exposureCount: summary.exposed,
+      popularCount: 0,
+      sblCount: 0,
+      elapsedTime: formatDuration(Date.now() - startedAt),
+      missingKeywords: checkRows
+        .filter(({ keyword }) => results.get(keyword)?.exposureStatus !== '노출')
+        .map(({ keyword }) => keyword),
+    });
+  }
   logger.success(`${TARGET_TAB} 반영 및 재조회 완료: ${JSON.stringify(summary)}`);
 };
 

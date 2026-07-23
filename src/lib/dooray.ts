@@ -164,6 +164,7 @@ export const sendDoorayExposureResult = async (params: {
   });
 
   const result = await sendDoorayMessage(text);
+  if (result) logger.success(`Dooray 전송 완료: ${cronType}`);
 
   // 현재 결과 스냅샷 저장
   saveSnapshot(cronType, {

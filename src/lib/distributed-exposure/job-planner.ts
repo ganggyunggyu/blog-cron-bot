@@ -7,30 +7,22 @@ import { importSheetAPI } from '../../cron-pages';
 import type { ExposureTargetId } from '../exposure-suite/options';
 import { logger } from '../logger';
 import { syncRootKeywordsFromSheet } from '../root-keyword-sync';
-import { buildPageKeywordShards } from './page-shards';
 import type { DistributedJobInput } from './queue';
-
-const PAGE_SHARD_SIZE = 50;
 
 export const isDistributedPageTarget = (
   target: ExposureTargetId
 ): target is Extract<PageCheckSheetType, 'pet' | 'suripet'> =>
   target === 'pet' || target === 'suripet';
 
-const appendShards = (
-  jobs: DistributedJobInput[],
+const toSingleSheetJob = (
   target: ExposureTargetId,
-  keywordIdsByShard: string[][]
-): void => {
-  keywordIdsByShard.forEach((keywordIds, shardIndex) => {
-    jobs.push({
-      target,
-      shardIndex,
-      shardCount: keywordIdsByShard.length,
-      keywordIds,
-    });
-  });
-};
+  keywordIds: string[] = []
+): DistributedJobInput => ({
+  target,
+  shardIndex: 0,
+  shardCount: 1,
+  keywordIds,
+});
 
 export const prepareDistributedJobs = async (
   targets: ExposureTargetId[]
@@ -41,28 +33,36 @@ export const prepareDistributedJobs = async (
     if (target === 'root') {
       await syncRootKeywordsFromSheet();
       const keywords = await getAllRootKeywords();
-      const shards = buildPageKeywordShards(keywords, PAGE_SHARD_SIZE);
-      if (shards.length === 0) throw new Error('root 처리 키워드가 없음');
+      if (keywords.length === 0) throw new Error('root 처리 키워드가 없음');
       logger.info(
-        `[다중워커] root ${keywords.length}개 → 50개 기준 ${shards.length}개 작업`
+        `[다중워커] root ${keywords.length}개 → 전용 서버 1개 작업`
       );
-      appendShards(jobs, target, shards);
+      jobs.push(
+        toSingleSheetJob(
+          target,
+          keywords.map(({ _id }) => String(_id))
+        )
+      );
       continue;
     }
 
     if (!isDistributedPageTarget(target)) {
-      jobs.push({ target });
+      jobs.push(toSingleSheetJob(target));
       continue;
     }
 
     await importSheetAPI(target);
     const keywords = await getPageCheckKeywords(target);
-    const shards = buildPageKeywordShards(keywords, PAGE_SHARD_SIZE);
-    if (shards.length === 0) throw new Error(`${target} 처리 키워드가 없음`);
+    if (keywords.length === 0) throw new Error(`${target} 처리 키워드가 없음`);
     logger.info(
-      `[다중워커] ${target} ${keywords.length}개 → 50개 기준 ${shards.length}개 작업`
+      `[다중워커] ${target} ${keywords.length}개 → 전용 서버 1개 작업`
     );
-    appendShards(jobs, target, shards);
+    jobs.push(
+      toSingleSheetJob(
+        target,
+        keywords.map(({ _id }) => String(_id))
+      )
+    );
   }
 
   return jobs;

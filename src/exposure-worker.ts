@@ -61,18 +61,34 @@ const runWorkerSlot = async (
   runId?: string
 ): Promise<void> => {
   let slotChild: ChildProcess | undefined;
+  let assignedJobId: string | undefined;
+  let assignedRunId: string | undefined;
 
   while (!stopping) {
-    const job = await claimDistributedJob(workerId, runId);
+    const job = await claimDistributedJob(workerId, runId, assignedJobId);
     if (job) {
-      await executeDistributedJob(job, workerId, (child) => {
+      assignedJobId ??= String(job._id);
+      assignedRunId ??= job.runId;
+      const outcome = await executeDistributedJob(job, workerId, (child) => {
         if (slotChild) activeChildren.delete(slotChild);
         slotChild = child;
         if (child) activeChildren.add(child);
       });
+      if (outcome === 'retry') continue;
+      while (!stopping && !(await isDistributedRunFinished(job.runId))) {
+        await waitForPoll();
+      }
+      if (runId) break;
+      assignedJobId = undefined;
+      assignedRunId = undefined;
       continue;
     }
     if (runId && (await isDistributedRunFinished(runId))) break;
+    if (assignedRunId && (await isDistributedRunFinished(assignedRunId))) {
+      assignedJobId = undefined;
+      assignedRunId = undefined;
+      continue;
+    }
     await waitForPoll();
   }
 };

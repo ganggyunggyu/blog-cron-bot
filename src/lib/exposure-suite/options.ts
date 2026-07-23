@@ -91,10 +91,10 @@ export const parseExposureSuiteOptions = (
   ),
   concurrency: parseRangedInteger(
     findArgValue(args, 'concurrency') ?? env.EXPOSURE_CONCURRENCY,
-    8,
+    50,
     '전체 병렬 예산',
     1,
-    8
+    50
   ),
   maxPages: parseRangedInteger(
     findArgValue(args, 'max-pages') ?? env.EXPOSURE_MAX_PAGES,

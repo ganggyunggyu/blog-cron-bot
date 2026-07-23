@@ -17,19 +17,6 @@ const controlApps = [
       time: true,
       max_memory_restart: '512M',
     },
-    {
-      // 패키지/일반건/도그마루/루트 더보기(인기글더보기 실클릭) 노출체크 (check-old-logic-more-exposure.ts, mode=browser 기본)
-      // Codex의 08:00 전체 빠른 노출체크와 겹치지 않도록 08:30에 시작
-      name: 'blog-cron-more-check-830am',
-      cwd: __dirname,
-      script: 'pnpm',
-      args: 'old-logic:more-check:daily',
-      interpreter: 'none',
-      autorestart: false,
-      cron_restart: '30 8 * * *',
-      time: true,
-      env: { TZ: 'Asia/Seoul' },
-    },
 ];
 
 const workerApps = [
@@ -46,7 +33,7 @@ const workerApps = [
     time: true,
     max_memory_restart: '1G',
     env: {
-      DISTRIBUTED_WORKER_JOB_CONCURRENCY: '3',
+      DISTRIBUTED_WORKER_JOB_CONCURRENCY: '1',
     },
   },
 ];

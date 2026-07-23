@@ -9,21 +9,21 @@ import {
 
 const defaults = parseExposureSuiteOptions([], {});
 assert.deepEqual(defaults.targets, DEFAULT_EXPOSURE_TARGETS);
-assert.equal(defaults.concurrency, 8);
+assert.equal(defaults.concurrency, 50);
 assert.equal(defaults.maxPages, 4);
 assert.equal(defaults.targetConcurrency, 2);
 
 const configured = parseExposureSuiteOptions(
   [
     '--targets=pet,package,cafe',
-    '--concurrency=8',
+    '--concurrency=50',
     '--max-pages=9',
     '--target-concurrency=3',
   ],
   {}
 );
 assert.deepEqual(configured.targets, ['pet', 'package', 'cafe']);
-assert.equal(configured.concurrency, 8);
+assert.equal(configured.concurrency, 50);
 assert.equal(configured.maxPages, 9);
 assert.equal(configured.targetConcurrency, 3);
 
@@ -32,8 +32,8 @@ assert.throws(
   /허용되지 않은 노출체크 대상/
 );
 assert.throws(
-  () => parseExposureSuiteOptions(['--concurrency=9'], {}),
-  /1~8/
+  () => parseExposureSuiteOptions(['--concurrency=51'], {}),
+  /1~50/
 );
 assert.throws(
   () => parseExposureSuiteOptions(['--max-pages=0'], {}),

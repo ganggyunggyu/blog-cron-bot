@@ -135,7 +135,7 @@ export const ExposureSuitePanel = () => {
           ) : null}
           <div className={cn('mt-1 flex gap-2 rounded-lg border border-blue-100 bg-blue-50/70 p-3 text-xs leading-5 text-blue-800 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-200')}>
             <ShieldCheck className={cn('mt-0.5 size-4 shrink-0')} />
-            <p>{isDistributed ? '대상 작업은 중앙 대기열에서 여러 워커가 하나씩 가져갑니다. 워커마다 최대 8개 요청만 처리해 차단을 줄이고, 원본 시트는 읽기만 하며 결과 반영은 대상별 한 번만 수행합니다.' : '각 시트는 키워드 50개 단위로 나누고 전체 요청 수를 공유해 과부하를 줄입니다. 실행 후 아래 로그에서 대상별 진행 상태를 확인할 수 있습니다.'}</p>
+            <p>{isDistributed ? '각 시트는 서로 다른 원격 워커와 외부 IP 하나를 전용으로 사용합니다. 시트의 모든 키워드를 병렬 풀에 넣고, 전체 성공 후 결과 반영과 Dooray 전송을 대상별 한 번만 수행합니다.' : '선택한 시트를 병렬 실행하고 완료 후 대상별 결과를 확인합니다.'}</p>
           </div>
           {isLoading ? <p className={cn('text-sm text-neutral-500')}>설정을 불러오는 중...</p> : null}
           {isError ? <p className={cn('text-sm text-red-600 dark:text-red-400')}>실행 설정을 불러오지 못함</p> : null}

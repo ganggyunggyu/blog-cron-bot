@@ -8,7 +8,7 @@ import { getJobDefinition } from './job-registry';
 test('suite 기본 옵션을 고정된 CLI 인자로 변환함', () => {
   assert.deepEqual(buildExposureSuiteArgs(undefined), [
     '--targets=package,general,dogmaru,root,pet,suripet,cafe',
-    '--concurrency=8',
+    '--concurrency=50',
     '--max-pages=4',
     '--target-concurrency=2',
   ]);
@@ -20,7 +20,7 @@ test('검증된 suite 옵션만 pnpm 인자로 전달함', () => {
   assert.deepEqual(
     buildJobSpawnArgs(suiteJob, {
       targets: ['package', 'cafe'],
-      concurrency: 8,
+      concurrency: 50,
       maxPages: 9,
       targetConcurrency: 3,
     }),
@@ -28,7 +28,7 @@ test('검증된 suite 옵션만 pnpm 인자로 전달함', () => {
       'run',
       'exposure:suite',
       '--targets=package,cafe',
-      '--concurrency=8',
+      '--concurrency=50',
       '--max-pages=9',
       '--target-concurrency=3',
     ],
@@ -40,7 +40,7 @@ test('허용되지 않은 suite 입력을 거부함', () => {
     { targets: [] },
     { targets: ['package', 'package'] },
     { targets: ['unknown'] },
-    { concurrency: 9 },
+    { concurrency: 51 },
     { maxPages: 0 },
     { targetConcurrency: 4 },
     { command: 'arbitrary-command' },

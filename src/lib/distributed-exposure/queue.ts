@@ -40,11 +40,13 @@ export interface DistributedRunSnapshot {
 
 export const claimDistributedJob = async (
   workerId: string,
-  runId?: string
+  runId?: string,
+  jobId?: string
 ): Promise<IDistributedExposureJob | null> => {
   const now = new Date();
   const query = {
     ...(runId ? { runId } : {}),
+    ...(jobId ? { _id: jobId } : {}),
     active: true,
     attempts: { $lt: 2 },
     $or: [
@@ -112,7 +114,7 @@ export const failDistributedJob = async (
   workerId: string,
   error: string,
   retryKeywordIds?: string[]
-): Promise<void> => {
+): Promise<boolean> => {
   const shouldRetry = job.attempts < job.maxAttempts;
   const statusUpdate = shouldRetry
     ? { status: 'pending' as const, error }
@@ -127,6 +129,7 @@ export const failDistributedJob = async (
       $unset: { leaseUntil: 1, workerId: 1 },
     }
   );
+  return shouldRetry;
 };
 
 export const getDistributedRunSnapshot = async (

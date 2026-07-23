@@ -48,7 +48,7 @@ export const finalizeDistributedPageTarget = async (
     logicMap
   );
 
-  await sendDoorayExposureResult({
+  const sent = await sendDoorayExposureResult({
     cronType: LABELS[target],
     totalKeywords: keywords.length,
     exposureCount: results.length,
@@ -57,4 +57,5 @@ export const finalizeDistributedPageTarget = async (
     elapsedTime,
     missingKeywords: keywords.filter(({ visibility }) => !visibility).map(({ keyword }) => keyword),
   });
+  if (!sent) throw new Error(`${LABELS[target]} Dooray 전송 실패`);
 };

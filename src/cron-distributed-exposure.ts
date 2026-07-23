@@ -22,6 +22,11 @@ import {
 } from './lib/distributed-exposure/job-planner';
 import { waitForDistributedRun } from './lib/distributed-exposure/run-monitor';
 import { getDistributedRunSnapshot } from './lib/distributed-exposure/queue';
+import {
+  finalizeDistributedCafeNotification,
+  finalizeDistributedDirectNotification,
+  isDistributedDirectTarget,
+} from './lib/distributed-exposure/notification-finalizer';
 
 dotenv.config();
 
@@ -95,7 +100,7 @@ const main = async (): Promise<void> => {
       { label: '실행 ID', value: runId },
       { label: '분산 작업', value: `${jobs.length}개` },
       { label: '워커당 병렬', value: `${options.concurrency}개` },
-      { label: '키워드 묶음', value: '50개' },
+      { label: '서버 배치', value: '시트당 1개' },
     ]);
 
     startLocalWorkers(runId, options.targetConcurrency);
@@ -114,6 +119,11 @@ const main = async (): Promise<void> => {
       workerNetworks.set(workerId, egressIp);
     });
     const workerIps = Array.from(workerNetworks.values());
+    if (workerNetworks.size !== completedSnapshot.jobs.length) {
+      throw new Error(
+        `시트당 전용 워커 불일치: 작업 ${completedSnapshot.jobs.length}개 / 워커 ${workerNetworks.size}개`
+      );
+    }
     if (new Set(workerIps).size !== workerIps.length) {
       throw new Error('서로 다른 워커가 같은 외부 IP를 사용함');
     }
@@ -134,6 +144,12 @@ const main = async (): Promise<void> => {
     }
     if (pageTargets.length > 0) {
       logger.info('[다중워커] 애견·서리펫 개별 결과 탭 직접 반영 완료');
+    }
+    for (const target of options.targets.filter(isDistributedDirectTarget)) {
+      await finalizeDistributedDirectNotification(target, elapsedTime);
+    }
+    if (options.targets.includes('cafe')) {
+      await finalizeDistributedCafeNotification(elapsedTime);
     }
 
     await finishDistributedRun(runId, 'success');
