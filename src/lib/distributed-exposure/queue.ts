@@ -48,7 +48,7 @@ export const claimDistributedJob = async (
     ...(runId ? { runId } : {}),
     ...(jobId ? { _id: jobId } : {}),
     active: true,
-    attempts: { $lt: 2 },
+    $expr: { $lt: ['$attempts', '$maxAttempts'] },
     $or: [
       { status: 'pending' },
       { status: 'running', leaseUntil: { $lte: now } },
