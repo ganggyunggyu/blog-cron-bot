@@ -136,6 +136,15 @@ const runRootWorkflow = async (): Promise<void> => {
   }
 
   const logBuilder = createDetailedLogBuilder();
+  const useVendorFilter = ['true', '1', 'yes'].includes(
+    String(process.env.ROOT_USE_VENDOR_FILTER ?? '').toLowerCase()
+  );
+  const matchByBlogIdOnly = !useVendorFilter;
+  logger.info(
+    matchByBlogIdOnly
+      ? '🎯 루트 업체명 필터 생략: 등록 블로그 ID만으로 노출 판정'
+      : '🎯 루트 업체명 필터 적용: 계정 ID와 업체명을 함께 확인'
+  );
 
   const allResults = await processKeywords(keywords, logBuilder, {
     updateFunction: updateRootKeywordResult,
@@ -144,7 +153,7 @@ const runRootWorkflow = async (): Promise<void> => {
     concurrency,
     blogIds: [...BLOG_IDS],
     allowAnyBlog: false,
-    matchByBlogIdOnly: true,
+    matchByBlogIdOnly,
     consumeMatches: false,
   });
 
