@@ -48,10 +48,20 @@ export const claimDistributedJob = async (
     ...(runId ? { runId } : {}),
     ...(jobId ? { _id: jobId } : {}),
     active: true,
-    $expr: { $lt: ['$attempts', '$maxAttempts'] },
-    $or: [
-      { status: 'pending' },
-      { status: 'running', leaseUntil: { $lte: now } },
+    $and: [
+      { $expr: { $lt: ['$attempts', '$maxAttempts'] } },
+      {
+        $or: [
+          { status: 'pending' },
+          { status: 'running', leaseUntil: { $lte: now } },
+        ],
+      },
+      {
+        $or: [
+          { workerId: { $exists: false } },
+          { workerId: { $ne: workerId } },
+        ],
+      },
     ],
   };
 
@@ -126,7 +136,9 @@ export const failDistributedJob = async (
         ...statusUpdate,
         ...(retryKeywordIds ? { keywordIds: retryKeywordIds } : {}),
       },
-      $unset: { leaseUntil: 1, workerId: 1 },
+      $unset: shouldRetry
+        ? { leaseUntil: 1 }
+        : { leaseUntil: 1, workerId: 1 },
     }
   );
   return shouldRetry;

@@ -16,6 +16,40 @@ const run = async (): Promise<void> => {
   assert.equal(fallbackHtml, 'browser html');
   assert.equal(browserCalls, 1);
 
+  const previousConcurrency =
+    process.env.EXPOSURE_BROWSER_FALLBACK_CONCURRENCY;
+  process.env.EXPOSURE_BROWSER_FALLBACK_CONCURRENCY = '2';
+  let activeFallbacks = 0;
+  let maxActiveFallbacks = 0;
+
+  await Promise.all(
+    Array.from({ length: 5 }, (_, index) =>
+      loadSinglePageHtml(`동시성-${index}`, 1, {
+        crawlHttp: async () => {
+          throw Object.assign(new Error('HTTP 403'), { status: 403 });
+        },
+        crawlBrowser: async () => {
+          activeFallbacks += 1;
+          maxActiveFallbacks = Math.max(
+            maxActiveFallbacks,
+            activeFallbacks
+          );
+          await new Promise((resolve) => setTimeout(resolve, 5));
+          activeFallbacks -= 1;
+          return ['browser html'];
+        },
+      })
+    )
+  );
+
+  assert.equal(maxActiveFallbacks, 2);
+  if (previousConcurrency === undefined) {
+    delete process.env.EXPOSURE_BROWSER_FALLBACK_CONCURRENCY;
+  } else {
+    process.env.EXPOSURE_BROWSER_FALLBACK_CONCURRENCY =
+      previousConcurrency;
+  }
+
   await assert.rejects(
     loadSinglePageHtml('서버 오류', 2, {
       crawlHttp: async () => {
