@@ -50,7 +50,6 @@ const runChild = (
               directSheetTarget,
               '--concurrency',
               String(job.concurrency),
-              '--skip-dooray',
               '--result-sheet',
             ],
           }

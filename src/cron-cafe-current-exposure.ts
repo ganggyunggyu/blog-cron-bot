@@ -4,6 +4,7 @@ import { TEST_CONFIG } from './constants';
 import { runCustomExposureChecks } from './lib/custom-cafe-blog-check/checker';
 import { CAFE_FALLBACK_TARGETS } from './lib/custom-cafe-blog-check/sheet';
 import { resolveOutputFilePath } from './lib/csv-output/output-path';
+import { sendDoorayExposureResult } from './lib/dooray';
 import {
   getGoogleSheetAuth,
   getWorksheetByTitle,
@@ -11,6 +12,7 @@ import {
 } from './lib/google-sheets/direct-exposure-sheet';
 import { assertWritableSheetId } from './lib/google-sheets/write-target-guard';
 import { logger } from './lib/logger';
+import { formatDuration } from './lib/utils';
 import { getKSTTimestamp } from './utils';
 
 dotenv.config();
@@ -23,6 +25,7 @@ const getConcurrency = (): number => {
 };
 
 const main = async (): Promise<void> => {
+  const startedAt = Date.now();
   assertWritableSheetId(TEST_CONFIG.SHEET_ID, TARGET_TAB);
   const doc = await openSpreadsheet(TEST_CONFIG.SHEET_ID, getGoogleSheetAuth());
   const sheet = getWorksheetByTitle(doc, TARGET_TAB);
@@ -105,6 +108,17 @@ const main = async (): Promise<void> => {
     `cafe_current_${getKSTTimestamp()}.json`
   );
   fs.writeFileSync(outputPath, `${JSON.stringify({ summary }, null, 2)}\n`);
+  await sendDoorayExposureResult({
+    cronType: TARGET_TAB,
+    totalKeywords: summary.rows,
+    exposureCount: summary.exposed,
+    popularCount: 0,
+    sblCount: 0,
+    elapsedTime: formatDuration(Date.now() - startedAt),
+    missingKeywords: rows
+      .filter(({ keyword }) => results.get(keyword)?.exposureStatus !== '노출')
+      .map(({ keyword }) => keyword),
+  });
   logger.success(`${TARGET_TAB} 반영 및 재조회 완료: ${JSON.stringify(summary)}`);
 };
 

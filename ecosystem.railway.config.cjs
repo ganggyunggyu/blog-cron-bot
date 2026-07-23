@@ -45,6 +45,9 @@ const workerApps = [
     watch: false,
     time: true,
     max_memory_restart: '1G',
+    env: {
+      DISTRIBUTED_WORKER_JOB_CONCURRENCY: '3',
+    },
   },
 ];
 
