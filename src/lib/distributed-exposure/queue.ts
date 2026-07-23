@@ -110,7 +110,8 @@ export const completeDistributedJob = async (
 export const failDistributedJob = async (
   job: IDistributedExposureJob,
   workerId: string,
-  error: string
+  error: string,
+  retryKeywordIds?: string[]
 ): Promise<void> => {
   const shouldRetry = job.attempts < job.maxAttempts;
   const statusUpdate = shouldRetry
@@ -121,6 +122,7 @@ export const failDistributedJob = async (
     {
       $set: {
         ...statusUpdate,
+        ...(retryKeywordIds ? { keywordIds: retryKeywordIds } : {}),
       },
       $unset: { leaseUntil: 1, workerId: 1 },
     }

@@ -13,6 +13,7 @@ import {
 import { logger } from '../logger';
 import { getWorkerEgressIp } from './worker-egress-ip';
 import { getDistributedJobTimeoutMs } from './job-timeout';
+import { getUncheckedPageKeywordIds } from '../../database';
 
 const HEARTBEAT_MS = 15_000;
 const CHILD_ERROR_TAIL_LIMIT = 6_000;
@@ -187,7 +188,29 @@ export const executeDistributedJob = async (
     logger.success(`[다중워커] ${job.target} 완료`);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    await failDistributedJob(job, workerId, message);
+    const canResumePageShard =
+      job.startedAt &&
+      job.keywordIds.length > 0 &&
+      (job.target === 'pet' || job.target === 'suripet');
+    let retryKeywordIds: string[] | undefined;
+    if (canResumePageShard) {
+      retryKeywordIds = await getUncheckedPageKeywordIds(
+        job.target as 'pet' | 'suripet',
+        job.keywordIds,
+        job.startedAt as Date
+      );
+      if (retryKeywordIds.length === 0) {
+        await completeDistributedJob(jobId, workerId);
+        logger.warn(
+          `[다중워커] ${job.target} 종료 오류 후 완료 결과 ${job.keywordIds.length}개 유지`
+        );
+        return;
+      }
+      logger.warn(
+        `[다중워커] ${job.target} 미완료 ${retryKeywordIds.length}/${job.keywordIds.length}개만 재시도`
+      );
+    }
+    await failDistributedJob(job, workerId, message, retryKeywordIds);
     logger.error(`[다중워커] ${job.target} 실패: ${message}`);
   } finally {
     clearInterval(heartbeat);

@@ -26,7 +26,7 @@ export const createDistributedRun = async (
       shardCount: job.shardCount ?? 1,
       keywordIds: job.keywordIds ?? [],
       attempts: 0,
-      maxAttempts: 2,
+      maxAttempts: 3,
       active: true,
     }))
   );

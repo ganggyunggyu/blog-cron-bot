@@ -372,6 +372,21 @@ export const getPageCheckKeywords = async (
   }
 };
 
+export const getUncheckedPageKeywordIds = async (
+  sheetType: PageCheckSheetType,
+  keywordIds: string[],
+  checkedSince: Date
+): Promise<string[]> => {
+  const model = pageCheckModels[sheetType];
+  const checked = await model
+    .find({ _id: { $in: keywordIds }, lastChecked: { $gte: checkedSince } })
+    .select({ _id: 1 })
+    .lean()
+    .exec();
+  const checkedIds = new Set(checked.map(({ _id }) => String(_id)));
+  return keywordIds.filter((keywordId) => !checkedIds.has(keywordId));
+};
+
 export const replacePageCheckKeywords = async (
   sheetType: PageCheckSheetType,
   keywords: PageCheckKeywordInput[]
