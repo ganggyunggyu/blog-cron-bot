@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {
+  CAFE_SOURCE_CONFIG,
   EXPOSURE_SHEET_LOCATIONS,
   PAGE_CHECK_SOURCE_CONFIG,
   PRODUCT_SHEET_ID,
@@ -10,6 +11,9 @@ import {
 assert.equal(PRODUCT_SHEET_ID, '1aIKP9XnB20q8WWvwZzMNk2yM0waKZcQ1x6CtyM19HNw');
 assert.equal(ROOT_CONFIG.SHEET_ID, '1Cgn-CFMEobWpwhdmrJxVKgVLMblGQ_JEX4xVpXS4_ZA');
 assert.equal(ROOT_CONFIG.SHEET_GID, 1928230154);
+assert.equal(CAFE_SOURCE_CONFIG.SHEET_ID, PRODUCT_SHEET_ID);
+assert.equal(CAFE_SOURCE_CONFIG.SHEET_GID, 250477480);
+assert.equal(CAFE_SOURCE_CONFIG.SHEET_NAME, '카페 작업');
 
 // 패키지/일반건/도그마루 키워드는 반드시 읽기 전용 "패키지현황" 원본을 봐야 함.
 // 예전에 이 값이 TEST_CONFIG.SHEET_ID(스크래치용 "프로그램 노출체크" 시트)를 기본값으로
@@ -29,8 +33,11 @@ assert.equal(EXPOSURE_SHEET_LOCATIONS.도그마루.tabTitle, '도그마루');
 
 // 루트는 별도 스프레드시트(ROOT_CONFIG)의 신규 대윤기획 원본을 봐야 함.
 assert.equal(EXPOSURE_SHEET_LOCATIONS.루트.sheetId, ROOT_CONFIG.SHEET_ID);
-assert.equal(EXPOSURE_SHEET_LOCATIONS.루트.tabTitle, '월보장 시트');
+assert.equal(EXPOSURE_SHEET_LOCATIONS.루트.tabTitle, '2l1ab 최적화 블로그 스케쥴');
 assert.notEqual(EXPOSURE_SHEET_LOCATIONS.루트.sheetId, PRODUCT_SHEET_ID);
+
+assert.equal(EXPOSURE_SHEET_LOCATIONS.카페.sheetId, PRODUCT_SHEET_ID);
+assert.equal(EXPOSURE_SHEET_LOCATIONS.카페.tabTitle, '카페 작업');
 
 assert.equal(
   EXPOSURE_SHEET_LOCATIONS.애견.sheetId,

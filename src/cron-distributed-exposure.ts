@@ -8,7 +8,10 @@ import {
 import { exportSheetAPI } from './cron-pages';
 import { logger } from './lib/logger';
 import { emitExposureProgress } from './lib/exposure-progress';
-import { parseExposureSuiteOptions } from './lib/exposure-suite/options';
+import {
+  AUTO_KEYWORD_CONCURRENCY,
+  parseExposureSuiteOptions,
+} from './lib/exposure-suite/options';
 import {
   createDistributedRun,
   assertNoActiveDistributedRun,
@@ -99,7 +102,13 @@ const main = async (): Promise<void> => {
     logger.summary.start('다중 워커 노출체크', [
       { label: '실행 ID', value: runId },
       { label: '분산 작업', value: `${jobs.length}개` },
-      { label: '워커당 병렬', value: `${options.concurrency}개` },
+      {
+        label: '워커당 병렬',
+        value:
+          options.concurrency === AUTO_KEYWORD_CONCURRENCY
+            ? '원본 유효 키워드 전체'
+            : `${options.concurrency}개`,
+      },
       { label: '서버 배치', value: '시트당 1개' },
     ]);
 

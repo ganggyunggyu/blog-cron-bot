@@ -84,12 +84,18 @@ export const ROOT_CONFIG = {
   SHEET_GID: 1928230154,
 
   SHEET_NAMES: {
-    PACKAGE: '월보장 시트',
+    PACKAGE: '2l1ab 최적화 블로그 스케쥴',
   },
   LABELS: {
-    PACKAGE: '월보장 시트',
+    PACKAGE: '2l1ab 최적화 블로그 스케쥴',
   },
 };
+
+export const CAFE_SOURCE_CONFIG = {
+  SHEET_ID: PRODUCT_SHEET_ID,
+  SHEET_GID: 250477480,
+  SHEET_NAME: '카페 작업',
+} as const;
 
 export const PAGE_CHECK_SOURCE_CONFIG = {
   SHEET_ID: '1c9TJ1gETtunuCmzfzap-2lyqXj1cwzITOb1k8W4tL8c',
@@ -112,6 +118,7 @@ export const EXPOSURE_SHEET_LOCATIONS = {
     tabTitle: PAGE_CHECK_SOURCE_CONFIG.SHEET_NAMES.PET,
   },
   루트: { sheetId: ROOT_CONFIG.SHEET_ID, tabTitle: ROOT_CONFIG.SHEET_NAMES.PACKAGE },
+  카페: { sheetId: CAFE_SOURCE_CONFIG.SHEET_ID, tabTitle: CAFE_SOURCE_CONFIG.SHEET_NAME },
 } as const;
 
 export type ExposureSheetLocationKey = keyof typeof EXPOSURE_SHEET_LOCATIONS;

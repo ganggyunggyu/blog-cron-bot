@@ -1,10 +1,10 @@
 import type { GoogleSpreadsheetWorksheet } from 'google-spreadsheet';
-import { PRODUCT_SHEET_ID, TEST_CONFIG } from '../../constants';
+import { CAFE_SOURCE_CONFIG, TEST_CONFIG } from '../../constants';
 import {
   buildCafeScheduleExportRows,
   type CafeScheduleCheckRow,
-  extractLatestCafeScheduleSourceRows,
 } from '../cafe-schedule-export';
+import { buildCafeSourceMirrorRows } from '../cafe-source-mirror';
 import type { SheetCellValue } from '../csv-output';
 import { logger } from '../logger';
 import {
@@ -14,11 +14,10 @@ import {
 } from './direct-exposure-sheet';
 import { assertWritableSheetId } from './write-target-guard';
 
-const SOURCE_SHEET_ID = PRODUCT_SHEET_ID;
-const SOURCE_SHEET_NAME = '카페 발행스케줄';
+const SOURCE_SHEET_ID = CAFE_SOURCE_CONFIG.SHEET_ID;
+const SOURCE_SHEET_NAME = CAFE_SOURCE_CONFIG.SHEET_NAME;
 const TARGET_SHEET_ID = TEST_CONFIG.SHEET_ID;
 const TARGET_SHEET_NAME = '카페노출체크';
-const CURRENT_RESULT_COLUMN_COUNT = 5;
 const HEADERS = [
   '키워드',
   '노출여부',
@@ -49,7 +48,13 @@ export const buildCafeCurrentRows = (
   sourceValues: unknown[][],
   targetValues: unknown[][]
 ): SheetCellValue[][] => {
-  const sourceRows = extractLatestCafeScheduleSourceRows(sourceValues);
+  const sourceRows = buildCafeSourceMirrorRows(sourceValues, targetValues).map(
+    ({ rawKeyword, cafeAccount }, index) => ({
+      row: index + 2,
+      keyword: rawKeyword,
+      cafeAccount,
+    })
+  );
   const checkedRows: CafeScheduleCheckRow[] = targetValues
     .slice(1)
     .flatMap((row, index) => {
@@ -125,8 +130,8 @@ export const reexportCurrentCafeResults = async (): Promise<number> => {
   const sourceSheet = getWorksheetByTitle(sourceDoc, SOURCE_SHEET_NAME);
   const targetSheet = getWorksheetByTitle(targetDoc, TARGET_SHEET_NAME);
   const [sourceValues, targetValues] = await Promise.all([
-    loadValues(sourceSheet, 3),
-    loadValues(targetSheet, CURRENT_RESULT_COLUMN_COUNT),
+    loadValues(sourceSheet, 2),
+    loadValues(targetSheet, HEADERS.length),
   ]);
   const rows = buildCafeCurrentRows(sourceValues, targetValues);
 

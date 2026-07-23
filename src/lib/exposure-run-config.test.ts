@@ -19,7 +19,7 @@ assert.equal(
   }),
   3
 );
-assert.equal(getExposureConcurrency({ EXPOSURE_CONCURRENCY: '99' }), 8);
+assert.equal(getExposureConcurrency({ EXPOSURE_CONCURRENCY: '99' }), 99);
 assert.equal(getExposureConcurrency({ EXPOSURE_CONCURRENCY: '1.5' }), 8);
 assert.equal(getExposureKeywordBatchSize({}), 50);
 assert.equal(

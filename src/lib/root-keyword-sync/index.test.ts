@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { parseRootKeywordRows } from './index';
+import { isRootSourceSchemaMismatch, parseRootKeywordRows } from './index';
 
 const rows = parseRootKeywordRows([
   [],
@@ -42,5 +42,13 @@ assert.equal(
   ])[0].keyword,
   '중복방지(업체A)'
 );
+
+assert.equal(
+  isRootSourceSchemaMismatch(
+    new Error('루트 원본 필수 컬럼(키워드, 업체명)을 찾을 수 없음')
+  ),
+  true
+);
+assert.equal(isRootSourceSchemaMismatch(new Error('HTTP 403')), false);
 
 process.stdout.write('root keyword sync tests passed\n');

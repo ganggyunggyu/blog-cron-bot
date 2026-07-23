@@ -2,6 +2,7 @@ import {
   PAGE_CHECK_SOURCE_CONFIG,
   PRODUCT_SHEET_ID,
   ROOT_CONFIG,
+  TEST_CONFIG,
 } from '../../constants';
 
 const READ_ONLY_SOURCE_SHEET_IDS = new Set([
@@ -17,9 +18,9 @@ export const assertWritableSheetId = (
   sheetId: string,
   operation: string
 ): void => {
-  if (isReadOnlySourceSheet(sheetId)) {
+  if (sheetId.trim() !== TEST_CONFIG.SHEET_ID) {
     throw new Error(
-      `${operation}: 읽기 전용 원본 시트(${sheetId})에는 쓸 수 없음`
+      `${operation}: 프로그램 노출체크 외 시트(${sheetId})에는 쓸 수 없음`
     );
   }
 };

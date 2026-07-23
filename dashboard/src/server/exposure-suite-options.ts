@@ -91,7 +91,7 @@ export const buildExposureSuiteArgs = (input: unknown): string[] => {
   const options = parseExposureSuiteOptions(input);
   return [
     `--targets=${options.targets.join(',')}`,
-    `--concurrency=${options.concurrency}`,
+    `--concurrency=${IS_DISTRIBUTED_EXPOSURE_ENABLED ? 0 : options.concurrency}`,
     `--max-pages=${options.maxPages}`,
     `--target-concurrency=${options.targetConcurrency}`,
   ];

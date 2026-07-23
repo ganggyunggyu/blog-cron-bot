@@ -31,6 +31,9 @@ export interface ExposureTargetJob {
   command: TargetCommand;
 }
 
+export const AUTO_KEYWORD_CONCURRENCY = 0;
+export const ALL_KEYWORDS_CONCURRENCY = 1_000_000;
+
 const TARGET_COMMANDS: Record<ExposureTargetId, TargetCommand> = {
   package: { script: 'cron:sheet', args: ['package'] },
   general: { script: 'cron:exclude', args: [] },
@@ -38,7 +41,7 @@ const TARGET_COMMANDS: Record<ExposureTargetId, TargetCommand> = {
   root: { script: 'cron:root', args: [] },
   pet: { script: 'cron:pages', args: ['pet'] },
   suripet: { script: 'cron:pages', args: ['suripet'] },
-  cafe: { script: 'cafe:schedule:run', args: [] },
+  cafe: { script: 'exposure:cafe-current', args: [] },
 };
 
 const findArgValue = (args: string[], name: string): string | undefined => {
@@ -62,6 +65,26 @@ const parseRangedInteger = (
 
   return value;
 };
+
+const parseConcurrency = (rawValue: string | undefined): number => {
+  if (!rawValue) return 50;
+  const value = Number(rawValue);
+  if (
+    !Number.isInteger(value) ||
+    value < AUTO_KEYWORD_CONCURRENCY ||
+    value > ALL_KEYWORDS_CONCURRENCY
+  ) {
+    throw new Error(
+      `전체 병렬 예산은 0(전체 자동) 또는 1~${ALL_KEYWORDS_CONCURRENCY} 정수여야 함`
+    );
+  }
+  return value;
+};
+
+export const resolveKeywordConcurrency = (concurrency: number): number =>
+  concurrency === AUTO_KEYWORD_CONCURRENCY
+    ? ALL_KEYWORDS_CONCURRENCY
+    : concurrency;
 
 const parseTargets = (rawValue?: string): ExposureTargetId[] => {
   if (!rawValue) return [...DEFAULT_EXPOSURE_TARGETS];
@@ -89,12 +112,8 @@ export const parseExposureSuiteOptions = (
   targets: parseTargets(
     findArgValue(args, 'targets') ?? env.EXPOSURE_TARGETS
   ),
-  concurrency: parseRangedInteger(
-    findArgValue(args, 'concurrency') ?? env.EXPOSURE_CONCURRENCY,
-    50,
-    '전체 병렬 예산',
-    1,
-    50
+  concurrency: parseConcurrency(
+    findArgValue(args, 'concurrency') ?? env.EXPOSURE_CONCURRENCY
   ),
   maxPages: parseRangedInteger(
     findArgValue(args, 'max-pages') ?? env.EXPOSURE_MAX_PAGES,
@@ -180,13 +199,14 @@ export const buildTargetEnvironment = (
   concurrency: number,
   maxPages: number
 ): NodeJS.ProcessEnv => {
+  const resolvedConcurrency = resolveKeywordConcurrency(concurrency);
   const environment: NodeJS.ProcessEnv = {
     ...baseEnvironment,
-    EXPOSURE_CONCURRENCY: String(concurrency),
-    PAGE_CHECK_CONCURRENCY: String(concurrency),
-    CHECK_CONCURRENCY: String(concurrency),
-    CAFE_CHECK_CONCURRENCY: String(concurrency),
-    EXPOSURE_KEYWORD_BATCH_SIZE: '50',
+    EXPOSURE_CONCURRENCY: String(resolvedConcurrency),
+    PAGE_CHECK_CONCURRENCY: String(resolvedConcurrency),
+    CHECK_CONCURRENCY: String(resolvedConcurrency),
+    CAFE_CHECK_CONCURRENCY: String(resolvedConcurrency),
+    EXPOSURE_KEYWORD_BATCH_SIZE: String(resolvedConcurrency),
     FAST_EXPOSURE_MODE: 'true',
   };
 

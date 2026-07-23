@@ -8,9 +8,9 @@ import { getJobDefinition } from './job-registry';
 test('suite 기본 옵션을 고정된 CLI 인자로 변환함', () => {
   assert.deepEqual(buildExposureSuiteArgs(undefined), [
     '--targets=package,general,dogmaru,root,pet,suripet,cafe',
-    '--concurrency=50',
+    `--concurrency=${process.env.DISTRIBUTED_EXPOSURE_ENABLED === 'true' ? 0 : 50}`,
     '--max-pages=4',
-    '--target-concurrency=2',
+    `--target-concurrency=${process.env.DISTRIBUTED_EXPOSURE_ENABLED === 'true' ? 1 : 2}`,
   ]);
 });
 
@@ -26,9 +26,11 @@ test('검증된 suite 옵션만 pnpm 인자로 전달함', () => {
     }),
     [
       'run',
-      'exposure:suite',
+      process.env.DISTRIBUTED_EXPOSURE_ENABLED === 'true'
+        ? 'exposure:distributed'
+        : 'exposure:suite',
       '--targets=package,cafe',
-      '--concurrency=50',
+      `--concurrency=${process.env.DISTRIBUTED_EXPOSURE_ENABLED === 'true' ? 0 : 50}`,
       '--max-pages=9',
       '--target-concurrency=3',
     ],

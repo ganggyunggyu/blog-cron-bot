@@ -1,8 +1,8 @@
 import * as dotenv from 'dotenv';
 import * as fs from 'node:fs';
-import { TEST_CONFIG } from './constants';
+import { CAFE_SOURCE_CONFIG, TEST_CONFIG } from './constants';
 import { runCustomExposureChecks } from './lib/custom-cafe-blog-check/checker';
-import { CAFE_FALLBACK_TARGETS } from './lib/custom-cafe-blog-check/sheet';
+import { loadCafeExposureTargets } from './lib/custom-cafe-blog-check/sheet';
 import { buildCafeSourceMirrorRows } from './lib/cafe-source-mirror';
 import { resolveOutputFilePath } from './lib/csv-output/output-path';
 import { sendDoorayExposureResult } from './lib/dooray';
@@ -19,7 +19,6 @@ import { getKSTTimestamp } from './utils';
 dotenv.config();
 
 const TARGET_TAB = '카페노출체크';
-const SOURCE_TAB = '카페원본_자동';
 const TARGET_HEADERS = ['키워드', '노출여부', '순위', '카페블로그명', '링크', '카페계정'];
 const text = (value: unknown): string => String(value ?? '').trim();
 const getConcurrency = (): number => {
@@ -30,9 +29,17 @@ const getConcurrency = (): number => {
 const main = async (): Promise<void> => {
   const startedAt = Date.now();
   assertWritableSheetId(TEST_CONFIG.SHEET_ID, TARGET_TAB);
-  const doc = await openSpreadsheet(TEST_CONFIG.SHEET_ID, getGoogleSheetAuth());
-  const sourceSheet = getWorksheetByTitle(doc, SOURCE_TAB);
-  const sheet = getWorksheetByTitle(doc, TARGET_TAB);
+  const auth = getGoogleSheetAuth();
+  const [sourceDoc, resultDoc, targets] = await Promise.all([
+    openSpreadsheet(CAFE_SOURCE_CONFIG.SHEET_ID, auth),
+    openSpreadsheet(TEST_CONFIG.SHEET_ID, auth),
+    loadCafeExposureTargets(),
+  ]);
+  const sourceSheet = getWorksheetByTitle(
+    sourceDoc,
+    CAFE_SOURCE_CONFIG.SHEET_NAME
+  );
+  const sheet = getWorksheetByTitle(resultDoc, TARGET_TAB);
 
   await sourceSheet.loadCells(`A1:B${sourceSheet.rowCount}`);
   await sheet.loadCells(`A1:F${sheet.rowCount}`);
@@ -71,16 +78,17 @@ const main = async (): Promise<void> => {
     };
   });
   const checkRows = rows.filter(({ keyword }) => keyword.length > 0);
-  const keywords = Array.from(new Set(checkRows.map(({ keyword }) => keyword)));
+  const keywords = checkRows.map(({ keyword }) => keyword);
+  const uniqueKeywordCount = new Set(keywords).size;
   logger.info(
-    `${SOURCE_TAB} → ${TARGET_TAB}: 원본 ${rows.length}행 / 검색 ${checkRows.length}행 / ` +
-      `고유 키워드 ${keywords.length}개 / ` +
-      `카페 ${CAFE_FALLBACK_TARGETS.length}개`
+    `${CAFE_SOURCE_CONFIG.SHEET_NAME} → ${TARGET_TAB}: 원본 ${rows.length}행 / ` +
+      `검색 ${checkRows.length}행 / 고유 키워드 ${uniqueKeywordCount}개 / ` +
+      `카페 ${targets.length}개 / 동시 ${Math.min(getConcurrency(), keywords.length)}개`
   );
 
   const results = await runCustomExposureChecks(
     keywords,
-    CAFE_FALLBACK_TARGETS,
+    targets,
     getConcurrency()
   );
   checkRows.forEach(({ rowIndex, keyword }) => {
@@ -130,7 +138,7 @@ const main = async (): Promise<void> => {
   const summary = {
     rows: rows.length,
     checkedRows: checkRows.length,
-    uniqueKeywords: keywords.length,
+    uniqueKeywords: uniqueKeywordCount,
     exposed: checkRows.filter(
       ({ keyword }) => results.get(keyword)?.exposureStatus === '노출'
     ).length,

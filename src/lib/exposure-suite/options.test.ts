@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import {
+  ALL_KEYWORDS_CONCURRENCY,
+  AUTO_KEYWORD_CONCURRENCY,
   DEFAULT_EXPOSURE_TARGETS,
   buildTargetEnvironment,
   planExposureTargetJobs,
@@ -32,8 +34,12 @@ assert.throws(
   /허용되지 않은 노출체크 대상/
 );
 assert.throws(
-  () => parseExposureSuiteOptions(['--concurrency=51'], {}),
-  /1~50/
+  () => parseExposureSuiteOptions(['--concurrency=-1'], {}),
+  /0\(전체 자동\)/
+);
+assert.equal(
+  parseExposureSuiteOptions(['--concurrency=0'], {}).concurrency,
+  AUTO_KEYWORD_CONCURRENCY
 );
 assert.throws(
   () => parseExposureSuiteOptions(['--max-pages=0'], {}),
@@ -61,7 +67,7 @@ assert.deepEqual(resolveTargetCommand('pet'), {
   args: ['pet'],
 });
 assert.deepEqual(resolveTargetCommand('cafe'), {
-  script: 'cafe:schedule:run',
+  script: 'exposure:cafe-current',
   args: [],
 });
 
@@ -70,7 +76,7 @@ assert.deepEqual(
   [
     {
       targets: ['cafe'],
-      command: { script: 'cafe:schedule:run', args: [] },
+      command: { script: 'exposure:cafe-current', args: [] },
     },
     {
       targets: ['pet', 'suripet'],
@@ -87,7 +93,7 @@ assert.deepEqual(
   [
     {
       targets: ['cafe'],
-      command: { script: 'cafe:schedule:run', args: [] },
+      command: { script: 'exposure:cafe-current', args: [] },
     },
     {
       targets: ['dogmaru', 'pet', 'suripet'],
@@ -166,7 +172,22 @@ const petEnvironment = buildTargetEnvironment(
 assert.equal(petEnvironment.EXPOSURE_MAX_PAGES, '4');
 assert.equal(petEnvironment.PAGE_CHECK_MAX_PAGES, '4');
 assert.equal(petEnvironment.EXPOSURE_CONCURRENCY, '8');
-assert.equal(petEnvironment.EXPOSURE_KEYWORD_BATCH_SIZE, '50');
+assert.equal(petEnvironment.EXPOSURE_KEYWORD_BATCH_SIZE, '8');
 assert.equal(petEnvironment.FAST_EXPOSURE_MODE, 'true');
+
+const allKeywordEnvironment = buildTargetEnvironment(
+  inheritedEnvironment,
+  ['cafe'],
+  AUTO_KEYWORD_CONCURRENCY,
+  4
+);
+assert.equal(
+  allKeywordEnvironment.EXPOSURE_CONCURRENCY,
+  String(ALL_KEYWORDS_CONCURRENCY)
+);
+assert.equal(
+  allKeywordEnvironment.EXPOSURE_KEYWORD_BATCH_SIZE,
+  String(ALL_KEYWORDS_CONCURRENCY)
+);
 
 process.stdout.write('exposure suite option tests passed\n');

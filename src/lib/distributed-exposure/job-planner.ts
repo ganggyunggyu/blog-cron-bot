@@ -6,7 +6,10 @@ import {
 import { importSheetAPI } from '../../cron-pages';
 import type { ExposureTargetId } from '../exposure-suite/options';
 import { logger } from '../logger';
-import { syncRootKeywordsFromSheet } from '../root-keyword-sync';
+import {
+  isRootSourceSchemaMismatch,
+  syncRootKeywordsFromSheet,
+} from '../root-keyword-sync';
 import type { DistributedJobInput } from './queue';
 
 export const isDistributedPageTarget = (
@@ -31,7 +34,15 @@ export const prepareDistributedJobs = async (
 
   for (const target of targets) {
     if (target === 'root') {
-      await syncRootKeywordsFromSheet();
+      try {
+        await syncRootKeywordsFromSheet();
+      } catch (error) {
+        if (!isRootSourceSchemaMismatch(error)) throw error;
+        logger.warn(
+          `[다중워커] 신규 루트 문서에 키워드 표가 없어 기존 RootKeyword DB를 보존합니다: ` +
+            `${(error as Error).message}`
+        );
+      }
       const keywords = await getAllRootKeywords();
       if (keywords.length === 0) throw new Error('root 처리 키워드가 없음');
       logger.info(

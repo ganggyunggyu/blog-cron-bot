@@ -1,6 +1,7 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import {
   buildTargetEnvironment,
+  resolveKeywordConcurrency,
   resolveTargetCommand,
 } from '../exposure-suite/options';
 import { getDistributedJobTimeoutMs } from './job-timeout';
@@ -26,6 +27,7 @@ export const stopWorkerChild = (child: ChildProcess): void => {
 };
 
 const resolveWorkerCommand = (job: IDistributedExposureJob) => {
+  const concurrency = resolveKeywordConcurrency(job.concurrency);
   const isPageJob =
     job.keywordIds.length > 0 &&
     (job.target === 'pet' || job.target === 'suripet');
@@ -46,7 +48,7 @@ const resolveWorkerCommand = (job: IDistributedExposureJob) => {
         '--target',
         directSheetTarget,
         '--concurrency',
-        String(job.concurrency),
+        String(concurrency),
         '--result-sheet',
         '--skip-dooray',
       ],

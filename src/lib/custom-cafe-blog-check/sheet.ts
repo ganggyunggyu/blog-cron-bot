@@ -1,4 +1,4 @@
-import { PRODUCT_SHEET_ID, TEST_CONFIG } from '../../constants';
+import { CAFE_SOURCE_CONFIG, TEST_CONFIG } from '../../constants';
 import type { CafeTarget } from '../cafe-exposure-check';
 import {
   getGoogleSheetAuth,
@@ -11,7 +11,6 @@ import type {
   CustomExposureInputRow,
 } from './types';
 
-const CAFE_SOURCE_TAB = '카페 발행스케줄';
 const text = (value: unknown): string => String(value ?? '').trim();
 const sourceIdFromUrl = (url: string): string =>
   url.match(/cafe\.naver\.com\/([^/?#]+)/i)?.[1]?.trim() ?? '';
@@ -30,6 +29,24 @@ export const CAFE_FALLBACK_TARGETS: CafeTarget[] = [
   { name: '건강 습관노트', ids: ['habitnote702'] },
   { name: '생활 정보마당', ids: ['infomadang702'] },
 ];
+
+export const buildCafeExposureTargetsFromValues = (
+  values: readonly unknown[][]
+): CafeTarget[] => {
+  const targets = new Map<string, CafeTarget>();
+  values.slice(1).forEach((row) => {
+    const displayName = text(row[14]);
+    [row[6], row[8]].forEach((value) => {
+      const sourceId = sourceIdFromUrl(text(value));
+      if (!sourceId || targets.has(sourceId)) return;
+      targets.set(sourceId, {
+        name: displayName || sourceId,
+        ids: [sourceId],
+      });
+    });
+  });
+  return Array.from(targets.values());
+};
 
 export const loadCustomExposureRows = async (
   targetTab: string
@@ -54,20 +71,20 @@ export const loadCustomExposureRows = async (
 };
 
 export const loadCafeExposureTargets = async (): Promise<CafeTarget[]> => {
-  const doc = await openSpreadsheet(PRODUCT_SHEET_ID, getGoogleSheetAuth());
-  const sheet = getWorksheetByTitle(doc, CAFE_SOURCE_TAB);
+  const doc = await openSpreadsheet(CAFE_SOURCE_CONFIG.SHEET_ID, getGoogleSheetAuth());
+  const sheet = getWorksheetByTitle(doc, CAFE_SOURCE_CONFIG.SHEET_NAME);
   await sheet.loadCells({
     startRowIndex: 0,
     endRowIndex: sheet.rowCount,
-    startColumnIndex: 14,
-    endColumnIndex: 16,
+    startColumnIndex: 6,
+    endColumnIndex: 15,
   });
-  const targets = Array.from({ length: sheet.rowCount }, (_, rowIndex) => ({
-    name: text(sheet.getCell(rowIndex, 14).value),
-    sourceId: sourceIdFromUrl(text(sheet.getCell(rowIndex, 15).value)),
-  }))
-    .filter(({ name, sourceId }) => name && sourceId)
-    .map(({ name, sourceId }) => ({ name, ids: [sourceId] }));
+  const values = Array.from({ length: sheet.rowCount }, (_, rowIndex) =>
+    Array.from({ length: 15 }, (_, columnIndex) =>
+      columnIndex < 6 ? '' : sheet.getCell(rowIndex, columnIndex).value
+    )
+  );
+  const targets = buildCafeExposureTargetsFromValues(values);
   return targets.length > 0 ? targets : CAFE_FALLBACK_TARGETS;
 };
 

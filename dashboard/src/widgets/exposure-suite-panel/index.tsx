@@ -128,7 +128,18 @@ export const ExposureSuitePanel = () => {
         <section className={cn('flex flex-col gap-2')}>
           {definition ? (
             <React.Fragment>
-              <NumberOption {...definition.concurrency} value={concurrency} description="각 실행 서버가 동시에 처리할 요청 수" onChange={setConcurrency} />
+              {isDistributed ? (
+                <div className={cn('rounded-lg border border-blue-100 bg-white/80 px-3 py-2 dark:border-blue-900 dark:bg-neutral-900/70')}>
+                  <p className={cn('text-sm font-medium text-neutral-800 dark:text-neutral-200')}>
+                    시트 내부 병렬 수
+                  </p>
+                  <p className={cn('mt-1 text-xs text-neutral-500 dark:text-neutral-400')}>
+                    원본의 유효 키워드 행 수에 맞춰 자동 실행
+                  </p>
+                </div>
+              ) : (
+                <NumberOption {...definition.concurrency} value={concurrency} description="각 실행 서버가 동시에 처리할 요청 수" onChange={setConcurrency} />
+              )}
               <NumberOption {...definition.maxPages} value={maxPages} description="애견·서리펫에만 적용 (도그마루는 1페이지)" onChange={setMaxPages} />
               <NumberOption {...definition.targetConcurrency} value={targetConcurrency} description={isDistributed ? '클라우드 워커가 없을 때 함께 처리할 예비 프로세스 수' : '동시에 시작할 대상 수'} onChange={setTargetConcurrency} />
             </React.Fragment>

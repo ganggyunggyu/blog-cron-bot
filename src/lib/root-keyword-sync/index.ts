@@ -1,6 +1,5 @@
 import { RootKeyword } from '../../database';
-import { ROOT_CONFIG, SHEET_APP_URL } from '../../constants';
-import { logger } from '../logger';
+import { ROOT_CONFIG } from '../../constants';
 import {
   getGoogleSheetAuth,
   getWorksheetById,
@@ -10,7 +9,6 @@ import {
 const STOP_KEYWORDS = ['자료 미전달', '지료 미전달', '미전달 리스트'];
 const MAX_ROWS = 1000;
 const MAX_COLUMNS = 26;
-const SYNC_TIMEOUT_MS = 10_000;
 
 export interface RootKeywordSyncRow {
   company: string;
@@ -27,7 +25,7 @@ export interface RootKeywordSyncRow {
 export interface RootKeywordSyncResult {
   deleted: number;
   inserted: number;
-  source: 'sheet-app' | 'google-sheets-direct';
+  source: 'google-sheets-direct';
 }
 
 const normalize = (value: unknown): string => String(value ?? '').trim();
@@ -113,6 +111,15 @@ export const parseRootKeywordRows = (
   });
 };
 
+export const isRootSourceSchemaMismatch = (error: unknown): boolean => {
+  const message = error instanceof Error ? error.message : String(error);
+  return (
+    message.includes('루트 원본 필수 컬럼') ||
+    message.includes('루트 원본 헤더') ||
+    message.includes('루트 원본에서 동기화할 키워드')
+  );
+};
+
 const syncDirectlyFromGoogleSheets = async (): Promise<RootKeywordSyncResult> => {
   const auth = getGoogleSheetAuth();
   const doc = await openSpreadsheet(ROOT_CONFIG.SHEET_ID, auth);
@@ -150,23 +157,5 @@ const syncDirectlyFromGoogleSheets = async (): Promise<RootKeywordSyncResult> =>
 };
 
 export const syncRootKeywordsFromSheet = async (): Promise<RootKeywordSyncResult> => {
-  try {
-    const response = await fetch(`${SHEET_APP_URL}/api/root-keywords/sync`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sheetId: ROOT_CONFIG.SHEET_ID }),
-      signal: AbortSignal.timeout(SYNC_TIMEOUT_MS),
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    const result = (await response.json()) as { deleted: number; inserted: number };
-    return { ...result, source: 'sheet-app' };
-  } catch (error) {
-    logger.warn(
-      `루트 시트 중계 동기화 실패(${(error as Error).message}), Google Sheets 직접 동기화로 전환`
-    );
-    return syncDirectlyFromGoogleSheets();
-  }
+  return syncDirectlyFromGoogleSheets();
 };
