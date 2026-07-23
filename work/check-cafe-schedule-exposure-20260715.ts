@@ -15,7 +15,7 @@ import { emitExposureProgress } from '../src/lib/exposure-progress';
 
 dotenv.config();
 
-const SHEET_ID = '1vrN5gvtokWxPs8CNaNcvZQLWyIMBOIcteYXQbyfiZl0';
+const SHEET_ID = '1aIKP9XnB20q8WWvwZzMNk2yM0waKZcQ1x6CtyM19HNw';
 const SHEET_TITLE = '카페 발행스케줄';
 // 카페 + 블로그(우리 블로그 전부) 둘 중 하나라도 노출되면 "노출"로 판정한다.
 const RETRY_FAILED_ONLY = process.env.RETRY_FAILED_ONLY === 'true';

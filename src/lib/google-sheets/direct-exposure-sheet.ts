@@ -98,6 +98,19 @@ export const getWorksheetByTitle = (
   return sheet;
 };
 
+export const getWorksheetById = (
+  doc: GoogleSpreadsheet,
+  sheetId: number
+): GoogleSpreadsheetWorksheet => {
+  const sheet = doc.sheetsById[sheetId];
+
+  if (!sheet) {
+    throw new Error(`gid=${sheetId} 탭을 찾을 수 없음`);
+  }
+
+  return sheet;
+};
+
 const HEADER_ROW_SCAN_LIMIT = 10;
 
 /**

@@ -3,7 +3,7 @@ import { ROOT_CONFIG, SHEET_APP_URL } from '../../constants';
 import { logger } from '../logger';
 import {
   getGoogleSheetAuth,
-  getWorksheetByTitle,
+  getWorksheetById,
   openSpreadsheet,
 } from '../google-sheets/direct-exposure-sheet';
 
@@ -116,7 +116,7 @@ export const parseRootKeywordRows = (
 const syncDirectlyFromGoogleSheets = async (): Promise<RootKeywordSyncResult> => {
   const auth = getGoogleSheetAuth();
   const doc = await openSpreadsheet(ROOT_CONFIG.SHEET_ID, auth);
-  const sheet = getWorksheetByTitle(doc, ROOT_CONFIG.SHEET_NAMES.PACKAGE);
+  const sheet = getWorksheetById(doc, ROOT_CONFIG.SHEET_GID);
   const rowCount = Math.min(sheet.rowCount, MAX_ROWS);
   const columnCount = Math.min(sheet.columnCount, MAX_COLUMNS);
 

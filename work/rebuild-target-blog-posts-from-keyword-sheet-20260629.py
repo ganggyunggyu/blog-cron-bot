@@ -15,7 +15,7 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
 
-SOURCE_SPREADSHEET_ID = "1CsO-R1LMrsQdUw7T1KEL2I4bMxAeYnZIklOgr8e_DPY"
+SOURCE_SPREADSHEET_ID = "1Cgn-CFMEobWpwhdmrJxVKgVLMblGQ_JEX4xVpXS4_ZA"
 SOURCE_SHEETS = [
     ("월보장 시트", "0"),
     ("건바이 노출 시트", "2026584527"),

@@ -13,7 +13,7 @@ import { assertWritableSheetId } from '../src/lib/google-sheets/write-target-gua
 
 dotenv.config();
 
-const SOURCE_SHEET_ID = '1vrN5gvtokWxPs8CNaNcvZQLWyIMBOIcteYXQbyfiZl0';
+const SOURCE_SHEET_ID = '1aIKP9XnB20q8WWvwZzMNk2yM0waKZcQ1x6CtyM19HNw';
 const SOURCE_GID = 126285763;
 const SOURCE_TITLE = '카페 발행스케줄';
 const TARGET_SHEET_ID = '1T9PHu-fH6HPmyYA9dtfXaDLm20XAPN-9mzlE2QTPkF0';
