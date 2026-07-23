@@ -1,7 +1,7 @@
 export const SHEET_APP_URL =
   process.env.SHEET_APP_URL || 'http://localhost:3000';
 
-export const PRODUCT_SHEET_ID = '1vrN5gvtokWxPs8CNaNcvZQLWyIMBOIcteYXQbyfiZl0';
+export const PRODUCT_SHEET_ID = '1aIKP9XnB20q8WWvwZzMNk2yM0waKZcQ1x6CtyM19HNw';
 
 export const SHEET_TYPE = {
   PACKAGE: 'package',
@@ -80,7 +80,8 @@ export const ALIBABA_CONFIG = {
 } as const;
 
 export const ROOT_CONFIG = {
-  SHEET_ID: '1CsO-R1LMrsQdUw7T1KEL2I4bMxAeYnZIklOgr8e_DPY',
+  SHEET_ID: '1Cgn-CFMEobWpwhdmrJxVKgVLMblGQ_JEX4xVpXS4_ZA',
+  SHEET_GID: 1928230154,
 
   SHEET_NAMES: {
     PACKAGE: '월보장 시트',
