@@ -31,8 +31,11 @@ export const shouldExclude = (company: string, keyword?: string): boolean => {
 
 export const getVendorTarget = (
   keywordDoc: any,
-  restaurantName: string
+  restaurantName: string,
+  matchByBlogIdOnly = false
 ): string => {
+  if (matchByBlogIdOnly) return '';
+
   const companyRaw = String((keywordDoc as any).company || '').trim();
   const sheetTypeCanon = normalizeSheetType(
     (keywordDoc as any).sheetType || ''

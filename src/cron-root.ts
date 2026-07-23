@@ -134,6 +134,12 @@ const runRootWorkflow = async (): Promise<void> => {
   }
 
   const logBuilder = createDetailedLogBuilder();
+  const matchByBlogIdOnly = ['true', '1'].includes(
+    String(process.env.ROOT_BLOG_ONLY_MATCH ?? '').toLowerCase()
+  );
+  if (matchByBlogIdOnly) {
+    logger.info('🎯 루트 업체명 필터 생략: 등록 블로그 ID만으로 노출 판정');
+  }
 
   const allResults = await processKeywords(keywords, logBuilder, {
     updateFunction: updateRootKeywordResult,
@@ -141,6 +147,7 @@ const runRootWorkflow = async (): Promise<void> => {
     maxPages,
     concurrency,
     allowAnyBlog: false,
+    matchByBlogIdOnly,
   });
 
   if (isDistributedShard) {
