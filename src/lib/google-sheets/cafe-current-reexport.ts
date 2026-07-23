@@ -1,5 +1,5 @@
 import type { GoogleSpreadsheetWorksheet } from 'google-spreadsheet';
-import { TEST_CONFIG } from '../../constants';
+import { PRODUCT_SHEET_ID, TEST_CONFIG } from '../../constants';
 import {
   buildCafeScheduleExportRows,
   type CafeScheduleCheckRow,
@@ -14,7 +14,7 @@ import {
 } from './direct-exposure-sheet';
 import { assertWritableSheetId } from './write-target-guard';
 
-const SOURCE_SHEET_ID = '1vrN5gvtokWxPs8CNaNcvZQLWyIMBOIcteYXQbyfiZl0';
+const SOURCE_SHEET_ID = PRODUCT_SHEET_ID;
 const SOURCE_SHEET_NAME = '카페 발행스케줄';
 const TARGET_SHEET_ID = TEST_CONFIG.SHEET_ID;
 const TARGET_SHEET_NAME = '카페노출체크';
