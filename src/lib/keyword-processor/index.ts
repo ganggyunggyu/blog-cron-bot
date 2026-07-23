@@ -511,7 +511,8 @@ const runKeywordGroupsWithConcurrency = async (
 
 const retryTransientKeywordGroups = async (
   retryBatches: readonly TransientKeywordRetryBatch[],
-  shared: SharedProcessContext
+  shared: SharedProcessContext,
+  concurrency: number
 ): Promise<void> => {
   if (retryBatches.length === 0) return;
 
@@ -519,11 +520,16 @@ const retryTransientKeywordGroups = async (
     (sum, batch) => sum + batch.tasks.length,
     0
   );
+  const retryConcurrency =
+    process.env.FAST_EXPOSURE_MODE === 'true'
+      ? Math.min(getEffectiveConcurrency(concurrency), retryBatches.length)
+      : 1;
   logger.warn(
-    `일시 실패 검색어 ${retryKeywordCount}건을 키워드당 병렬 1로 재실행합니다.`
+    `일시 실패 검색어 ${retryKeywordCount}건을 검색어 그룹 ${retryConcurrency}개씩 재실행합니다.`
   );
 
-  for (const batch of retryBatches) {
+  let nextBatchIndex = 0;
+  const retryBatch = async (batch: TransientKeywordRetryBatch): Promise<void> => {
     logger.warn(
       `↻ "${batch.searchQuery}" 남은 ${batch.tasks.length}건 재실행 (${batch.error.message})`
     );
@@ -547,7 +553,17 @@ const retryTransientKeywordGroups = async (
         break;
       }
     }
-  }
+  };
+
+  await Promise.all(
+    Array.from({ length: retryConcurrency }, async () => {
+      while (nextBatchIndex < retryBatches.length) {
+        const batchIndex = nextBatchIndex;
+        nextBatchIndex += 1;
+        await retryBatch(retryBatches[batchIndex]);
+      }
+    })
+  );
 };
 
 export const processKeywords = async (
@@ -656,7 +672,7 @@ export const processKeywords = async (
         concurrency,
         shared
       );
-      await retryTransientKeywordGroups(retryBatches, shared);
+      await retryTransientKeywordGroups(retryBatches, shared, concurrency);
     }
   }
 
