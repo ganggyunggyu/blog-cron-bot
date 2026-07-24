@@ -23,6 +23,7 @@ export const CAFE_FALLBACK_TARGETS: CafeTarget[] = [
   { name: '맛집 동네밥상', ids: ['localtable702'] },
   { name: '맛집 메뉴수첩', ids: ['menunote702'] },
   { name: '맛집 식탁모임', ids: ['tableclub702'] },
+  { name: '맛집 메뉴토크', ids: ['mealtalkdht'] },
   { name: '애견 반려정보', ids: ['petinfo183'] },
   { name: '애견 산책이야기', ids: ['dogwalk2m4'] },
   { name: '건강 생활수첩', ids: ['carelog702'] },
@@ -84,8 +85,28 @@ export const loadCafeExposureTargets = async (): Promise<CafeTarget[]> => {
       columnIndex < 6 ? '' : sheet.getCell(rowIndex, columnIndex).value
     )
   );
-  const targets = buildCafeExposureTargetsFromValues(values);
-  return targets.length > 0 ? targets : CAFE_FALLBACK_TARGETS;
+  const sheetTargets = buildCafeExposureTargetsFromValues(values);
+  return mergeCafeTargets(sheetTargets, CAFE_FALLBACK_TARGETS);
+};
+
+/**
+ * 시트에서 읽은 카페와 기본 보유 카페 목록을 카페 id 기준으로 합침. 시트에 카페가 있어도
+ * 기본 목록(위대한 그룹 등)을 통째로 버리지 않도록 union으로 처리하고, 같은 id는 시트 쪽
+ * 이름을 우선한다.
+ */
+export const mergeCafeTargets = (
+  sheetTargets: readonly CafeTarget[],
+  fallbackTargets: readonly CafeTarget[]
+): CafeTarget[] => {
+  const byId = new Map<string, CafeTarget>();
+  [...sheetTargets, ...fallbackTargets].forEach(({ name, ids }) => {
+    (ids ?? []).forEach((id) => {
+      const trimmed = id.trim();
+      if (!trimmed || byId.has(trimmed)) return;
+      byId.set(trimmed, { name, ids: [trimmed] });
+    });
+  });
+  return Array.from(byId.values());
 };
 
 export const writeCustomExposureResults = async (
