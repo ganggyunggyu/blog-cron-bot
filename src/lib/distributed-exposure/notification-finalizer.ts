@@ -36,7 +36,7 @@ export const finalizeDistributedDirectNotification = async (
   );
   const exposed = keywords.filter(({ visibility }) => visibility);
   const sent = await sendDoorayExposureResult({
-    cronType: `${definition.label} (직접병렬)`,
+    cronType: definition.label,
     totalKeywords: keywords.length,
     exposureCount: exposed.length,
     popularCount: exposed.filter(
