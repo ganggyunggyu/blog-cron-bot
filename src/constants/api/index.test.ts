@@ -9,8 +9,8 @@ import {
 } from './index';
 
 assert.equal(PRODUCT_SHEET_ID, '1aIKP9XnB20q8WWvwZzMNk2yM0waKZcQ1x6CtyM19HNw');
-assert.equal(ROOT_CONFIG.SHEET_ID, '1Cgn-CFMEobWpwhdmrJxVKgVLMblGQ_JEX4xVpXS4_ZA');
-assert.equal(ROOT_CONFIG.SHEET_GID, 1928230154);
+assert.equal(ROOT_CONFIG.SHEET_ID, '1CsO-R1LMrsQdUw7T1KEL2I4bMxAeYnZIklOgr8e_DPY');
+assert.equal(ROOT_CONFIG.SHEET_GID, 0);
 assert.equal(CAFE_SOURCE_CONFIG.SHEET_ID, PRODUCT_SHEET_ID);
 assert.equal(CAFE_SOURCE_CONFIG.SHEET_GID, 250477480);
 assert.equal(CAFE_SOURCE_CONFIG.SHEET_NAME, '카페 작업');
@@ -31,9 +31,9 @@ assert.equal(EXPOSURE_SHEET_LOCATIONS.일반건.tabTitle, '도그마루 제외')
 assert.equal(EXPOSURE_SHEET_LOCATIONS.패키지.tabTitle, '패키지');
 assert.equal(EXPOSURE_SHEET_LOCATIONS.도그마루.tabTitle, '도그마루');
 
-// 루트는 별도 스프레드시트(ROOT_CONFIG)의 신규 대윤기획 원본을 봐야 함.
+// 루트는 별도 스프레드시트(ROOT_CONFIG)의 "월보장 시트" 읽기 전용 원본을 봐야 함.
 assert.equal(EXPOSURE_SHEET_LOCATIONS.루트.sheetId, ROOT_CONFIG.SHEET_ID);
-assert.equal(EXPOSURE_SHEET_LOCATIONS.루트.tabTitle, '2l1ab 최적화 블로그 스케쥴');
+assert.equal(EXPOSURE_SHEET_LOCATIONS.루트.tabTitle, '월보장 시트');
 assert.notEqual(EXPOSURE_SHEET_LOCATIONS.루트.sheetId, PRODUCT_SHEET_ID);
 
 assert.equal(EXPOSURE_SHEET_LOCATIONS.카페.sheetId, PRODUCT_SHEET_ID);

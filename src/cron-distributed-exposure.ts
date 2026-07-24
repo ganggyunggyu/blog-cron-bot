@@ -144,21 +144,46 @@ const main = async (): Promise<void> => {
 
     const pageTargets = options.targets.filter(isDistributedPageTarget);
     const elapsedTime = `${Math.floor((Date.now() - startedAt) / 1000)}초`;
+    const finalizeFailures: string[] = [];
+
+    const runFinalizeStep = async (
+      label: string,
+      step: () => Promise<void>
+    ): Promise<void> => {
+      try {
+        await step();
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        logger.error(`${label} 마무리 실패: ${message}`);
+        finalizeFailures.push(`${label}: ${message}`);
+      }
+    };
+
     if (options.targets.includes('root')) {
-      await finalizeDistributedRootTarget(elapsedTime);
+      await runFinalizeStep('루트', () => finalizeDistributedRootTarget(elapsedTime));
     }
     for (const target of pageTargets) {
-      await exportSheetAPI(target);
-      await finalizeDistributedPageTarget(target, elapsedTime);
+      await runFinalizeStep(`${target} 내보내기`, () => exportSheetAPI(target));
+      await runFinalizeStep(`${target} 결과 반영`, () =>
+        finalizeDistributedPageTarget(target, elapsedTime)
+      );
     }
     if (pageTargets.length > 0) {
       logger.info('[다중워커] 애견·서리펫 개별 결과 탭 직접 반영 완료');
     }
     for (const target of options.targets.filter(isDistributedDirectTarget)) {
-      await finalizeDistributedDirectNotification(target, elapsedTime);
+      await runFinalizeStep(target, () =>
+        finalizeDistributedDirectNotification(target, elapsedTime)
+      );
     }
     if (options.targets.includes('cafe')) {
-      await finalizeDistributedCafeNotification(elapsedTime);
+      await runFinalizeStep('카페', () => finalizeDistributedCafeNotification(elapsedTime));
+    }
+
+    if (finalizeFailures.length > 0) {
+      throw new Error(
+        `일부 대상 마무리 실패 (${finalizeFailures.length}건): ${finalizeFailures.join(' / ')}`
+      );
     }
 
     await finishDistributedRun(runId, 'success');

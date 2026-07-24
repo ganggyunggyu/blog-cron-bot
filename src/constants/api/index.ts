@@ -80,14 +80,14 @@ export const ALIBABA_CONFIG = {
 } as const;
 
 export const ROOT_CONFIG = {
-  SHEET_ID: '1Cgn-CFMEobWpwhdmrJxVKgVLMblGQ_JEX4xVpXS4_ZA',
-  SHEET_GID: 1928230154,
+  SHEET_ID: '1CsO-R1LMrsQdUw7T1KEL2I4bMxAeYnZIklOgr8e_DPY',
+  SHEET_GID: 0,
 
   SHEET_NAMES: {
-    PACKAGE: '2l1ab 최적화 블로그 스케쥴',
+    PACKAGE: '월보장 시트',
   },
   LABELS: {
-    PACKAGE: '2l1ab 최적화 블로그 스케쥴',
+    PACKAGE: '월보장 시트',
   },
 };
 
