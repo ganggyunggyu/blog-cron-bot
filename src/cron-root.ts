@@ -16,7 +16,7 @@ import { sendDoorayExposureResult } from './lib/dooray';
 import { autoLogin } from './tools/auto-login';
 import { closeBrowser, launchBrowser } from './lib/playwright-crawler';
 import {
-  getExposureConcurrency,
+  getFullKeywordParallelism,
   getExposureMaxPages,
 } from './lib/exposure-run-config';
 import { rewriteOrderedResultSheet } from './lib/google-sheets/ordered-result-sheet';
@@ -120,13 +120,15 @@ const runRootWorkflow = async (): Promise<void> => {
     : 0;
 
   const keywords = filtered.slice(startIndex);
-  const concurrency = getExposureConcurrency();
+  const { concurrency, keywordBatchSize } = getFullKeywordParallelism(
+    keywords.length
+  );
   const maxPages = getExposureMaxPages(1);
   logger.info(
     `📋 루트 키워드 ${keywords.length}개 처리 예정 (필터 applied, start=${startIndex})`
   );
   logger.info(
-    `⚡ 키워드 동시 처리: 최대 ${concurrency}개 / 최대 ${maxPages}페이지`
+    `⚡ 전체 키워드 병렬 처리: ${concurrency}개 / 최대 ${maxPages}페이지`
   );
   logger.info('🔐 루트 판정 기준: 등록 블로그 계정 ID (업체명 검사 생략)');
   logger.blank();
@@ -143,6 +145,7 @@ const runRootWorkflow = async (): Promise<void> => {
     isLoggedIn: loginStatus.isLoggedIn,
     maxPages,
     concurrency,
+    keywordBatchSize,
     blogIds: [...BLOG_IDS],
     allowAnyBlog: false,
     matchByBlogIdOnly: true,

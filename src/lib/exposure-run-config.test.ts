@@ -4,6 +4,7 @@ import {
   getExposureKeywordBatchSize,
   getExposureMaxPages,
   getExposureRetryDelayMs,
+  getFullKeywordParallelism,
   getGuestRetryAttempts,
   getLoginRetryAttempts,
   splitConcurrencyBudget,
@@ -60,6 +61,14 @@ assert.equal(
   getExposureRetryDelayMs(60_000, { EXPOSURE_RETRY_DELAY_MS: '1500' }),
   1_500
 );
+assert.deepEqual(getFullKeywordParallelism(191), {
+  concurrency: 191,
+  keywordBatchSize: 191,
+});
+assert.deepEqual(getFullKeywordParallelism(0), {
+  concurrency: 1,
+  keywordBatchSize: 1,
+});
 
 assert.deepEqual(splitConcurrencyBudget(6, 1), {
   taskConcurrency: 1,

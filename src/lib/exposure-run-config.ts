@@ -96,6 +96,24 @@ export interface ConcurrencyBudget {
   perTaskConcurrency: number;
 }
 
+export interface FullKeywordParallelism {
+  concurrency: number;
+  keywordBatchSize: number;
+}
+
+export const getFullKeywordParallelism = (
+  keywordCount: number
+): FullKeywordParallelism => {
+  const normalizedKeywordCount = Number.isFinite(keywordCount)
+    ? Math.max(1, Math.floor(keywordCount))
+    : 1;
+
+  return {
+    concurrency: normalizedKeywordCount,
+    keywordBatchSize: normalizedKeywordCount,
+  };
+};
+
 export const splitConcurrencyBudget = (
   totalConcurrency: number,
   taskCount: number

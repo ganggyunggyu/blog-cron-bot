@@ -649,7 +649,9 @@ export const processKeywords = async (
     }
   } else {
     const groups = groupKeywordsBySearchQuery(keywords);
-    const keywordBatchSize = getExposureKeywordBatchSize();
+    const keywordBatchSize = getEffectiveConcurrency(
+      options?.keywordBatchSize ?? getExposureKeywordBatchSize()
+    );
     const groupBatches = chunkByItemBudget(
       groups,
       keywordBatchSize,
