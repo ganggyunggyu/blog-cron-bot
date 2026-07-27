@@ -5,7 +5,6 @@ import {
   resolveKeywordConcurrency,
   resolveTargetCommand,
 } from '../exposure-suite/options';
-import { DEFAULT_EXPOSURE_CONCURRENCY } from '../exposure-run-config';
 import type { ExposureTargetId } from '../exposure-suite/options';
 import { getDistributedJobTimeoutMs } from './job-timeout';
 import type { IDistributedExposureJob } from './models';
@@ -24,11 +23,8 @@ export const resolveDistributedWorkerConcurrency = (
   configuredConcurrency: number,
   keywordCount = 0
 ): number =>
-  configuredConcurrency === AUTO_KEYWORD_CONCURRENCY && target === 'pet'
+  configuredConcurrency === AUTO_KEYWORD_CONCURRENCY && keywordCount > 0
     ? Math.max(1, keywordCount)
-    : configuredConcurrency === AUTO_KEYWORD_CONCURRENCY &&
-        target === 'suripet'
-      ? DEFAULT_EXPOSURE_CONCURRENCY
     : resolveKeywordConcurrency(configuredConcurrency);
 
 export const stopWorkerChild = (child: ChildProcess): void => {
