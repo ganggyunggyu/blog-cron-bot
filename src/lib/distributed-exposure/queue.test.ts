@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
-import { buildDistributedJobClaimQuery } from './queue';
+import {
+  buildDistributedJobClaimQuery,
+  buildDistributedJobReleaseFields,
+} from './queue';
 import { getDistributedJobMaxAttempts } from './run-store';
 
 const now = new Date('2026-07-27T00:00:00.000Z');
@@ -33,5 +36,17 @@ assert.deepEqual(query.$and[1], {
 assert.equal(getDistributedJobMaxAttempts('pet'), 60);
 assert.equal(getDistributedJobMaxAttempts('suripet'), 60);
 assert.equal(getDistributedJobMaxAttempts('root'), 3);
+assert.deepEqual(buildDistributedJobReleaseFields(true, ['keyword-1']), {
+  leaseUntil: 1,
+  workerId: 1,
+  egressIp: 1,
+});
+assert.deepEqual(buildDistributedJobReleaseFields(true), {
+  leaseUntil: 1,
+});
+assert.deepEqual(buildDistributedJobReleaseFields(false, ['keyword-1']), {
+  leaseUntil: 1,
+  workerId: 1,
+});
 
 process.stdout.write('distributed queue tests passed\n');
