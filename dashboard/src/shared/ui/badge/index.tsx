@@ -3,15 +3,23 @@ import { cn } from '@/shared/lib/cn';
 
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   tone?: 'success' | 'warning' | 'danger' | 'neutral';
+  withDot?: boolean;
 }
 
-export const Badge = ({ tone = 'neutral', className, ...props }: BadgeProps) => {
+const DOT_TONE: Record<NonNullable<BadgeProps['tone']>, string> = {
+  success: 'bg-emerald-500',
+  warning: 'bg-amber-500',
+  danger: 'bg-red-500',
+  neutral: 'bg-neutral-400',
+};
+
+export const Badge = ({ tone = 'neutral', withDot = false, className, children, ...props }: BadgeProps) => {
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
+        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium',
         tone === 'success' &&
-          'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
+          'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300',
         tone === 'warning' &&
           'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
         tone === 'danger' &&
@@ -21,6 +29,9 @@ export const Badge = ({ tone = 'neutral', className, ...props }: BadgeProps) => 
         className,
       )}
       {...props}
-    />
+    >
+      {withDot ? <span className={cn('size-1.5 shrink-0 rounded-full', DOT_TONE[tone])} /> : null}
+      {children}
+    </span>
   );
 };

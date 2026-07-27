@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Play, RotateCw, Square } from 'lucide-react';
-import { Badge, Button, Card, cn, formatBytes, formatUptime } from '@/shared';
+import { Play, RotateCw, Server, Square } from 'lucide-react';
+import { Badge, Button, Card, SectionHeader, cn, formatBytes, formatUptime } from '@/shared';
 import { useDaemonAction, useDaemonStatusList } from '@/entities/pm2-process';
 import type { DaemonAction, DaemonStatus } from '@/entities/pm2-process';
 
@@ -41,39 +41,32 @@ const DaemonRow = ({ daemon }: DaemonRowProps) => {
   };
 
   return (
-    <div className="flex flex-col gap-3 border-b border-neutral-100 py-3 last:border-0 sm:flex-row sm:items-center sm:justify-between dark:border-neutral-800">
-      <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-3 rounded-xl border border-neutral-200 p-3.5 dark:border-neutral-800">
+      <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
+          <span className={cn('size-2 shrink-0 rounded-full', isOnline ? 'bg-emerald-500' : 'bg-neutral-400')} />
           <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
             {DAEMON_LABELS[daemon.name] ?? daemon.name}
           </span>
-          <Badge tone={STATUS_TONE[daemon.status] ?? 'neutral'}>{daemon.status}</Badge>
         </div>
-        <span className="text-xs text-neutral-500 dark:text-neutral-400">
-          {DAEMON_SCHEDULE_LABELS[daemon.name] ?? '-'} 실행 · PID {daemon.pid ?? '-'} · 가동{' '}
-          {formatUptime(daemon.uptimeMs)} · 메모리 {formatBytes(daemon.memoryBytes)} · 실행 횟수{' '}
-          {daemon.restarts ?? '-'}회
-        </span>
+        <Badge tone={STATUS_TONE[daemon.status] ?? 'neutral'}>{daemon.status}</Badge>
       </div>
+      <p className="text-xs leading-5 text-neutral-500 dark:text-neutral-400">
+        {DAEMON_SCHEDULE_LABELS[daemon.name] ?? '-'} 실행 · PID {daemon.pid ?? '-'} · 가동{' '}
+        {formatUptime(daemon.uptimeMs)} · 메모리 {formatBytes(daemon.memoryBytes)} · 실행 횟수{' '}
+        {daemon.restarts ?? '-'}회
+      </p>
       <div className="flex items-center gap-2">
-        <Button
-          variant="secondary"
-          disabled={isOnline || isBusy}
-          onClick={() => handleAction('start')}
-        >
-          <Play className="size-4" />
+        <Button size="sm" variant="secondary" disabled={isOnline || isBusy} onClick={() => handleAction('start')}>
+          <Play className="size-3.5" />
           시작
         </Button>
-        <Button
-          variant="danger"
-          disabled={!isOnline || isBusy}
-          onClick={() => handleAction('stop')}
-        >
-          <Square className="size-4" />
+        <Button size="sm" variant="danger" disabled={!isOnline || isBusy} onClick={() => handleAction('stop')}>
+          <Square className="size-3.5" />
           중지
         </Button>
-        <Button variant="secondary" disabled={isBusy} onClick={() => handleAction('restart')}>
-          <RotateCw className={cn('size-4', isBusy && 'animate-spin')} />
+        <Button size="sm" variant="secondary" disabled={isBusy} onClick={() => handleAction('restart')}>
+          <RotateCw className={cn('size-3.5', isBusy && 'animate-spin')} />
           재시작
         </Button>
       </div>
@@ -86,9 +79,7 @@ export const DaemonStatusPanel = () => {
 
   return (
     <Card>
-      <h2 className="mb-3 text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-        PM2 데몬 상태
-      </h2>
+      <SectionHeader icon={Server} title="PM2 데몬 상태" description="예약 스케줄러 프로세스 관리" />
       {isLoading ? (
         <p className="text-sm text-neutral-500 dark:text-neutral-400">불러오는 중...</p>
       ) : null}
@@ -98,7 +89,7 @@ export const DaemonStatusPanel = () => {
         </p>
       ) : null}
       {data ? (
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-2.5">
           {data.map((daemon) => (
             <DaemonRow key={daemon.name} daemon={daemon} />
           ))}
