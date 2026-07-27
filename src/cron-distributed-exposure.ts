@@ -144,24 +144,33 @@ const main = async (): Promise<void> => {
       ({ status }) => status === 'success'
     );
     const workerNetworks = new Map<string, string>();
-    successfulJobs.forEach(({ workerId, egressIp }) => {
+    const networkWarnings: string[] = [];
+    successfulJobs.forEach(({ target, workerId, egressIp }) => {
       if (!workerId || !egressIp) {
-        throw new Error('완료 작업에 워커 또는 외부 IP 기록이 없음');
+        networkWarnings.push(`${target}: 워커 또는 외부 IP 기록 없음`);
+        return;
       }
       const previousIp = workerNetworks.get(workerId);
       if (previousIp && previousIp !== egressIp) {
-        throw new Error(`${workerId} 외부 IP가 실행 중 변경됨`);
+        networkWarnings.push(`${workerId} 외부 IP가 실행 중 변경됨`);
       }
       workerNetworks.set(workerId, egressIp);
     });
     const workerIps = Array.from(workerNetworks.values());
     if (workerNetworks.size !== successfulJobs.length) {
-      throw new Error(
+      networkWarnings.push(
         `시트당 전용 워커 불일치: 작업 ${successfulJobs.length}개 / 워커 ${workerNetworks.size}개`
       );
     }
     if (new Set(workerIps).size !== workerIps.length) {
-      throw new Error('서로 다른 워커가 같은 외부 IP를 사용함');
+      networkWarnings.push('서로 다른 워커가 같은 외부 IP를 사용함');
+    }
+
+    // IP 분리는 차단 예방용 위생 점검이지 결과 정합성 조건이 아니다. 예전에는 여기서
+    // throw해서, 크롤이 멀쩡히 끝난 대상까지 시트 반영과 Dooray가 전부 스킵됐다.
+    // 경고로 남기고 마무리는 그대로 진행하되, 최종 보고에는 포함한다.
+    if (networkWarnings.length > 0) {
+      logger.warn(`[다중워커] 외부 IP 점검 경고: ${networkWarnings.join(' / ')}`);
     }
     logger.info(
       `[다중워커] 외부 IP 분리 확인: ${Array.from(workerNetworks.entries())
@@ -213,11 +222,14 @@ const main = async (): Promise<void> => {
         ? `${outcome.timedOut ? '제한 시간 초과' : '크롤 실패'} ${outcome.unfinishedTargets.length}개(${outcome.unfinishedTargets.join(', ')}) — ${outcome.failureDetail}`
         : '';
 
-    if (crawlFailure || finalizeFailures.length > 0) {
+    if (crawlFailure || finalizeFailures.length > 0 || networkWarnings.length > 0) {
       const reasons = [
         ...(crawlFailure ? [crawlFailure] : []),
         ...(finalizeFailures.length > 0
           ? [`마무리 실패 ${finalizeFailures.length}건: ${finalizeFailures.join(' / ')}`]
+          : []),
+        ...(networkWarnings.length > 0
+          ? [`외부 IP 점검 경고: ${networkWarnings.join(' / ')}`]
           : []),
       ];
       logger.info(
