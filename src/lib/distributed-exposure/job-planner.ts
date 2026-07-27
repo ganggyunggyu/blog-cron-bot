@@ -11,7 +11,6 @@ import {
   syncRootKeywordsFromSheet,
 } from '../root-keyword-sync';
 import type { DistributedJobInput } from './queue';
-import { buildPageKeywordShards } from './page-shards';
 
 export const isDistributedPageTarget = (
   target: ExposureTargetId
@@ -28,7 +27,10 @@ const toSingleSheetJob = (
   keywordIds,
 });
 
-const PAGE_SHARD_SIZE = 50;
+export const buildPageTargetJobs = (
+  target: Extract<PageCheckSheetType, 'pet' | 'suripet'>,
+  keywordIds: string[]
+): DistributedJobInput[] => [toSingleSheetJob(target, keywordIds)];
 
 export const prepareDistributedJobs = async (
   targets: ExposureTargetId[]
@@ -68,21 +70,14 @@ export const prepareDistributedJobs = async (
     await importSheetAPI(target);
     const keywords = await getPageCheckKeywords(target);
     if (keywords.length === 0) throw new Error(`${target} 처리 키워드가 없음`);
-    const keywordShards =
-      targets.length === 1
-        ? buildPageKeywordShards(keywords, PAGE_SHARD_SIZE)
-        : [keywords.map(({ _id }) => String(_id))];
     logger.info(
-      `[다중워커] ${target} ${keywords.length}개 → ` +
-        `전용 서버 ${keywordShards.length}개 동시 작업`
+      `[다중워커] ${target} ${keywords.length}개 → 전용 서버 1개 작업`
     );
     jobs.push(
-      ...keywordShards.map((keywordIds, shardIndex) => ({
+      ...buildPageTargetJobs(
         target,
-        shardIndex,
-        shardCount: keywordShards.length,
-        keywordIds,
-      }))
+        keywords.map(({ _id }) => String(_id))
+      )
     );
   }
 
