@@ -4,7 +4,8 @@ import dotenv from 'dotenv';
 import os from 'os';
 import { main as runCrawl } from './index';
 import { requests, importRes } from './constants';
-import { syncKeywords, importKeywords } from './api';
+import { importKeywords } from './api';
+import { syncKeywordsFromSourceSheet } from './lib/sheet-keyword-sync';
 import { logger } from './lib/logger';
 
 dotenv.config();
@@ -30,9 +31,9 @@ async function runFullWorkflow() {
 
   try {
     logger.step(1, 3, 'DB 동기화');
-    await syncKeywords(requests[0]);
-    await syncKeywords(requests[1]);
-    await syncKeywords(requests[2]);
+    await syncKeywordsFromSourceSheet(requests[0]);
+    await syncKeywordsFromSourceSheet(requests[1]);
+    await syncKeywordsFromSourceSheet(requests[2]);
     logger.step(1, 3, 'DB 동기화', 'done');
 
     logger.step(2, 3, '노출 체크');

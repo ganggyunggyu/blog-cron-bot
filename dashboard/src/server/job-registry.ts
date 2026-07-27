@@ -11,6 +11,7 @@ export interface JobDefinition {
   id: string;
   label: string;
   script: string;
+  args?: string[];
   description: string;
   riskNote?: string;
   kind: JobKind;
@@ -19,11 +20,31 @@ export interface JobDefinition {
   executionMode?: ExposureExecutionMode;
 }
 
+/**
+ * 대상 1개짜리 개별 노출체크가 실행할 명령을 고른다.
+ *
+ * 로컬 스크립트(cron:sheet, cron:pages 등)는 이 레포에 존재하지 않는 외부 시트 API
+ * (SHEET_APP_URL / PAGE_CHECK_API)에 의존해서 원격 배포 환경에서는 항상 실패한다.
+ * 분산 실행이 켜져 있으면 전체 실행과 똑같이 검증된 분산 러너로 보내, 개별 실행도
+ * 원본 시트를 직접 읽고 결과 반영과 Dooray 전송까지 같은 경로로 처리하게 한다.
+ */
+const resolveTargetJobCommand = (
+  target: string,
+  localScript: string,
+  extraArgs: readonly string[] = [],
+): Pick<JobDefinition, 'script' | 'args'> =>
+  IS_DISTRIBUTED_EXPOSURE_ENABLED
+    ? {
+        script: 'exposure:distributed',
+        args: [`--targets=${target}`, ...extraArgs],
+      }
+    : { script: localScript };
+
 export const JOB_REGISTRY: JobDefinition[] = [
   {
     id: 'package-exposure',
     label: '패키지 노출체크',
-    script: 'exposure:package',
+    ...resolveTargetJobCommand('package', 'exposure:package'),
     description: '패키지 노출을 확인하고 결과 시트와 알림까지 처리',
     kind: 'standard',
     resourceGroup: 'exposure',
@@ -31,7 +52,7 @@ export const JOB_REGISTRY: JobDefinition[] = [
   {
     id: 'general-exposure',
     label: '일반건 노출체크',
-    script: 'exposure:general',
+    ...resolveTargetJobCommand('general', 'exposure:general'),
     description: '도그마루를 제외한 일반건 노출을 확인',
     kind: 'standard',
     resourceGroup: 'exposure',
@@ -39,7 +60,7 @@ export const JOB_REGISTRY: JobDefinition[] = [
   {
     id: 'dogmaru-exposure',
     label: '도그마루 노출체크',
-    script: 'exposure:dogmaru',
+    ...resolveTargetJobCommand('dogmaru', 'exposure:dogmaru'),
     description: '도그마루 전용 노출을 확인',
     kind: 'standard',
     resourceGroup: 'exposure',
@@ -47,7 +68,7 @@ export const JOB_REGISTRY: JobDefinition[] = [
   {
     id: 'root-exposure',
     label: '루트 노출체크',
-    script: 'cron:root',
+    ...resolveTargetJobCommand('root', 'cron:root'),
     description: '루트 키워드 전용 노출을 확인',
     kind: 'standard',
     resourceGroup: 'exposure',
@@ -64,7 +85,7 @@ export const JOB_REGISTRY: JobDefinition[] = [
   {
     id: 'pet-exposure',
     label: '애견 노출체크',
-    script: 'exposure:pet',
+    ...resolveTargetJobCommand('pet', 'exposure:pet', ['--max-pages=4']),
     description: '애견 1~4페이지를 공통 요청 제한 안에서 병렬 확인',
     kind: 'standard',
     resourceGroup: 'exposure',
@@ -80,7 +101,7 @@ export const JOB_REGISTRY: JobDefinition[] = [
   {
     id: 'suripet-exposure',
     label: '서리펫 노출체크',
-    script: 'exposure:suripet',
+    ...resolveTargetJobCommand('suripet', 'exposure:suripet', ['--max-pages=4']),
     description: '서리펫 1~4페이지를 공통 요청 제한 안에서 병렬 확인',
     kind: 'standard',
     resourceGroup: 'exposure',
@@ -88,7 +109,7 @@ export const JOB_REGISTRY: JobDefinition[] = [
   {
     id: 'cafe-exposure',
     label: '카페 + 블로그 노출체크',
-    script: 'exposure:cafe',
+    ...resolveTargetJobCommand('cafe', 'exposure:cafe'),
     description: '카페 발행스케줄의 카페·블로그 노출을 함께 확인',
     kind: 'standard',
     resourceGroup: 'exposure',

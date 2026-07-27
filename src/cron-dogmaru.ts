@@ -9,7 +9,7 @@ import { logger } from './lib/logger';
 import { getKSTTimestamp } from './utils';
 import { sendDoorayExposureResult } from './lib/dooray';
 import { DOGMARU_PAGE_CHECK_BLOG_IDS } from './constants/blog-ids';
-import { syncKeywords } from './api';
+import { syncKeywordsFromSourceSheet } from './lib/sheet-keyword-sync';
 import { requests } from './constants';
 import { ExposureResult } from './matcher';
 import { closeBrowser, launchBrowser } from './lib/playwright-crawler';
@@ -57,7 +57,7 @@ const executeDogmaruWorkflow = async (): Promise<void> => {
 
   // 도그마루 시트만 동기화
   logger.step(1, 3, '도그마루 시트 동기화');
-  await syncKeywords(requests[2]);
+  await syncKeywordsFromSourceSheet(requests[2]);
   logger.step(1, 3, '도그마루 시트 동기화', 'done');
 
   // 도그마루 키워드만 필터
