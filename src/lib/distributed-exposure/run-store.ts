@@ -2,7 +2,7 @@ import { DistributedExposureJob, DistributedExposureRun } from './models';
 import type { DistributedRunInput } from './queue';
 import type { DistributedRunStatus } from './models';
 
-const PAGE_JOB_MAX_ATTEMPTS = 12;
+const PAGE_JOB_MAX_ATTEMPTS = 30;
 const DEFAULT_JOB_MAX_ATTEMPTS = 3;
 
 export const getDistributedJobMaxAttempts = (
