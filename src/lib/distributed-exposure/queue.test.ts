@@ -28,8 +28,8 @@ assert.deepEqual(query.$and[1], {
     },
   ],
 });
-assert.equal(getDistributedJobMaxAttempts('pet'), 30);
-assert.equal(getDistributedJobMaxAttempts('suripet'), 30);
+assert.equal(getDistributedJobMaxAttempts('pet'), 60);
+assert.equal(getDistributedJobMaxAttempts('suripet'), 60);
 assert.equal(getDistributedJobMaxAttempts('root'), 3);
 
 process.stdout.write('distributed queue tests passed\n');

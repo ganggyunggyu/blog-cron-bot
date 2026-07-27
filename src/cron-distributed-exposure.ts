@@ -36,7 +36,7 @@ import {
 
 dotenv.config();
 
-const DEFAULT_TIMEOUT_MINUTES = 30;
+const DEFAULT_TIMEOUT_MINUTES = 90;
 const localWorkers = new Set<ChildProcess>();
 let stopping = false;
 
