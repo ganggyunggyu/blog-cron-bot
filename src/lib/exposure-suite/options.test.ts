@@ -6,6 +6,7 @@ import {
   buildTargetEnvironment,
   planExposureTargetJobs,
   parseExposureSuiteOptions,
+  resolveKeywordConcurrency,
   resolveTargetCommand,
 } from './options';
 
@@ -189,5 +190,14 @@ assert.equal(
   allKeywordEnvironment.EXPOSURE_KEYWORD_BATCH_SIZE,
   String(ALL_KEYWORDS_CONCURRENCY)
 );
+
+// 기본 옵션(자동 병렬 = 0 센티널)이 요청 브로커에 그대로 넘어가면 "1 이상의 정수" 검증에
+// 걸려 개별 노출체크가 즉시 실패했음 — 항상 1 이상으로 해석되는지 고정함.
+assert.equal(
+  resolveKeywordConcurrency(AUTO_KEYWORD_CONCURRENCY),
+  ALL_KEYWORDS_CONCURRENCY
+);
+assert.equal(resolveKeywordConcurrency(8), 8);
+assert.ok(resolveKeywordConcurrency(defaults.concurrency) >= 1);
 
 process.stdout.write('exposure suite option tests passed\n');
