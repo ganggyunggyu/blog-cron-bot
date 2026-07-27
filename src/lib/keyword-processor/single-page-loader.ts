@@ -34,7 +34,9 @@ const startNextBrowserFallback = (): void => {
   }
 };
 
-const withBrowserFallbackPermit = <T>(loader: () => Promise<T>): Promise<T> =>
+export const withBrowserFallbackPermit = <T>(
+  loader: () => Promise<T>
+): Promise<T> =>
   new Promise<T>((resolve, reject) => {
     const run = (): void => {
       activeBrowserFallbacks += 1;
