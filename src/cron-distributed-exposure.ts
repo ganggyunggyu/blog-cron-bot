@@ -116,11 +116,35 @@ const main = async (): Promise<void> => {
     ]);
 
     startLocalWorkers(runId, options.targetConcurrency);
-    await waitForDistributedRun(runId, getTimeoutMs(), () => stopping);
+    const outcome = await waitForDistributedRun(
+      runId,
+      getTimeoutMs(),
+      () => stopping
+    );
+
+    if (outcome.unfinishedTargets.length > 0) {
+      logger.error(
+        `[다중워커] 크롤 미완료 ${outcome.unfinishedTargets.length}개(${outcome.unfinishedTargets.join(', ')}) — ${outcome.failureDetail}`
+      );
+      logger.info(
+        `[다중워커] 성공한 ${outcome.succeededTargets.length}개는 그대로 시트 반영·Dooray를 진행함`
+      );
+    }
+
+    // 크롤에 성공한 대상만 마무리한다. 실패한 대상의 결과를 시트에 쓰면 이전 값이
+    // 빈 값으로 덮여버리므로 반드시 제외해야 한다.
+    const succeeded = new Set(outcome.succeededTargets);
+    const finalizeTargets = options.targets.filter((target) =>
+      succeeded.has(target)
+    );
 
     const completedSnapshot = await getDistributedRunSnapshot(runId);
+    // 실패한 작업은 워커/IP 기록이 없을 수 있으므로 성공 작업만 검증한다.
+    const successfulJobs = completedSnapshot.jobs.filter(
+      ({ status }) => status === 'success'
+    );
     const workerNetworks = new Map<string, string>();
-    completedSnapshot.jobs.forEach(({ workerId, egressIp }) => {
+    successfulJobs.forEach(({ workerId, egressIp }) => {
       if (!workerId || !egressIp) {
         throw new Error('완료 작업에 워커 또는 외부 IP 기록이 없음');
       }
@@ -131,9 +155,9 @@ const main = async (): Promise<void> => {
       workerNetworks.set(workerId, egressIp);
     });
     const workerIps = Array.from(workerNetworks.values());
-    if (workerNetworks.size !== completedSnapshot.jobs.length) {
+    if (workerNetworks.size !== successfulJobs.length) {
       throw new Error(
-        `시트당 전용 워커 불일치: 작업 ${completedSnapshot.jobs.length}개 / 워커 ${workerNetworks.size}개`
+        `시트당 전용 워커 불일치: 작업 ${successfulJobs.length}개 / 워커 ${workerNetworks.size}개`
       );
     }
     if (new Set(workerIps).size !== workerIps.length) {
@@ -145,7 +169,7 @@ const main = async (): Promise<void> => {
         .join(', ')}`
     );
 
-    const pageTargets = options.targets.filter(isDistributedPageTarget);
+    const pageTargets = finalizeTargets.filter(isDistributedPageTarget);
     const elapsedTime = `${Math.floor((Date.now() - startedAt) / 1000)}초`;
     const finalizeFailures: string[] = [];
 
@@ -162,7 +186,7 @@ const main = async (): Promise<void> => {
       }
     };
 
-    if (options.targets.includes('root')) {
+    if (finalizeTargets.includes('root')) {
       await runFinalizeStep('루트', () => finalizeDistributedRootTarget(elapsedTime));
     }
     for (const target of pageTargets) {
@@ -175,19 +199,31 @@ const main = async (): Promise<void> => {
     if (pageTargets.length > 0) {
       logger.info('[다중워커] 애견·서리펫 개별 결과 탭 직접 반영 완료');
     }
-    for (const target of options.targets.filter(isDistributedDirectTarget)) {
+    for (const target of finalizeTargets.filter(isDistributedDirectTarget)) {
       await runFinalizeStep(target, () =>
         finalizeDistributedDirectNotification(target, elapsedTime)
       );
     }
-    if (options.targets.includes('cafe')) {
+    if (finalizeTargets.includes('cafe')) {
       await runFinalizeStep('카페', () => finalizeDistributedCafeNotification(elapsedTime));
     }
 
-    if (finalizeFailures.length > 0) {
-      throw new Error(
-        `일부 대상 마무리 실패 (${finalizeFailures.length}건): ${finalizeFailures.join(' / ')}`
+    const crawlFailure =
+      outcome.unfinishedTargets.length > 0
+        ? `${outcome.timedOut ? '제한 시간 초과' : '크롤 실패'} ${outcome.unfinishedTargets.length}개(${outcome.unfinishedTargets.join(', ')}) — ${outcome.failureDetail}`
+        : '';
+
+    if (crawlFailure || finalizeFailures.length > 0) {
+      const reasons = [
+        ...(crawlFailure ? [crawlFailure] : []),
+        ...(finalizeFailures.length > 0
+          ? [`마무리 실패 ${finalizeFailures.length}건: ${finalizeFailures.join(' / ')}`]
+          : []),
+      ];
+      logger.info(
+        `[다중워커] 반영 완료 ${finalizeTargets.length - finalizeFailures.length}개 / 전체 ${options.targets.length}개`
       );
+      throw new Error(reasons.join(' | '));
     }
 
     await finishDistributedRun(runId, 'success');
