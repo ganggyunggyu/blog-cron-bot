@@ -10,6 +10,7 @@ import {
 import { isDistributedRunFinished } from './lib/distributed-exposure/run-store';
 import { executeDistributedJob } from './lib/distributed-exposure/worker-runner';
 import { getWorkerJobConcurrency } from './lib/distributed-exposure/worker-capacity';
+import { getWorkerEgressIp } from './lib/distributed-exposure/worker-egress-ip';
 
 dotenv.config();
 
@@ -59,6 +60,7 @@ const waitForPoll = (): Promise<void> =>
 
 const runWorkerSlot = async (
   workerId: string,
+  egressIp: string,
   runId?: string
 ): Promise<void> => {
   let slotChild: ChildProcess | undefined;
@@ -66,7 +68,12 @@ const runWorkerSlot = async (
   let assignedRunId: string | undefined;
 
   while (!stopping) {
-    const job = await claimDistributedJob(workerId, runId, assignedJobId);
+    const job = await claimDistributedJob(
+      workerId,
+      runId,
+      assignedJobId,
+      egressIp
+    );
     if (job) {
       assignedJobId ??= String(job._id);
       assignedRunId ??= job.runId;
@@ -110,17 +117,18 @@ const main = async (): Promise<void> => {
   const jobConcurrency = getWorkerJobConcurrency(
     process.env.DISTRIBUTED_WORKER_JOB_CONCURRENCY
   );
+  const egressIp = await getWorkerEgressIp();
   await connectDB(mongoUri);
   const healthServer = startHealthServer();
   logger.info(
-    `[다중워커] ${workerId} 준비 완료 · 동시 작업 ${jobConcurrency}개` +
+    `[다중워커] ${workerId} (${egressIp}) 준비 완료 · 동시 작업 ${jobConcurrency}개` +
       (runId ? ` (run ${runId})` : '')
   );
 
   try {
     await Promise.all(
       Array.from({ length: jobConcurrency }, () =>
-        runWorkerSlot(workerId, runId)
+        runWorkerSlot(workerId, egressIp, runId)
       )
     );
   } finally {
