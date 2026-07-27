@@ -98,8 +98,13 @@ const loadCrawlSnapshot = async (
       html = '';
       firstPageItems = [];
       items = [];
+      const browserStopPredicate = createSharedCrawlStopPredicate(plan);
       const htmls = await withBrowserFallbackPermit(() =>
-        crawlMultiPagesPlaywright(searchQuery, plan.maxPages)
+        crawlMultiPagesPlaywright(
+          searchQuery,
+          plan.maxPages,
+          browserStopPredicate
+        )
       );
       htmls.forEach((pageHtml, pageIndex) =>
         appendPage(pageHtml, pageIndex + 1)

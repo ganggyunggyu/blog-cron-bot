@@ -7,7 +7,7 @@ interface SinglePageLoaderDependencies {
   crawlBrowser: (query: string, maxPages: number) => Promise<string[]>;
 }
 
-const DEFAULT_BROWSER_FALLBACK_CONCURRENCY = 16;
+const DEFAULT_BROWSER_FALLBACK_CONCURRENCY = 64;
 const browserFallbackQueue: Array<() => void> = [];
 let activeBrowserFallbacks = 0;
 
