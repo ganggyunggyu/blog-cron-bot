@@ -36,11 +36,6 @@ const findHeaderIndex = (headers: readonly unknown[], matches: string[]): number
     return matches.some((match) => normalized.includes(match));
   });
 
-const parseNumber = (value: unknown): number | undefined => {
-  const parsed = Number.parseInt(normalize(value), 10);
-  return Number.isFinite(parsed) ? parsed : undefined;
-};
-
 export const parseRootKeywordRows = (
   rows: readonly (readonly unknown[])[]
 ): RootKeywordSyncRow[] => {
@@ -50,23 +45,9 @@ export const parseRootKeywordRows = (
   const headers = rows[headerIndex];
   const keywordColumn = findHeaderIndex(headers, ['키워드', 'keyword']);
   const companyColumn = findHeaderIndex(headers, ['업체명', '업체']);
-  const visibilityColumn = findHeaderIndex(headers, ['노출여부', '공정위', '노출']);
-  const topicColumn = findHeaderIndex(headers, ['인기주제']);
-  const rankColumn = headers.findIndex((header) => {
-    const normalized = normalize(header).toLowerCase();
-    return normalized.includes('순위') && !normalized.includes('인기글');
-  });
-  const popularRankColumn = headers.findIndex((header) => {
-    const normalized = normalize(header).toLowerCase();
-    return normalized.includes('인기글') && normalized.includes('순위');
-  });
   const imageMatchColumn = headers.findIndex((header) => {
     const normalized = normalize(header).toLowerCase();
     return normalized.includes('이미지') && normalized.includes('매칭');
-  });
-  const urlColumn = headers.findIndex((header) => {
-    const normalized = normalize(header).toLowerCase();
-    return normalized.includes('시트') && normalized.includes('링크');
   });
 
   if (keywordColumn === -1 || companyColumn === -1) {
@@ -95,13 +76,11 @@ export const parseRootKeywordRows = (
     return [{
       company: currentCompany,
       keyword: formattedKeyword,
-      visibility:
-        visibilityColumn !== -1 && normalize(row[visibilityColumn]).toLowerCase() === 'o',
-      popularTopic: topicColumn === -1 ? '' : normalize(row[topicColumn]),
-      url: urlColumn === -1 ? '' : normalize(row[urlColumn]),
-      rank: rankColumn === -1 ? undefined : parseNumber(row[rankColumn]),
-      rankWithCafe:
-        popularRankColumn === -1 ? undefined : parseNumber(row[popularRankColumn]),
+      visibility: false,
+      popularTopic: '',
+      url: '',
+      rank: 0,
+      rankWithCafe: 0,
       isUpdateRequired:
         imageMatchColumn === -1
           ? undefined
@@ -146,7 +125,7 @@ const syncDirectlyFromGoogleSheets = async (): Promise<RootKeywordSyncResult> =>
 
   const deleteResult = await RootKeyword.deleteMany({});
   const insertResult = await RootKeyword.insertMany(
-    keywords.map((keyword) => ({ ...keyword, lastChecked: new Date() }))
+    keywords.map((keyword) => ({ ...keyword, lastChecked: new Date(0) }))
   );
 
   return {

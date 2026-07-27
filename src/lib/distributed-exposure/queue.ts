@@ -151,16 +151,12 @@ export const completeDistributedJob = async (
 };
 
 export const buildDistributedJobReleaseFields = (
-  shouldRetry: boolean,
-  retryKeywordIds?: string[]
+  shouldRetry: boolean
 ): Record<string, 1> => {
-  if (!shouldRetry) {
-    return { leaseUntil: 1, workerId: 1 };
-  }
-  if (retryKeywordIds) {
+  if (shouldRetry) {
     return { leaseUntil: 1, workerId: 1, egressIp: 1 };
   }
-  return { leaseUntil: 1 };
+  return { leaseUntil: 1, workerId: 1 };
 };
 
 export const failDistributedJob = async (
@@ -180,10 +176,7 @@ export const failDistributedJob = async (
         ...statusUpdate,
         ...(retryKeywordIds ? { keywordIds: retryKeywordIds } : {}),
       },
-      $unset: buildDistributedJobReleaseFields(
-        shouldRetry,
-        retryKeywordIds
-      ),
+      $unset: buildDistributedJobReleaseFields(shouldRetry),
     }
   );
   return shouldRetry;

@@ -138,6 +138,29 @@ export const getAllRootKeywords = async (): Promise<IRootKeyword[]> => {
   }
 };
 
+export const getUncheckedRootKeywordIds = async (
+  keywordIds: string[],
+  checkedSince: Date
+): Promise<string[]> => {
+  const checked = await RootKeyword.find({
+    _id: { $in: keywordIds },
+    lastChecked: { $gte: checkedSince },
+    $or: [
+      { visibility: false },
+      {
+        visibility: true,
+        url: { $nin: ['', null] },
+        rank: { $gt: 0 },
+      },
+    ],
+  })
+    .select({ _id: 1 })
+    .lean()
+    .exec();
+  const checkedIds = new Set(checked.map(({ _id }) => String(_id)));
+  return keywordIds.filter((keywordId) => !checkedIds.has(keywordId));
+};
+
 export const updateKeywordResult = async (
   keywordId: string,
   visibility: boolean,

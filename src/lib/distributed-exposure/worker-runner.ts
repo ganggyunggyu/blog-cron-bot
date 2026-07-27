@@ -8,12 +8,35 @@ import {
 } from './queue';
 import { logger } from '../logger';
 import { getWorkerEgressIp } from './worker-egress-ip';
-import { getUncheckedPageKeywordIds } from '../../database';
+import {
+  getUncheckedPageKeywordIds,
+  getUncheckedRootKeywordIds,
+} from '../../database';
 import { runWorkerChild, stopWorkerChild } from './worker-child';
 
 const HEARTBEAT_MS = 15_000;
 
 export type DistributedJobOutcome = 'success' | 'retry' | 'failed';
+
+const getUncheckedDistributedKeywordIds = (
+  job: IDistributedExposureJob
+): Promise<string[]> | undefined => {
+  if (!job.startedAt || job.keywordIds.length === 0) return undefined;
+  if (job.target === 'root') {
+    return getUncheckedRootKeywordIds(
+      job.keywordIds,
+      job.startedAt as Date
+    );
+  }
+  if (job.target === 'pet' || job.target === 'suripet') {
+    return getUncheckedPageKeywordIds(
+      job.target,
+      job.keywordIds,
+      job.startedAt as Date
+    );
+  }
+  return undefined;
+};
 
 export const executeDistributedJob = async (
   job: IDistributedExposureJob,
@@ -47,16 +70,9 @@ export const executeDistributedJob = async (
         `(${job.attempts}/${job.maxAttempts})`
     );
     await runWorkerChild(job, trackChild);
-    if (
-      job.startedAt &&
-      job.keywordIds.length > 0 &&
-      (job.target === 'pet' || job.target === 'suripet')
-    ) {
-      const uncheckedKeywordIds = await getUncheckedPageKeywordIds(
-        job.target,
-        job.keywordIds,
-        job.startedAt as Date
-      );
+    const uncheckedKeywordIds =
+      await getUncheckedDistributedKeywordIds(job);
+    if (uncheckedKeywordIds) {
       if (uncheckedKeywordIds.length > 0) {
         throw new Error(
           `${job.target} 실제 갱신 누락: ` +
@@ -69,17 +85,11 @@ export const executeDistributedJob = async (
     return 'success';
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    const canResumePageShard =
-      job.startedAt &&
-      job.keywordIds.length > 0 &&
-      (job.target === 'pet' || job.target === 'suripet');
     let retryKeywordIds: string[] | undefined;
-    if (canResumePageShard) {
-      retryKeywordIds = await getUncheckedPageKeywordIds(
-        job.target as 'pet' | 'suripet',
-        job.keywordIds,
-        job.startedAt as Date
-      );
+    const uncheckedKeywordIds =
+      await getUncheckedDistributedKeywordIds(job);
+    if (uncheckedKeywordIds) {
+      retryKeywordIds = uncheckedKeywordIds;
       if (retryKeywordIds.length === 0) {
         await completeDistributedJob(jobId, workerId);
         logger.warn(

@@ -9,7 +9,7 @@ export const getDistributedJobTimeoutMs = (
 ): number => {
   const minutes = Number(value);
   const defaultMinutes =
-    target === 'pet' || target === 'suripet'
+    target === 'root' || target === 'pet' || target === 'suripet'
       ? DEFAULT_PAGE_JOB_TIMEOUT_MINUTES
       : DEFAULT_JOB_TIMEOUT_MINUTES;
   const normalized =

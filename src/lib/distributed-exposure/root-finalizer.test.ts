@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
-import { dedupeRootExposedByLink } from './root-finalizer';
+import {
+  dedupeRootExposedByLink,
+  isInvalidRootExposure,
+} from './root-finalizer';
 
 // 같은 키워드+업체명에 같은 링크가 반복되면 하나만 남김.
 const deduped = dedupeRootExposedByLink([
@@ -22,5 +25,21 @@ const blanks = dedupeRootExposedByLink([
   { keyword: 'a(회사)', company: '회사', url: '' },
 ]);
 assert.equal(blanks.length, 2);
+assert.equal(
+  isInvalidRootExposure({ visibility: true, url: '', rank: 0 }),
+  true
+);
+assert.equal(
+  isInvalidRootExposure({
+    visibility: true,
+    url: 'https://blog.naver.com/example/1',
+    rank: 1,
+  }),
+  false
+);
+assert.equal(
+  isInvalidRootExposure({ visibility: false, url: '', rank: 0 }),
+  false
+);
 
 process.stdout.write('root finalizer dedup tests passed\n');
