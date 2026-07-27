@@ -14,6 +14,7 @@ import { getWorkerJobConcurrency } from './lib/distributed-exposure/worker-capac
 dotenv.config();
 
 const POLL_MS = 750;
+const PAGE_RETRY_DELAY_MS = 3_000;
 let stopping = false;
 const activeChildren = new Set<ChildProcess>();
 
@@ -74,7 +75,14 @@ const runWorkerSlot = async (
         slotChild = child;
         if (child) activeChildren.add(child);
       });
-      if (outcome === 'retry') continue;
+      if (outcome === 'retry') {
+        if (job.target === 'pet' || job.target === 'suripet') {
+          await new Promise((resolve) =>
+            setTimeout(resolve, PAGE_RETRY_DELAY_MS)
+          );
+        }
+        continue;
+      }
       while (!stopping && !(await isDistributedRunFinished(job.runId))) {
         await waitForPoll();
       }

@@ -38,32 +38,43 @@ export interface DistributedRunSnapshot {
   }>;
 }
 
+export const buildDistributedJobClaimQuery = (
+  workerId: string,
+  now: Date,
+  runId?: string,
+  jobId?: string
+) => ({
+  ...(runId ? { runId } : {}),
+  ...(jobId ? { _id: jobId } : {}),
+  active: true,
+  $and: [
+    { $expr: { $lt: ['$attempts', '$maxAttempts'] } },
+    {
+      $or: [
+        {
+          status: 'pending',
+          $or: [
+            { workerId: { $exists: false } },
+            { workerId },
+          ],
+        },
+        {
+          status: 'running',
+          leaseUntil: { $lte: now },
+          workerId: { $ne: workerId },
+        },
+      ],
+    },
+  ],
+});
+
 export const claimDistributedJob = async (
   workerId: string,
   runId?: string,
   jobId?: string
 ): Promise<IDistributedExposureJob | null> => {
   const now = new Date();
-  const query = {
-    ...(runId ? { runId } : {}),
-    ...(jobId ? { _id: jobId } : {}),
-    active: true,
-    $and: [
-      { $expr: { $lt: ['$attempts', '$maxAttempts'] } },
-      {
-        $or: [
-          { status: 'pending' },
-          { status: 'running', leaseUntil: { $lte: now } },
-        ],
-      },
-      {
-        $or: [
-          { workerId: { $exists: false } },
-          { workerId: { $ne: workerId } },
-        ],
-      },
-    ],
-  };
+  const query = buildDistributedJobClaimQuery(workerId, now, runId, jobId);
 
   return DistributedExposureJob.findOneAndUpdate(
     query,
@@ -136,7 +147,9 @@ export const failDistributedJob = async (
         ...statusUpdate,
         ...(retryKeywordIds ? { keywordIds: retryKeywordIds } : {}),
       },
-      $unset: { leaseUntil: 1, workerId: 1 },
+      $unset: shouldRetry
+        ? { leaseUntil: 1 }
+        : { leaseUntil: 1, workerId: 1 },
     }
   );
   return shouldRetry;
