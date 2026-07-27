@@ -21,11 +21,14 @@ const DIRECT_SHEET_TARGETS = {
 
 export const resolveDistributedWorkerConcurrency = (
   target: ExposureTargetId,
-  configuredConcurrency: number
+  configuredConcurrency: number,
+  keywordCount = 0
 ): number =>
-  (target === 'pet' || target === 'suripet') &&
-  configuredConcurrency === AUTO_KEYWORD_CONCURRENCY
-    ? DEFAULT_EXPOSURE_CONCURRENCY
+  configuredConcurrency === AUTO_KEYWORD_CONCURRENCY && target === 'pet'
+    ? Math.max(1, keywordCount)
+    : configuredConcurrency === AUTO_KEYWORD_CONCURRENCY &&
+        target === 'suripet'
+      ? DEFAULT_EXPOSURE_CONCURRENCY
     : resolveKeywordConcurrency(configuredConcurrency);
 
 export const stopWorkerChild = (child: ChildProcess): void => {
@@ -41,7 +44,8 @@ export const stopWorkerChild = (child: ChildProcess): void => {
 const resolveWorkerCommand = (job: IDistributedExposureJob) => {
   const concurrency = resolveDistributedWorkerConcurrency(
     job.target,
-    job.concurrency
+    job.concurrency,
+    job.keywordIds.length
   );
   const isPageJob =
     job.keywordIds.length > 0 &&
@@ -84,7 +88,11 @@ const buildWorkerEnvironment = (
   const environment = buildTargetEnvironment(
     process.env,
     [job.target],
-    resolveDistributedWorkerConcurrency(job.target, job.concurrency),
+    resolveDistributedWorkerConcurrency(
+      job.target,
+      job.concurrency,
+      job.keywordIds.length
+    ),
     job.maxPages
   );
   if (job.target === 'pet' || job.target === 'suripet') {

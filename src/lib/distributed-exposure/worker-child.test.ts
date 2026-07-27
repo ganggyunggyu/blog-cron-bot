@@ -8,8 +8,8 @@ assert.equal(
   DEFAULT_EXPOSURE_CONCURRENCY
 );
 assert.equal(
-  resolveDistributedWorkerConcurrency('pet', 0),
-  DEFAULT_EXPOSURE_CONCURRENCY
+  resolveDistributedWorkerConcurrency('pet', 0, 300),
+  300
 );
 assert.equal(resolveDistributedWorkerConcurrency('suripet', 5), 5);
 assert.equal(
