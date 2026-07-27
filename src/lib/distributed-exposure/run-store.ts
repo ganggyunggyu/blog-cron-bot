@@ -2,6 +2,16 @@ import { DistributedExposureJob, DistributedExposureRun } from './models';
 import type { DistributedRunInput } from './queue';
 import type { DistributedRunStatus } from './models';
 
+const PAGE_JOB_MAX_ATTEMPTS = 12;
+const DEFAULT_JOB_MAX_ATTEMPTS = 3;
+
+export const getDistributedJobMaxAttempts = (
+  target: DistributedRunInput['jobs'][number]['target']
+): number =>
+  target === 'pet' || target === 'suripet'
+    ? PAGE_JOB_MAX_ATTEMPTS
+    : DEFAULT_JOB_MAX_ATTEMPTS;
+
 export const createDistributedRun = async (
   input: DistributedRunInput
 ): Promise<void> => {
@@ -26,7 +36,7 @@ export const createDistributedRun = async (
       shardCount: job.shardCount ?? 1,
       keywordIds: job.keywordIds ?? [],
       attempts: 0,
-      maxAttempts: 3,
+      maxAttempts: getDistributedJobMaxAttempts(job.target),
       active: true,
     }))
   );
