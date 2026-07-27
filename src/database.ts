@@ -269,6 +269,7 @@ export interface PageCheckKeywordInput {
   isUpdateRequired?: boolean;
   isNewLogic?: boolean;
   foundPage?: number;
+  lastChecked?: Date;
 }
 
 const PageCheckKeywordSchema: Schema = new Schema(
@@ -379,7 +380,18 @@ export const getUncheckedPageKeywordIds = async (
 ): Promise<string[]> => {
   const model = pageCheckModels[sheetType];
   const checked = await model
-    .find({ _id: { $in: keywordIds }, lastChecked: { $gte: checkedSince } })
+    .find({
+      _id: { $in: keywordIds },
+      lastChecked: { $gte: checkedSince },
+      $or: [
+        { visibility: false },
+        {
+          visibility: true,
+          url: { $nin: ['', null] },
+          rank: { $gt: 0 },
+        },
+      ],
+    })
     .select({ _id: 1 })
     .lean()
     .exec();
@@ -414,6 +426,7 @@ export const replacePageCheckKeywords = async (
         isUpdateRequired,
         isNewLogic,
         foundPage,
+        lastChecked,
       }) => ({
         company,
         keyword,
@@ -430,6 +443,7 @@ export const replacePageCheckKeywords = async (
         isUpdateRequired,
         isNewLogic,
         foundPage,
+        lastChecked,
       })
     );
 
@@ -440,7 +454,12 @@ export const replacePageCheckKeywords = async (
     }
 
     try {
-      await model.insertMany(keywords);
+      await model.insertMany(
+        keywords.map((keyword) => ({
+          ...keyword,
+          lastChecked: new Date(0),
+        }))
+      );
     } catch (error) {
       if (restoreKeywords.length > 0) {
         await model.insertMany(restoreKeywords);
