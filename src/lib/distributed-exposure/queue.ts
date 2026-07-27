@@ -136,9 +136,7 @@ export const failDistributedJob = async (
         ...statusUpdate,
         ...(retryKeywordIds ? { keywordIds: retryKeywordIds } : {}),
       },
-      $unset: shouldRetry
-        ? { leaseUntil: 1 }
-        : { leaseUntil: 1, workerId: 1 },
+      $unset: { leaseUntil: 1, workerId: 1 },
     }
   );
   return shouldRetry;
