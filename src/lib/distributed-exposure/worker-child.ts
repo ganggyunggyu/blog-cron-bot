@@ -125,7 +125,10 @@ export const runWorkerChild = (
       outputTail = `${outputTail}${value}`.slice(-CHILD_ERROR_TAIL_LIMIT);
     };
     onChild(child);
-    const timeoutMs = getDistributedJobTimeoutMs();
+    const timeoutMs = getDistributedJobTimeoutMs(
+      process.env.DISTRIBUTED_EXPOSURE_JOB_TIMEOUT_MINUTES,
+      job.target
+    );
     const timeout = setTimeout(() => {
       timedOut = true;
       stopWorkerChild(child);
