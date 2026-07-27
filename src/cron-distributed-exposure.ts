@@ -112,7 +112,7 @@ const main = async (): Promise<void> => {
             ? '원본 유효 키워드 전체'
             : `${options.concurrency}개`,
       },
-      { label: '서버 배치', value: '시트당 1개' },
+      { label: '서버 배치', value: '작업별 전용 외부 IP' },
     ]);
 
     startLocalWorkers(runId, options.targetConcurrency);

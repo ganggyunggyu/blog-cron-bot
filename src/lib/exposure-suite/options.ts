@@ -67,7 +67,7 @@ const parseRangedInteger = (
 };
 
 const parseConcurrency = (rawValue: string | undefined): number => {
-  if (!rawValue) return 50;
+  if (!rawValue) return AUTO_KEYWORD_CONCURRENCY;
   const value = Number(rawValue);
   if (
     !Number.isInteger(value) ||
