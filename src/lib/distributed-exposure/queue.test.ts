@@ -7,7 +7,8 @@ const query = buildDistributedJobClaimQuery(
   'worker-a',
   now,
   'run-1',
-  'job-1'
+  'job-1',
+  '203.0.113.10'
 );
 
 assert.equal(query.runId, 'run-1');
@@ -19,12 +20,13 @@ assert.deepEqual(query.$and[1], {
       $or: [
         { workerId: { $exists: false } },
         { workerId: 'worker-a' },
+        { egressIp: '203.0.113.10' },
       ],
     },
     {
       status: 'running',
       leaseUntil: { $lte: now },
-      workerId: { $ne: 'worker-a' },
+      egressIp: '203.0.113.10',
     },
   ],
 });

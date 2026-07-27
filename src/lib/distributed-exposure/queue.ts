@@ -35,6 +35,10 @@ export interface DistributedRunSnapshot {
     shardCount: number;
     workerId?: string;
     egressIp?: string;
+    attempts: number;
+    maxAttempts: number;
+    remainingKeywords: number;
+    error?: string;
   }>;
 }
 
@@ -42,39 +46,54 @@ export const buildDistributedJobClaimQuery = (
   workerId: string,
   now: Date,
   runId?: string,
-  jobId?: string
-) => ({
-  ...(runId ? { runId } : {}),
-  ...(jobId ? { _id: jobId } : {}),
-  active: true,
-  $and: [
-    { $expr: { $lt: ['$attempts', '$maxAttempts'] } },
-    {
-      $or: [
-        {
-          status: 'pending',
-          $or: [
-            { workerId: { $exists: false } },
-            { workerId },
-          ],
-        },
-        {
-          status: 'running',
-          leaseUntil: { $lte: now },
-          workerId: { $ne: workerId },
-        },
-      ],
-    },
-  ],
-});
+  jobId?: string,
+  egressIp?: string
+) => {
+  const matchingWorker = [
+    { workerId: { $exists: false } },
+    { workerId },
+    ...(egressIp ? [{ egressIp }] : []),
+  ];
+
+  return {
+    ...(runId ? { runId } : {}),
+    ...(jobId ? { _id: jobId } : {}),
+    active: true,
+    $and: [
+      { $expr: { $lt: ['$attempts', '$maxAttempts'] } },
+      {
+        $or: [
+          {
+            status: 'pending',
+            $or: matchingWorker,
+          },
+          {
+            status: 'running',
+            leaseUntil: { $lte: now },
+            ...(egressIp
+              ? { egressIp }
+              : { workerId: { $ne: workerId } }),
+          },
+        ],
+      },
+    ],
+  };
+};
 
 export const claimDistributedJob = async (
   workerId: string,
   runId?: string,
-  jobId?: string
+  jobId?: string,
+  egressIp?: string
 ): Promise<IDistributedExposureJob | null> => {
   const now = new Date();
-  const query = buildDistributedJobClaimQuery(workerId, now, runId, jobId);
+  const query = buildDistributedJobClaimQuery(
+    workerId,
+    now,
+    runId,
+    jobId,
+    egressIp
+  );
 
   return DistributedExposureJob.findOneAndUpdate(
     query,
@@ -82,6 +101,7 @@ export const claimDistributedJob = async (
       $set: {
         status: 'running',
         workerId,
+        ...(egressIp ? { egressIp } : {}),
         leaseUntil: new Date(now.getTime() + JOB_LEASE_MS),
         startedAt: now,
         error: '',
@@ -167,6 +187,10 @@ export const getDistributedRunSnapshot = async (
       shardCount: 1,
       workerId: 1,
       egressIp: 1,
+      attempts: 1,
+      maxAttempts: 1,
+      keywordIds: 1,
+      error: 1,
     })
     .lean()
     .exec();
@@ -186,6 +210,10 @@ export const getDistributedRunSnapshot = async (
       shardCount: job.shardCount,
       workerId: job.workerId,
       egressIp: job.egressIp,
+      attempts: job.attempts ?? 0,
+      maxAttempts: job.maxAttempts ?? 0,
+      remainingKeywords: job.keywordIds?.length ?? 0,
+      error: job.error,
     })),
   };
 };
