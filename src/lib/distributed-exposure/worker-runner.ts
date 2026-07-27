@@ -47,6 +47,23 @@ export const executeDistributedJob = async (
         `(${job.attempts}/${job.maxAttempts})`
     );
     await runWorkerChild(job, trackChild);
+    if (
+      job.startedAt &&
+      job.keywordIds.length > 0 &&
+      (job.target === 'pet' || job.target === 'suripet')
+    ) {
+      const uncheckedKeywordIds = await getUncheckedPageKeywordIds(
+        job.target,
+        job.keywordIds,
+        job.startedAt as Date
+      );
+      if (uncheckedKeywordIds.length > 0) {
+        throw new Error(
+          `${job.target} 실제 갱신 누락: ` +
+            `${uncheckedKeywordIds.length}/${job.keywordIds.length}개`
+        );
+      }
+    }
     await completeDistributedJob(jobId, workerId);
     logger.success(`[다중워커] ${job.target} 완료`);
     return 'success';

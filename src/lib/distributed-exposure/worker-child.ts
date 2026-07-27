@@ -1,9 +1,12 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import {
+  AUTO_KEYWORD_CONCURRENCY,
   buildTargetEnvironment,
   resolveKeywordConcurrency,
   resolveTargetCommand,
 } from '../exposure-suite/options';
+import { DEFAULT_EXPOSURE_CONCURRENCY } from '../exposure-run-config';
+import type { ExposureTargetId } from '../exposure-suite/options';
 import { getDistributedJobTimeoutMs } from './job-timeout';
 import type { IDistributedExposureJob } from './models';
 
@@ -16,6 +19,15 @@ const DIRECT_SHEET_TARGETS = {
   dogmaru: 'dogmaru',
 } as const;
 
+export const resolveDistributedWorkerConcurrency = (
+  target: ExposureTargetId,
+  configuredConcurrency: number
+): number =>
+  (target === 'pet' || target === 'suripet') &&
+  configuredConcurrency === AUTO_KEYWORD_CONCURRENCY
+    ? DEFAULT_EXPOSURE_CONCURRENCY
+    : resolveKeywordConcurrency(configuredConcurrency);
+
 export const stopWorkerChild = (child: ChildProcess): void => {
   if (!child.pid || child.exitCode !== null) return;
   try {
@@ -27,7 +39,10 @@ export const stopWorkerChild = (child: ChildProcess): void => {
 };
 
 const resolveWorkerCommand = (job: IDistributedExposureJob) => {
-  const concurrency = resolveKeywordConcurrency(job.concurrency);
+  const concurrency = resolveDistributedWorkerConcurrency(
+    job.target,
+    job.concurrency
+  );
   const isPageJob =
     job.keywordIds.length > 0 &&
     (job.target === 'pet' || job.target === 'suripet');
@@ -69,7 +84,7 @@ const buildWorkerEnvironment = (
   const environment = buildTargetEnvironment(
     process.env,
     [job.target],
-    job.concurrency,
+    resolveDistributedWorkerConcurrency(job.target, job.concurrency),
     job.maxPages
   );
   if (job.target === 'pet' || job.target === 'suripet') {

@@ -29,12 +29,41 @@ const toExposureResult = (keyword: IPageCheckKeyword): ExposureResult => ({
   page: keyword.foundPage,
 });
 
+export const assertCompletePageExposureResults = (
+  target: Extract<PageCheckSheetType, 'pet' | 'suripet'>,
+  keywords: Pick<
+    IPageCheckKeyword,
+    'keyword' | 'visibility' | 'url' | 'rank'
+  >[]
+): void => {
+  const invalid = keywords.filter(
+    ({ visibility, url, rank }) =>
+      visibility && (!url.trim() || !rank || rank < 1)
+  );
+  if (invalid.length === 0) return;
+
+  throw new Error(
+    `${target} 노출 결과 필수값 누락: ${invalid.length}개 ` +
+      `(링크 또는 양수 순위 없음, 예: ${invalid[0].keyword})`
+  );
+};
+
+export const validateDistributedPageTarget = async (
+  target: Extract<PageCheckSheetType, 'pet' | 'suripet'>
+): Promise<void> => {
+  const keywords = await getPageCheckKeywords(target);
+  assertCompletePageExposureResults(target, keywords);
+};
+
 export const finalizeDistributedPageTarget = async (
   target: Extract<PageCheckSheetType, 'pet' | 'suripet'>,
   elapsedTime: string
 ): Promise<void> => {
   const keywords = await getPageCheckKeywords(target);
-  const results = keywords.filter((keyword) => keyword.visibility).map(toExposureResult);
+  assertCompletePageExposureResults(target, keywords);
+  const results = keywords
+    .filter((keyword) => keyword.visibility)
+    .map(toExposureResult);
   const timestamp = getKSTTimestamp();
   const logicMap = new Map(
     keywords.map((keyword) => [keyword.keyword, keyword.isNewLogic ?? false])

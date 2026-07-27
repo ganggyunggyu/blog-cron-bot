@@ -17,7 +17,10 @@ import {
   assertNoActiveDistributedRun,
   finishDistributedRun,
 } from './lib/distributed-exposure/run-store';
-import { finalizeDistributedPageTarget } from './lib/distributed-exposure/page-finalizer';
+import {
+  finalizeDistributedPageTarget,
+  validateDistributedPageTarget,
+} from './lib/distributed-exposure/page-finalizer';
 import { finalizeDistributedRootTarget } from './lib/distributed-exposure/root-finalizer';
 import {
   isDistributedPageTarget,
@@ -163,10 +166,11 @@ const main = async (): Promise<void> => {
       await runFinalizeStep('루트', () => finalizeDistributedRootTarget(elapsedTime));
     }
     for (const target of pageTargets) {
-      await runFinalizeStep(`${target} 내보내기`, () => exportSheetAPI(target));
-      await runFinalizeStep(`${target} 결과 반영`, () =>
-        finalizeDistributedPageTarget(target, elapsedTime)
-      );
+      await runFinalizeStep(`${target} 결과 반영`, async () => {
+        await validateDistributedPageTarget(target);
+        await exportSheetAPI(target);
+        await finalizeDistributedPageTarget(target, elapsedTime);
+      });
     }
     if (pageTargets.length > 0) {
       logger.info('[다중워커] 애견·서리펫 개별 결과 탭 직접 반영 완료');
