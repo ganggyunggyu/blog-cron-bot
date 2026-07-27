@@ -35,7 +35,8 @@ assert.deepEqual(query.$and[1], {
 });
 assert.equal(getDistributedJobMaxAttempts('pet'), 60);
 assert.equal(getDistributedJobMaxAttempts('suripet'), 60);
-assert.equal(getDistributedJobMaxAttempts('root'), 3);
+assert.equal(getDistributedJobMaxAttempts('root'), 60);
+assert.equal(getDistributedJobMaxAttempts('package'), 3);
 assert.deepEqual(buildDistributedJobReleaseFields(true), {
   leaseUntil: 1,
   workerId: 1,

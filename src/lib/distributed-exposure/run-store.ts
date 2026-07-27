@@ -8,7 +8,7 @@ const DEFAULT_JOB_MAX_ATTEMPTS = 3;
 export const getDistributedJobMaxAttempts = (
   target: DistributedRunInput['jobs'][number]['target']
 ): number =>
-  target === 'pet' || target === 'suripet'
+  target === 'root' || target === 'pet' || target === 'suripet'
     ? PAGE_JOB_MAX_ATTEMPTS
     : DEFAULT_JOB_MAX_ATTEMPTS;
 
