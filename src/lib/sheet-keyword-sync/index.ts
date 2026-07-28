@@ -28,11 +28,12 @@ export interface SheetKeywordRow {
 export const toKeywordDocuments = (
   rows: readonly SheetKeywordRow[],
   sheetType: string,
-  checkedAt: Date
+  checkedAt: Date,
+  fallbackCompany: string
 ) =>
   rows.map(({ keyword, company, isUpdateRequired }) => ({
     keyword,
-    company,
+    company: company || fallbackCompany,
     sheetType,
     keywordType: 'basic' as const,
     isUpdateRequired: isUpdateRequired ?? false,
@@ -65,7 +66,7 @@ export const syncKeywordsFromSourceSheet = async (
     sheetType: request.sheetType,
   });
   const insertResult = await Keyword.insertMany(
-    toKeywordDocuments(rows, request.sheetType, new Date())
+    toKeywordDocuments(rows, request.sheetType, new Date(), request.sheetName)
   );
 
   logger.success(

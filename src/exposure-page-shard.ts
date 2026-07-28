@@ -6,6 +6,7 @@ import {
   type PageCheckSheetType,
 } from './database';
 import { processSheetKeywords } from './cron-pages';
+import { applyStoredBlogIdOverrides } from './lib/blog-id-overrides';
 import { checkNaverLogin } from './lib/check-naver-login';
 import { getExposureConcurrency } from './lib/exposure-run-config';
 import { logger } from './lib/logger';
@@ -31,6 +32,10 @@ const main = async (): Promise<void> => {
   if (!mongoUri) throw new Error('MONGODB_URI 환경 변수가 설정되지 않았습니다.');
 
   await connectDB(mongoUri);
+  // 애견/서리펫 크롤은 이 자식 프로세스가 수행한다. 부모 워커에서 오버라이드를 적용해도
+  // 자식은 상수 모듈을 새로 import하므로 여기서 다시 적용하지 않으면 대시보드에서 바꾼
+  // 계정 목록이 페이지 체크에 조용히 반영되지 않는다.
+  await applyStoredBlogIdOverrides();
   try {
     const [loginStatus, allKeywords] = await Promise.all([
       checkNaverLogin(),
