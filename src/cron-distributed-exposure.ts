@@ -33,6 +33,10 @@ import {
   finalizeDistributedDirectNotification,
   isDistributedDirectTarget,
 } from './lib/distributed-exposure/notification-finalizer';
+import {
+  estimateRailwayWorkerCost,
+  formatRailwayCost,
+} from './lib/distributed-exposure/cost-estimate';
 
 dotenv.config();
 
@@ -239,9 +243,29 @@ const main = async (): Promise<void> => {
     }
 
     await finishDistributedRun(runId, 'success');
+    const elapsedMs = Date.now() - startedAt;
+    const costEstimate = estimateRailwayWorkerCost(
+      workerNetworks.size,
+      elapsedMs
+    );
     logger.summary.complete('다중 워커 노출체크 완료', [
       { label: '성공 대상', value: `${options.targets.length}개` },
-      { label: '총 소요', value: `${Math.floor((Date.now() - startedAt) / 1000)}초` },
+      { label: '총 소요', value: `${Math.floor(elapsedMs / 1000)}초` },
+      {
+        label: '이번 실행 서버비 추정',
+        value: formatRailwayCost(costEstimate.runUsd, costEstimate.runKrw),
+      },
+      {
+        label: '30일 상시 운영 추정',
+        value: formatRailwayCost(
+          costEstimate.monthlyUsd,
+          costEstimate.monthlyKrw
+        ),
+      },
+      {
+        label: '비용 가정',
+        value: `${costEstimate.workerCount}워커 · ${costEstimate.vcpu} vCPU · ${costEstimate.memoryGb}GB`,
+      },
     ]);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
