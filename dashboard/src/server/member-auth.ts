@@ -1,6 +1,7 @@
 import { scrypt, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
 import mongoose from 'mongoose';
+import { EMPTY_PRESET, type TenantPreset } from './preset';
 
 const scryptAsync = promisify(scrypt);
 
@@ -16,6 +17,7 @@ export interface MemberAccount {
   id: string;
   loginId: string;
   displayName: string;
+  preset: TenantPreset;
 }
 
 interface MemberDocument {
@@ -23,6 +25,7 @@ interface MemberDocument {
   loginId: string;
   passwordHash: string;
   displayName?: string;
+  preset?: TenantPreset;
 }
 
 const verifyScryptHash = async (
@@ -53,6 +56,13 @@ const connect = async () => {
   return db.collection<MemberDocument>(MEMBER_COLLECTION);
 };
 
+const toAccount = (document: MemberDocument): MemberAccount => ({
+  id: document._id,
+  loginId: document.loginId,
+  displayName: document.displayName ?? document.loginId,
+  preset: document.preset ?? EMPTY_PRESET,
+});
+
 export const authenticateMemberAccount = async (
   loginId: string,
   password: string,
@@ -66,9 +76,28 @@ export const authenticateMemberAccount = async (
   const isValid = await verifyScryptHash(password, document.passwordHash);
   if (!isValid) return null;
 
-  return {
-    id: document._id,
-    loginId: document.loginId,
-    displayName: document.displayName ?? document.loginId,
-  };
+  return toAccount(document);
+};
+
+export const findMemberAccountById = async (
+  memberId: string,
+): Promise<MemberAccount | null> => {
+  const collection = await connect();
+  const document = await collection.findOne({ _id: memberId });
+  return document ? toAccount(document) : null;
+};
+
+/** 프리셋만 갈아끼운다. 비밀번호 해시는 건드리지 않는다. */
+export const saveMemberPreset = async (
+  memberId: string,
+  preset: TenantPreset,
+): Promise<MemberAccount | null> => {
+  const collection = await connect();
+  const result = await collection.updateOne(
+    { _id: memberId },
+    { $set: { preset, updatedAt: new Date() } },
+  );
+  if (result.matchedCount === 0) return null;
+
+  return findMemberAccountById(memberId);
 };
