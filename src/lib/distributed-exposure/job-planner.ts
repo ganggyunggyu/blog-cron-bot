@@ -35,8 +35,8 @@ const toSingleSheetJob = (
 export const PAGE_REMOTE_WORKER_COUNT = 30;
 export const PAGE_JOB_MAX_SHARD_SIZE = 50;
 
-export const buildPageTargetJobs = (
-  target: Extract<PageCheckSheetType, 'pet' | 'suripet'>,
+export const buildKeywordTargetJobs = (
+  target: Extract<ExposureTargetId, 'root' | 'pet' | 'suripet'>,
   keywords: readonly PageShardKeyword[]
 ): DistributedJobInput[] => {
   const shards = buildBalancedPageKeywordShards(
@@ -51,6 +51,11 @@ export const buildPageTargetJobs = (
     keywordIds,
   }));
 };
+
+export const buildPageTargetJobs = (
+  target: Extract<PageCheckSheetType, 'pet' | 'suripet'>,
+  keywords: readonly PageShardKeyword[]
+): DistributedJobInput[] => buildKeywordTargetJobs(target, keywords);
 
 export const prepareDistributedJobs = async (
   targets: ExposureTargetId[]
@@ -70,15 +75,14 @@ export const prepareDistributedJobs = async (
       }
       const keywords = await getAllRootKeywords();
       if (keywords.length === 0) throw new Error('root 처리 키워드가 없음');
+      const targetJobs = buildKeywordTargetJobs(
+        target,
+        keywords.map(({ _id, keyword }) => ({ _id, keyword }))
+      );
       logger.info(
-        `[다중워커] root ${keywords.length}개 → 전용 서버 1개 작업`
+        `[다중워커] root ${keywords.length}개 → ${targetJobs.length}개 조각으로 병렬 처리`
       );
-      jobs.push(
-        toSingleSheetJob(
-          target,
-          keywords.map(({ _id }) => String(_id))
-        )
-      );
+      jobs.push(...targetJobs);
       continue;
     }
 

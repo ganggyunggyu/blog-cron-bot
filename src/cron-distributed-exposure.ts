@@ -222,7 +222,7 @@ const main = async (): Promise<void> => {
         ? `${outcome.timedOut ? '제한 시간 초과' : '크롤 실패'} ${outcome.unfinishedTargets.length}개(${outcome.unfinishedTargets.join(', ')}) — ${outcome.failureDetail}`
         : '';
 
-    if (crawlFailure || finalizeFailures.length > 0 || networkWarnings.length > 0) {
+    if (crawlFailure || finalizeFailures.length > 0) {
       const reasons = [
         ...(crawlFailure ? [crawlFailure] : []),
         ...(finalizeFailures.length > 0

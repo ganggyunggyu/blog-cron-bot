@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {
   PAGE_JOB_MAX_SHARD_SIZE,
   PAGE_REMOTE_WORKER_COUNT,
+  buildKeywordTargetJobs,
   buildPageTargetJobs,
 } from './job-planner';
 
@@ -47,6 +48,21 @@ assert.equal(smallJobs.length, 2);
 assert.deepEqual(
   smallJobs.map((job) => job.keywordIds),
   [['a'], ['b']]
+);
+
+const rootJobs = buildKeywordTargetJobs(
+  'root',
+  Array.from({ length: 191 }, (_, index) => ({
+    _id: `root-${index}`,
+    keyword: `루트 키워드 ${index}`,
+  }))
+);
+assert.equal(rootJobs.length, PAGE_REMOTE_WORKER_COUNT);
+assert.equal(new Set(rootJobs.flatMap((job) => job.keywordIds ?? [])).size, 191);
+assert.ok(
+  Math.max(...rootJobs.map((job) => job.keywordIds?.length ?? 0)) -
+    Math.min(...rootJobs.map((job) => job.keywordIds?.length ?? 0)) <=
+    1
 );
 
 process.stdout.write('distributed job planner tests passed\n');
