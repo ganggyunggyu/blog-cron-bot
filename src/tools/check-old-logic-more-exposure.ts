@@ -185,6 +185,19 @@ const DEFAULT_OUTPUT_TITLE = '0611';
 const PAGE_CHECK_SHEET_ID = '1c9TJ1gETtunuCmzfzap-2lyqXj1cwzITOb1k8W4tL8c';
 const DEFAULT_CONCURRENCY = 1;
 const DEFAULT_MAX_MORE_PAGES = 30;
+/**
+ * 더보기 API를 다음 페이지로 넘길 때의 대기 시간.
+ *
+ * 다음 페이지 URL이 이전 응답 안에 들어 있어 순차로만 밟을 수 있는 구간이라,
+ * 이 대기가 키워드당 최대 30번 누적돼 전체 소요 시간을 지배한다.
+ * 환경변수로 조정 가능하게 두되 기본값을 낮춰 왕복 대기를 줄인다.
+ */
+const MORE_PAGE_DELAY_MIN_MS = Number(
+  process.env.MORE_PAGE_DELAY_MIN_MS ?? 100
+);
+const MORE_PAGE_DELAY_MAX_MS = Number(
+  process.env.MORE_PAGE_DELAY_MAX_MS ?? 300
+);
 const DEFAULT_MAX_SCROLLS = 120;
 const DEFAULT_MAX_RESULTS = 300;
 const DEFAULT_STABLE_SCROLLS = 6;
@@ -1778,7 +1791,7 @@ const loadMorePageItems = async (
     apiUrl = typeof parsed.dom?.url === 'string' ? parsed.dom.url : '';
 
     if (apiUrl) {
-      await randomDelay(700, 1400);
+      await randomDelay(MORE_PAGE_DELAY_MIN_MS, MORE_PAGE_DELAY_MAX_MS);
     }
   }
 
@@ -1932,7 +1945,7 @@ const loadMorePageContentItems = async (
           : '';
 
     if (apiUrl) {
-      await randomDelay(250, 500);
+      await randomDelay(MORE_PAGE_DELAY_MIN_MS, MORE_PAGE_DELAY_MAX_MS);
     }
   }
 
