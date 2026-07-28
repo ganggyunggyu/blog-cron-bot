@@ -4,6 +4,7 @@ import {
   PAGE_REMOTE_WORKER_COUNT,
   buildKeywordTargetJobs,
   buildPageTargetJobs,
+  interleaveTargetJobs,
 } from './job-planner';
 
 // 서로 다른 검색어 300개는 운영 중인 원격 워커 30대에 균등 분배한다.
@@ -37,6 +38,16 @@ assert.ok(
   Math.max(...suripetJobs.map((job) => job.keywordIds?.length ?? 0)) -
     Math.min(...suripetJobs.map((job) => job.keywordIds?.length ?? 0)) <=
     2
+);
+
+const interleaved = interleaveTargetJobs([
+  ...buildKeywordTargetJobs('package', uniqueKeywords.slice(0, 2)),
+  ...buildKeywordTargetJobs('general', uniqueKeywords.slice(2, 4)),
+  ...buildKeywordTargetJobs('dogmaru', uniqueKeywords.slice(4, 6)),
+]);
+assert.deepEqual(
+  interleaved.slice(0, 3).map(({ target }) => target),
+  ['package', 'general', 'dogmaru']
 );
 
 // 키워드가 워커 수보다 적으면 키워드 수만큼만 조각을 만든다.

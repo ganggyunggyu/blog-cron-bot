@@ -34,6 +34,32 @@ const toSingleSheetJob = (
   keywordIds,
 });
 
+// 대상별 조각을 한 대상씩 밀어 넣으면 큐 선두 대상이 워커를 독점한다.
+// 같은 실행에 여러 시트가 있으면 0번 조각끼리, 1번 조각끼리 교차해 배치한다.
+export const interleaveTargetJobs = (
+  jobs: readonly DistributedJobInput[]
+): DistributedJobInput[] => {
+  const byTarget = new Map<ExposureTargetId, DistributedJobInput[]>();
+  jobs.forEach((job) => {
+    const targetJobs = byTarget.get(job.target) ?? [];
+    targetJobs.push(job);
+    byTarget.set(job.target, targetJobs);
+  });
+
+  const interleaved: DistributedJobInput[] = [];
+  const maxShardCount = Math.max(
+    0,
+    ...Array.from(byTarget.values(), (targetJobs) => targetJobs.length)
+  );
+  for (let shardIndex = 0; shardIndex < maxShardCount; shardIndex += 1) {
+    byTarget.forEach((targetJobs) => {
+      const job = targetJobs[shardIndex];
+      if (job) interleaved.push(job);
+    });
+  }
+  return interleaved;
+};
+
 // 모든 키워드 기반 노출체크는 30개 원격 워커에 균등 분배한다.
 export const PAGE_REMOTE_WORKER_COUNT = 30;
 export const PAGE_JOB_MAX_SHARD_SIZE = 50;
@@ -136,5 +162,5 @@ export const prepareDistributedJobs = async (
     jobs.push(...targetJobs);
   }
 
-  return jobs;
+  return interleaveTargetJobs(jobs);
 };
