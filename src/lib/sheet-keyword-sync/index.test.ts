@@ -5,8 +5,8 @@ const checkedAt = new Date('2026-07-27T00:00:00.000Z');
 
 const documents = toKeywordDocuments(
   [
-    { keyword: '청주맛집', company: '아키아키', isUpdateRequired: true },
-    { keyword: '수원맛집', company: '샤브밀', isUpdateRequired: false },
+    { keyword: '청주맛집', company: '아키아키', isUpdateRequired: true, isNewLogic: true },
+    { keyword: '수원맛집', company: '샤브밀', isUpdateRequired: false, isNewLogic: false },
   ],
   'package',
   checkedAt,
@@ -22,6 +22,7 @@ assert.deepEqual(documents, [
     sheetType: 'package',
     keywordType: 'basic',
     isUpdateRequired: true,
+    isNewLogic: true,
     visibility: false,
     lastChecked: checkedAt,
   },
@@ -31,6 +32,7 @@ assert.deepEqual(documents, [
     sheetType: 'package',
     keywordType: 'basic',
     isUpdateRequired: false,
+    isNewLogic: false,
     visibility: false,
     lastChecked: checkedAt,
   },
@@ -39,7 +41,7 @@ assert.deepEqual(documents, [
 // sheetType은 호출부가 넘긴 값을 그대로 써야 대상별로 정확히 교체됨.
 assert.equal(
   toKeywordDocuments(
-    [{ keyword: 'a', company: 'b', isUpdateRequired: false }],
+    [{ keyword: 'a', company: 'b', isUpdateRequired: false, isNewLogic: false }],
     'dogmaru-exclude',
     checkedAt,
     '도그마루 제외'
@@ -51,7 +53,7 @@ assert.equal(
 // required 필드 검증에 걸려 insertMany 전체가 실패하므로 시트명으로 채워야 함.
 assert.equal(
   toKeywordDocuments(
-    [{ keyword: '가정견분양', company: '', isUpdateRequired: false }],
+    [{ keyword: '가정견분양', company: '', isUpdateRequired: false, isNewLogic: false }],
     'dogmaru',
     checkedAt,
     '도그마루'

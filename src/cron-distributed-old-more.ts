@@ -18,6 +18,7 @@ import {
   estimateRailwayWorkerCost,
   formatRailwayCost,
 } from './lib/distributed-exposure/cost-estimate';
+import { finalizeDistributedOldLogicMore } from './lib/distributed-exposure/more-finalizer';
 
 dotenv.config();
 
@@ -120,12 +121,18 @@ const main = async (): Promise<void> => {
     }
 
     const snapshot = await getDistributedRunSnapshot(runId);
+    const elapsedTime = `${Math.floor((Date.now() - startedAt) / 1000)}초`;
     for (const target of TARGETS) {
       const titles = snapshot.jobs
         .filter((job) => job.target === target)
         .sort((left, right) => left.shardIndex - right.shardIndex)
         .map((job) => getWorkerOutputTitle(runId, target, job.shardIndex));
       await runMerge(target, titles);
+      const exported = await finalizeDistributedOldLogicMore(target, elapsedTime);
+      logger.info(
+        `[더보기 다중워커] ${target} 내보내기 ${exported.resultRows}행 / ` +
+          `노출 ${exported.exposedKeywords}/${exported.totalKeywords} / ${exported.csvPath}`
+      );
     }
 
     await finishDistributedRun(runId, 'success');

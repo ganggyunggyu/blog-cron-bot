@@ -18,6 +18,7 @@ export interface SheetKeywordRow {
   keyword: string;
   company: string;
   isUpdateRequired: boolean;
+  isNewLogic: boolean;
 }
 
 /**
@@ -31,12 +32,13 @@ export const toKeywordDocuments = (
   checkedAt: Date,
   fallbackCompany: string
 ) =>
-  rows.map(({ keyword, company, isUpdateRequired }) => ({
+  rows.map(({ keyword, company, isUpdateRequired, isNewLogic }) => ({
     keyword,
     company: company || fallbackCompany,
     sheetType,
     keywordType: 'basic' as const,
     isUpdateRequired: isUpdateRequired ?? false,
+    isNewLogic: isNewLogic ?? false,
     visibility: false,
     lastChecked: checkedAt,
   }));
