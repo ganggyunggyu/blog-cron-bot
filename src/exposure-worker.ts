@@ -91,10 +91,7 @@ const runWorkerSlot = async (
         }
         continue;
       }
-      if (
-        outcome === 'success' &&
-        (job.target === 'pet' || job.target === 'suripet')
-      ) {
+      if (outcome === 'success') {
         assignedJobId = undefined;
         continue;
       }
