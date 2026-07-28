@@ -24,9 +24,15 @@ const REQUIRED_DOGMARU_BLOG_IDS = [
   'yaboo_171022',
   'dudtjsdh159',
 ];
-const REQUIRED_SURI_PET_BLOG_IDS = ['hotelelena', 'pjwon03', 'ylk3516'];
+const REQUIRED_SURI_PET_BLOG_IDS = [
+  'hotelelena',
+  'pjwon03',
+  'ylk3516',
+  'inho5062',
+];
 const REQUIRED_ALIBABA_BLOG_IDS = ['introsm'];
 const REQUIRED_BASE_BLOG_IDS = ['introsm'];
+const REQUIRED_GENERAL_BLOG_IDS = ['yaves0218', 'airtrd'];
 const REQUIRED_REACTIVATED_BLOG_IDS = ['durysuk'];
 const DOGMARU_PAGE_CHECK_ONLY_EXCLUDED_BLOG_IDS = ['sghjan'];
 const REQUIRED_PACKAGE_GENERAL_MORE_CHECK_BLOG_IDS = [
@@ -36,6 +42,7 @@ const REQUIRED_PACKAGE_GENERAL_MORE_CHECK_BLOG_IDS = [
   'taraswati',
   'vividoasis',
   'yaves0218',
+  'airtrd',
   'idoenzang',
   'an970405',
   'hotelelena',
@@ -108,6 +115,7 @@ assertContainsAll(SURI_PET_BLOG_IDS, REQUIRED_SURI_PET_BLOG_IDS);
 assertContainsAll(SURI_PET_PAGE_CHECK_BLOG_IDS, REQUIRED_SURI_PET_BLOG_IDS);
 assertContainsAll(PET_PAGE_CHECK_BLOG_IDS, REQUIRED_SURI_PET_BLOG_IDS);
 assertContainsAll(BLOG_IDS, REQUIRED_BASE_BLOG_IDS);
+assertContainsAll(BLOG_IDS, REQUIRED_GENERAL_BLOG_IDS);
 assertContainsAll(BLOG_IDS, REQUIRED_REACTIVATED_BLOG_IDS);
 assertContainsAll(BLOG_IDS, DOGMARU_PAGE_CHECK_ONLY_EXCLUDED_BLOG_IDS);
 assertExcludesAll(

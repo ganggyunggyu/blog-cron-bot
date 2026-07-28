@@ -1,5 +1,5 @@
 export const DEFAULT_EXPOSURE_CONCURRENCY = 8;
-export const MAX_EXPOSURE_CONCURRENCY = 8;
+export const MAX_EXPOSURE_CONCURRENCY = 1_000_000;
 export const MAX_EXPOSURE_PAGES = 9;
 export const DEFAULT_EXPOSURE_KEYWORD_BATCH_SIZE = 50;
 export const FAST_EXPOSURE_LOGIN_RETRIES = 2;
@@ -95,6 +95,24 @@ export interface ConcurrencyBudget {
   taskConcurrency: number;
   perTaskConcurrency: number;
 }
+
+export interface FullKeywordParallelism {
+  concurrency: number;
+  keywordBatchSize: number;
+}
+
+export const getFullKeywordParallelism = (
+  keywordCount: number
+): FullKeywordParallelism => {
+  const normalizedKeywordCount = Number.isFinite(keywordCount)
+    ? Math.max(1, Math.floor(keywordCount))
+    : 1;
+
+  return {
+    concurrency: normalizedKeywordCount,
+    keywordBatchSize: normalizedKeywordCount,
+  };
+};
 
 export const splitConcurrencyBudget = (
   totalConcurrency: number,

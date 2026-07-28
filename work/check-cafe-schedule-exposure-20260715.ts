@@ -16,7 +16,7 @@ import { emitExposureProgress } from '../src/lib/exposure-progress';
 dotenv.config();
 
 const SHEET_ID = '1aIKP9XnB20q8WWvwZzMNk2yM0waKZcQ1x6CtyM19HNw';
-const SHEET_TITLE = '카페 작업';
+const SHEET_TITLE = '카페 발행스케줄';
 // 카페 + 블로그(우리 블로그 전부) 둘 중 하나라도 노출되면 "노출"로 판정한다.
 const RETRY_FAILED_ONLY = process.env.RETRY_FAILED_ONLY === 'true';
 
@@ -82,18 +82,6 @@ const sourceIdFromCafeUrl = (cafeUrl: string): string => {
   return match?.[1]?.trim() ?? '';
 };
 
-const buildCafeTargets = (values: unknown[][]): CafeTarget[] => {
-  const targets = new Map<string, CafeTarget>();
-  values.forEach((row) => {
-    row.forEach((cell) => {
-      const sourceId = sourceIdFromCafeUrl(cellText(cell));
-      if (!sourceId || targets.has(sourceId)) return;
-      targets.set(sourceId, { name: sourceId, ids: [sourceId] });
-    });
-  });
-  return [...targets.values()];
-};
-
 const unique = (values: string[]): string[] =>
   Array.from(new Set(values.filter((value) => value.length > 0)));
 
@@ -122,18 +110,28 @@ const loadLatestResultArtifact = (): SavedResultArtifact => {
 const loadSchedule = async (
   values: unknown[][]
 ): Promise<{ title: string; rows: ScheduleKeyword[]; targets: CafeTarget[] }> => {
-  const headerRowIndex = values.findIndex((row) =>
-    cellText(row?.[1]).toLowerCase() === '키워드'
+  const markerRowIndex = values.findIndex((row) =>
+    /스케[줄쥴]/.test(cellText(row?.[0]))
   );
-  if (headerRowIndex < 0) throw new Error('카페 작업 탭에서 B열 키워드 헤더를 찾지 못함');
 
-  const title = SHEET_TITLE;
-  const rows = values.slice(headerRowIndex + 1).flatMap((row, offset) => {
-    const keyword = cellText(row?.[1]);
-    return keyword ? [{ rowIndex: headerRowIndex + offset + 1, keyword }] : [];
-  });
+  if (markerRowIndex < 0) {
+    throw new Error('A열에서 스케줄 제목을 찾지 못함');
+  }
 
-  const targets = buildCafeTargets(values);
+  const title = cellText(values[markerRowIndex]?.[0]);
+  const rows: ScheduleKeyword[] = [];
+  for (let rowIndex = markerRowIndex + 1; rowIndex < values.length; rowIndex += 1) {
+    const keyword = cellText(values[rowIndex]?.[0]);
+    if (/스케[줄쥴]/.test(keyword)) break;
+    if (keyword) rows.push({ rowIndex, keyword });
+  }
+
+  const targets: CafeTarget[] = [];
+  for (let rowIndex = 0; rowIndex < values.length; rowIndex += 1) {
+    const name = cellText(values[rowIndex]?.[14]);
+    const sourceId = sourceIdFromCafeUrl(cellText(values[rowIndex]?.[15]));
+    if (name && sourceId) targets.push({ name, ids: [sourceId] });
+  }
 
   if (targets.length === 0) {
     targets.push(

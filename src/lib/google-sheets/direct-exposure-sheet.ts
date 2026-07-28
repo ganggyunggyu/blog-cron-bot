@@ -18,6 +18,7 @@ export interface DirectSheetKeywordDoc {
   sheetRowNumber: number;
   orderIndex: number;
   isUpdateRequired: boolean;
+  isNewLogic: boolean;
 }
 
 export interface DirectSheetUpdate {
@@ -310,6 +311,9 @@ export const loadKeywordsFromWorksheet = async (
     const sheetRowNumber = getSheetRowNumber(row, index + 2);
     const company = getRowValue(row, '업체명');
     const isUpdateRequired = parseBooleanCell(row.get('바이럴 체크'));
+    const isNewLogic = parseBooleanCell(
+      row.get('변경') || row.get('로직') || row.get('신규로직')
+    );
 
     return [
       {
@@ -320,6 +324,7 @@ export const loadKeywordsFromWorksheet = async (
         sheetRowNumber,
         orderIndex: index,
         isUpdateRequired,
+        isNewLogic,
       },
     ];
   });

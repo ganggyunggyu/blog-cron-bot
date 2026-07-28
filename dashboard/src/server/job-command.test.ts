@@ -8,9 +8,9 @@ import { getJobDefinition } from './job-registry';
 test('suite 기본 옵션을 고정된 CLI 인자로 변환함', () => {
   assert.deepEqual(buildExposureSuiteArgs(undefined), [
     '--targets=package,general,dogmaru,root,pet,suripet,cafe',
-    '--concurrency=8',
+    `--concurrency=${process.env.DISTRIBUTED_EXPOSURE_ENABLED === 'true' ? 0 : 50}`,
     '--max-pages=4',
-    '--target-concurrency=2',
+    `--target-concurrency=${process.env.DISTRIBUTED_EXPOSURE_ENABLED === 'true' ? 1 : 2}`,
   ]);
 });
 
@@ -20,15 +20,17 @@ test('검증된 suite 옵션만 pnpm 인자로 전달함', () => {
   assert.deepEqual(
     buildJobSpawnArgs(suiteJob, {
       targets: ['package', 'cafe'],
-      concurrency: 8,
+      concurrency: 50,
       maxPages: 9,
       targetConcurrency: 3,
     }),
     [
       'run',
-      'exposure:suite',
+      process.env.DISTRIBUTED_EXPOSURE_ENABLED === 'true'
+        ? 'exposure:distributed'
+        : 'exposure:suite',
       '--targets=package,cafe',
-      '--concurrency=8',
+      `--concurrency=${process.env.DISTRIBUTED_EXPOSURE_ENABLED === 'true' ? 0 : 50}`,
       '--max-pages=9',
       '--target-concurrency=3',
     ],
@@ -40,7 +42,7 @@ test('허용되지 않은 suite 입력을 거부함', () => {
     { targets: [] },
     { targets: ['package', 'package'] },
     { targets: ['unknown'] },
-    { concurrency: 9 },
+    { concurrency: 51 },
     { maxPages: 0 },
     { targetConcurrency: 4 },
     { command: 'arbitrary-command' },
@@ -53,14 +55,50 @@ test('허용되지 않은 suite 입력을 거부함', () => {
 
 test('표준 잡은 임의 옵션을 받지 않고 unsafe 잡은 등록하지 않음', () => {
   const rootJob = getJobDefinition('root-exposure');
+  const reexportJob = getJobDefinition('reexport-current-exposure');
   assert.ok(rootJob);
-  assert.deepEqual(buildJobSpawnArgs(rootJob, undefined), ['run', 'cron:root']);
+  assert.ok(reexportJob);
+  assert.deepEqual(
+    buildJobSpawnArgs(rootJob, undefined),
+    process.env.DISTRIBUTED_EXPOSURE_ENABLED === 'true'
+      ? ['run', 'exposure:distributed', '--targets=root']
+      : ['run', 'cron:root'],
+  );
+  assert.deepEqual(buildJobSpawnArgs(reexportJob, undefined), [
+    'run',
+    'exposure:reexport:current',
+  ]);
   assert.throws(
     () => buildJobSpawnArgs(rootJob, { env: { EXTRA_COMMAND: '1' } }),
     InvalidJobInputError,
   );
   assert.equal(getJobDefinition('parallel-check'), undefined);
   assert.equal(getJobDefinition('cafe-check'), undefined);
+});
+
+test('분산 실행에서는 개별 대상 잡도 분산 러너로 보냄', () => {
+  // 개별 잡의 로컬 스크립트(cron:sheet, cron:pages 등)는 이 레포에 없는 외부 시트 API에
+  // 의존해 원격에서 항상 실패했음 — 분산이 켜지면 전체 실행과 같은 러너를 쓰도록 고정함.
+  const isDistributed = process.env.DISTRIBUTED_EXPOSURE_ENABLED === 'true';
+  const cases: Array<[string, string, string[]]> = [
+    ['package-exposure', 'exposure:package', ['--targets=package']],
+    ['general-exposure', 'exposure:general', ['--targets=general']],
+    ['dogmaru-exposure', 'exposure:dogmaru', ['--targets=dogmaru']],
+    ['pet-exposure', 'exposure:pet', ['--targets=pet', '--max-pages=4']],
+    ['suripet-exposure', 'exposure:suripet', ['--targets=suripet', '--max-pages=4']],
+    ['cafe-exposure', 'exposure:cafe', ['--targets=cafe']],
+  ];
+
+  cases.forEach(([jobId, localScript, distributedArgs]) => {
+    const job = getJobDefinition(jobId);
+    assert.ok(job, `${jobId} 잡이 등록되어 있어야 함`);
+    assert.deepEqual(
+      buildJobSpawnArgs(job, undefined),
+      isDistributed
+        ? ['run', 'exposure:distributed', ...distributedArgs]
+        : ['run', localScript],
+    );
+  });
 });
 
 test('suite 실행 방식과 target 계약을 명시적으로 제공함', () => {

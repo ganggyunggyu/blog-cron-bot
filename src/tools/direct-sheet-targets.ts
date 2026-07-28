@@ -3,6 +3,7 @@ export const DIRECT_SHEET_TARGETS = [
   'dogmaru-exclude',
   'dogmaru',
   'seoripet',
+  'pet',
 ] as const;
 
 export type DirectSheetTarget = (typeof DIRECT_SHEET_TARGETS)[number];
@@ -24,6 +25,7 @@ const normalizeDirectSheetTarget = (
   ) {
     return 'seoripet';
   }
+  if (normalized === 'pet' || normalized === '애견') return 'pet';
 
   return null;
 };

@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 import os from 'os';
 import { main as runCrawl } from './index';
-import { syncKeywords } from './api';
+import { syncKeywordsFromSourceSheet } from './lib/sheet-keyword-sync';
 import { requests, SHEET_TYPE, SheetType } from './constants';
 import { logger } from './lib/logger';
 
@@ -83,7 +83,7 @@ const runSheetWorkflow = async () => {
   ]);
 
   logger.step(1, 3, `${label} 시트 동기화`);
-  await syncKeywords(requests[sheetIndex]);
+  await syncKeywordsFromSourceSheet(requests[sheetIndex]);
   logger.step(1, 3, `${label} 시트 동기화`, 'done');
 
   logger.step(2, 3, `${label} 노출 체크`);

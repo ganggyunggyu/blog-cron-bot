@@ -3,6 +3,7 @@ import type { ExposureExecutionMode, ExposureTargetId } from '@/shared';
 export type { ExposureExecutionMode, ExposureTargetId } from '@/shared';
 
 export type JobKind = 'standard' | 'exposure-suite';
+export type JobCategory = 'daily' | 'more' | 'pet' | 'cafe' | 'reexport';
 
 export interface ExposureTargetDefinition {
   id: ExposureTargetId;
@@ -42,6 +43,7 @@ export interface JobDefinition {
   description: string;
   riskNote?: string;
   kind: JobKind;
+  category?: JobCategory;
   options?: ExposureSuiteOptionDefinition;
   isRunning: boolean;
   isBlocked: boolean;

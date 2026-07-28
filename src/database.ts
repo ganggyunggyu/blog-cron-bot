@@ -138,6 +138,29 @@ export const getAllRootKeywords = async (): Promise<IRootKeyword[]> => {
   }
 };
 
+export const getUncheckedRootKeywordIds = async (
+  keywordIds: string[],
+  checkedSince: Date
+): Promise<string[]> => {
+  const checked = await RootKeyword.find({
+    _id: { $in: keywordIds },
+    lastChecked: { $gte: checkedSince },
+    $or: [
+      { visibility: false },
+      {
+        visibility: true,
+        url: { $nin: ['', null] },
+        rank: { $gt: 0 },
+      },
+    ],
+  })
+    .select({ _id: 1 })
+    .lean()
+    .exec();
+  const checkedIds = new Set(checked.map(({ _id }) => String(_id)));
+  return keywordIds.filter((keywordId) => !checkedIds.has(keywordId));
+};
+
 export const updateKeywordResult = async (
   keywordId: string,
   visibility: boolean,
@@ -269,6 +292,7 @@ export interface PageCheckKeywordInput {
   isUpdateRequired?: boolean;
   isNewLogic?: boolean;
   foundPage?: number;
+  lastChecked?: Date;
 }
 
 const PageCheckKeywordSchema: Schema = new Schema(
@@ -372,6 +396,32 @@ export const getPageCheckKeywords = async (
   }
 };
 
+export const getUncheckedPageKeywordIds = async (
+  sheetType: PageCheckSheetType,
+  keywordIds: string[],
+  checkedSince: Date
+): Promise<string[]> => {
+  const model = pageCheckModels[sheetType];
+  const checked = await model
+    .find({
+      _id: { $in: keywordIds },
+      lastChecked: { $gte: checkedSince },
+      $or: [
+        { visibility: false },
+        {
+          visibility: true,
+          url: { $nin: ['', null] },
+          rank: { $gt: 0 },
+        },
+      ],
+    })
+    .select({ _id: 1 })
+    .lean()
+    .exec();
+  const checkedIds = new Set(checked.map(({ _id }) => String(_id)));
+  return keywordIds.filter((keywordId) => !checkedIds.has(keywordId));
+};
+
 export const replacePageCheckKeywords = async (
   sheetType: PageCheckSheetType,
   keywords: PageCheckKeywordInput[]
@@ -399,6 +449,7 @@ export const replacePageCheckKeywords = async (
         isUpdateRequired,
         isNewLogic,
         foundPage,
+        lastChecked,
       }) => ({
         company,
         keyword,
@@ -415,6 +466,7 @@ export const replacePageCheckKeywords = async (
         isUpdateRequired,
         isNewLogic,
         foundPage,
+        lastChecked,
       })
     );
 
@@ -425,7 +477,12 @@ export const replacePageCheckKeywords = async (
     }
 
     try {
-      await model.insertMany(keywords);
+      await model.insertMany(
+        keywords.map((keyword) => ({
+          ...keyword,
+          lastChecked: new Date(0),
+        }))
+      );
     } catch (error) {
       if (restoreKeywords.length > 0) {
         await model.insertMany(restoreKeywords);

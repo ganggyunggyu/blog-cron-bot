@@ -26,33 +26,52 @@ const getSecretKey = async () => {
   );
 };
 
-export const createSessionToken = async () => {
+export interface SessionPayload {
+  memberId: string;
+  issuedAt: number;
+}
+
+/**
+ * 세션에 누구인지를 담는다.
+ *
+ * 예전 토큰은 발급 시각만 서명해서 "로그인했다"는 사실만 알 수 있었고, 어느 계정인지
+ * 알 수 없어 계정별 프리셋을 쓸 수 없었다. memberId를 함께 서명한다.
+ */
+export const createSessionToken = async (memberId: string) => {
   const issuedAt = Date.now().toString();
+  const payload = `${issuedAt}.${memberId}`;
   const key = await getSecretKey();
-  const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(issuedAt));
-  return `${issuedAt}.${bufferToBase64Url(signature)}`;
+  const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(payload));
+  return `${payload}.${bufferToBase64Url(signature)}`;
 };
 
-export const verifySessionToken = async (token: string | undefined | null) => {
-  if (!token) return false;
+export const readSessionToken = async (
+  token: string | undefined | null,
+): Promise<SessionPayload | null> => {
+  if (!token) return null;
 
-  const [issuedAt, signature] = token.split('.');
-  if (!issuedAt || !signature) return false;
+  const parts = token.split('.');
+  if (parts.length !== 3) return null;
+
+  const [issuedAtRaw, memberId, signature] = parts;
+  if (!issuedAtRaw || !memberId || !signature) return null;
 
   const key = await getSecretKey();
-  const expectedSignature = await crypto.subtle.sign('HMAC', key, encoder.encode(issuedAt));
-  const expectedBase64Url = bufferToBase64Url(expectedSignature);
-  if (expectedBase64Url !== signature) return false;
+  const expected = await crypto.subtle.sign(
+    'HMAC',
+    key,
+    encoder.encode(`${issuedAtRaw}.${memberId}`),
+  );
+  if (bufferToBase64Url(expected) !== signature) return null;
 
-  const age = Date.now() - Number(issuedAt);
-  const maxAgeMs = SESSION_MAX_AGE_SECONDS * 1000;
-  return age >= 0 && age <= maxAgeMs;
-};
-
-export const verifyPassword = (candidate: string) => {
-  const expected = process.env.DASHBOARD_PASSWORD;
-  if (!expected) {
-    throw new Error('DASHBOARD_PASSWORD is not set');
+  const issuedAt = Number(issuedAtRaw);
+  const age = Date.now() - issuedAt;
+  if (!Number.isFinite(issuedAt) || age < 0 || age > SESSION_MAX_AGE_SECONDS * 1000) {
+    return null;
   }
-  return candidate === expected;
+
+  return { memberId, issuedAt };
 };
+
+export const verifySessionToken = async (token: string | undefined | null) =>
+  (await readSessionToken(token)) !== null;

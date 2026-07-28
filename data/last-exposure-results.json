@@ -26,10 +26,10 @@
   "도그마루 노출체크": {
     "cronType": "도그마루 노출체크",
     "totalKeywords": 299,
-    "exposureCount": 103,
-    "popularCount": 103,
+    "exposureCount": 117,
+    "popularCount": 117,
     "sblCount": 0,
-    "timestamp": "2026-07-20T00:56:11.549Z"
+    "timestamp": "2026-07-28T00:54:25.615Z"
   },
   "패키지 노출체크": {
     "cronType": "패키지 노출체크",
@@ -43,11 +43,11 @@
   },
   "루트 키워드": {
     "cronType": "루트 키워드",
-    "totalKeywords": 193,
-    "exposureCount": 9,
-    "popularCount": 0,
+    "totalKeywords": 190,
+    "exposureCount": 1,
+    "popularCount": 1,
     "sblCount": 0,
-    "timestamp": "2026-07-23T08:58:13.377Z"
+    "timestamp": "2026-07-28T07:49:03.571Z"
   },
   "멀티페이지 크론 [애견]": {
     "cronType": "멀티페이지 크론 [애견]",
@@ -368,9 +368,9 @@
   "애견": {
     "cronType": "애견",
     "totalKeywords": 300,
-    "exposureCount": 202,
-    "popularCount": 139,
+    "exposureCount": 18,
+    "popularCount": 12,
     "sblCount": 0,
-    "timestamp": "2026-07-23T07:08:51.489Z"
+    "timestamp": "2026-07-27T04:35:50.596Z"
   }
 }

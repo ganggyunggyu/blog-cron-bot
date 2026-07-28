@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { parseRootKeywordRows } from './index';
+import { isRootSourceSchemaMismatch, parseRootKeywordRows } from './index';
 
 const rows = parseRootKeywordRows([
   [],
@@ -14,11 +14,11 @@ assert.deepEqual(rows, [
   {
     company: '업체A',
     keyword: '첫 키워드(업체A)',
-    visibility: true,
-    popularTopic: '인기글',
-    url: 'https://example.com/a',
-    rank: 2,
-    rankWithCafe: 4,
+    visibility: false,
+    popularTopic: '',
+    url: '',
+    rank: 0,
+    rankWithCafe: 0,
     isUpdateRequired: true,
     keywordType: 'basic',
   },
@@ -28,8 +28,8 @@ assert.deepEqual(rows, [
     visibility: false,
     popularTopic: '',
     url: '',
-    rank: undefined,
-    rankWithCafe: undefined,
+    rank: 0,
+    rankWithCafe: 0,
     isUpdateRequired: false,
     keywordType: 'basic',
   },
@@ -42,5 +42,13 @@ assert.equal(
   ])[0].keyword,
   '중복방지(업체A)'
 );
+
+assert.equal(
+  isRootSourceSchemaMismatch(
+    new Error('루트 원본 필수 컬럼(키워드, 업체명)을 찾을 수 없음')
+  ),
+  true
+);
+assert.equal(isRootSourceSchemaMismatch(new Error('HTTP 403')), false);
 
 process.stdout.write('root keyword sync tests passed\n');

@@ -3,15 +3,50 @@ import { saveToCSV, saveToSheetCSV } from '../../csv-writer';
 import { extractBlogId, type ExposureResult } from '../../matcher';
 import { getKSTTimestamp } from '../../utils';
 import { sendDoorayExposureResult } from '../dooray';
-import { buildSheetRows } from '../csv-output';
-import { rewriteResultSheetRows } from '../google-sheets/ordered-result-sheet';
+import { rewriteOrderedResultSheet } from '../google-sheets/ordered-result-sheet';
 import { logger } from '../logger';
+
+/**
+ * 같은 키워드(업체명 포함)에 동일 링크가 여러 번 잡힌 경우 하나만 남김. 월보장 시트에
+ * 같은 키워드 행이 중복돼 같은 블로그 글이 반복 노출로 집계되는 걸 방지함. 서로 다른
+ * 키워드가 같은 링크를 공유하는 건 각자 유지한다(키워드 단위 dedup).
+ */
+export const dedupeRootExposedByLink = <
+  T extends { keyword: string; company: string; url: string }
+>(
+  exposed: readonly T[]
+): T[] => {
+  const seen = new Set<string>();
+  return exposed.filter((item) => {
+    const url = (item.url ?? '').trim();
+    if (!url) return true;
+    const key = `${(item.company ?? '').trim()}\0${(item.keyword ?? '').trim()}\0${url}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+};
+
+export const isInvalidRootExposure = (
+  keyword: { visibility: boolean; url: string; rank?: number }
+): boolean =>
+  keyword.visibility &&
+  (!keyword.url.trim() || !keyword.rank || keyword.rank <= 0);
 
 export const finalizeDistributedRootTarget = async (
   elapsedTime: string
 ): Promise<void> => {
   const keywords = await getAllRootKeywords();
-  const exposed = keywords.filter((keyword) => keyword.visibility);
+  const invalidExposures = keywords.filter(isInvalidRootExposure);
+  if (invalidExposures.length > 0) {
+    throw new Error(
+      `루트 노출 결과 필수값 누락: ${invalidExposures.length}개 ` +
+        '(링크 또는 양수 순위 없음)'
+    );
+  }
+  const exposed = dedupeRootExposedByLink(
+    keywords.filter((keyword) => keyword.visibility)
+  );
   const results: ExposureResult[] = exposed.map((keyword) => ({
     query: keyword.keyword,
     company: keyword.company,
@@ -36,16 +71,17 @@ export const finalizeDistributedRootTarget = async (
     `root_sheet_${timestamp}.csv`
   );
 
-  const rewriteResult = await rewriteResultSheetRows(
+  const rewriteResult = await rewriteOrderedResultSheet(
     'root',
-    buildSheetRows(
-      keywords.map(({ keyword, company }) => ({ keyword, company })),
-      results
-    )
+    results,
+    undefined,
+    keywords.map(({ keyword, company }) => ({ keyword, company }))
   );
-  logger.info(`분산 루트 시트 반영 및 재조회 완료: ${rewriteResult.rowCount}행`);
+  logger.info(
+    `분산 루트 시트 반영 결과: ${rewriteResult.rowCount}건, 원본 순서 재조회 완료`
+  );
 
-  await sendDoorayExposureResult({
+  const sent = await sendDoorayExposureResult({
     cronType: '루트 키워드',
     totalKeywords: keywords.length,
     exposureCount: results.length,
@@ -56,4 +92,5 @@ export const finalizeDistributedRootTarget = async (
       .filter(({ visibility, isUpdateRequired }) => !visibility && !isUpdateRequired)
       .map(({ keyword }) => keyword),
   });
+  if (!sent) throw new Error('루트 Dooray 전송 실패');
 };

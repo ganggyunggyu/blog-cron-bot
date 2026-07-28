@@ -24,6 +24,8 @@ dotenv.config();
 
 const runExposureWorkflow = async (): Promise<void> => {
   const startTime = Date.now();
+  const isDistributedShard =
+    process.env.DISTRIBUTED_EXPOSURE_SHARD === 'true';
 
   const loginStatus = await checkNaverLogin();
   logger.divider('로그인 상태');
@@ -77,6 +79,25 @@ const runExposureWorkflow = async (): Promise<void> => {
     filtered = filtered.filter((k: any) => String(k._id) === onlyId);
   }
 
+  const distributedKeywordIds = new Set(
+    String(process.env.DISTRIBUTED_EXPOSURE_KEYWORD_IDS ?? '')
+      .split(',')
+      .filter(Boolean)
+  );
+  if (isDistributedShard) {
+    if (distributedKeywordIds.size === 0) {
+      throw new Error('분산 키워드 조각 ids 누락');
+    }
+    filtered = filtered.filter((keyword) =>
+      distributedKeywordIds.has(String(keyword._id))
+    );
+    if (filtered.length !== distributedKeywordIds.size) {
+      throw new Error(
+        `분산 키워드 스냅샷 불일치: ${filtered.length}/${distributedKeywordIds.size}`
+      );
+    }
+  }
+
   const startIndexRaw = Number(process.env.START_INDEX ?? '0');
   const startIndex = Number.isFinite(startIndexRaw)
     ? Math.max(0, Math.min(startIndexRaw, filtered.length))
@@ -128,19 +149,39 @@ const runExposureWorkflow = async (): Promise<void> => {
   }
 
   const timestamp = getKSTTimestamp();
-  const filterSheet = (process.env.ONLY_SHEET_TYPE || '').trim();
-  const csvPrefix = filterSheet
-    ? getSheetOptions(filterSheet).csvFilePrefix
-    : 'results';
-  const filename = `${csvPrefix}_${timestamp}.csv`;
+  if (!isDistributedShard) {
+    const filterSheet = (process.env.ONLY_SHEET_TYPE || '').trim();
+    const csvPrefix = filterSheet
+      ? getSheetOptions(filterSheet).csvFilePrefix
+      : 'results';
+    const filename = `${csvPrefix}_${timestamp}.csv`;
 
-  saveToCSV(allResults, filename);
-  saveToSheetCSV(
-    keywords.map((k: any) => ({ keyword: k.keyword, company: k.company })),
-    allResults,
-    `${csvPrefix}_sheet_${timestamp}.csv`,
-    keywordLogicMap
-  );
+    saveToCSV(allResults, filename);
+    saveToSheetCSV(
+      keywords.map((k: any) => ({ keyword: k.keyword, company: k.company })),
+      allResults,
+      `${csvPrefix}_sheet_${timestamp}.csv`,
+      keywordLogicMap
+    );
+
+    const orderedTargetBySheetType: Record<string, OrderedResultTarget> = {
+      package: 'package',
+      'dogmaru-exclude': 'general',
+      dogmaru: 'dogmaru',
+    };
+    const orderedTarget = orderedTargetBySheetType[onlySheetType];
+    if (orderedTarget) {
+      await rewriteOrderedResultSheet(
+        orderedTarget,
+        allResults,
+        keywordLogicMap,
+        keywords.map((keyword) => ({
+          keyword: keyword.keyword,
+          company: keyword.company,
+        }))
+      );
+    }
+  }
 
   const orderedTargetBySheetType: Record<string, OrderedResultTarget> = {
     package: 'package',
@@ -202,17 +243,19 @@ const runExposureWorkflow = async (): Promise<void> => {
   };
   const cronTypeLabel = SHEET_TYPE_LABELS[onlySheetType] ?? '패키지 일반건 노출체크';
 
-  await sendDoorayExposureResult({
-    cronType: cronTypeLabel,
-    totalKeywords: keywords.length,
-    exposureCount: allResults.length,
-    popularCount,
-    sblCount,
-    elapsedTime: elapsedTimeStr,
-    missingKeywords,
-    newLogicCount,
-    oldLogicCount,
-  });
+  if (!isDistributedShard) {
+    await sendDoorayExposureResult({
+      cronType: cronTypeLabel,
+      totalKeywords: keywords.length,
+      exposureCount: allResults.length,
+      popularCount,
+      sblCount,
+      elapsedTime: elapsedTimeStr,
+      missingKeywords,
+      newLogicCount,
+      oldLogicCount,
+    });
+  }
 
   const logs = logBuilder.getLogs();
   saveDetailedLogs(logs, timestamp, elapsedTimeStr);

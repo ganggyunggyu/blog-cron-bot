@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useAtomValue } from 'jotai';
-import { Eye, EyeOff, Square, Terminal } from 'lucide-react';
+import { Eye, EyeOff, Square } from 'lucide-react';
 import { useRunLogStream, useStopRun } from '@/entities/run';
 import { Badge, Button, Card, SectionHeader, selectedRunIdAtom } from '@/shared';
 import { buildRunLogViewModel } from './model';
@@ -43,8 +43,8 @@ export const LiveLogViewer = () => {
   if (!runId) {
     return (
       <Card>
-        <SectionHeader icon={Terminal} title="실시간 로그" />
-        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+        <SectionHeader title="실시간 로그" />
+        <p className="text-sm text-[var(--ink-soft)]">
           잡을 실행하거나 실행 이력을 선택하면 여기에 로그가 표시됨.
         </p>
       </Card>
@@ -59,21 +59,20 @@ export const LiveLogViewer = () => {
   return (
     <Card>
       <SectionHeader
-        icon={Terminal}
         title="실시간 로그"
         description={`성공 ${viewModel.successCount}건${viewModel.failureCount > 0 ? ` · 실패 ${viewModel.failureCount}건` : ''}`}
         action={
           <div className="flex items-center gap-2">
             {connectionLabel ? <Badge tone="warning">{connectionLabel}</Badge> : null}
-            <Badge withDot tone={STATUS_TONE[status ?? 'running'] ?? 'neutral'}>
+            <Badge tone={STATUS_TONE[status ?? 'running'] ?? 'neutral'}>
               {status ?? 'running'}
             </Badge>
-            <Button size="sm" variant="ghost" onClick={handleToggleDetail}>
+            <Button variant="ghost" onClick={handleToggleDetail}>
               {showDetail ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
               {showDetail ? '간결히 보기' : '상세 보기'}
             </Button>
             {isRunning ? (
-              <Button size="sm" variant="danger" disabled={isPending} onClick={handleStop}>
+              <Button variant="danger" disabled={isPending} onClick={handleStop}>
                 <Square className="size-4" />
                 정지
               </Button>

@@ -1,6 +1,5 @@
 import { RootKeyword } from '../../database';
-import { ROOT_CONFIG, SHEET_APP_URL } from '../../constants';
-import { logger } from '../logger';
+import { ROOT_CONFIG } from '../../constants';
 import {
   getGoogleSheetAuth,
   getWorksheetById,
@@ -10,7 +9,6 @@ import {
 const STOP_KEYWORDS = ['자료 미전달', '지료 미전달', '미전달 리스트'];
 const MAX_ROWS = 1000;
 const MAX_COLUMNS = 26;
-const SYNC_TIMEOUT_MS = 10_000;
 
 export interface RootKeywordSyncRow {
   company: string;
@@ -27,7 +25,7 @@ export interface RootKeywordSyncRow {
 export interface RootKeywordSyncResult {
   deleted: number;
   inserted: number;
-  source: 'sheet-app' | 'google-sheets-direct';
+  source: 'google-sheets-direct';
 }
 
 const normalize = (value: unknown): string => String(value ?? '').trim();
@@ -38,11 +36,6 @@ const findHeaderIndex = (headers: readonly unknown[], matches: string[]): number
     return matches.some((match) => normalized.includes(match));
   });
 
-const parseNumber = (value: unknown): number | undefined => {
-  const parsed = Number.parseInt(normalize(value), 10);
-  return Number.isFinite(parsed) ? parsed : undefined;
-};
-
 export const parseRootKeywordRows = (
   rows: readonly (readonly unknown[])[]
 ): RootKeywordSyncRow[] => {
@@ -52,23 +45,9 @@ export const parseRootKeywordRows = (
   const headers = rows[headerIndex];
   const keywordColumn = findHeaderIndex(headers, ['키워드', 'keyword']);
   const companyColumn = findHeaderIndex(headers, ['업체명', '업체']);
-  const visibilityColumn = findHeaderIndex(headers, ['노출여부', '공정위', '노출']);
-  const topicColumn = findHeaderIndex(headers, ['인기주제']);
-  const rankColumn = headers.findIndex((header) => {
-    const normalized = normalize(header).toLowerCase();
-    return normalized.includes('순위') && !normalized.includes('인기글');
-  });
-  const popularRankColumn = headers.findIndex((header) => {
-    const normalized = normalize(header).toLowerCase();
-    return normalized.includes('인기글') && normalized.includes('순위');
-  });
   const imageMatchColumn = headers.findIndex((header) => {
     const normalized = normalize(header).toLowerCase();
     return normalized.includes('이미지') && normalized.includes('매칭');
-  });
-  const urlColumn = headers.findIndex((header) => {
-    const normalized = normalize(header).toLowerCase();
-    return normalized.includes('시트') && normalized.includes('링크');
   });
 
   if (keywordColumn === -1 || companyColumn === -1) {
@@ -97,13 +76,11 @@ export const parseRootKeywordRows = (
     return [{
       company: currentCompany,
       keyword: formattedKeyword,
-      visibility:
-        visibilityColumn !== -1 && normalize(row[visibilityColumn]).toLowerCase() === 'o',
-      popularTopic: topicColumn === -1 ? '' : normalize(row[topicColumn]),
-      url: urlColumn === -1 ? '' : normalize(row[urlColumn]),
-      rank: rankColumn === -1 ? undefined : parseNumber(row[rankColumn]),
-      rankWithCafe:
-        popularRankColumn === -1 ? undefined : parseNumber(row[popularRankColumn]),
+      visibility: false,
+      popularTopic: '',
+      url: '',
+      rank: 0,
+      rankWithCafe: 0,
       isUpdateRequired:
         imageMatchColumn === -1
           ? undefined
@@ -111,6 +88,15 @@ export const parseRootKeywordRows = (
       keywordType: 'basic' as const,
     }];
   });
+};
+
+export const isRootSourceSchemaMismatch = (error: unknown): boolean => {
+  const message = error instanceof Error ? error.message : String(error);
+  return (
+    message.includes('루트 원본 필수 컬럼') ||
+    message.includes('루트 원본 헤더') ||
+    message.includes('루트 원본에서 동기화할 키워드')
+  );
 };
 
 const syncDirectlyFromGoogleSheets = async (): Promise<RootKeywordSyncResult> => {
@@ -139,7 +125,7 @@ const syncDirectlyFromGoogleSheets = async (): Promise<RootKeywordSyncResult> =>
 
   const deleteResult = await RootKeyword.deleteMany({});
   const insertResult = await RootKeyword.insertMany(
-    keywords.map((keyword) => ({ ...keyword, lastChecked: new Date() }))
+    keywords.map((keyword) => ({ ...keyword, lastChecked: new Date(0) }))
   );
 
   return {
@@ -150,23 +136,5 @@ const syncDirectlyFromGoogleSheets = async (): Promise<RootKeywordSyncResult> =>
 };
 
 export const syncRootKeywordsFromSheet = async (): Promise<RootKeywordSyncResult> => {
-  try {
-    const response = await fetch(`${SHEET_APP_URL}/api/root-keywords/sync`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sheetId: ROOT_CONFIG.SHEET_ID }),
-      signal: AbortSignal.timeout(SYNC_TIMEOUT_MS),
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    const result = (await response.json()) as { deleted: number; inserted: number };
-    return { ...result, source: 'sheet-app' };
-  } catch (error) {
-    logger.warn(
-      `루트 시트 중계 동기화 실패(${(error as Error).message}), Google Sheets 직접 동기화로 전환`
-    );
-    return syncDirectlyFromGoogleSheets();
-  }
+  return syncDirectlyFromGoogleSheets();
 };

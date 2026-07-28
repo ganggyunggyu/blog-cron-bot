@@ -10,11 +10,13 @@ import { closeBrowser } from '../lib/playwright-crawler';
 import { sendDoorayExposureResult } from '../lib/dooray';
 import { getKSTTimestamp } from '../utils';
 import { saveToCSV, saveToSheetCSV } from '../csv-writer';
-import { EXPOSURE_SHEET_LOCATIONS } from '../constants';
+import { EXPOSURE_SHEET_LOCATIONS, TEST_CONFIG } from '../constants';
 import {
   DOGMARU_PAGE_CHECK_BLOG_IDS,
+  PET_PAGE_CHECK_BLOG_IDS,
   SURI_PET_BLOG_IDS,
 } from '../constants/blog-ids';
+import { applyStoredBlogIdOverrides } from '../lib/blog-id-overrides';
 import { ExposureResult } from '../matcher';
 import { autoLogin } from './auto-login';
 import {
@@ -33,6 +35,10 @@ import {
   writeResultsToWorksheet,
 } from '../lib/google-sheets/direct-exposure-sheet';
 import { assertWritableSheetId } from '../lib/google-sheets/write-target-guard';
+import {
+  type OrderedResultTarget,
+  rewriteOrderedResultSheet,
+} from '../lib/google-sheets/ordered-result-sheet';
 import {
   DIRECT_SHEET_TARGETS,
   DirectSheetTarget,
@@ -58,6 +64,7 @@ interface TargetConfig {
   tabName: string;
   sheetType: string;
   csvPrefix: string;
+  fallbackTabName?: string;
   blogIds?: string[];
   allowAnyBlog?: boolean;
 }
@@ -69,6 +76,8 @@ interface CliOptions {
   limit: number;
   concurrency: number;
   maxPages?: number;
+  skipDooray: boolean;
+  resultSheet: boolean;
 }
 
 interface RunContext {
@@ -97,6 +106,7 @@ const TARGET_DEDUP_PRIORITY: Record<TargetType, number> = {
   package: 2,
   dogmaru: 3,
   seoripet: 4,
+  pet: 5,
 };
 
 const TARGET_CONFIGS: Record<TargetType, TargetConfig> = {
@@ -107,6 +117,7 @@ const TARGET_CONFIGS: Record<TargetType, TargetConfig> = {
     tabName: EXPOSURE_SHEET_LOCATIONS.패키지.tabTitle,
     sheetType: 'package',
     csvPrefix: 'direct-package',
+    fallbackTabName: TEST_CONFIG.SHEET_NAMES.PACKAGE,
   },
   'dogmaru-exclude': {
     target: 'dogmaru-exclude',
@@ -115,6 +126,7 @@ const TARGET_CONFIGS: Record<TargetType, TargetConfig> = {
     tabName: EXPOSURE_SHEET_LOCATIONS.일반건.tabTitle,
     sheetType: 'dogmaru-exclude',
     csvPrefix: 'direct-dogmaru-exclude',
+    fallbackTabName: TEST_CONFIG.SHEET_NAMES.DOGMARU_EXCLUDE,
   },
   dogmaru: {
     target: 'dogmaru',
@@ -123,6 +135,7 @@ const TARGET_CONFIGS: Record<TargetType, TargetConfig> = {
     tabName: EXPOSURE_SHEET_LOCATIONS.도그마루.tabTitle,
     sheetType: 'dogmaru',
     csvPrefix: 'direct-dogmaru',
+    fallbackTabName: TEST_CONFIG.SHEET_NAMES.DOGMARU,
     blogIds: DOGMARU_PAGE_CHECK_BLOG_IDS,
     allowAnyBlog: false,
   },
@@ -133,7 +146,18 @@ const TARGET_CONFIGS: Record<TargetType, TargetConfig> = {
     tabName: EXPOSURE_SHEET_LOCATIONS.서리펫.tabTitle,
     sheetType: 'seoripet',
     csvPrefix: 'direct-seoripet',
+    fallbackTabName: TEST_CONFIG.SHEET_NAMES.SERIPET,
     blogIds: SURI_PET_BLOG_IDS,
+    allowAnyBlog: false,
+  },
+  pet: {
+    target: 'pet',
+    label: '애견',
+    sheetId: TEST_CONFIG.SHEET_ID,
+    tabName: '애견(전체블로그)',
+    sheetType: 'pet',
+    csvPrefix: 'direct-pet',
+    blogIds: PET_PAGE_CHECK_BLOG_IDS,
     allowAnyBlog: false,
   },
 };
@@ -157,6 +181,8 @@ const parseArgs = (): CliOptions => {
   let limit = 0;
   let concurrency = DEFAULT_TARGET_CONCURRENCY;
   let maxPages: number | undefined;
+  let skipDooray = false;
+  let resultSheet = false;
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -196,6 +222,16 @@ const parseArgs = (): CliOptions => {
       continue;
     }
 
+    if (arg === '--skip-dooray') {
+      skipDooray = true;
+      continue;
+    }
+
+    if (arg === '--result-sheet') {
+      resultSheet = true;
+      continue;
+    }
+
     throw new Error(`알 수 없는 인자: ${arg}`);
   }
 
@@ -206,7 +242,16 @@ const parseArgs = (): CliOptions => {
     limit,
     concurrency,
     maxPages,
+    skipDooray,
+    resultSheet,
   };
+};
+
+const RESULT_TARGETS: Partial<Record<TargetType, OrderedResultTarget>> = {
+  package: 'package',
+  'dogmaru-exclude': 'general',
+  dogmaru: 'dogmaru',
+  seoripet: 'suripet',
 };
 
 const formatDuration = (ms: number): string => {
@@ -435,8 +480,19 @@ const runTargetCrawl = async (
 ): Promise<TargetCrawlOutcome> => {
   const startedAt = Date.now();
   const auth = getGoogleSheetAuth();
-  const doc = await openSpreadsheet(target.sheetId, auth);
-  const sheet = getWorksheetByTitle(doc, target.tabName);
+  let sheet: GoogleSpreadsheetWorksheet;
+  try {
+    const doc = await openSpreadsheet(target.sheetId, auth);
+    sheet = getWorksheetByTitle(doc, target.tabName);
+  } catch (error) {
+    if (!target.fallbackTabName) throw error;
+    logger.warn(
+      `[${target.label}] 원본 시트 접근 실패 (${(error as Error).message}), ` +
+        `${target.fallbackTabName} 결과 탭으로 전환`
+    );
+    const fallbackDoc = await openSpreadsheet(TEST_CONFIG.SHEET_ID, auth);
+    sheet = getWorksheetByTitle(fallbackDoc, target.fallbackTabName);
+  }
   const loadedKeywords = await loadKeywordsFromWorksheet(sheet, target.sheetType);
   const keywords = limitKeywords(loadedKeywords, options.limit);
 
@@ -545,8 +601,18 @@ const finalizeTarget = async (
   );
 
   if (!options.dryRun) {
-    assertWritableSheetId(target.sheetId, `${target.label} 직접 노출체크`);
-    await writeResultsToWorksheet(sheet, keywords, updates);
+    const resultTarget = RESULT_TARGETS[target.target];
+    if (options.resultSheet && resultTarget) {
+      await rewriteOrderedResultSheet(
+        resultTarget,
+        results,
+        keywordLogicMap,
+        keywords.map(({ keyword, company }) => ({ keyword, company }))
+      );
+    } else {
+      assertWritableSheetId(target.sheetId, `${target.label} 직접 노출체크`);
+      await writeResultsToWorksheet(sheet, keywords, updates);
+    }
   }
 
   const elapsedTime = formatDuration(Date.now() - startedAt);
@@ -581,7 +647,7 @@ const finalizeTarget = async (
 
   logger.summary.complete(`${target.label} 직접 노출체크 완료`, summaryItems);
 
-  if (!options.dryRun) {
+  if (!options.dryRun && !options.skipDooray) {
     await sendDoorayExposureResult({
       cronType: `${target.label} (직접병렬)`,
       totalKeywords: keywords.length,
@@ -609,10 +675,14 @@ const finalizeTarget = async (
 const main = async (): Promise<void> => {
   const options = parseArgs();
   if (!options.dryRun && !options.printOnly) {
-    options.targets.forEach((target) => {
-      const config = TARGET_CONFIGS[target];
-      assertWritableSheetId(config.sheetId, `${config.label} 직접 노출체크`);
-    });
+    if (options.resultSheet) {
+      assertWritableSheetId(TEST_CONFIG.SHEET_ID, '직접 노출체크 결과 반영');
+    } else {
+      options.targets.forEach((target) => {
+        const config = TARGET_CONFIGS[target];
+        assertWritableSheetId(config.sheetId, `${config.label} 직접 노출체크`);
+      });
+    }
   }
   const startTime = Date.now();
   const context: RunContext = {
@@ -645,6 +715,9 @@ const main = async (): Promise<void> => {
       await connectDB(mongoUri);
       didConnectDb = true;
     }
+
+    // TARGET_CONFIGS가 배열 참조를 모듈 로드 시점에 캡처하므로, 사용 직전에 제자리 갱신한다.
+    await applyStoredBlogIdOverrides();
 
     const isLoggedIn = await ensureLoggedIn();
     const targetConfigs = options.targets.map((target) => TARGET_CONFIGS[target]);

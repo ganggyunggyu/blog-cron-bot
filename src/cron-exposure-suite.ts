@@ -2,11 +2,13 @@ import { spawn, type ChildProcess } from 'node:child_process';
 import * as dotenv from 'dotenv';
 import { logger } from './lib/logger';
 import {
+  AUTO_KEYWORD_CONCURRENCY,
   ExposureTargetId,
   ExposureTargetJob,
   buildTargetEnvironment,
   parseExposureSuiteOptions,
   planExposureTargetJobs,
+  resolveKeywordConcurrency,
 } from './lib/exposure-suite/options';
 import {
   acquireRunLock,
@@ -151,9 +153,12 @@ const main = async (): Promise<void> => {
       process.env
     );
     const targetJobs = planExposureTargetJobs(options.targets);
+    // concurrency 0은 "원본 키워드 전체 자동"을 뜻하는 센티널이라 실제 병렬 수로 바꿔서 써야 함.
+    // 그대로 두면 startRequestBroker가 "1 이상의 정수" 검증에 걸려 즉시 실패함.
+    const resolvedConcurrency = resolveKeywordConcurrency(options.concurrency);
     const workerCount = Math.min(
       options.targetConcurrency,
-      options.concurrency,
+      resolvedConcurrency,
       targetJobs.length
     );
     const workerConcurrency = Array.from(
@@ -171,7 +176,7 @@ const main = async (): Promise<void> => {
       message: string;
     }> = [];
     let nextTargetIndex = 0;
-    const broker = await startRequestBroker(options.concurrency);
+    const broker = await startRequestBroker(resolvedConcurrency);
     requestBroker = broker;
 
     options.targets.forEach((target) =>
@@ -185,11 +190,17 @@ const main = async (): Promise<void> => {
           .map((target) => TARGET_LABELS[target])
           .join(', '),
       },
-      { label: '대상별 병렬', value: `${options.concurrency}` },
+      {
+        label: '대상별 병렬',
+        value:
+          options.concurrency === AUTO_KEYWORD_CONCURRENCY
+            ? '원본 유효 키워드 전체'
+            : `${options.concurrency}`,
+      },
       { label: '동시 대상', value: `${workerCount}` },
       {
         label: '최대 동시 요청',
-        value: `${options.concurrency}`,
+        value: `${resolvedConcurrency}`,
       },
       {
         label: '애견·서리펫 최대 페이지',

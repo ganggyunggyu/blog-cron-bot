@@ -30,6 +30,7 @@ export interface ProcessKeywordsOptions {
   isLoggedIn?: boolean;
   maxPages?: number;
   concurrency?: number;
+  keywordBatchSize?: number;
   blogIds?: string[];
   allowAnyBlog?: boolean;
   matchByBlogIdOnly?: boolean;

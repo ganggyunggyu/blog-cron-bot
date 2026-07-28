@@ -1,6 +1,7 @@
 export interface CafeScheduleSourceRow {
   row: number;
   keyword: string;
+  cafeAccount?: string;
 }
 
 export interface CafeScheduleCheckRow extends CafeScheduleSourceRow {
@@ -17,6 +18,7 @@ export interface CafeScheduleExportRow {
   순위: string;
   카페블로그명: string;
   링크: string;
+  카페계정: string;
 }
 
 const keywordKey = (keyword: string): string => keyword.trim();
@@ -45,6 +47,7 @@ export const extractLatestCafeScheduleSourceRows = (
     .map((row, rowOffset) => ({
       row: markerRowIndex + rowOffset + 2,
       keyword: String(row?.[0] ?? ''),
+      cafeAccount: String(row?.[2] ?? ''),
     }));
 };
 
@@ -63,7 +66,7 @@ export const buildCafeScheduleExportRows = (
     if (!fallbackResults.has(key)) fallbackResults.set(key, row);
   });
 
-  return sourceRows.map(({ row, keyword }) => {
+  return sourceRows.map(({ row, keyword, cafeAccount }) => {
     const key = keywordKey(keyword);
     const result = key
       ? resultQueues.get(key)?.shift() ?? fallbackResults.get(key)
@@ -79,6 +82,7 @@ export const buildCafeScheduleExportRows = (
       순위: result?.rank ?? '',
       카페블로그명: result?.name ?? '',
       링크: result?.links ?? '',
+      카페계정: cafeAccount ?? '',
     };
   });
 };

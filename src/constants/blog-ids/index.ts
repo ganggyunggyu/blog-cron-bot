@@ -163,6 +163,7 @@ const VIRAL_TEAM_SCHEDULE_BLOG_IDS = dedupeBlogIds([
   'taraswati',
   'vividoasis',
   'yaves0218',
+  'airtrd',
   'idoenzang',
   'an970405',
   'youngtae0510',
@@ -409,6 +410,8 @@ export const SURI_PET_BLOG_IDS = dedupeBlogIds([
   'hotelelena',
   'pjwon03',
   'ylk3516',
+  // 여행 다니는 남자 (영구-단체전환)
+  'inho5062',
 ]);
 
 // 페이지 애견 노출체크용 전체 블로그 + 도그마루 전용 + 서리펫 전용 블로그
@@ -434,4 +437,80 @@ export const PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE: Record<
   'eye-clinic': [...EYE_CLINIC_BLOG_IDS],
   pet: [...PET_PAGE_CHECK_BLOG_IDS],
   suripet: [...SURI_PET_BLOG_IDS],
+};
+
+/**
+ * 대시보드에서 계정을 관리할 수 있는 목록. 코드 배포 없이 런타임에 덮어쓴다.
+ * 여기 없는 목록은 계속 코드 상수만 사용한다.
+ */
+export const MANAGED_BLOG_ID_LIST_IDS = ['dogmaru', 'suripet'] as const;
+
+export type ManagedBlogIdListId = (typeof MANAGED_BLOG_ID_LIST_IDS)[number];
+
+export interface BlogIdOverride {
+  added: string[];
+  removed: string[];
+}
+
+export type BlogIdOverrides = Partial<Record<ManagedBlogIdListId, BlogIdOverride>>;
+
+/** 목록별 코드 기본값(시드). 덮어쓰기가 없거나 실패하면 이 값이 그대로 쓰인다. */
+export const BLOG_ID_SEEDS: Record<ManagedBlogIdListId, string[]> = {
+  dogmaru: [
+    'tpeany',
+    'nanugi99',
+    'v3se',
+    'mirca1004',
+    'wandookong2',
+    'yaboo_171022',
+    'dudtjsdh159',
+  ],
+  suripet: ['hotelelena', 'pjwon03', 'ylk3516', 'inho5062'],
+};
+
+/** 시드에 추가/제외를 적용해 최종 목록을 만든다. 제외가 추가보다 우선한다. */
+export const resolveManagedBlogIds = (
+  listId: ManagedBlogIdListId,
+  override?: BlogIdOverride
+): string[] => {
+  const removed = new Set((override?.removed ?? []).map((id) => id.toLowerCase()));
+  return dedupeBlogIds([
+    ...BLOG_ID_SEEDS[listId],
+    ...(override?.added ?? []),
+  ]).filter((blogId) => !removed.has(blogId));
+};
+
+/**
+ * 배열 내용을 제자리에서 교체한다.
+ *
+ * 소비처(run-parallel-direct-sheet-check의 TARGET_CONFIGS 등)가 모듈 로드 시점에 배열
+ * "참조"를 캡처하므로, 재할당하면 그쪽에는 반영되지 않는다. 반드시 같은 배열 객체를 비우고
+ * 다시 채워야 한다.
+ */
+const replaceInPlace = (target: string[], next: readonly string[]): void => {
+  target.length = 0;
+  target.push(...next);
+};
+
+/**
+ * 런타임 덮어쓰기를 적용한다. 노출체크 시작 전에 한 번만 호출한다.
+ * 파생 목록(애견 = 전체 + 도그마루 + 서리펫)도 같이 다시 계산한다.
+ */
+export const applyBlogIdOverrides = (overrides: BlogIdOverrides): void => {
+  const dogmaru = resolveManagedBlogIds('dogmaru', overrides.dogmaru);
+  const suripet = resolveManagedBlogIds('suripet', overrides.suripet);
+
+  replaceInPlace(DOGMARU_BLOG_IDS, dogmaru);
+  replaceInPlace(DOGMARU_PAGE_CHECK_BLOG_IDS, dogmaru);
+  replaceInPlace(SURI_PET_BLOG_IDS, suripet);
+  replaceInPlace(SURI_PET_PAGE_CHECK_BLOG_IDS, suripet);
+  replaceInPlace(
+    PET_PAGE_CHECK_BLOG_IDS,
+    dedupeBlogIds([...BLOG_IDS, ...dogmaru, ...suripet])
+  );
+  replaceInPlace(PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE.suripet, suripet);
+  replaceInPlace(
+    PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE.pet,
+    PET_PAGE_CHECK_BLOG_IDS
+  );
 };

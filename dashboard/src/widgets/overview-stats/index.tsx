@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { FolderOpen, Server, Timer, Zap } from 'lucide-react';
 import { StatCard } from '@/shared';
 import { useJobList } from '@/entities/job';
 import { useRunList } from '@/entities/run';
@@ -13,7 +12,7 @@ const RUN_STATUS_LABELS: Record<string, string> = {
   success: '성공',
   failed: '실패',
   stopped: '중지됨',
-  unknown: '상태 확인 필요',
+  unknown: '알 수 없음',
 };
 
 const RUN_STATUS_TONE: Record<string, 'success' | 'warning' | 'danger' | 'neutral'> = {
@@ -35,35 +34,30 @@ export const OverviewStats = () => {
   const daemonTone = !daemons ? 'neutral' : onlineCount === totalDaemons ? 'success' : 'warning';
 
   const runningJobs = jobs?.filter((job) => job.isRunning) ?? [];
-
   const latestRun = runs?.[0];
   const latestRunTone = latestRun ? RUN_STATUS_TONE[latestRun.status] ?? 'neutral' : 'neutral';
 
   return (
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       <StatCard
-        icon={Server}
         label="PM2 데몬"
         value={daemons ? `${onlineCount}/${totalDaemons} 온라인` : '-'}
         hint="예약 스케줄러 상태"
         tone={daemonTone}
       />
       <StatCard
-        icon={Zap}
         label="실행 중인 작업"
         value={runningJobs.length > 0 ? `${runningJobs.length}건` : '없음'}
         hint={runningJobs.length > 0 ? runningJobs.map((job) => job.label).join(', ') : '대기 중'}
         tone={runningJobs.length > 0 ? 'warning' : 'neutral'}
       />
       <StatCard
-        icon={Timer}
         label="최근 실행 결과"
         value={latestRun ? RUN_STATUS_LABELS[latestRun.status] ?? latestRun.status : '기록 없음'}
         hint={latestRun?.jobLabel}
         tone={latestRunTone}
       />
       <StatCard
-        icon={FolderOpen}
         label="결과 파일"
         value={outputs ? `${outputs.totalCount}개` : '-'}
         hint="output 폴더 누적 기준"

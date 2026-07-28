@@ -9,23 +9,23 @@ const sourceRows = extractLatestCafeScheduleSourceRows([
   ['이전 키워드'],
   [],
   ['260714 스케줄'],
-  ['회사 답례품'],
+  ['회사 답례품', '', '햄부기'],
   [],
-  ['회사 답례품'],
+  ['회사 답례품', '', '가중건다'],
   ['sat학원 '],
   [],
   [],
 ]);
 assert.deepEqual(sourceRows, [
-  { row: 5, keyword: '회사 답례품' },
-  { row: 6, keyword: '' },
-  { row: 7, keyword: '회사 답례품' },
-  { row: 8, keyword: 'sat학원 ' },
+  { row: 5, keyword: '회사 답례품', cafeAccount: '햄부기' },
+  { row: 6, keyword: '', cafeAccount: '' },
+  { row: 7, keyword: '회사 답례품', cafeAccount: '가중건다' },
+  { row: 8, keyword: 'sat학원 ', cafeAccount: '' },
 ]);
 
 const rows = buildCafeScheduleExportRows(
   [
-    { row: 10, keyword: '나비약' },
+    { row: 10, keyword: '나비약', cafeAccount: '계정A' },
     { row: 11, keyword: '' },
     { row: 12, keyword: '나비약' },
   ],
@@ -56,9 +56,24 @@ assert.deepEqual(rows, [
     순위: '1',
     카페블로그명: '카페A',
     링크: 'https://example.com/a',
+    카페계정: '계정A',
   },
-  { 키워드: '', 노출여부: '', 순위: '', 카페블로그명: '', 링크: '' },
-  { 키워드: '나비약', 노출여부: '', 순위: '', 카페블로그명: '', 링크: '' },
+  {
+    키워드: '',
+    노출여부: '',
+    순위: '',
+    카페블로그명: '',
+    링크: '',
+    카페계정: '',
+  },
+  {
+    키워드: '나비약',
+    노출여부: '',
+    순위: '',
+    카페블로그명: '',
+    링크: '',
+    카페계정: '',
+  },
 ]);
 
 const reorderedRows = buildCafeScheduleExportRows(

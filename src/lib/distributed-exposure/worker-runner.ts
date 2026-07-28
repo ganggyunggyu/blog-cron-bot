@@ -1,95 +1,114 @@
-import { spawn, type ChildProcess } from 'node:child_process';
+import type { ChildProcess } from 'node:child_process';
 import type { IDistributedExposureJob } from './models';
 import {
   completeDistributedJob,
   failDistributedJob,
   heartbeatDistributedJob,
+  recordDistributedJobWorker,
 } from './queue';
-import {
-  buildTargetEnvironment,
-  resolveTargetCommand,
-} from '../exposure-suite/options';
 import { logger } from '../logger';
+import { getWorkerEgressIp } from './worker-egress-ip';
+import {
+  getUncheckedPageKeywordIds,
+  getUncheckedRootKeywordIds,
+} from '../../database';
+import { runWorkerChild, stopWorkerChild } from './worker-child';
 
 const HEARTBEAT_MS = 15_000;
 
-export interface WorkerChildController {
-  stop: () => void;
-}
+export type DistributedJobOutcome = 'success' | 'retry' | 'failed';
 
-const runChild = (
-  job: IDistributedExposureJob,
-  onChild: (child: ChildProcess | undefined) => void
-): Promise<void> => {
-  const isPageShard =
-    job.keywordIds.length > 0 &&
-    (job.target === 'pet' || job.target === 'suripet');
-  const command = isPageShard
-    ? {
-        script: 'exposure:page-shard',
-        args: [
-          job.target,
-          `--keyword-ids=${job.keywordIds.join(',')}`,
-        ],
-      }
-    : resolveTargetCommand(job.target);
-  const environment = buildTargetEnvironment(
-    process.env,
-    [job.target],
-    job.concurrency,
-    job.maxPages
-  );
+const getUncheckedDistributedKeywordIds = (
+  job: IDistributedExposureJob
+): Promise<string[]> | undefined => {
+  if (!job.startedAt || job.keywordIds.length === 0) return undefined;
+  if (job.target === 'root') {
+    return getUncheckedRootKeywordIds(
+      job.keywordIds,
+      job.startedAt as Date
+    );
+  }
   if (job.target === 'pet' || job.target === 'suripet') {
-    environment.SKIP_PAGE_CHECK_EXPORT_ALL = 'true';
+    return getUncheckedPageKeywordIds(
+      job.target,
+      job.keywordIds,
+      job.startedAt as Date
+    );
   }
-  if (job.target === 'root' && job.keywordIds.length > 0) {
-    environment.DISTRIBUTED_EXPOSURE_SHARD = 'true';
-    environment.DISTRIBUTED_EXPOSURE_KEYWORD_IDS = job.keywordIds.join(',');
-  }
-  delete environment.EXPOSURE_REQUEST_BROKER_URL;
-  delete environment.EXPOSURE_REQUEST_BROKER_TOKEN;
-
-  return new Promise<void>((resolve, reject) => {
-    const child = spawn('pnpm', ['run', command.script, ...command.args], {
-      cwd: process.cwd(),
-      env: environment,
-      stdio: 'inherit',
-      detached: process.platform !== 'win32',
-    });
-    onChild(child);
-    child.once('error', reject);
-    child.once('close', (code) => {
-      onChild(undefined);
-      if (code === 0) resolve();
-      else reject(new Error(`${job.target} 종료 코드 ${code ?? 'unknown'}`));
-    });
-  });
+  return undefined;
 };
 
 export const executeDistributedJob = async (
   job: IDistributedExposureJob,
   workerId: string,
   onChild: (child: ChildProcess | undefined) => void
-): Promise<void> => {
+): Promise<DistributedJobOutcome> => {
   const jobId = String(job._id);
-  logger.info(
-    `[다중워커] ${workerId} → ${job.target} 시작 (${job.attempts}/${job.maxAttempts})`
-  );
+  let currentChild: ChildProcess | undefined;
+  const trackChild = (child: ChildProcess | undefined): void => {
+    currentChild = child;
+    onChild(child);
+  };
   const heartbeat = setInterval(() => {
-    void heartbeatDistributedJob(jobId, workerId).catch((error) => {
-      logger.error(`[다중워커] heartbeat 실패: ${(error as Error).message}`);
-    });
+    void heartbeatDistributedJob(jobId, workerId)
+      .then((active) => {
+        if (active || !currentChild) return;
+        logger.warn(`[다중워커] 비활성 작업 종료: ${job.target}`);
+        stopWorkerChild(currentChild);
+      })
+      .catch((error) => {
+        logger.error(`[다중워커] heartbeat 실패: ${(error as Error).message}`);
+      });
   }, HEARTBEAT_MS);
   heartbeat.unref();
 
   try {
-    await runChild(job, onChild);
+    const egressIp = await getWorkerEgressIp();
+    await recordDistributedJobWorker(jobId, workerId, egressIp);
+    logger.info(
+      `[다중워커] ${workerId} (${egressIp}) → ${job.target} 시작 ` +
+        `(${job.attempts}/${job.maxAttempts})`
+    );
+    await runWorkerChild(job, trackChild);
+    const uncheckedKeywordIds =
+      await getUncheckedDistributedKeywordIds(job);
+    if (uncheckedKeywordIds) {
+      if (uncheckedKeywordIds.length > 0) {
+        throw new Error(
+          `${job.target} 실제 갱신 누락: ` +
+            `${uncheckedKeywordIds.length}/${job.keywordIds.length}개`
+        );
+      }
+    }
     await completeDistributedJob(jobId, workerId);
     logger.success(`[다중워커] ${job.target} 완료`);
+    return 'success';
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    await failDistributedJob(job, workerId, message);
+    let retryKeywordIds: string[] | undefined;
+    const uncheckedKeywordIds =
+      await getUncheckedDistributedKeywordIds(job);
+    if (uncheckedKeywordIds) {
+      retryKeywordIds = uncheckedKeywordIds;
+      if (retryKeywordIds.length === 0) {
+        await completeDistributedJob(jobId, workerId);
+        logger.warn(
+          `[다중워커] ${job.target} 종료 오류 후 완료 결과 ${job.keywordIds.length}개 유지`
+        );
+        return 'success';
+      }
+      logger.warn(
+        `[다중워커] ${job.target} 미완료 ${retryKeywordIds.length}/${job.keywordIds.length}개만 재시도`
+      );
+    }
+    const shouldRetry = await failDistributedJob(
+      job,
+      workerId,
+      message,
+      retryKeywordIds
+    );
     logger.error(`[다중워커] ${job.target} 실패: ${message}`);
+    return shouldRetry ? 'retry' : 'failed';
   } finally {
     clearInterval(heartbeat);
   }

@@ -1,6 +1,7 @@
 import * as dotenv from 'dotenv';
 import { GoogleSpreadsheet, GoogleSpreadsheetWorksheet } from 'google-spreadsheet';
 import { JWT } from 'google-auth-library';
+import { sleep } from '@ganggyunggyu/shared';
 import { ROOT_CONFIG } from '../constants';
 import { sendDoorayMessage } from '../lib/dooray';
 import { logger } from '../lib/logger';
@@ -115,9 +116,6 @@ const INDIVIDUAL_SNAPSHOT_ROW_LIMIT = 300;
 const INDIVIDUAL_SNAPSHOT_COLUMN_LIMIT = 600;
 const INDIVIDUAL_SNAPSHOT_FALLBACK_ROW_LIMIT = 120;
 
-const sleep = (ms: number): Promise<void> =>
-  new Promise((resolve) => setTimeout(resolve, ms));
-
 const normalizeCell = (value: unknown): string =>
   String(value ?? '').replace(/\s+/g, ' ').trim();
 
@@ -199,7 +197,8 @@ const withGoogleRetry = async <T>(
 
 const getGoogleSheetAuth = (): JWT => {
   const email = normalizeCell(process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL);
-  const key = normalizeCell(process.env.GOOGLE_PRIVATE_KEY).replace(/\\n/g, '\n');
+  // normalizeCell은 개행을 공백으로 뭉개버려 PEM 키를 깨뜨리므로 키에는 쓰면 안 됨
+  const key = String(process.env.GOOGLE_PRIVATE_KEY ?? '').trim().replace(/\\n/g, '\n');
 
   if (!email || !key) {
     throw new Error('GOOGLE_SERVICE_ACCOUNT_EMAIL 또는 GOOGLE_PRIVATE_KEY 환경변수가 없음');

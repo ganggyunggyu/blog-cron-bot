@@ -10,11 +10,10 @@
 - 등록된 블로그 ID/업체명 기준 매칭 (지점명이 다른 경우까지 고려한 브랜드 매칭)
 - 게시글 본문에 접근해 업체명을 추출하고 검색 결과와 교차 검증
 - 시트타입(패키지/도그마루/일반 등)별로 매칭 허용 범위, 재시도 횟수, 딜레이를 다르게 적용
-- 원본 Google Sheets는 읽기 전용으로 동기화하고, 노출 결과는 별도 결과 시트에 기록한 뒤 재조회 검증
+- Google Sheets ↔ MongoDB 양방향 동기화 (`syncKeywords` → 크롤링 → `importKeywords`)
 - CSV 결과 파일 저장, Dooray 웹훅으로 실행 결과 알림
 - 네이버 차단 대응: User-Agent 로테이션, 403 전용 백오프, 로그인/비로그인 재시도
-- Next.js 대시보드에서 대상별 원클릭 실행, SSE 실시간 로그·진행률, 결과 다운로드 제공
-- MongoDB 작업 큐와 Railway 다중 워커로 키워드를 50개 단위 분산 처리
+- PM2 기반 스케줄러 3종(키워드/루트/전체시트) + Next.js 대시보드로 운영 상태 확인 및 수동 실행
 
 ## 기술 스택
 
@@ -50,11 +49,11 @@ Shared (src/constants/*, src/logs/*, src/lib/utils/*, src/types.ts)
 
 ### 운영 인프라
 
-Railway에서는 같은 Docker 이미지를 역할별로 나눠 실행한다. 제어 서비스는 대시보드, 실행 잠금, 작업 분할, 진행률 집계와 최종 반영을 담당하고, 5개의 워커 서비스는 MongoDB 대기열에서 작업을 원자적으로 가져가 네이버 검색을 처리한다. 루트·애견·서리펫 키워드는 같은 검색어 행을 유지한 채 50개 기준으로 분할한다.
+Railway에서는 같은 Docker 이미지를 역할별로 나눠 실행한다. 제어 서비스는 대시보드, 실행 잠금, 작업 생성, 진행률 집계와 최종 반영을 담당하고, 시트별 전용 워커 서비스는 MongoDB 대기열에서 자기 시트 작업 1개를 가져가 네이버 검색을 처리한다. 루트·애견·서리펫을 포함한 모든 시트는 분할하지 않으며, 한 IP에서 해당 시트의 유효 키워드 전체를 동시에 시작한다.
 
 ![노출지기 운영 인프라 아키텍처](docs/images/exposure-architecture.svg)
 
-워커는 작업을 가져갈 때 60초 임대를 설정하고 15초마다 heartbeat를 갱신한다. 워커가 종료되면 임대 만료 후 다른 워커가 이어받으며, 작업은 최대 2회 시도한다. 개별 워커는 원본 시트나 최종 결과 시트를 수정하지 않고 MongoDB 결과만 갱신한다. 모든 조각이 성공한 뒤 제어 서비스 한 곳에서만 CSV 생성, 결과 시트 쓰기·재조회 검증, Dooray 알림을 수행해 중복 반영을 막는다. 상세 운영 계약은 [`docs/DISTRIBUTED_EXPOSURE.md`](docs/DISTRIBUTED_EXPOSURE.md)에 정리돼 있다.
+워커는 작업을 가져갈 때 60초 임대를 설정하고 15초마다 heartbeat를 갱신한다. 재시도는 원래 워커/IP에 고정하고, 워커가 실제로 종료되어 임대가 만료된 경우에만 다른 워커가 복구한다. 애견·서리펫은 최대 60회, 나머지는 최대 3회 시도한다. 개별 워커는 원본 시트나 최종 결과 시트를 수정하지 않고 MongoDB 결과만 갱신한다. 모든 작업이 성공한 뒤 제어 서비스 한 곳에서만 CSV 생성, 결과 시트 쓰기·재조회 검증, Dooray 알림을 수행해 중복 반영을 막는다. 상세 운영 계약은 [`docs/DISTRIBUTED_EXPOSURE.md`](docs/DISTRIBUTED_EXPOSURE.md)에 정리돼 있다.
 
 ### 데이터 파이프라인
 
@@ -105,7 +104,7 @@ blog-cron-bot/
 ├── output/                       # 생성된 CSV 결과
 ├── docs/                         # 운영 문서 (EC2/Railway 배포 가이드 등)
 ├── ecosystem.config.cjs          # EC2용 PM2 설정
-├── ecosystem.railway.config.cjs  # Railway 역할별 PM2 설정 (control / worker)
+├── ecosystem.railway.config.cjs  # Railway용 PM2 설정 (봇 3개 + 대시보드)
 └── Dockerfile                    # Railway 배포용 (Playwright 베이스 이미지)
 ```
 
@@ -215,8 +214,10 @@ pnpm dev              # http://localhost:4500 (개발 모드)
 
 ### 8. 배포
 
-- **Railway** (운영): `Dockerfile` + `railway.toml`로 Docker 빌드하고, `pm2-runtime`이 `ecosystem.railway.config.cjs`를 읽어 대시보드를 띄운다. 매일 08:00 전체 빠른 실행은 중복 PM2 cron 대신 Codex 예약 한 곳에서 관리한다. 운영 대시보드는 [blog-cron-bot-production.up.railway.app](https://blog-cron-bot-production.up.railway.app)에서 로그인 후 사용할 수 있다.
-- 전체 노출체크의 50개 단위 분산 대기열과 Railway 제어/워커 서비스 구성은 [`docs/DISTRIBUTED_EXPOSURE.md`](docs/DISTRIBUTED_EXPOSURE.md)를 따른다.
+- **Railway** (운영): `Dockerfile` + `railway.toml`로 Docker 빌드하고, `pm2-runtime`이 `ecosystem.railway.config.cjs`를 읽는다. 매일 08:00에는 Codex 예약 한 곳이 원격 대시보드만 호출하며 로컬 크롤링이나 별도 PM2 노출체크 cron은 두지 않는다. 패키지·일반건·도그마루·루트·애견·서리펫·카페는 시트당 원격 서버 1개와 서로 다른 외부 IP를 사용한다. 운영 대시보드는 [blog-cron-bot-production.up.railway.app](https://blog-cron-bot-production.up.railway.app)에서 로그인 후 사용할 수 있다.
+
+분산 노출체크 완료 로그에는 Railway 비용 추정도 남는다. 기본 가정은 워커당 `1 vCPU`, `1GB RAM`, 환율 `1 USD = 1,400원`, Hobby 요금제의 월 기본료·포함 사용량 `$5`이다. 실제 배포 스펙이나 요금제에 맞게 `RAILWAY_COST_ESTIMATE_VCPU`, `RAILWAY_COST_ESTIMATE_MEMORY_GB`, `RAILWAY_COST_ESTIMATE_KRW_PER_USD`, `RAILWAY_COST_ESTIMATE_INCLUDED_USAGE_USD`, `RAILWAY_COST_ESTIMATE_PLAN_FEE_USD` 환경변수를 바꾼다. 실행 사용량은 포함 사용량에서 먼저 차감되며, 30일 상시 운영 값은 기본료·포함 크레딧을 반영한 총청구 추정이다. 네트워크 전송과 볼륨은 포함하지 않는다.
+- 전체 노출체크의 시트별 단일 작업 대기열과 Railway 제어/워커 서비스 구성은 [`docs/DISTRIBUTED_EXPOSURE.md`](docs/DISTRIBUTED_EXPOSURE.md)를 따른다.
 - **EC2**: `ecosystem.config.cjs`로 PM2 4개 앱(keywords/root/all-sheets/dashboard) 관리. 절차는 `docs/ec2-ubuntu.md` 참고. 대시보드 앱은 `pnpm --dir dashboard build`를 먼저 실행해야 `pm2 start`가 정상 기동한다.
 
 ## 시트타입별 동작 (sheet-config)

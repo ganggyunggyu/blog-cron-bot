@@ -6,10 +6,7 @@ import {
 } from '../../constants/api';
 import { logger } from '../logger';
 import { type SheetCellValue } from '../csv-output';
-import {
-  loadOrderedSourceKeywords,
-  rewriteResultSheetRows,
-} from './ordered-result-sheet';
+import { rewriteResultSheetRows } from './ordered-result-sheet';
 import { assertWritableSheetId } from './write-target-guard';
 
 type SuripetSheetRow = Record<string, string>;
@@ -31,6 +28,7 @@ export interface SuripetPageCheckKeywordInput {
 export const SURIPET_SOURCE_SHEET_ID =
   EXPOSURE_SHEET_LOCATIONS.서리펫.sheetId;
 export const SURIPET_RESULT_SHEET_ID = TEST_CONFIG.SHEET_ID;
+export const SURIPET_FALLBACK_SHEET_NAME = TEST_CONFIG.SHEET_NAMES.SERIPET;
 
 const SURIPET_SOURCE_SHEET_NAME =
   EXPOSURE_SHEET_LOCATIONS.서리펫.tabTitle;
@@ -59,32 +57,42 @@ const parseBooleanCell = (value: unknown): boolean => {
   return ['o', '1', 'true', 'y', 'yes', '신규'].includes(normalized);
 };
 
-const parseNumberCell = (value: unknown): number => {
-  const raw = normalizeCell(value);
-  if (!raw) return 0;
-
-  const parsed = Number(raw.replace(/[^\d.-]/g, ''));
-  return Number.isFinite(parsed) ? parsed : 0;
-};
-
-const parseFoundPage = (popularTopic: string): number => {
-  const match = popularTopic.match(/검색결과\s*(\d+)페이지/);
-  if (!match) return 0;
-
-  const parsed = Number(match[1]);
-  return Number.isFinite(parsed) ? parsed : 0;
-};
+export const toFreshSuripetKeyword = (
+  row: SuripetSheetRow
+): SuripetPageCheckKeywordInput => ({
+  company: '서리펫',
+  keyword: normalizeCell(row['키워드']),
+  visibility: false,
+  popularTopic: '',
+  url: '',
+  keywordType: 'pet',
+  matchedTitle: '',
+  rank: 0,
+  isUpdateRequired: parseBooleanCell(row['바이럴 체크']),
+  isNewLogic: parseBooleanCell(row['로직']),
+  foundPage: 0,
+});
 
 export const loadSuripetKeywordsFromSheet = async (): Promise<
   SuripetPageCheckKeywordInput[]
 > => {
   const auth = getAuth();
-  const doc = new GoogleSpreadsheet(SURIPET_SOURCE_SHEET_ID, auth);
-  await doc.loadInfo();
-
-  const sheet = doc.sheetsByTitle[SURIPET_SOURCE_SHEET_NAME];
-  if (!sheet) {
-    throw new Error(`"${SURIPET_SOURCE_SHEET_NAME}" 시트를 찾을 수 없음`);
+  const openSheet = async (sheetId: string, sheetName: string) => {
+    const doc = new GoogleSpreadsheet(sheetId, auth);
+    await doc.loadInfo();
+    const sheet = doc.sheetsByTitle[sheetName];
+    if (!sheet) throw new Error(`"${sheetName}" 시트를 찾을 수 없음`);
+    return sheet;
+  };
+  let sheet;
+  try {
+    sheet = await openSheet(SURIPET_SOURCE_SHEET_ID, SURIPET_SOURCE_SHEET_NAME);
+  } catch (error) {
+    logger.warn(
+      `서리펫 원본 시트 접근 실패 (${(error as Error).message}), ` +
+        `${SURIPET_FALLBACK_SHEET_NAME} 결과 탭으로 전환`
+    );
+    sheet = await openSheet(SURIPET_RESULT_SHEET_ID, SURIPET_FALLBACK_SHEET_NAME);
   }
 
   await sheet.loadHeaderRow();
@@ -92,24 +100,7 @@ export const loadSuripetKeywordsFromSheet = async (): Promise<
 
   const keywords = rows
     .map((row) => row.toObject() as SuripetSheetRow)
-    .map((row) => {
-      const keyword = normalizeCell(row['키워드']);
-      const popularTopic = normalizeCell(row['인기주제']);
-
-      return {
-        company: '서리펫',
-        keyword,
-        visibility: parseBooleanCell(row['노출여부']),
-        popularTopic,
-        url: normalizeCell(row['링크']),
-        keywordType: 'pet' as const,
-        matchedTitle: normalizeCell(row['이미지 매칭']),
-        rank: parseNumberCell(row['순위']),
-        isUpdateRequired: parseBooleanCell(row['바이럴 체크']),
-        isNewLogic: parseBooleanCell(row['로직']),
-        foundPage: parseFoundPage(popularTopic),
-      };
-    })
+    .map(toFreshSuripetKeyword)
     .filter(({ keyword }) => keyword.length > 0);
 
   logger.success(
@@ -143,7 +134,9 @@ export const writeSuripetResultsToSheet = async (
   results: SuripetResultInput[]
 ): Promise<void> => {
   assertWritableSheetId(SURIPET_RESULT_SHEET_ID, '서리펫 결과 반영');
-  const sourceKeywords = await loadOrderedSourceKeywords('suripet');
+  const sourceKeywords = (await loadSuripetKeywordsFromSheet()).map(
+    ({ keyword, company }) => ({ keyword, company })
+  );
   const resultQueues = new Map<string, SuripetResultInput[]>();
   results.forEach((result) => {
     const key = normalizeCell(result.keyword);

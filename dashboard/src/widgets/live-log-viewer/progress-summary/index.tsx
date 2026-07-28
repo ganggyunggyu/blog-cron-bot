@@ -31,19 +31,19 @@ export const ProgressSummary = ({ latestProgress, targetProgress }: ProgressSumm
           return (
             <div
               key={target.target}
-              className="rounded-lg border border-neutral-200 p-2.5 dark:border-neutral-800"
+              className="rounded-lg border border-[var(--line)] p-2.5"
             >
               <div className="mb-1.5 flex items-center justify-between gap-2 text-xs">
-                <span className="font-medium text-neutral-800 dark:text-neutral-200">
+                <span className="font-medium text-neutral-800">
                   {EXPOSURE_PROGRESS_LABELS[target.target] ?? target.target}
                 </span>
-                <span className="text-neutral-500 dark:text-neutral-400">
+                <span className="text-[var(--ink-soft)]">
                   {target.total > 0 ? `${target.current}/${target.total} · ` : ''}
                   {TARGET_STATUS_LABELS[target.status] ?? target.status}
                 </span>
               </div>
               <div
-                className="h-1.5 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800"
+                className="h-1.5 overflow-hidden rounded-full bg-neutral-200"
                 role="progressbar"
                 aria-label={`${EXPOSURE_PROGRESS_LABELS[target.target] ?? target.target} 진행률`}
                 aria-valuemin={0}
@@ -57,7 +57,7 @@ export const ProgressSummary = ({ latestProgress, targetProgress }: ProgressSumm
                       ? 'bg-red-500'
                       : target.status === 'success'
                         ? 'bg-emerald-500'
-                        : 'bg-blue-500',
+                        : 'bg-[var(--signal)]/80',
                   )}
                   style={{ width: `${percent}%` }}
                 />
@@ -73,12 +73,12 @@ export const ProgressSummary = ({ latestProgress, targetProgress }: ProgressSumm
   const percent = getPercent(latestProgress.current, latestProgress.total);
   return (
     <div className="mb-2">
-      <div className="mb-1 flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
+      <div className="mb-1 flex items-center justify-between text-xs text-[var(--ink-soft)]">
         <span>{latestProgress.current}/{latestProgress.total}</span>
         <span>{percent}%</span>
       </div>
       <div
-        className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800"
+        className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-200"
         role="progressbar"
         aria-label="전체 진행률"
         aria-valuemin={0}
@@ -86,7 +86,7 @@ export const ProgressSummary = ({ latestProgress, targetProgress }: ProgressSumm
         aria-valuenow={percent}
       >
         <div
-          className="h-full rounded-full bg-blue-500 transition-all duration-300"
+          className="h-full rounded-full bg-[var(--signal)]/80 transition-all duration-300"
           style={{ width: `${percent}%` }}
         />
       </div>

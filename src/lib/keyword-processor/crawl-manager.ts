@@ -28,7 +28,11 @@ import {
   wrapTransientExposureError,
 } from './transient-failure';
 import { getLoginRetryAttempts } from '../exposure-run-config';
-import { loadSinglePageHtml } from './single-page-loader';
+import { loadHttpMultiPages } from './http-multi-page-loader';
+import {
+  loadSinglePageHtml,
+  withBrowserFallbackPermit,
+} from './single-page-loader';
 
 interface CrawlResult {
   items: any[];
@@ -50,48 +54,73 @@ const loadCrawlSnapshot = async (
   plan: SharedCrawlPlan,
   includeGenericBlogResults: boolean
 ): Promise<SharedCrawlSnapshot> => {
-  let html: string;
+  let html = '';
   let items: PopularItem[];
   let topicNamesArray: string[];
 
   if (plan.maxPages > 1) {
-    const htmls = await crawlMultiPagesPlaywright(
-      searchQuery,
-      plan.maxPages,
-      createSharedCrawlStopPredicate(plan)
-    );
-    htmls.forEach((pageHtml) =>
-      assertUsableNaverHtml(pageHtml, searchQuery, 'crawl')
-    );
-    html = htmls[0];
+    let firstPageItems: PopularItem[] = [];
+    items = [];
+    const appendPage = (pageHtml: string, pageNumber: number): void => {
+      assertUsableNaverHtml(pageHtml, searchQuery, 'crawl');
+      if (pageNumber === 1) {
+        html = pageHtml;
+        firstPageItems = extractPopularItems(pageHtml);
+        if (includeGenericBlogResults) {
+          appendGenericBlogItems(firstPageItems, pageHtml, 1);
+        }
+        items.push(...firstPageItems.map((item) => ({ ...item, page: 1 })));
+      } else {
+        appendGenericBlogItems(items, pageHtml, pageNumber);
+      }
+    };
+    let crawledPages: number;
+    let crawlMode = 'HTTP';
 
-    const firstPageItems = extractPopularItems(html);
-    if (includeGenericBlogResults) {
-      appendGenericBlogItems(firstPageItems, html, 1);
+    try {
+      const stopPredicate = createSharedCrawlStopPredicate(plan);
+      crawledPages = await loadHttpMultiPages(
+        searchQuery,
+        plan.maxPages,
+        getLoginRetryAttempts(CRAWL_CONFIG.maxRetries),
+        (pageHtml, pageNumber) => {
+          appendPage(pageHtml, pageNumber);
+          return stopPredicate(pageHtml, pageNumber);
+        }
+      );
+    } catch (error) {
+      const status = (error as Error & { status?: number }).status;
+      if (status !== 403 && status !== 429) throw error;
+
+      logger.warn(
+        `HTTP ${status} - "${searchQuery}" 다중 페이지 브라우저 폴백 실행`
+      );
+      html = '';
+      firstPageItems = [];
+      items = [];
+      const browserStopPredicate = createSharedCrawlStopPredicate(plan);
+      const htmls = await withBrowserFallbackPermit(() =>
+        crawlMultiPagesPlaywright(
+          searchQuery,
+          plan.maxPages,
+          browserStopPredicate
+        )
+      );
+      htmls.forEach((pageHtml, pageIndex) =>
+        appendPage(pageHtml, pageIndex + 1)
+      );
+      crawledPages = htmls.length;
+      crawlMode = '브라우저 폴백';
     }
+
+    if (!html) throw new Error(`첫 페이지 HTML 누락: ${searchQuery}`);
     topicNamesArray = Array.from(
       new Set(firstPageItems.map((item: PopularItem) => item.group))
     );
 
-    items = [];
-    const seenLinks = new Set<string>();
-    htmls.forEach((pageHtml, pageIndex) => {
-      const pageNumber = pageIndex + 1;
-
-      if (pageNumber === 1) {
-        firstPageItems.forEach((item) => {
-          if (seenLinks.has(item.link)) return;
-          seenLinks.add(item.link);
-          items.push({ ...item, page: pageNumber });
-        });
-        return;
-      }
-
-      appendGenericBlogItems(items, pageHtml, pageNumber);
-    });
-
     logger.info(
-      `📄 ${htmls.length}/${plan.maxPages}페이지 크롤링 완료: ${items.length}개 아이템`
+      `📄 ${crawledPages}/${plan.maxPages}페이지 ${crawlMode} 완료: ` +
+        `${items.length}개 아이템`
     );
   } else {
     html = await loadSinglePageHtml(

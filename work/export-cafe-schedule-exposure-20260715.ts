@@ -7,19 +7,27 @@ import {
   buildCafeScheduleExportRows,
   CafeScheduleCheckRow,
   CafeScheduleExportRow,
+  extractLatestCafeScheduleSourceRows,
 } from '../src/lib/cafe-schedule-export';
 import { assertWritableSheetId } from '../src/lib/google-sheets/write-target-guard';
 
 dotenv.config();
 
 const SOURCE_SHEET_ID = '1aIKP9XnB20q8WWvwZzMNk2yM0waKZcQ1x6CtyM19HNw';
-const SOURCE_GID = 250477480;
-const SOURCE_TITLE = '카페 작업';
+const SOURCE_GID = 126285763;
+const SOURCE_TITLE = '카페 발행스케줄';
 const TARGET_SHEET_ID = '1T9PHu-fH6HPmyYA9dtfXaDLm20XAPN-9mzlE2QTPkF0';
 const TARGET_GID = 1406050962;
 const TARGET_TITLE = '카페노출체크';
 
-const HEADERS = ['키워드', '노출여부', '순위', '카페블로그명', '링크'];
+const HEADERS = [
+  '키워드',
+  '노출여부',
+  '순위',
+  '카페블로그명',
+  '링크',
+  '카페계정',
+];
 
 interface CheckArtifact {
   summary: {
@@ -79,7 +87,7 @@ const loadSourceValues = async (): Promise<unknown[][]> => {
     throw new Error(`원본 gid=${SOURCE_GID} 탭을 찾지 못했거나 탭명이 다름`);
   }
 
-  const range = encodeURIComponent(`${SOURCE_TITLE}!A:P`);
+  const range = encodeURIComponent(`${SOURCE_TITLE}!A:C`);
   const response = await auth.request<{ values?: unknown[][] }>({
     url: `https://sheets.googleapis.com/v4/spreadsheets/${SOURCE_SHEET_ID}/values/${range}`,
     method: 'GET',
@@ -116,16 +124,7 @@ const loadSourceRows = async (
   artifact: CheckArtifact
 ): Promise<CafeScheduleExportRow[]> => {
   const values = await loadSourceValues();
-  const headerRowIndex = values.findIndex(
-    (row) => text(row?.[1]).toLowerCase() === '키워드'
-  );
-  if (headerRowIndex < 0) {
-    throw new Error('카페 작업 탭에서 B열 키워드 헤더를 찾지 못함');
-  }
-  const sourceRows = values.slice(headerRowIndex + 1).map((row, rowOffset) => ({
-    row: headerRowIndex + rowOffset + 2,
-    keyword: text(row?.[1]),
-  }));
+  const sourceRows = extractLatestCafeScheduleSourceRows(values);
 
   return buildCafeScheduleExportRows(sourceRows, artifact.rows, true);
 };
@@ -210,7 +209,7 @@ const exportRows = async (rows: CafeScheduleExportRow[]): Promise<void> => {
   });
 
   const readbackRange = encodeURIComponent(
-    `${TARGET_TITLE}!A1:E${values.length}`
+    `${TARGET_TITLE}!A1:F${values.length}`
   );
   const readback = await getAuth(true).request<{ values?: unknown[][] }>({
     url: `https://sheets.googleapis.com/v4/spreadsheets/${TARGET_SHEET_ID}/values/${readbackRange}`,

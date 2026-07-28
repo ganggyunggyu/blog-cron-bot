@@ -16,11 +16,12 @@ import { sendDoorayExposureResult } from './lib/dooray';
 import { autoLogin } from './tools/auto-login';
 import { closeBrowser, launchBrowser } from './lib/playwright-crawler';
 import {
-  getExposureConcurrency,
+  getFullKeywordParallelism,
   getExposureMaxPages,
 } from './lib/exposure-run-config';
 import { rewriteOrderedResultSheet } from './lib/google-sheets/ordered-result-sheet';
 import { syncRootKeywordsFromSheet } from './lib/root-keyword-sync';
+import { BLOG_IDS } from './constants/blog-ids';
 
 dotenv.config();
 
@@ -59,16 +60,11 @@ const runRootWorkflow = async (): Promise<void> => {
 
   await connectDB(mongoUri);
 
-  const skipSheetSync = ['1', 'true', 'yes'].includes(
-    String(process.env.SKIP_ROOT_SHEET_SYNC ?? '').toLowerCase()
-  );
-  if (!isDistributedShard && !skipSheetSync) {
+  if (!isDistributedShard) {
     const syncResult = await syncRootKeywordsFromSheet();
     logger.success(
       `DB 동기화 완료! (삭제: ${syncResult.deleted}, 삽입: ${syncResult.inserted}, 경로: ${syncResult.source})`
     );
-  } else if (skipSheetSync) {
-    logger.warn('루트 시트 동기화 건너뜀: 현재 API DB 스냅샷으로 노출체크 실행');
   }
 
   const allKeywords = await getAllRootKeywords();
@@ -124,14 +120,17 @@ const runRootWorkflow = async (): Promise<void> => {
     : 0;
 
   const keywords = filtered.slice(startIndex);
-  const concurrency = getExposureConcurrency();
+  const { concurrency, keywordBatchSize } = getFullKeywordParallelism(
+    keywords.length
+  );
   const maxPages = getExposureMaxPages(1);
   logger.info(
     `📋 루트 키워드 ${keywords.length}개 처리 예정 (필터 applied, start=${startIndex})`
   );
   logger.info(
-    `⚡ 키워드 동시 처리: 최대 ${concurrency}개 / 최대 ${maxPages}페이지`
+    `⚡ 전체 키워드 병렬 처리: ${concurrency}개 / 최대 ${maxPages}페이지`
   );
+  logger.info('🔐 루트 판정 기준: 등록 블로그 계정 ID (업체명 검사 생략)');
   logger.blank();
 
   if (concurrency > 1 && maxPages > 1 && keywords.length > 0) {
@@ -139,23 +138,18 @@ const runRootWorkflow = async (): Promise<void> => {
   }
 
   const logBuilder = createDetailedLogBuilder();
-  const useVendorFilter = ['true', '1', 'yes'].includes(
-    String(process.env.ROOT_USE_VENDOR_FILTER ?? '').toLowerCase()
-  );
-  const matchByBlogIdOnly = !useVendorFilter;
-  logger.info(
-    matchByBlogIdOnly
-      ? '🎯 루트 업체명 필터 생략: 등록 블로그 ID만으로 노출 판정'
-      : '🎯 루트 업체명 필터 적용: 계정 ID와 업체명을 함께 확인'
-  );
+  logger.info('🎯 루트 업체명 필터 생략: 등록 블로그 ID만으로 노출 판정');
 
   const allResults = await processKeywords(keywords, logBuilder, {
     updateFunction: updateRootKeywordResult,
     isLoggedIn: loginStatus.isLoggedIn,
     maxPages,
     concurrency,
+    keywordBatchSize,
+    blogIds: [...BLOG_IDS],
     allowAnyBlog: false,
-    matchByBlogIdOnly,
+    matchByBlogIdOnly: true,
+    consumeMatches: false,
   });
 
   if (isDistributedShard) {

@@ -1,4 +1,4 @@
-import { syncKeywords } from '../../api';
+import { syncKeywordsFromSourceSheet } from '../sheet-keyword-sync';
 import { DOGMARU_PAGE_CHECK_BLOG_IDS } from '../../constants/blog-ids';
 import { requests } from '../../constants';
 import { getAllKeywords, type IKeyword } from '../../database';
@@ -26,7 +26,7 @@ const formatDuration = (milliseconds: number): string => {
 
 export const syncAndLoadDogmaruKeywords = async (): Promise<IKeyword[]> => {
   logger.step(1, 3, '도그마루 시트 동기화');
-  await syncKeywords(requests[2]);
+  await syncKeywordsFromSourceSheet(requests[2]);
   logger.step(1, 3, '도그마루 시트 동기화', 'done');
 
   const allKeywords = await getAllKeywords();

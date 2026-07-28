@@ -1,6 +1,7 @@
 import type { ExposureTargetId } from '../exposure-suite/options';
 import {
   DistributedExposureJob,
+  type DistributedJobKind,
   type DistributedJobStatus,
   type IDistributedExposureJob,
 } from './models';
@@ -17,6 +18,7 @@ export interface DistributedRunInput {
 
 export interface DistributedJobInput {
   target: ExposureTargetId;
+  jobKind?: DistributedJobKind;
   shardIndex?: number;
   shardCount?: number;
   keywordIds?: string[];
@@ -33,23 +35,67 @@ export interface DistributedRunSnapshot {
     status: DistributedJobStatus;
     shardIndex: number;
     shardCount: number;
+    workerId?: string;
+    egressIp?: string;
+    attempts: number;
+    maxAttempts: number;
+    remainingKeywords: number;
+    error?: string;
   }>;
 }
 
-export const claimDistributedJob = async (
+export const buildDistributedJobClaimQuery = (
   workerId: string,
-  runId?: string
-): Promise<IDistributedExposureJob | null> => {
-  const now = new Date();
-  const query = {
+  now: Date,
+  runId?: string,
+  jobId?: string,
+  egressIp?: string
+) => {
+  const matchingWorker = [
+    { workerId: { $exists: false } },
+    { workerId },
+    ...(egressIp ? [{ egressIp }] : []),
+  ];
+
+  return {
     ...(runId ? { runId } : {}),
+    ...(jobId ? { _id: jobId } : {}),
     active: true,
-    attempts: { $lt: 2 },
-    $or: [
-      { status: 'pending' },
-      { status: 'running', leaseUntil: { $lte: now } },
+    $and: [
+      { $expr: { $lt: ['$attempts', '$maxAttempts'] } },
+      {
+        $or: [
+          {
+            status: 'pending',
+            $or: matchingWorker,
+          },
+          {
+            status: 'running',
+            leaseUntil: { $lte: now },
+            ...(egressIp
+              ? { egressIp }
+              : { workerId: { $ne: workerId } }),
+          },
+        ],
+      },
     ],
   };
+};
+
+export const claimDistributedJob = async (
+  workerId: string,
+  runId?: string,
+  jobId?: string,
+  egressIp?: string
+): Promise<IDistributedExposureJob | null> => {
+  const now = new Date();
+  const query = buildDistributedJobClaimQuery(
+    workerId,
+    now,
+    runId,
+    jobId,
+    egressIp
+  );
 
   return DistributedExposureJob.findOneAndUpdate(
     query,
@@ -57,6 +103,7 @@ export const claimDistributedJob = async (
       $set: {
         status: 'running',
         workerId,
+        ...(egressIp ? { egressIp } : {}),
         leaseUntil: new Date(now.getTime() + JOB_LEASE_MS),
         startedAt: now,
         error: '',
@@ -72,10 +119,24 @@ export const heartbeatDistributedJob = async (
   workerId: string
 ): Promise<boolean> => {
   const result = await DistributedExposureJob.updateOne(
-    { _id: jobId, workerId, status: 'running' },
+    { _id: jobId, workerId, status: 'running', active: true },
     { $set: { leaseUntil: new Date(Date.now() + JOB_LEASE_MS) } }
   );
   return result.modifiedCount === 1;
+};
+
+export const recordDistributedJobWorker = async (
+  jobId: string,
+  workerId: string,
+  egressIp: string
+): Promise<void> => {
+  const result = await DistributedExposureJob.updateOne(
+    { _id: jobId, workerId, status: 'running' },
+    { $set: { egressIp } }
+  );
+  if (result.matchedCount !== 1) {
+    throw new Error(`워커 외부 IP 기록 실패: ${workerId}`);
+  }
 };
 
 export const completeDistributedJob = async (
@@ -91,11 +152,21 @@ export const completeDistributedJob = async (
   );
 };
 
+export const buildDistributedJobReleaseFields = (
+  shouldRetry: boolean
+): Record<string, 1> => {
+  if (shouldRetry) {
+    return { leaseUntil: 1, workerId: 1, egressIp: 1 };
+  }
+  return { leaseUntil: 1, workerId: 1 };
+};
+
 export const failDistributedJob = async (
   job: IDistributedExposureJob,
   workerId: string,
-  error: string
-): Promise<void> => {
+  error: string,
+  retryKeywordIds?: string[]
+): Promise<boolean> => {
   const shouldRetry = job.attempts < job.maxAttempts;
   const statusUpdate = shouldRetry
     ? { status: 'pending' as const, error }
@@ -105,10 +176,12 @@ export const failDistributedJob = async (
     {
       $set: {
         ...statusUpdate,
+        ...(retryKeywordIds ? { keywordIds: retryKeywordIds } : {}),
       },
-      $unset: { leaseUntil: 1, workerId: 1 },
+      $unset: buildDistributedJobReleaseFields(shouldRetry),
     }
   );
+  return shouldRetry;
 };
 
 export const getDistributedRunSnapshot = async (
@@ -116,7 +189,18 @@ export const getDistributedRunSnapshot = async (
 ): Promise<DistributedRunSnapshot> => {
   const jobs = await DistributedExposureJob.find({ runId })
     .sort({ order: 1 })
-    .select({ target: 1, status: 1, shardIndex: 1, shardCount: 1 })
+    .select({
+      target: 1,
+      status: 1,
+      shardIndex: 1,
+      shardCount: 1,
+      workerId: 1,
+      egressIp: 1,
+      attempts: 1,
+      maxAttempts: 1,
+      keywordIds: 1,
+      error: 1,
+    })
     .lean()
     .exec();
   const count = (status: DistributedJobStatus): number =>
@@ -133,6 +217,12 @@ export const getDistributedRunSnapshot = async (
       status: job.status,
       shardIndex: job.shardIndex,
       shardCount: job.shardCount,
+      workerId: job.workerId,
+      egressIp: job.egressIp,
+      attempts: job.attempts ?? 0,
+      maxAttempts: job.maxAttempts ?? 0,
+      remainingKeywords: job.keywordIds?.length ?? 0,
+      error: job.error,
     })),
   };
 };

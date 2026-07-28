@@ -11,6 +11,7 @@ export type DistributedJobStatus =
   | 'running'
   | 'success'
   | 'failed';
+export type DistributedJobKind = 'standard' | 'old-logic-more';
 
 export interface IDistributedExposureRun extends Document {
   runId: string;
@@ -26,6 +27,7 @@ export interface IDistributedExposureRun extends Document {
 export interface IDistributedExposureJob extends Document {
   runId: string;
   target: ExposureTargetId;
+  jobKind: DistributedJobKind;
   order: number;
   status: DistributedJobStatus;
   concurrency: number;
@@ -37,6 +39,7 @@ export interface IDistributedExposureJob extends Document {
   maxAttempts: number;
   active: boolean;
   workerId?: string;
+  egressIp?: string;
   leaseUntil?: Date;
   startedAt?: Date;
   finishedAt?: Date;
@@ -61,6 +64,7 @@ const jobSchema = new Schema<IDistributedExposureJob>(
   {
     runId: { type: String, required: true, index: true },
     target: { type: String, required: true },
+    jobKind: { type: String, required: true, default: 'standard' },
     order: { type: Number, required: true },
     status: { type: String, required: true, default: 'pending', index: true },
     concurrency: { type: Number, required: true },
@@ -72,6 +76,7 @@ const jobSchema = new Schema<IDistributedExposureJob>(
     maxAttempts: { type: Number, required: true, default: 2 },
     active: { type: Boolean, required: true, default: true, index: true },
     workerId: String,
+    egressIp: String,
     leaseUntil: Date,
     startedAt: Date,
     finishedAt: Date,

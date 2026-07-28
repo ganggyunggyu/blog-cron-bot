@@ -8,7 +8,7 @@ import { checkNaverLogin } from './lib/check-naver-login';
 import { logger } from './lib/logger';
 import { getKSTTimestamp } from './utils';
 import { sendDoorayExposureResult } from './lib/dooray';
-import { syncKeywords } from './api';
+import { syncKeywordsFromSourceSheet } from './lib/sheet-keyword-sync';
 import { requests } from './constants';
 import { ExposureResult } from './matcher';
 import { closeBrowser, launchBrowser } from './lib/playwright-crawler';
@@ -56,7 +56,7 @@ const executeDogmaruExcludeWorkflow = async (): Promise<void> => {
 
   // 일반건 시트만 동기화
   logger.step(1, 3, '일반건 시트 동기화');
-  await syncKeywords(requests[1]);
+  await syncKeywordsFromSourceSheet(requests[1]);
   logger.step(1, 3, '일반건 시트 동기화', 'done');
 
   // 일반건 키워드만 필터

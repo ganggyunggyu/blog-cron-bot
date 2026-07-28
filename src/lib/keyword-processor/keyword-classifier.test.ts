@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
-import { getVendorTarget } from './keyword-classifier';
+import { getMatchVendorTarget } from './keyword-classifier';
 
 const rootKeyword = {
+  _id: 'root-keyword',
   company: '아키아키',
-  sheetType: 'root',
+  keyword: '청주맛집(아키아키)',
 };
 
-assert.equal(getVendorTarget(rootKeyword, '아키아키'), '아키아키');
-assert.equal(getVendorTarget(rootKeyword, '아키아키', true), '');
+assert.equal(getMatchVendorTarget(rootKeyword, '아키아키', false), '아키아키');
+assert.equal(getMatchVendorTarget(rootKeyword, '아키아키', true), '');
 
-console.log('keyword-classifier tests passed');
+process.stdout.write('keyword classifier tests passed\n');

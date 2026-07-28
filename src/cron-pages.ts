@@ -25,6 +25,10 @@ import {
   writeSuripetResultsToSheet,
 } from './lib/google-sheets/suripet-page-check';
 import {
+  loadPetKeywordsFromSheet,
+  writePetResultsToSheet,
+} from './lib/google-sheets/pet-page-check';
+import {
   getExposureConcurrency,
   getExposureMaxPages,
   splitConcurrencyBudget,
@@ -133,11 +137,13 @@ type ExportAllRequest = () => Promise<SheetExportResponse>;
 
 interface ImportSheetDependencies {
   importPageSheet: ImportSheetRequest;
+  importPet: () => Promise<number>;
   importSuripet: () => Promise<number>;
 }
 
 interface ExportSheetDependencies {
   exportPageSheet: ExportSheetRequest;
+  exportPet: () => Promise<void>;
   exportSuripet: () => Promise<void>;
 }
 
@@ -190,6 +196,21 @@ async function exportSuripetSheetDirect(): Promise<void> {
   );
 }
 
+async function exportPetSheetDirect(): Promise<void> {
+  const keywords = await getPageCheckKeywords('pet');
+  await writePetResultsToSheet(
+    keywords.map((keyword) => ({
+      keyword: keyword.keyword,
+      visibility: keyword.visibility,
+      popularTopic: keyword.popularTopic,
+      url: keyword.url,
+      rank: keyword.rank,
+      rankWithCafe: keyword.rankWithCafe,
+      isNewLogic: keyword.isNewLogic,
+    }))
+  );
+}
+
 export async function exportSheetAPI(
   sheetType: PageCheckSheetType,
   dependencies: Partial<ExportSheetDependencies> = {}
@@ -202,8 +223,14 @@ export async function exportSheetAPI(
       }));
   const exportSuripet =
     dependencies.exportSuripet ?? exportSuripetSheetDirect;
+  const exportPet = dependencies.exportPet ?? exportPetSheetDirect;
 
   try {
+    if (sheetType === 'pet') {
+      await exportPet();
+      return;
+    }
+
     if (sheetType === 'suripet') {
       await exportSuripet();
       return;
@@ -232,6 +259,15 @@ export const syncSuripetKeywordsFromSheetToDB = async (): Promise<number> => {
   return synced;
 };
 
+export const syncPetKeywordsFromSheetToDB = async (): Promise<number> => {
+  const keywords = await loadPetKeywordsFromSheet();
+  const synced = await replacePageCheckKeywords('pet', keywords);
+
+  logger.success(`  ${SHEET_TYPE_NAMES.pet}: ${synced}개 직접 동기화`);
+
+  return synced;
+};
+
 export async function importSheetAPI(
   sheetType: PageCheckSheetType,
   dependencies: Partial<ImportSheetDependencies> = {}
@@ -244,8 +280,13 @@ export async function importSheetAPI(
       }));
   const importSuripet =
     dependencies.importSuripet ?? syncSuripetKeywordsFromSheetToDB;
+  const importPet = dependencies.importPet ?? syncPetKeywordsFromSheetToDB;
 
   try {
+    if (sheetType === 'pet') {
+      return await importPet();
+    }
+
     if (sheetType === 'suripet') {
       return await importSuripet();
     }

@@ -1,29 +1,32 @@
 import assert from 'node:assert/strict';
 import {
+  ALL_KEYWORDS_CONCURRENCY,
+  AUTO_KEYWORD_CONCURRENCY,
   DEFAULT_EXPOSURE_TARGETS,
   buildTargetEnvironment,
   planExposureTargetJobs,
   parseExposureSuiteOptions,
+  resolveKeywordConcurrency,
   resolveTargetCommand,
 } from './options';
 
 const defaults = parseExposureSuiteOptions([], {});
 assert.deepEqual(defaults.targets, DEFAULT_EXPOSURE_TARGETS);
-assert.equal(defaults.concurrency, 8);
+assert.equal(defaults.concurrency, AUTO_KEYWORD_CONCURRENCY);
 assert.equal(defaults.maxPages, 4);
 assert.equal(defaults.targetConcurrency, 2);
 
 const configured = parseExposureSuiteOptions(
   [
     '--targets=pet,package,cafe',
-    '--concurrency=8',
+    '--concurrency=50',
     '--max-pages=9',
     '--target-concurrency=3',
   ],
   {}
 );
 assert.deepEqual(configured.targets, ['pet', 'package', 'cafe']);
-assert.equal(configured.concurrency, 8);
+assert.equal(configured.concurrency, 50);
 assert.equal(configured.maxPages, 9);
 assert.equal(configured.targetConcurrency, 3);
 
@@ -32,8 +35,12 @@ assert.throws(
   /허용되지 않은 노출체크 대상/
 );
 assert.throws(
-  () => parseExposureSuiteOptions(['--concurrency=9'], {}),
-  /1~8/
+  () => parseExposureSuiteOptions(['--concurrency=-1'], {}),
+  /0\(전체 자동\)/
+);
+assert.equal(
+  parseExposureSuiteOptions(['--concurrency=0'], {}).concurrency,
+  AUTO_KEYWORD_CONCURRENCY
 );
 assert.throws(
   () => parseExposureSuiteOptions(['--target-concurrency=13'], {}),
@@ -65,7 +72,7 @@ assert.deepEqual(resolveTargetCommand('pet'), {
   args: ['pet'],
 });
 assert.deepEqual(resolveTargetCommand('cafe'), {
-  script: 'cafe:schedule:run',
+  script: 'exposure:cafe-current',
   args: [],
 });
 
@@ -74,7 +81,7 @@ assert.deepEqual(
   [
     {
       targets: ['cafe'],
-      command: { script: 'cafe:schedule:run', args: [] },
+      command: { script: 'exposure:cafe-current', args: [] },
     },
     {
       targets: ['pet', 'suripet'],
@@ -91,7 +98,7 @@ assert.deepEqual(
   [
     {
       targets: ['cafe'],
-      command: { script: 'cafe:schedule:run', args: [] },
+      command: { script: 'exposure:cafe-current', args: [] },
     },
     {
       targets: ['dogmaru', 'pet', 'suripet'],
@@ -170,7 +177,31 @@ const petEnvironment = buildTargetEnvironment(
 assert.equal(petEnvironment.EXPOSURE_MAX_PAGES, '4');
 assert.equal(petEnvironment.PAGE_CHECK_MAX_PAGES, '4');
 assert.equal(petEnvironment.EXPOSURE_CONCURRENCY, '8');
-assert.equal(petEnvironment.EXPOSURE_KEYWORD_BATCH_SIZE, '50');
+assert.equal(petEnvironment.EXPOSURE_KEYWORD_BATCH_SIZE, '8');
 assert.equal(petEnvironment.FAST_EXPOSURE_MODE, 'true');
+
+const allKeywordEnvironment = buildTargetEnvironment(
+  inheritedEnvironment,
+  ['cafe'],
+  AUTO_KEYWORD_CONCURRENCY,
+  4
+);
+assert.equal(
+  allKeywordEnvironment.EXPOSURE_CONCURRENCY,
+  String(ALL_KEYWORDS_CONCURRENCY)
+);
+assert.equal(
+  allKeywordEnvironment.EXPOSURE_KEYWORD_BATCH_SIZE,
+  String(ALL_KEYWORDS_CONCURRENCY)
+);
+
+// 기본 옵션(자동 병렬 = 0 센티널)이 요청 브로커에 그대로 넘어가면 "1 이상의 정수" 검증에
+// 걸려 개별 노출체크가 즉시 실패했음 — 항상 1 이상으로 해석되는지 고정함.
+assert.equal(
+  resolveKeywordConcurrency(AUTO_KEYWORD_CONCURRENCY),
+  ALL_KEYWORDS_CONCURRENCY
+);
+assert.equal(resolveKeywordConcurrency(8), 8);
+assert.ok(resolveKeywordConcurrency(defaults.concurrency) >= 1);
 
 process.stdout.write('exposure suite option tests passed\n');
