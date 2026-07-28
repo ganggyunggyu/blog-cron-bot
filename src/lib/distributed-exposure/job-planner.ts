@@ -10,7 +10,10 @@ import {
   isRootSourceSchemaMismatch,
   syncRootKeywordsFromSheet,
 } from '../root-keyword-sync';
-import { buildPageKeywordShards, type PageShardKeyword } from './page-shards';
+import {
+  buildBalancedPageKeywordShards,
+  type PageShardKeyword,
+} from './page-shards';
 import type { DistributedJobInput } from './queue';
 
 export const isDistributedPageTarget = (
@@ -28,18 +31,19 @@ const toSingleSheetJob = (
   keywordIds,
 });
 
-export const PAGE_REMOTE_WORKER_COUNT = 7;
+// 페이지 노출체크는 30개 원격 워커에 균등 분배한다.
+export const PAGE_REMOTE_WORKER_COUNT = 30;
 export const PAGE_JOB_MAX_SHARD_SIZE = 50;
 
 export const buildPageTargetJobs = (
   target: Extract<PageCheckSheetType, 'pet' | 'suripet'>,
   keywords: readonly PageShardKeyword[]
 ): DistributedJobInput[] => {
-  const shardSize = Math.min(
-    PAGE_JOB_MAX_SHARD_SIZE,
-    Math.max(1, Math.ceil(keywords.length / PAGE_REMOTE_WORKER_COUNT))
+  const shards = buildBalancedPageKeywordShards(
+    keywords,
+    PAGE_REMOTE_WORKER_COUNT,
+    PAGE_JOB_MAX_SHARD_SIZE
   );
-  const shards = buildPageKeywordShards(keywords, shardSize);
   return shards.map((keywordIds, shardIndex) => ({
     target,
     shardIndex,

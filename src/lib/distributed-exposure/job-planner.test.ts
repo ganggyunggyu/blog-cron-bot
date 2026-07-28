@@ -5,7 +5,7 @@ import {
   buildPageTargetJobs,
 } from './job-planner';
 
-// 서로 다른 검색어 300개는 운영 중인 원격 워커 7대에 균등 분배한다.
+// 서로 다른 검색어 300개는 운영 중인 원격 워커 30대에 균등 분배한다.
 const uniqueKeywords = Array.from({ length: 300 }, (_, index) => ({
   _id: `pet-${index}`,
   keyword: `키워드 ${index}`,
