@@ -252,14 +252,18 @@ const main = async (): Promise<void> => {
       { label: '성공 대상', value: `${options.targets.length}개` },
       { label: '총 소요', value: `${Math.floor(elapsedMs / 1000)}초` },
       {
-        label: '이번 실행 서버비 추정',
+        label: '이번 실행 사용량 추정',
         value: formatRailwayCost(costEstimate.runUsd, costEstimate.runKrw),
       },
       {
-        label: '30일 상시 운영 추정',
+        label: '요금제 포함 사용량',
+        value: `$${costEstimate.includedUsageUsd.toFixed(2)} (월 기본료 $${costEstimate.planFeeUsd.toFixed(2)})`,
+      },
+      {
+        label: '30일 상시 총청구 추정',
         value: formatRailwayCost(
-          costEstimate.monthlyUsd,
-          costEstimate.monthlyKrw
+          costEstimate.monthlyBillUsd,
+          costEstimate.monthlyBillKrw
         ),
       },
       {

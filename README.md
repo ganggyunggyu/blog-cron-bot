@@ -216,7 +216,7 @@ pnpm dev              # http://localhost:4500 (개발 모드)
 
 - **Railway** (운영): `Dockerfile` + `railway.toml`로 Docker 빌드하고, `pm2-runtime`이 `ecosystem.railway.config.cjs`를 읽는다. 매일 08:00에는 Codex 예약 한 곳이 원격 대시보드만 호출하며 로컬 크롤링이나 별도 PM2 노출체크 cron은 두지 않는다. 패키지·일반건·도그마루·루트·애견·서리펫·카페는 시트당 원격 서버 1개와 서로 다른 외부 IP를 사용한다. 운영 대시보드는 [blog-cron-bot-production.up.railway.app](https://blog-cron-bot-production.up.railway.app)에서 로그인 후 사용할 수 있다.
 
-분산 노출체크 완료 로그에는 Railway 비용 추정도 남는다. 기본 가정은 워커당 `1 vCPU`, `1GB RAM`, 환율 `1 USD = 1,400원`이며, 실제 배포 스펙에 맞게 Railway 환경변수 `RAILWAY_COST_ESTIMATE_VCPU`, `RAILWAY_COST_ESTIMATE_MEMORY_GB`, `RAILWAY_COST_ESTIMATE_KRW_PER_USD`로 바꾼다. 이번 실행 구간 비용과 30일 상시 운영 환산 비용을 함께 보여주며, 네트워크 전송·볼륨·Hobby/Pro 기본 구독료는 포함하지 않는다.
+분산 노출체크 완료 로그에는 Railway 비용 추정도 남는다. 기본 가정은 워커당 `1 vCPU`, `1GB RAM`, 환율 `1 USD = 1,400원`, Hobby 요금제의 월 기본료·포함 사용량 `$5`이다. 실제 배포 스펙이나 요금제에 맞게 `RAILWAY_COST_ESTIMATE_VCPU`, `RAILWAY_COST_ESTIMATE_MEMORY_GB`, `RAILWAY_COST_ESTIMATE_KRW_PER_USD`, `RAILWAY_COST_ESTIMATE_INCLUDED_USAGE_USD`, `RAILWAY_COST_ESTIMATE_PLAN_FEE_USD` 환경변수를 바꾼다. 실행 사용량은 포함 사용량에서 먼저 차감되며, 30일 상시 운영 값은 기본료·포함 크레딧을 반영한 총청구 추정이다. 네트워크 전송과 볼륨은 포함하지 않는다.
 - 전체 노출체크의 시트별 단일 작업 대기열과 Railway 제어/워커 서비스 구성은 [`docs/DISTRIBUTED_EXPOSURE.md`](docs/DISTRIBUTED_EXPOSURE.md)를 따른다.
 - **EC2**: `ecosystem.config.cjs`로 PM2 4개 앱(keywords/root/all-sheets/dashboard) 관리. 절차는 `docs/ec2-ubuntu.md` 참고. 대시보드 앱은 `pnpm --dir dashboard build`를 먼저 실행해야 `pm2 start`가 정상 기동한다.
 
