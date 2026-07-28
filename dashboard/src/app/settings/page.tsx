@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Settings } from 'lucide-react';
 import { AccountManager } from '@/widgets/account-manager';
+import { PresetManager } from '@/widgets/preset-manager';
 
 const SettingsPage = () => {
   return (
@@ -14,10 +15,10 @@ const SettingsPage = () => {
             </span>
             <div>
               <h1 className="text-base font-semibold leading-tight text-[var(--ink)]">
-                노출체크 계정 관리
+                노출체크 설정
               </h1>
               <p className="text-xs text-[var(--ink-soft)]">
-                여기서 추가·제거하면 다음 노출체크부터 바로 반영됨
+                프리셋과 블로그 계정을 여기서 잡으면 다음 실행부터 반영됨
               </p>
             </div>
           </div>
@@ -32,6 +33,7 @@ const SettingsPage = () => {
       </header>
 
       <main className="mx-auto flex max-w-4xl flex-col gap-6 px-6 py-8">
+        <PresetManager />
         <AccountManager />
       </main>
     </div>
