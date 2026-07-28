@@ -28,19 +28,18 @@ const toSingleSheetJob = (
   keywordIds,
 });
 
-/**
- * 애견/서리펫은 시트당 워커 1개가 키워드 수백 개를 전부 떠안아서, 여러 원격 워커가
- * 동시에 떠 있어도 실제로는 워커 1대만 일하는 구조였다. 같은 검색어는 한 조각에
- * 묶은 채 50개 단위로 잘라 job을 여러 개 만들면, 이미 떠 있는 여러 워커가 조각을
- * 하나씩 나눠 집어가서 진짜로 병렬 처리된다.
- */
-export const PAGE_JOB_SHARD_SIZE = 50;
+export const PAGE_REMOTE_WORKER_COUNT = 7;
+export const PAGE_JOB_MAX_SHARD_SIZE = 50;
 
 export const buildPageTargetJobs = (
   target: Extract<PageCheckSheetType, 'pet' | 'suripet'>,
   keywords: readonly PageShardKeyword[]
 ): DistributedJobInput[] => {
-  const shards = buildPageKeywordShards(keywords, PAGE_JOB_SHARD_SIZE);
+  const shardSize = Math.min(
+    PAGE_JOB_MAX_SHARD_SIZE,
+    Math.max(1, Math.ceil(keywords.length / PAGE_REMOTE_WORKER_COUNT))
+  );
+  const shards = buildPageKeywordShards(keywords, shardSize);
   return shards.map((keywordIds, shardIndex) => ({
     target,
     shardIndex,

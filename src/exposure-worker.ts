@@ -91,6 +91,13 @@ const runWorkerSlot = async (
         }
         continue;
       }
+      if (
+        outcome === 'success' &&
+        (job.target === 'pet' || job.target === 'suripet')
+      ) {
+        assignedJobId = undefined;
+        continue;
+      }
       while (!stopping && !(await isDistributedRunFinished(job.runId))) {
         await waitForPoll();
       }
