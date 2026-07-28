@@ -32,6 +32,7 @@ src/tools/*
 !src/tools/export-blog-share-sheet.ts
 !src/tools/check-cafe-bot-published-exposure.ts
 !src/tools/auto-login.ts
+!src/tools/seed-tenant.ts
 !src/tools/check-old-logic-more-exposure.ts
 !src/tools/reexport-current-results.ts
 
