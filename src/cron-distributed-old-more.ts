@@ -24,6 +24,8 @@ dotenv.config();
 
 const TARGETS = ['package', 'general', 'dogmaru'] as const;
 const DEFAULT_TIMEOUT_MINUTES = 90;
+const SHEETS_QUOTA_RETRY_DELAY_MS = 65_000;
+const MAX_SHEETS_QUOTA_MERGE_ATTEMPTS = 3;
 const localWorkers = new Set<ChildProcess>();
 let stopping = false;
 
@@ -79,14 +81,51 @@ const runMerge = (target: (typeof TARGETS)[number], titles: string[]): Promise<v
         titles.join(','),
         '--cleanup-merged-output',
       ],
-      { cwd: process.cwd(), env: process.env, stdio: 'inherit' }
+      { cwd: process.cwd(), env: process.env, stdio: ['ignore', 'pipe', 'pipe'] }
     );
+    let output = '';
+    const forwardOutput = (chunk: Buffer): void => {
+      const text = chunk.toString();
+      output += text;
+      process.stdout.write(text);
+    };
+    child.stdout?.on('data', forwardOutput);
+    child.stderr?.on('data', forwardOutput);
     child.once('error', reject);
     child.once('close', (code) => {
       if (code === 0) resolve();
-      else reject(new Error(`${target} 더보기 결과 병합 종료 코드 ${code ?? 'unknown'}`));
+      else
+        reject(
+          new Error(
+            `${target} 더보기 결과 병합 종료 코드 ${code ?? 'unknown'}: ${output.slice(-2000)}`
+          )
+        );
     });
   });
+
+const sleep = (milliseconds: number): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+const runMergeWithRetry = async (
+  target: (typeof TARGETS)[number],
+  titles: string[]
+): Promise<void> => {
+  for (let attempt = 1; attempt <= MAX_SHEETS_QUOTA_MERGE_ATTEMPTS; attempt += 1) {
+    try {
+      await runMerge(target, titles);
+      return;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const canRetry = /quota exceeded|\b429\b/i.test(message);
+      if (!canRetry || attempt === MAX_SHEETS_QUOTA_MERGE_ATTEMPTS) throw error;
+      logger.warn(
+        `[더보기 다중워커] ${target} 병합 Sheets 쿼터 초과, ` +
+          `${SHEETS_QUOTA_RETRY_DELAY_MS / 1000}초 후 재시도 (${attempt}/${MAX_SHEETS_QUOTA_MERGE_ATTEMPTS})`
+      );
+      await sleep(SHEETS_QUOTA_RETRY_DELAY_MS);
+    }
+  }
+};
 
 const main = async (): Promise<void> => {
   const mongoUri = String(process.env.MONGODB_URI ?? '').trim();
@@ -127,7 +166,7 @@ const main = async (): Promise<void> => {
         .filter((job) => job.target === target)
         .sort((left, right) => left.shardIndex - right.shardIndex)
         .map((job) => getWorkerOutputTitle(runId, target, job.shardIndex));
-      await runMerge(target, titles);
+      await runMergeWithRetry(target, titles);
       const exported = await finalizeDistributedOldLogicMore(target, elapsedTime);
       logger.info(
         `[더보기 다중워커] ${target} 내보내기 ${exported.resultRows}행 / ` +
