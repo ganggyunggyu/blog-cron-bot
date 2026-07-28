@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
+    "dashboard:dev": "node dashboard/scripts/dev.mjs",
     "test": "pnpm test:unit",
     "test:distributed-queue": "ts-node src/lib/distributed-exposure/queue.test.ts",
     "test:http-multi-page": "ts-node src/lib/keyword-processor/http-multi-page-loader.test.ts",
