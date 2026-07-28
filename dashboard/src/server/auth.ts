@@ -3,9 +3,6 @@ const encoder = new TextEncoder();
 export const SESSION_COOKIE_NAME = 'dashboard_session';
 export const SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
 
-/** 공유 비밀번호로 들어온 세션. 회원 계정으로 옮기기 전까지만 유지한다. */
-export const LEGACY_MEMBER_ID = 'legacy';
-
 const bufferToBase64Url = (buffer: ArrayBuffer) => {
   const bytes = new Uint8Array(buffer);
   let binary = '';
@@ -78,13 +75,3 @@ export const readSessionToken = async (
 
 export const verifySessionToken = async (token: string | undefined | null) =>
   (await readSessionToken(token)) !== null;
-
-/**
- * 회원 계정으로 전부 옮기기 전까지 기존 공유 비밀번호도 받아준다.
- * DASHBOARD_PASSWORD를 지우면 이 경로는 자동으로 닫힌다.
- */
-export const verifyLegacyPassword = (candidate: string) => {
-  const expected = process.env.DASHBOARD_PASSWORD;
-  if (!expected) return false;
-  return candidate === expected;
-};

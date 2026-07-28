@@ -66,9 +66,15 @@ const RankScan = () => {
 
 const LoginPage = () => {
   const router = useRouter();
+  const [loginId, setLoginId] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  const handleLoginIdChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setLoginId(event.target.value);
+    if (errorMessage) setErrorMessage(null);
+  };
 
   const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(event.target.value);
@@ -80,11 +86,11 @@ const LoginPage = () => {
     setIsSubmitting(true);
     setErrorMessage(null);
     try {
-      await api.post('/auth/login', { password });
+      await api.post('/auth/login', { loginId, password });
       router.push('/');
       router.refresh();
     } catch {
-      setErrorMessage('비밀번호가 맞지 않음. 다시 입력해 주세요.');
+      setErrorMessage('아이디 또는 비밀번호가 맞지 않음. 다시 입력해 주세요.');
     } finally {
       setIsSubmitting(false);
     }
@@ -120,8 +126,31 @@ const LoginPage = () => {
 
         <form onSubmit={handleSubmit} className="mt-7">
           <label
-            htmlFor="dashboard-password"
+            htmlFor="dashboard-login-id"
             className="stamp mb-2 block"
+          >
+            ID
+          </label>
+          <input
+            id="dashboard-login-id"
+            type="text"
+            value={loginId}
+            onChange={handleLoginIdChange}
+            placeholder="아이디"
+            autoFocus
+            autoComplete="username"
+            aria-invalid={errorMessage ? true : undefined}
+            className={cn(
+              'w-full rounded-md border bg-[var(--panel)] px-3.5 py-3 text-[15px] text-[var(--ink)]',
+              'outline-none transition-colors placeholder:text-[var(--ink-faint)]',
+              'focus:border-[var(--signal)] focus:ring-2 focus:ring-[var(--signal)]/25',
+              errorMessage ? 'border-[var(--alert)]' : 'border-[var(--line)]',
+            )}
+          />
+
+          <label
+            htmlFor="dashboard-password"
+            className="stamp mb-2 mt-4 block"
           >
             Password
           </label>
@@ -131,7 +160,6 @@ const LoginPage = () => {
             value={password}
             onChange={handlePasswordChange}
             placeholder="비밀번호"
-            autoFocus
             autoComplete="current-password"
             aria-invalid={errorMessage ? true : undefined}
             className={cn(
@@ -150,7 +178,7 @@ const LoginPage = () => {
 
           <button
             type="submit"
-            disabled={isSubmitting || password.length === 0}
+            disabled={isSubmitting || loginId.trim().length === 0 || password.length === 0}
             className={cn(
               'mt-4 flex w-full items-center justify-between rounded-md px-4 py-3.5',
               'bg-[var(--signal)] text-[15px] font-medium text-[var(--signal-ink)]',
