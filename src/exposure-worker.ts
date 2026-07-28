@@ -2,6 +2,7 @@ import { createServer, type Server } from 'node:http';
 import { hostname } from 'node:os';
 import type { ChildProcess } from 'node:child_process';
 import * as dotenv from 'dotenv';
+import { sleep } from '@ganggyunggyu/shared';
 import { connectDB, disconnectDB } from './database';
 import { logger } from './lib/logger';
 import {
@@ -56,8 +57,7 @@ const startHealthServer = (): Server | undefined => {
   }).listen(port, '0.0.0.0');
 };
 
-const waitForPoll = (): Promise<void> =>
-  new Promise((resolve) => setTimeout(resolve, POLL_MS));
+const waitForPoll = (): Promise<void> => sleep(POLL_MS);
 
 const runWorkerSlot = async (
   workerId: string,

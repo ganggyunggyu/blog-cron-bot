@@ -1,3 +1,4 @@
+import { unique as uniqueValues } from '@ganggyunggyu/shared';
 import type { ExposureResult } from '../../matcher';
 import type { CafeMatch } from '../cafe-exposure-check';
 
@@ -9,7 +10,7 @@ export interface CombinedExposureResult {
 }
 
 const unique = (values: string[]): string[] =>
-  Array.from(new Set(values.filter(Boolean)));
+  uniqueValues(values.filter(Boolean));
 
 export const buildCombinedExposureResult = (
   cafeMatches: CafeMatch[],

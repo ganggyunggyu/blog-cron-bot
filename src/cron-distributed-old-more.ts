@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { spawn, type ChildProcess } from 'node:child_process';
 import * as dotenv from 'dotenv';
+import { sleep } from '@ganggyunggyu/shared';
 import { connectDB, disconnectDB } from './database';
 import { logger } from './lib/logger';
 import {
@@ -102,9 +103,6 @@ const runMerge = (target: (typeof TARGETS)[number], titles: string[]): Promise<v
         );
     });
   });
-
-const sleep = (milliseconds: number): Promise<void> =>
-  new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 const runMergeWithRetry = async (
   target: (typeof TARGETS)[number],

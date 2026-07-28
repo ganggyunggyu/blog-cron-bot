@@ -6,6 +6,7 @@ import { GoogleSpreadsheet, GoogleSpreadsheetWorksheet } from 'google-spreadshee
 import { JWT } from 'google-auth-library';
 import { BrowserContext, Page } from 'playwright';
 import { fetchHtml, buildNaverSearchUrl, randomDelay } from '../crawler';
+import { sleep as wait } from '@ganggyunggyu/shared';
 import {
   BLOG_IDS,
   DOGMARU_PAGE_CHECK_BLOG_IDS,
@@ -2739,10 +2740,6 @@ const colorStyle = (
   rgbColor: rgb(hex),
 });
 
-const wait = (ms: number): Promise<void> =>
-  new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
 
 const getGoogleApiStatus = (error: unknown): number => {
   const response = (

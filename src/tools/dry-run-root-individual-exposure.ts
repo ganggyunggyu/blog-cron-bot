@@ -1,6 +1,7 @@
 import * as dotenv from 'dotenv';
 import { GoogleSpreadsheet, GoogleSpreadsheetWorksheet } from 'google-spreadsheet';
 import { JWT } from 'google-auth-library';
+import { sleep } from '@ganggyunggyu/shared';
 import { ROOT_CONFIG } from '../constants';
 import { sendDoorayMessage } from '../lib/dooray';
 import { logger } from '../lib/logger';
@@ -114,9 +115,6 @@ const GOOGLE_RETRY_LIMIT = 7;
 const INDIVIDUAL_SNAPSHOT_ROW_LIMIT = 300;
 const INDIVIDUAL_SNAPSHOT_COLUMN_LIMIT = 600;
 const INDIVIDUAL_SNAPSHOT_FALLBACK_ROW_LIMIT = 120;
-
-const sleep = (ms: number): Promise<void> =>
-  new Promise((resolve) => setTimeout(resolve, ms));
 
 const normalizeCell = (value: unknown): string =>
   String(value ?? '').replace(/\s+/g, ' ').trim();

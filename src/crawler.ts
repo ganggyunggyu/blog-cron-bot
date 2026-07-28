@@ -14,6 +14,9 @@ import {
   PAGINATION,
 } from './constants/crawl-config';
 import { getExposureRetryDelayMs } from './lib/exposure-run-config';
+import { sleep as delay, randomDelay } from '@ganggyunggyu/shared';
+
+export { delay, randomDelay };
 
 type GotScrapingClient = typeof import('got-scraping').gotScraping;
 
@@ -128,12 +131,6 @@ export const fetchHtmlWithoutCookie = async (url: string): Promise<string> => {
 
   return response.body;
 };
-
-export const delay = (ms: number): Promise<void> =>
-  new Promise((resolve) => setTimeout(resolve, ms));
-
-export const randomDelay = (min: number, max: number): Promise<void> =>
-  delay(Math.floor(Math.random() * (max - min + 1)) + min);
 
 export const calculateRetryDelay = (
   attempt: number,

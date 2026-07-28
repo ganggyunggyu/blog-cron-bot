@@ -1,3 +1,4 @@
+import { sleep } from '@ganggyunggyu/shared';
 import { emitExposureProgress } from '../exposure-progress';
 import { logger } from '../logger';
 import type { ExposureTargetId } from '../exposure-suite/options';
@@ -126,7 +127,7 @@ export const waitForDistributedRun = async (
     if (snapshot.total > 0 && snapshot.success + snapshot.failed === snapshot.total) {
       return summarizeOutcome(snapshot, false);
     }
-    await new Promise((resolve) => setTimeout(resolve, POLL_MS));
+    await sleep(POLL_MS);
   }
 
   if (shouldStop()) throw new Error('사용자 요청으로 실행 중지');

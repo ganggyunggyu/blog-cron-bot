@@ -1,4 +1,5 @@
 import os from 'os';
+import { sleep } from '@ganggyunggyu/shared';
 import { SCHEDULER_TIME_ZONE } from '../../constants/scheduler';
 import { logger } from '../logger';
 import {
@@ -30,11 +31,6 @@ type StartScheduledWorkflowOptions = {
   getRunScheduleConfig: () => RunScheduleConfig;
   runWorkflow: () => Promise<void>;
 };
-
-const sleep = (ms: number): Promise<void> =>
-  new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
 
 const removeStalePendingRuns = (
   state: SchedulerState,

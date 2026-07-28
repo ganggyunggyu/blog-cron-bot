@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { sleep as delay } from '@ganggyunggyu/shared';
 import {
   REQUEST_BROKER_TOKEN_ENV,
   REQUEST_BROKER_URL_ENV,
@@ -8,9 +9,6 @@ import {
   acquireRequestPermit,
   withRequestPermit,
 } from './request-broker-client';
-
-const delay = (milliseconds: number): Promise<void> =>
-  new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 const waitFor = async (predicate: () => boolean): Promise<void> => {
   for (let attempt = 0; attempt < 50; attempt += 1) {

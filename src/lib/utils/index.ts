@@ -1,9 +1,4 @@
-export const formatDuration = (ms: number): string => {
-  const sec = Math.floor(ms / 1000);
-  const min = Math.floor(sec / 60);
-  if (min > 0) return `${min}분 ${sec % 60}초`;
-  return `${sec}초`;
-};
+export { formatDuration } from '@ganggyunggyu/shared';
 
 export const formatTime = (date: Date): string => {
   return date.toLocaleString('ko-KR');
