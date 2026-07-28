@@ -92,6 +92,14 @@ export const JOB_REGISTRY: JobDefinition[] = [
     resourceGroup: 'exposure',
   },
   {
+    id: 'dogmaru-more-finalize',
+    label: '도그마루 더보기 결과 내보내기',
+    script: 'exposure:more:finalize:dogmaru',
+    description: '완료된 도그마루 더보기 결과를 CSV로 내보내고 두레이로 발송',
+    kind: 'standard',
+    resourceGroup: 'exposure',
+  },
+  {
     id: 'pet-exposure',
     label: '애견 노출체크',
     ...resolveTargetJobCommand('pet', 'exposure:pet', ['--max-pages=4']),
