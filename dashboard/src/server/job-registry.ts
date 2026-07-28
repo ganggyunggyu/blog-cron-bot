@@ -83,6 +83,15 @@ export const JOB_REGISTRY: JobDefinition[] = [
     resourceGroup: 'exposure',
   },
   {
+    id: 'package-general-dogmaru-more-exposure',
+    label: '패키지·일반건·도그마루 더보기 노출체크',
+    script: 'exposure:distributed:more',
+    description: '세 더보기 탭을 각각 30개 원격 워커 조각으로 확인 후 결과를 한 번에 병합',
+    riskNote: '더보기 레이어를 전체 확인하므로 일반 노출체크보다 오래 걸릴 수 있음',
+    kind: 'standard',
+    resourceGroup: 'exposure',
+  },
+  {
     id: 'pet-exposure',
     label: '애견 노출체크',
     ...resolveTargetJobCommand('pet', 'exposure:pet', ['--max-pages=4']),

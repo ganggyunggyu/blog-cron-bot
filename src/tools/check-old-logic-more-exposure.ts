@@ -68,6 +68,9 @@ interface CliOptions {
   targetBlogIds: string[];
   targetBlogIdsOverridden: boolean;
   keywordFilters: string[];
+  workerOutput: boolean;
+  mergeOutputTitles: string[];
+  cleanupMergedOutput: boolean;
 }
 
 interface SourceKeywordRow {
@@ -1177,6 +1180,9 @@ const parseArgs = (): CliOptions => {
   let targetBlogIds: string[] = [...TARGET_BLOG_IDS];
   let targetBlogIdsOverridden = false;
   let keywordFilters: string[] = [];
+  let workerOutput = false;
+  let mergeOutputTitles: string[] = [];
+  let cleanupMergedOutput = false;
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -1236,6 +1242,25 @@ const parseArgs = (): CliOptions => {
     if ((arg === '--keyword' || arg === '--keywords') && nextArg) {
       keywordFilters = parseKeywordFilters(nextArg);
       index += 1;
+      continue;
+    }
+
+    if (arg === '--merge-output-titles' && nextArg) {
+      mergeOutputTitles = nextArg
+        .split(',')
+        .map((title) => title.trim())
+        .filter(Boolean);
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--worker-output') {
+      workerOutput = true;
+      continue;
+    }
+
+    if (arg === '--cleanup-merged-output') {
+      cleanupMergedOutput = true;
       continue;
     }
 
@@ -1358,6 +1383,9 @@ const parseArgs = (): CliOptions => {
     targetBlogIds,
     targetBlogIdsOverridden,
     keywordFilters,
+    workerOutput,
+    mergeOutputTitles,
+    cleanupMergedOutput,
   };
 };
 
@@ -3201,7 +3229,8 @@ const writeResults = async (
   rows: SourceKeywordRow[],
   resultMap: Map<string, CheckResult>,
   append: boolean,
-  partialUpdateKeywords: Set<string> | null = null
+  partialUpdateKeywords: Set<string> | null = null,
+  applyFormatting = true
 ): Promise<void> => {
   let outputRows = buildWorkerOutputRows(rows, resultMap);
   let appendStartRowIndex = 0;
@@ -3284,7 +3313,91 @@ const writeResults = async (
 
   await saveUpdatedCellsWithRetry(sheet);
 
+  if (applyFormatting) {
+    await formatWorkerOutputSheet(auth, spreadsheetId, sheet, totalRows);
+  }
+};
+
+const loadWorkerOutputRows = async (
+  sheet: GoogleSpreadsheetWorksheet
+): Promise<OutputRow[]> => {
+  if (sheet.rowCount <= 1) return [];
+  await sheet.loadCells({
+    startRowIndex: 1,
+    endRowIndex: sheet.rowCount,
+    startColumnIndex: 0,
+    endColumnIndex: OUTPUT_HEADERS.length,
+  });
+  const rows: OutputRow[] = [];
+  for (let rowIndex = 1; rowIndex < sheet.rowCount; rowIndex += 1) {
+    const row = Array.from({ length: OUTPUT_HEADERS.length }, (_, columnIndex) =>
+      normalizeCell(
+        sheet.getCell(rowIndex, columnIndex).formattedValue ??
+          sheet.getCell(rowIndex, columnIndex).value
+      )
+    );
+    if (row.some(Boolean)) rows.push(row);
+  }
+  return rows;
+};
+
+const writeRawWorkerOutputRows = async (
+  auth: JWT,
+  spreadsheetId: string,
+  sheet: GoogleSpreadsheetWorksheet,
+  outputRows: OutputRow[]
+): Promise<void> => {
+  const totalRows = outputRows.length + 1;
+  if (sheet.rowCount < totalRows || sheet.columnCount < OUTPUT_HEADERS.length) {
+    await sheet.resize({
+      rowCount: Math.max(sheet.rowCount, totalRows),
+      columnCount: Math.max(sheet.columnCount, OUTPUT_HEADERS.length),
+    });
+  }
+  await sheet.loadCells({
+    startRowIndex: 0,
+    endRowIndex: sheet.rowCount,
+    startColumnIndex: 0,
+    endColumnIndex: OUTPUT_HEADERS.length,
+  });
+  for (let rowIndex = 0; rowIndex < sheet.rowCount; rowIndex += 1) {
+    for (let columnIndex = 0; columnIndex < OUTPUT_HEADERS.length; columnIndex += 1) {
+      sheet.getCell(rowIndex, columnIndex).value = '';
+    }
+  }
+  OUTPUT_HEADERS.forEach((header, columnIndex) => {
+    sheet.getCell(0, columnIndex).value = header;
+  });
+  outputRows.forEach((row, rowOffset) => {
+    row.forEach((value, columnIndex) => {
+      sheet.getCell(rowOffset + 1, columnIndex).value = value;
+    });
+  });
+  await saveUpdatedCellsWithRetry(sheet);
   await formatWorkerOutputSheet(auth, spreadsheetId, sheet, totalRows);
+};
+
+const mergeWorkerOutputSheets = async (
+  auth: JWT,
+  spreadsheetId: string,
+  doc: GoogleSpreadsheet,
+  outputSheet: GoogleSpreadsheetWorksheet,
+  titles: string[],
+  cleanup: boolean
+): Promise<void> => {
+  const workerSheets = titles.map((title) => {
+    const sheet = doc.sheetsByTitle[title];
+    if (!sheet) throw new Error(`임시 더보기 결과 탭을 찾을 수 없음: ${title}`);
+    return sheet;
+  });
+  const rows = (await Promise.all(workerSheets.map(loadWorkerOutputRows))).flat();
+  await writeRawWorkerOutputRows(auth, spreadsheetId, outputSheet, rows);
+  if (cleanup) await Promise.all(workerSheets.map((sheet) => sheet.delete()));
+  logger.summary.complete('OLD LOGIC MORE-PAGE WORKER OUTPUT MERGED', [
+    { label: '임시 탭', value: `${workerSheets.length}개` },
+    { label: '결과 행', value: `${rows.length}개` },
+    { label: '최종 탭', value: outputSheet.title },
+  ]);
 };
 
 const writeRankOnlyResults = async (
@@ -3373,6 +3486,17 @@ const main = async (): Promise<void> => {
     options.outputGid,
     options.outputTitle
   );
+  if (options.mergeOutputTitles.length > 0) {
+    await mergeWorkerOutputSheets(
+      auth,
+      options.sheetId,
+      doc,
+      outputSheet,
+      options.mergeOutputTitles,
+      options.cleanupMergedOutput
+    );
+    return;
+  }
   const inputSheet =
     options.inputFromOutput || options.inputGid !== null || options.inputTitle
       ? options.inputFromOutput
@@ -3386,7 +3510,8 @@ const main = async (): Promise<void> => {
   if (
     options.keywordFilters.length > 0 &&
     !options.dryRun &&
-    !options.partialUpdate
+    !options.partialUpdate &&
+    !options.workerOutput
   ) {
     throw new Error('키워드 필터 실행은 시트 덮어쓰기 방지를 위해 dry-run만 허용됨');
   }
@@ -3396,12 +3521,9 @@ const main = async (): Promise<void> => {
     : await loadOldLogicKeywords(auth, doc, options.sourceTabs);
   const selectedRows =
     options.keywordFilters.length > 0
-      ? options.keywordFilters.map((keyword) => ({
-          sourceTab: '시트' as const,
-          company: '',
-          keyword,
-          rowNumber: 0,
-        }))
+      ? allRows.filter(({ keyword }) =>
+          options.keywordFilters.includes(normalizeCell(keyword))
+        )
       : allRows;
   const rows =
     options.limit > 0 ? selectedRows.slice(0, options.limit) : selectedRows;
@@ -3605,7 +3727,8 @@ const main = async (): Promise<void> => {
         rows,
         resultMap,
         options.append,
-        options.partialUpdate ? new Set(options.keywordFilters) : null
+        options.partialUpdate ? new Set(options.keywordFilters) : null,
+        !options.workerOutput
       );
     }
   }

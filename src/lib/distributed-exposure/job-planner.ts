@@ -81,6 +81,18 @@ export const buildKeywordTargetJobs = (
   }));
 };
 
+export const OLD_LOGIC_MORE_OUTPUT_TITLES = {
+  package: '패키지_더보기',
+  general: '일반건_더보기',
+  dogmaru: '도그마루_더보기',
+} as const;
+
+export const OLD_LOGIC_MORE_SOURCE_NAMES = {
+  package: '패키지',
+  general: '일반건',
+  dogmaru: '도그마루',
+} as const;
+
 const DIRECT_DATABASE_TARGETS = {
   package: { sheetType: 'package', requestIndex: 0 },
   general: { sheetType: 'dogmaru-exclude', requestIndex: 1 },
@@ -91,6 +103,11 @@ const isDirectDatabaseTarget = (
   target: ExposureTargetId
 ): target is keyof typeof DIRECT_DATABASE_TARGETS =>
   target in DIRECT_DATABASE_TARGETS;
+
+export const isOldLogicMoreTarget = (
+  target: ExposureTargetId
+): target is keyof typeof OLD_LOGIC_MORE_OUTPUT_TITLES =>
+  target in OLD_LOGIC_MORE_OUTPUT_TITLES;
 
 export const buildPageTargetJobs = (
   target: Extract<PageCheckSheetType, 'pet' | 'suripet'>,
@@ -158,6 +175,42 @@ export const prepareDistributedJobs = async (
     );
     logger.info(
       `[다중워커] ${target} ${keywords.length}개 → ${targetJobs.length}개 조각으로 병렬 처리`
+    );
+    jobs.push(...targetJobs);
+  }
+
+  return interleaveTargetJobs(jobs);
+};
+
+export const prepareDistributedOldLogicMoreJobs = async (
+  targets: Array<keyof typeof OLD_LOGIC_MORE_OUTPUT_TITLES>
+): Promise<DistributedJobInput[]> => {
+  const jobs: DistributedJobInput[] = [];
+
+  for (const target of targets) {
+    const definition = DIRECT_DATABASE_TARGETS[target];
+    await syncKeywordsFromSourceSheet(requests[definition.requestIndex]);
+    const keywords = (await getAllKeywords()).filter(
+      ({ sheetType }) => sheetType === definition.sheetType
+    );
+    if (keywords.length === 0) throw new Error(`${target} 처리 키워드가 없음`);
+    const keywordById = new Map(
+      keywords.map(({ _id, keyword }) => [String(_id), keyword])
+    );
+    const targetJobs = buildKeywordTargetJobs(
+      target,
+      keywords.map(({ _id, keyword }) => ({ _id, keyword }))
+    ).map((job) => ({
+      ...job,
+      jobKind: 'old-logic-more' as const,
+      keywordIds: job.keywordIds?.map((keywordId) => {
+        const keyword = keywordById.get(keywordId);
+        if (!keyword) throw new Error(`${target} 키워드 해석 실패: ${keywordId}`);
+        return keyword;
+      }),
+    }));
+    logger.info(
+      `[더보기 다중워커] ${target} ${keywords.length}개 → ${targetJobs.length}개 조각으로 병렬 처리`
     );
     jobs.push(...targetJobs);
   }

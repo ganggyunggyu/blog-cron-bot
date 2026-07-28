@@ -1,6 +1,7 @@
 import type { ExposureTargetId } from '../exposure-suite/options';
 import {
   DistributedExposureJob,
+  type DistributedJobKind,
   type DistributedJobStatus,
   type IDistributedExposureJob,
 } from './models';
@@ -17,6 +18,7 @@ export interface DistributedRunInput {
 
 export interface DistributedJobInput {
   target: ExposureTargetId;
+  jobKind?: DistributedJobKind;
   shardIndex?: number;
   shardCount?: number;
   keywordIds?: string[];

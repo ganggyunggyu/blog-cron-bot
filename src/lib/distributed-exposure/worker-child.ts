@@ -8,6 +8,10 @@ import {
 import type { ExposureTargetId } from '../exposure-suite/options';
 import { getDistributedJobTimeoutMs } from './job-timeout';
 import type { IDistributedExposureJob } from './models';
+import {
+  OLD_LOGIC_MORE_SOURCE_NAMES,
+  isOldLogicMoreTarget,
+} from './job-planner';
 
 const CHILD_ERROR_TAIL_LIMIT = 6_000;
 const FORCE_KILL_DELAY_MS = 5_000;
@@ -21,6 +25,10 @@ const DIRECT_SHEET_TARGETS = {
 const isDirectSheetTarget = (
   target: ExposureTargetId
 ): target is keyof typeof DIRECT_SHEET_TARGETS => target in DIRECT_SHEET_TARGETS;
+
+const getOldLogicMoreWorkerOutputTitle = (
+  job: IDistributedExposureJob
+): string => `__more_${job.runId}_${job.target}_${job.shardIndex}`;
 
 export const resolveDistributedWorkerConcurrency = (
   target: ExposureTargetId,
@@ -56,6 +64,30 @@ const resolveWorkerCommand = (job: IDistributedExposureJob) => {
           job.target as keyof typeof DIRECT_SHEET_TARGETS
         ]
       : undefined;
+
+  if (job.jobKind === 'old-logic-more') {
+    if (!isOldLogicMoreTarget(job.target)) {
+      throw new Error(`더보기 분산 대상이 아님: ${job.target}`);
+    }
+    return {
+      script: 'old-logic:more-check',
+      args: [
+        '--sources',
+        OLD_LOGIC_MORE_SOURCE_NAMES[job.target],
+        '--keywords',
+        job.keywordIds.join(','),
+        '--output-title',
+        getOldLogicMoreWorkerOutputTitle(job),
+        '--concurrency',
+        '1',
+        '--max-results',
+        '50',
+        '--all-matches',
+        '--worker-output',
+        '--no-checkpoint',
+      ],
+    };
+  }
 
   if (job.target === 'cafe') {
     return { script: 'exposure:cafe-current', args: [] };
@@ -103,6 +135,7 @@ const buildWorkerEnvironment = (
   }
   if (job.target === 'cafe') environment.SKIP_DOORAY = 'true';
   if (
+    job.jobKind !== 'old-logic-more' &&
     (job.target === 'root' || isDirectSheetTarget(job.target)) &&
     job.keywordIds.length > 0
   ) {

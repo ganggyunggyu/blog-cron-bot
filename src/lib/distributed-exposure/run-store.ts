@@ -28,6 +28,7 @@ export const createDistributedRun = async (
     input.jobs.map((job, order) => ({
       runId: input.runId,
       target: job.target,
+      jobKind: job.jobKind ?? 'standard',
       order,
       status: 'pending',
       concurrency: input.concurrency,

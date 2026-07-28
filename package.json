@@ -37,6 +37,7 @@
     "exposure:cafe-current": "ts-node src/cron-cafe-current-exposure.ts",
     "exposure:suite": "ts-node src/cron-exposure-suite.ts",
     "exposure:distributed": "ts-node src/cron-distributed-exposure.ts",
+    "exposure:distributed:more": "ts-node src/cron-distributed-old-more.ts",
     "exposure:worker": "ts-node src/exposure-worker.ts",
     "exposure:page-shard": "ts-node src/exposure-page-shard.ts",
     "exposure:package": "pnpm exposure:suite -- --targets=package",
