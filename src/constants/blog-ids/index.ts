@@ -163,6 +163,7 @@ const VIRAL_TEAM_SCHEDULE_BLOG_IDS = dedupeBlogIds([
   'taraswati',
   'vividoasis',
   'yaves0218',
+  'airtrd',
   'idoenzang',
   'an970405',
   'youngtae0510',
