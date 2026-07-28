@@ -24,7 +24,12 @@ const REQUIRED_DOGMARU_BLOG_IDS = [
   'yaboo_171022',
   'dudtjsdh159',
 ];
-const REQUIRED_SURI_PET_BLOG_IDS = ['hotelelena', 'pjwon03', 'ylk3516'];
+const REQUIRED_SURI_PET_BLOG_IDS = [
+  'hotelelena',
+  'pjwon03',
+  'ylk3516',
+  'inho5062',
+];
 const REQUIRED_ALIBABA_BLOG_IDS = ['introsm'];
 const REQUIRED_BASE_BLOG_IDS = ['introsm'];
 const REQUIRED_REACTIVATED_BLOG_IDS = ['durysuk'];

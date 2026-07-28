@@ -409,6 +409,8 @@ export const SURI_PET_BLOG_IDS = dedupeBlogIds([
   'hotelelena',
   'pjwon03',
   'ylk3516',
+  // 여행 다니는 남자 (영구-단체전환)
+  'inho5062',
 ]);
 
 // 페이지 애견 노출체크용 전체 블로그 + 도그마루 전용 + 서리펫 전용 블로그
