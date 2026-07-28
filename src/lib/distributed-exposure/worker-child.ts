@@ -18,6 +18,10 @@ const DIRECT_SHEET_TARGETS = {
   dogmaru: 'dogmaru',
 } as const;
 
+const isDirectSheetTarget = (
+  target: ExposureTargetId
+): target is keyof typeof DIRECT_SHEET_TARGETS => target in DIRECT_SHEET_TARGETS;
+
 export const resolveDistributedWorkerConcurrency = (
   target: ExposureTargetId,
   configuredConcurrency: number,
@@ -47,7 +51,7 @@ const resolveWorkerCommand = (job: IDistributedExposureJob) => {
     job.keywordIds.length > 0 &&
     (job.target === 'pet' || job.target === 'suripet');
   const directSheetTarget =
-    job.target in DIRECT_SHEET_TARGETS
+    isDirectSheetTarget(job.target)
       ? DIRECT_SHEET_TARGETS[
           job.target as keyof typeof DIRECT_SHEET_TARGETS
         ]
@@ -57,6 +61,9 @@ const resolveWorkerCommand = (job: IDistributedExposureJob) => {
     return { script: 'exposure:cafe-current', args: [] };
   }
   if (directSheetTarget) {
+    if (job.keywordIds.length > 0) {
+      return { script: 'dev', args: [] };
+    }
     return {
       script: 'exposure:direct-sheet-worker',
       args: [
@@ -95,7 +102,10 @@ const buildWorkerEnvironment = (
     environment.SKIP_PAGE_CHECK_EXPORT_ALL = 'true';
   }
   if (job.target === 'cafe') environment.SKIP_DOORAY = 'true';
-  if (job.target === 'root' && job.keywordIds.length > 0) {
+  if (
+    (job.target === 'root' || isDirectSheetTarget(job.target)) &&
+    job.keywordIds.length > 0
+  ) {
     environment.DISTRIBUTED_EXPOSURE_SHARD = 'true';
     environment.DISTRIBUTED_EXPOSURE_KEYWORD_IDS = job.keywordIds.join(',');
   }

@@ -65,4 +65,22 @@ assert.ok(
     1
 );
 
+const packageJobs = buildKeywordTargetJobs(
+  'package',
+  Array.from({ length: 91 }, (_, index) => ({
+    _id: `package-${index}`,
+    keyword: `패키지 키워드 ${index}`,
+  }))
+);
+assert.equal(packageJobs.length, PAGE_REMOTE_WORKER_COUNT);
+assert.equal(
+  new Set(packageJobs.flatMap((job) => job.keywordIds ?? [])).size,
+  91
+);
+assert.ok(
+  Math.max(...packageJobs.map((job) => job.keywordIds?.length ?? 0)) -
+    Math.min(...packageJobs.map((job) => job.keywordIds?.length ?? 0)) <=
+    1
+);
+
 process.stdout.write('distributed job planner tests passed\n');
