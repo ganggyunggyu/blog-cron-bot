@@ -1,5 +1,6 @@
 import React from 'react';
-import { Compass } from 'lucide-react';
+import Link from 'next/link';
+import { Compass, Settings } from 'lucide-react';
 import { LogoutButton } from '@/features/auth-login';
 import { DaemonStatusPanel } from '@/widgets/daemon-status-panel';
 import { ExposureSuitePanel } from '@/widgets/exposure-suite-panel';
@@ -26,7 +27,16 @@ const HomePage = () => {
               </p>
             </div>
           </div>
-          <LogoutButton />
+          <div className="flex items-center gap-1">
+            <Link
+              href="/settings"
+              className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            >
+              <Settings className="size-4" />
+              계정 관리
+            </Link>
+            <LogoutButton />
+          </div>
         </div>
       </header>
 

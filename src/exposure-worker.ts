@@ -11,6 +11,7 @@ import { isDistributedRunFinished } from './lib/distributed-exposure/run-store';
 import { executeDistributedJob } from './lib/distributed-exposure/worker-runner';
 import { getWorkerJobConcurrency } from './lib/distributed-exposure/worker-capacity';
 import { getWorkerEgressIp } from './lib/distributed-exposure/worker-egress-ip';
+import { applyStoredBlogIdOverrides } from './lib/blog-id-overrides';
 
 dotenv.config();
 
@@ -119,6 +120,9 @@ const main = async (): Promise<void> => {
   );
   const egressIp = await getWorkerEgressIp();
   await connectDB(mongoUri);
+  // 대시보드에서 관리한 계정 목록을 크롤 시작 전에 반영한다. 워커는 대시보드와 다른
+  // 서비스라 DB가 유일한 전달 통로다.
+  await applyStoredBlogIdOverrides();
   const healthServer = startHealthServer();
   logger.info(
     `[다중워커] ${workerId} (${egressIp}) 준비 완료 · 동시 작업 ${jobConcurrency}개` +

@@ -16,6 +16,7 @@ import {
   PET_PAGE_CHECK_BLOG_IDS,
   SURI_PET_BLOG_IDS,
 } from '../constants/blog-ids';
+import { applyStoredBlogIdOverrides } from '../lib/blog-id-overrides';
 import { ExposureResult } from '../matcher';
 import { autoLogin } from './auto-login';
 import {
@@ -714,6 +715,9 @@ const main = async (): Promise<void> => {
       await connectDB(mongoUri);
       didConnectDb = true;
     }
+
+    // TARGET_CONFIGS가 배열 참조를 모듈 로드 시점에 캡처하므로, 사용 직전에 제자리 갱신한다.
+    await applyStoredBlogIdOverrides();
 
     const isLoggedIn = await ensureLoggedIn();
     const targetConfigs = options.targets.map((target) => TARGET_CONFIGS[target]);
