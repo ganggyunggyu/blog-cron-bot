@@ -1,21 +1,65 @@
+/*
+ * 한국어 UI 비중이 커서 한글 자소가 정돈된 Pretendard를 본문 서체로 쓴다.
+ * @import는 다른 규칙보다 먼저 와야 하므로 tailwind보다 위에 둔다.
+ */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
 @import "tailwindcss";
 
+/*
+ * 관제실 계기판을 기준으로 잡은 토큰.
+ * 그라데이션을 쓰지 않고 면과 선, 그리고 상태색만으로 위계를 만든다.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #f4f5f7;
+  --panel: #ffffff;
+  --line: #e2e5ea;
+  --ink: #0c0d10;
+  --ink-soft: #5b6270;
+  --ink-faint: #8b93a1;
+
+  --signal: #2f4bff;
+  --signal-ink: #ffffff;
+  --live: #00a06b;
+  --alert: #e5484d;
+  --hold: #b26a00;
+
+  --background: var(--paper);
+  --foreground: var(--ink);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --color-paper: var(--paper);
+  --color-panel: var(--panel);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-signal: var(--signal);
+  --color-live: var(--live);
+  --color-alert: var(--alert);
+  --color-hold: var(--hold);
+
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system,
+    BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+  --font-mono: "SFMono-Regular", ui-monospace, Consolas, "Liberation Mono",
+    monospace;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --paper: #0c0d10;
+    --panel: #16181d;
+    --line: #262a32;
+    --ink: #f2f4f7;
+    --ink-soft: #9aa2b1;
+    --ink-faint: #6b7382;
+
+    --signal: #5c74ff;
+    --live: #22c98d;
+    --alert: #ff6369;
+    --hold: #e0a020;
   }
 }
 
@@ -23,4 +67,69 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+}
+
+/* 수치는 계기판처럼 자리가 흔들리지 않아야 읽힌다. */
+.tabular {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* 작은 대문자 라벨. 계기 옆에 붙는 각인처럼 쓴다. */
+.stamp {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+@keyframes rank-sweep {
+  0%,
+  100% {
+    opacity: 0.18;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes rank-lock {
+  0% {
+    transform: scaleY(0.3);
+    opacity: 0;
+  }
+  60% {
+    transform: scaleY(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.animate-pulse-dot {
+  animation: pulse-dot 1.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

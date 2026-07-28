@@ -17,21 +17,21 @@ export const TargetOption = ({ target, isSelected, onToggle }: TargetOptionProps
         'flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-all',
         'focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2',
         isSelected
-          ? 'border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/50'
-          : 'border-neutral-200 bg-white/80 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900/70',
+          ? 'border-[var(--signal)]/40 bg-[var(--signal)]/8 shadow-sm'
+          : 'border-[var(--line)] bg-[var(--panel)]/80 hover:border-[var(--line)]',
       )}
     >
       <input
         type="checkbox"
         checked={isSelected}
         onChange={handleChange}
-        className={cn('mt-0.5 size-4 rounded border-neutral-300 accent-blue-600')}
+        className={cn('mt-0.5 size-4 rounded border-[var(--line)] accent-blue-600')}
       />
       <span className={cn('min-w-0')}>
-        <span className={cn('block text-sm font-semibold text-neutral-900 dark:text-neutral-100')}>
+        <span className={cn('block text-sm font-semibold text-[var(--ink)]')}>
           {target.label}
         </span>
-        <span className={cn('mt-0.5 block text-xs text-neutral-500 dark:text-neutral-400')}>
+        <span className={cn('mt-0.5 block text-xs text-[var(--ink-soft)]')}>
           {target.description}
         </span>
       </span>
@@ -55,12 +55,12 @@ export const NumberOption = ({ label, description, min, max, value, onChange }: 
   };
 
   return (
-    <label className={cn('flex items-center justify-between gap-4 rounded-lg bg-white/70 p-3 dark:bg-neutral-900/60')}>
+    <label className={cn('flex items-center justify-between gap-4 rounded-lg bg-[var(--panel)]/70 p-3')}>
       <span>
-        <span className={cn('block text-sm font-medium text-neutral-800 dark:text-neutral-200')}>
+        <span className={cn('block text-sm font-medium text-neutral-800')}>
           {label}
         </span>
-        <span className={cn('mt-0.5 block text-xs text-neutral-500 dark:text-neutral-400')}>
+        <span className={cn('mt-0.5 block text-xs text-[var(--ink-soft)]')}>
           {description}
         </span>
       </span>
@@ -69,9 +69,9 @@ export const NumberOption = ({ label, description, min, max, value, onChange }: 
         value={value ?? ''}
         onChange={handleChange}
         className={cn(
-          'min-h-10 w-20 rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold',
-          'outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20',
-          'dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100',
+          'min-h-10 w-20 rounded-lg border border-[var(--line)] bg-[var(--panel)] px-3 text-sm font-semibold',
+          'outline-none transition focus:border-[var(--signal)] focus:ring-2 focus:ring-[var(--signal)]/25',
+          'dark:border-neutral-700',
         )}
       >
         {values.map((optionValue) => (

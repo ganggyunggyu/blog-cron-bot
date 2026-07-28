@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useSetAtom } from 'jotai';
-import { History, Play, Zap } from 'lucide-react';
+import { History, Play } from 'lucide-react';
 import { Badge, Button, Card, SectionHeader, cn, formatDateTime, selectedRunIdAtom } from '@/shared';
 import { useJobList, useRunJob, type JobCategory, type JobDefinition } from '@/entities/job';
 import { useRunList } from '@/entities/run';
@@ -45,7 +45,7 @@ const JobRow = ({ job, isBusy, onRun }: JobRowProps) => {
     <div className="flex items-center justify-between gap-3 py-2.5">
       <div className="min-w-0">
         <div className="flex items-center gap-2">
-          <span className="truncate text-sm font-medium text-neutral-900 dark:text-neutral-100">
+          <span className="truncate text-sm font-medium text-[var(--ink)]">
             {job.label}
           </span>
           {job.isRunning ? (
@@ -54,11 +54,11 @@ const JobRow = ({ job, isBusy, onRun }: JobRowProps) => {
             </Badge>
           ) : null}
         </div>
-        <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
+        <p className="truncate text-xs text-[var(--ink-soft)]">
           {job.description}
         </p>
         {job.riskNote ? (
-          <p className="truncate text-xs text-amber-600 dark:text-amber-400">{job.riskNote}</p>
+          <p className="truncate text-xs text-[var(--hold)]">{job.riskNote}</p>
         ) : null}
       </div>
       <Button
@@ -98,7 +98,6 @@ export const JobRunnerPanel = () => {
   return (
     <Card>
       <SectionHeader
-        icon={Zap}
         title="개별 노출체크"
         description="필요한 것만 골라서 실행"
         action={
@@ -109,10 +108,10 @@ export const JobRunnerPanel = () => {
       />
 
       {isLoading ? (
-        <p className="text-sm text-neutral-500 dark:text-neutral-400">불러오는 중...</p>
+        <p className="text-sm text-[var(--ink-soft)]">불러오는 중...</p>
       ) : null}
       {isError ? (
-        <p className="text-sm text-red-600 dark:text-red-400">목록을 불러오지 못함</p>
+        <p className="text-sm text-[var(--alert)]">목록을 불러오지 못함</p>
       ) : null}
 
       <div className="flex flex-col gap-5">
@@ -123,17 +122,17 @@ export const JobRunnerPanel = () => {
           return (
             <section key={section.id}>
               <div className="mb-1 flex items-baseline gap-2">
-                <h3 className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+                <h3 className="text-xs font-semibold text-[var(--ink)]">
                   {section.title}
                 </h3>
-                <span className="text-xs text-neutral-400 dark:text-neutral-500">
+                <span className="text-xs text-[var(--ink-faint)]">
                   {section.hint}
                 </span>
               </div>
               <div
                 className={cn(
-                  'flex flex-col divide-y divide-neutral-100 rounded-xl border border-neutral-200 px-3',
-                  'dark:divide-neutral-800 dark:border-neutral-800',
+                  'flex flex-col divide-y divide-[var(--line)] rounded-xl border border-[var(--line)] px-3',
+                  'dark:divide-neutral-800',
                 )}
               >
                 {sectionJobs.map((job) => (
@@ -151,8 +150,8 @@ export const JobRunnerPanel = () => {
       </div>
 
       {runHistory && runHistory.length > 0 ? (
-        <div className="mt-5 border-t border-neutral-100 pt-3 dark:border-neutral-800">
-          <h3 className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+        <div className="mt-5 border-t border-[var(--line)] pt-3">
+          <h3 className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-[var(--ink-soft)]">
             <History className="size-3.5" />
             최근 실행 이력
           </h3>
@@ -162,12 +161,12 @@ export const JobRunnerPanel = () => {
                 key={run.runId}
                 type="button"
                 onClick={() => setSelectedRunId(run.runId)}
-                className="flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left text-xs transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                className="flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left text-xs transition-colors hover:bg-[var(--line)]/40"
               >
-                <span className="truncate text-neutral-700 dark:text-neutral-300">
+                <span className="truncate text-[var(--ink)]">
                   {run.jobLabel}
                 </span>
-                <span className="flex shrink-0 items-center gap-2 text-neutral-400">
+                <span className="flex shrink-0 items-center gap-2 text-[var(--ink-faint)]">
                   {formatDateTime(new Date(run.startedAt).toISOString())}
                   <Badge withDot tone={RUN_STATUS_TONE[run.status] ?? 'neutral'}>
                     {RUN_STATUS_LABELS[run.status] ?? run.status}

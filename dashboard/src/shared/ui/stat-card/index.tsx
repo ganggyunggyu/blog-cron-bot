@@ -1,38 +1,33 @@
 import React from 'react';
-import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/shared/lib/cn';
 
 interface StatCardProps {
-  icon: LucideIcon;
   label: string;
   value: React.ReactNode;
   hint?: string;
   tone?: 'neutral' | 'success' | 'warning' | 'danger';
 }
 
-const DOT_TONE: Record<NonNullable<StatCardProps['tone']>, string> = {
-  neutral: 'hidden',
-  success: 'bg-emerald-500',
-  warning: 'bg-amber-500',
-  danger: 'bg-red-500',
+const TONE_BAR: Record<NonNullable<StatCardProps['tone']>, string> = {
+  neutral: 'bg-[var(--line)]',
+  success: 'bg-[var(--live)]',
+  warning: 'bg-[var(--hold)]',
+  danger: 'bg-[var(--alert)]',
 };
 
-export const StatCard = ({ icon: Icon, label, value, hint, tone = 'neutral' }: StatCardProps) => {
+/** 계기판 한 칸. 왼쪽 색 바가 상태를, 모노 숫자가 값을 읽게 한다. */
+export const StatCard = ({ label, value, hint, tone = 'neutral' }: StatCardProps) => {
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:border-neutral-800 dark:bg-neutral-900">
-      <span className="relative flex size-10 shrink-0 items-center justify-center rounded-xl bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
-        <Icon className="size-5" />
-        <span
-          className={cn(
-            'absolute -right-0.5 -top-0.5 size-2.5 rounded-full ring-2 ring-white dark:ring-neutral-900',
-            DOT_TONE[tone],
-          )}
-        />
-      </span>
+    <div className="flex gap-3 rounded-lg border border-[var(--line)] bg-[var(--panel)] p-4">
+      <span className={cn('w-0.5 shrink-0 rounded-full', TONE_BAR[tone])} />
       <div className="min-w-0">
-        <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">{label}</p>
-        <p className="truncate text-lg font-semibold text-neutral-900 dark:text-neutral-100">{value}</p>
-        {hint ? <p className="truncate text-xs text-neutral-400 dark:text-neutral-500">{hint}</p> : null}
+        <p className="stamp">{label}</p>
+        <p className="tabular mt-1.5 truncate text-[19px] font-semibold text-[var(--ink)]">
+          {value}
+        </p>
+        {hint ? (
+          <p className="mt-0.5 truncate text-xs text-[var(--ink-faint)]">{hint}</p>
+        ) : null}
       </div>
     </div>
   );

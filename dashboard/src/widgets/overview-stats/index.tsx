@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { FolderOpen, Server, Timer, Zap } from 'lucide-react';
 import { StatCard } from '@/shared';
 import { useJobList } from '@/entities/job';
 import { useRunList } from '@/entities/run';
@@ -41,28 +40,24 @@ export const OverviewStats = () => {
   return (
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       <StatCard
-        icon={Server}
         label="PM2 데몬"
         value={daemons ? `${onlineCount}/${totalDaemons} 온라인` : '-'}
         hint="예약 스케줄러 상태"
         tone={daemonTone}
       />
       <StatCard
-        icon={Zap}
         label="실행 중인 작업"
         value={runningJobs.length > 0 ? `${runningJobs.length}건` : '없음'}
         hint={runningJobs.length > 0 ? runningJobs.map((job) => job.label).join(', ') : '대기 중'}
         tone={runningJobs.length > 0 ? 'warning' : 'neutral'}
       />
       <StatCard
-        icon={Timer}
         label="최근 실행 결과"
         value={latestRun ? RUN_STATUS_LABELS[latestRun.status] ?? latestRun.status : '기록 없음'}
         hint={latestRun?.jobLabel}
         tone={latestRunTone}
       />
       <StatCard
-        icon={FolderOpen}
         label="결과 파일"
         value={outputs ? `${outputs.totalCount}개` : '-'}
         hint="output 폴더 누적 기준"

@@ -6,7 +6,7 @@ const LINE_TONE: Record<LogLineKind, string> = {
   success: 'text-emerald-400',
   failure: 'text-red-400',
   search: 'mt-2 font-semibold text-cyan-300 first:mt-0',
-  detail: 'pl-4 text-[11px] text-neutral-500',
+  detail: 'pl-4 text-[11px] text-[var(--ink-soft)]',
   plain: 'text-neutral-200',
 };
 
@@ -47,7 +47,7 @@ export const TerminalOutput = ({ lines }: TerminalOutputProps) => {
         aria-label="실시간 실행 로그"
       >
         {lines.length === 0 ? (
-          <p className="text-neutral-500">로그 대기 중...</p>
+          <p className="text-[var(--ink-soft)]">로그 대기 중...</p>
         ) : (
           lines.map((line, index) => (
             <div
