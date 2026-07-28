@@ -9,6 +9,7 @@ export const GET = async () => {
     description,
     riskNote,
     kind,
+    category,
     options,
     executionMode,
   }) => {
@@ -19,6 +20,7 @@ export const GET = async () => {
       description,
       riskNote,
       kind,
+      category,
       options,
       executionMode,
       isRunning: isJobActive(id),
