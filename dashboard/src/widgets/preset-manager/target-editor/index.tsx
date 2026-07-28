@@ -7,9 +7,15 @@ import {
   CHECK_KINDS,
   CHECK_KIND_LABELS,
   CHECK_KIND_SHORT_LABELS,
+  type BlogGroup,
   type PresetTarget,
 } from '@/entities/preset';
-import { blogIdsToText, isCheckKind, textToBlogIds } from '../model';
+import {
+  blogIdsToText,
+  isCheckKind,
+  textToBlogIds,
+  toggleTargetGroup,
+} from '../model';
 
 const FIELD_STYLE = cn(
   'w-full rounded border border-[var(--line)] bg-[var(--paper)] px-2.5 py-2',
@@ -31,8 +37,42 @@ const Field = ({ label, children, className }: FieldProps) => (
   </label>
 );
 
+interface GroupChipProps {
+  group: BlogGroup;
+  isSelected: boolean;
+  onToggle: (groupId: string) => void;
+}
+
+const GroupChip = ({ group, isSelected, onToggle }: GroupChipProps) => {
+  const handleClick = () => {
+    onToggle(group.id);
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      aria-pressed={isSelected}
+      className={cn(
+        'inline-flex items-center gap-1.5 rounded border px-2 py-1 text-[12px]',
+        'transition-colors focus-visible:outline-none focus-visible:ring-2',
+        'focus-visible:ring-[var(--signal)]/40',
+        isSelected
+          ? 'border-[var(--signal)] bg-[var(--signal)]/10 text-[var(--ink)]'
+          : 'border-[var(--line)] text-[var(--ink-soft)] hover:bg-[var(--line)]/40',
+      )}
+    >
+      {group.label}
+      <span className="tabular text-[11px] text-[var(--ink-faint)]">
+        {group.blogIds.length}
+      </span>
+    </button>
+  );
+};
+
 interface TargetEditorProps {
   target: PresetTarget;
+  groups: BlogGroup[];
   onChange: (index: number, next: PresetTarget) => void;
   onRemove: (index: number) => void;
   index: number;
@@ -40,6 +80,7 @@ interface TargetEditorProps {
 
 export const TargetEditor = ({
   target,
+  groups,
   onChange,
   onRemove,
   index,
@@ -120,7 +161,17 @@ export const TargetEditor = ({
     onRemove(index);
   };
 
+  const handleGroupToggle = (groupId: string) => {
+    onChange(index, toggleTargetGroup(target, groupId));
+  };
+
   const writesToSource = !target.result?.sheetId && !target.result?.tabTitle;
+  const selectedGroupIds = target.blogGroupIds ?? [];
+  const groupAccountCount = new Set(
+    groups
+      .filter((group) => selectedGroupIds.includes(group.id))
+      .flatMap((group) => group.blogIds),
+  ).size;
 
   return (
     <div
@@ -241,22 +292,45 @@ export const TargetEditor = ({
           />
         </Field>
 
-        <Field label="블로그 계정 (비우면 전체)" className="sm:col-span-2">
+        <div className="flex flex-col gap-1.5 sm:col-span-2">
+          <span className="stamp">
+            계정 그룹 {groupAccountCount > 0 ? `· 계정 ${groupAccountCount}개` : ''}
+          </span>
+          {groups.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {groups.map((group) => (
+                <GroupChip
+                  key={group.id}
+                  group={group}
+                  isSelected={selectedGroupIds.includes(group.id)}
+                  onToggle={handleGroupToggle}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="text-[12px] text-[var(--ink-soft)]">
+              위에서 계정 그룹을 먼저 만들면 여기서 골라 쓸 수 있음
+            </p>
+          )}
+        </div>
+
+        <Field label="그룹 밖에서 직접 붙이는 계정" className="sm:col-span-2">
           <textarea
             value={blogIdsToText(target.blogIds)}
             onChange={handleBlogIdsChange}
             rows={2}
-            placeholder="introsm, airtrd"
+            placeholder="비우면 그룹 계정만 봄"
             className={cn(FIELD_STYLE, 'resize-y')}
           />
         </Field>
       </div>
 
-      {writesToSource ? (
-        <p className="mt-3 pl-3 text-[12px] text-[var(--ink-soft)]">
-          결과를 읽기 시트에 그대로 덮어씀
-        </p>
-      ) : null}
+      <div className="mt-3 flex flex-col gap-1 pl-3 text-[12px] text-[var(--ink-soft)]">
+        {writesToSource ? <p>결과를 읽기 시트에 그대로 덮어씀</p> : null}
+        {selectedGroupIds.length === 0 && !target.blogIds?.length ? (
+          <p>고른 그룹이 없어 전체 계정을 봄</p>
+        ) : null}
+      </div>
     </div>
   );
 };

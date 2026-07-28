@@ -6,12 +6,18 @@ import { Badge, Button, Card, SectionHeader, cn } from '@/shared';
 import {
   usePreset,
   useSavePreset,
+  type BlogGroup,
   type PresetTarget,
   type TenantPreset,
 } from '@/entities/preset';
+import { GroupEditor } from './group-editor';
 import { TargetEditor } from './target-editor';
 import {
+  countGroupUsage,
+  createEmptyGroup,
   createEmptyTarget,
+  removeGroupAt,
+  replaceGroup,
   replaceTarget,
   toSavablePreset,
 } from './model';
@@ -52,6 +58,24 @@ export const PresetManager = () => {
     setDraft({
       ...preset,
       targets: [...preset.targets, createEmptyTarget(preset.targets)],
+    });
+  };
+
+  const handleGroupChange = (index: number, next: BlogGroup) => {
+    if (!preset) return;
+    setDraft({ ...preset, blogGroups: replaceGroup(preset.blogGroups, index, next) });
+  };
+
+  const handleGroupRemove = (index: number) => {
+    if (!preset) return;
+    setDraft(removeGroupAt(preset, index));
+  };
+
+  const handleGroupAdd = () => {
+    if (!preset) return;
+    setDraft({
+      ...preset,
+      blogGroups: [...preset.blogGroups, createEmptyGroup(preset.blogGroups)],
     });
   };
 
@@ -121,12 +145,29 @@ export const PresetManager = () => {
         />
       </div>
 
+      <div className="mb-5 rounded-lg border border-[var(--line)] p-3">
+        <div className="mb-2.5 flex items-baseline justify-between gap-2">
+          <span className="stamp">계정 그룹</span>
+          <span className="text-[12px] text-[var(--ink-soft)]">
+            준최, 최블처럼 묶어두고 대상마다 골라 더해 씀
+          </span>
+        </div>
+        <GroupEditor
+          groups={preset.blogGroups}
+          usedCountByGroupId={countGroupUsage(preset.targets)}
+          onChange={handleGroupChange}
+          onRemove={handleGroupRemove}
+          onAdd={handleGroupAdd}
+        />
+      </div>
+
       <div className="flex flex-col gap-3">
         {preset.targets.map((target, index) => (
           <TargetEditor
             key={`${target.id}-${index}`}
             index={index}
             target={target}
+            groups={preset.blogGroups}
             onChange={handleTargetChange}
             onRemove={handleTargetRemove}
           />

@@ -39,10 +39,22 @@ const isSame =
   after.preset.targets.length === before.preset.targets.length;
 console.log(`roundtrip identical: ${isSame}`);
 
-after.preset.targets.forEach(({ label, kind, source, result, maxPages }) => {
+const { resolveTargetBlogIds } = await import('../src/server/preset.ts');
+
+console.log(`계정 그룹 ${after.preset.blogGroups.length}개`);
+after.preset.blogGroups.forEach(({ id, label, blogIds }) => {
+  console.log(`  ${label} (${id}): 계정 ${blogIds.length}개`);
+});
+
+after.preset.targets.forEach((target) => {
+  const { label, kind, source, result, maxPages, blogGroupIds } = target;
   const write = result ? result.tabTitle : '원본 시트에 반영';
   const pages = maxPages ? ` ${maxPages}p` : '';
-  console.log(`  [${kind}${pages}] ${label}: ${source.tabTitle} → ${write}`);
+  const groups = blogGroupIds?.length ? blogGroupIds.join('+') : '전체';
+  const accounts = resolveTargetBlogIds(after.preset, target).length;
+  console.log(
+    `  [${kind}${pages}] ${label}: ${source.tabTitle} → ${write} · 계정 ${groups} ${accounts}개`,
+  );
 });
 
 await mongoose.disconnect();

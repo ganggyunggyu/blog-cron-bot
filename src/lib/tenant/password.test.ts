@@ -1,6 +1,20 @@
 import assert from 'node:assert/strict';
 import { hashPassword, verifyPassword } from './password';
-import { EMPTY_PRESET, LAB_21_PRESET } from './preset';
+import { EMPTY_PRESET, LAB_21_PRESET, resolveTargetBlogIds } from './preset';
+import {
+  BLOG_IDS,
+  DOGMARU_PAGE_CHECK_BLOG_IDS,
+  PACKAGE_GENERAL_MORE_CHECK_BLOG_IDS,
+  SURI_PET_PAGE_CHECK_BLOG_IDS,
+} from '../../constants/blog-ids';
+
+const findTarget = (id: string) => {
+  const target = LAB_21_PRESET.targets.find((entry) => entry.id === id);
+  assert.ok(target, `${id} 대상이 빠짐`);
+  return target;
+};
+
+const sorted = (blogIds: readonly string[]) => [...blogIds].sort();
 
 const main = async (): Promise<void> => {
   const hash = await hashPassword('akfalwk12!');
@@ -34,6 +48,42 @@ const main = async (): Promise<void> => {
     assert.ok(target.source.sheetId, `${target.id} 읽기 시트 없음`);
     assert.ok(target.source.tabTitle, `${target.id} 읽기 탭 없음`);
   });
+
+  // 대상이 가리키는 계정 그룹은 반드시 존재해야 한다. 없으면 계정 0개로 돌아버린다.
+  const groupIds = new Set(LAB_21_PRESET.blogGroups.map(({ id }) => id));
+  LAB_21_PRESET.targets.forEach((target) => {
+    (target.blogGroupIds ?? []).forEach((groupId) =>
+      assert.ok(groupIds.has(groupId), `${target.id}: 계정 그룹 ${groupId} 없음`)
+    );
+  });
+
+  // 그룹을 합친 결과가 지금 코드가 쓰는 목록과 같아야 한다.
+  assert.deepEqual(
+    sorted(resolveTargetBlogIds(LAB_21_PRESET, findTarget('package'))),
+    sorted(BLOG_IDS)
+  );
+  assert.deepEqual(
+    sorted(resolveTargetBlogIds(LAB_21_PRESET, findTarget('dogmaru'))),
+    sorted(DOGMARU_PAGE_CHECK_BLOG_IDS)
+  );
+  assert.deepEqual(
+    sorted(resolveTargetBlogIds(LAB_21_PRESET, findTarget('suripet'))),
+    sorted(SURI_PET_PAGE_CHECK_BLOG_IDS)
+  );
+  // 애견 페이지 체크 = 일반 + 도그마루 + 서리펫
+  assert.deepEqual(
+    sorted(resolveTargetBlogIds(LAB_21_PRESET, findTarget('pet'))),
+    sorted([
+      ...BLOG_IDS,
+      ...DOGMARU_PAGE_CHECK_BLOG_IDS,
+      ...SURI_PET_PAGE_CHECK_BLOG_IDS,
+    ]).filter((blogId, index, all) => all.indexOf(blogId) === index)
+  );
+  // 패키지·일반건 더보기 = 일반 + 더보기 추가 계정
+  assert.deepEqual(
+    sorted(resolveTargetBlogIds(LAB_21_PRESET, findTarget('package-more'))),
+    sorted(PACKAGE_GENERAL_MORE_CHECK_BLOG_IDS)
+  );
 
   process.stdout.write('tenant password/preset tests passed\n');
 };

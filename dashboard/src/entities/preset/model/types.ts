@@ -18,6 +18,13 @@ export interface SheetLocation {
   tabTitle: string;
 }
 
+/** 이름 붙인 계정 묶음. 준최, 최블, 도그마루처럼 만들어두고 대상이 골라 쓴다. */
+export interface BlogGroup {
+  id: string;
+  label: string;
+  blogIds: string[];
+}
+
 export interface PresetTarget {
   id: string;
   label: string;
@@ -25,14 +32,29 @@ export interface PresetTarget {
   source: SheetLocation;
   result?: SheetLocation;
   maxPages?: number;
+  blogGroupIds?: string[];
   blogIds?: string[];
   enabled: boolean;
 }
 
 export interface TenantPreset {
   targets: PresetTarget[];
+  blogGroups: BlogGroup[];
   doorayWebhookUrl?: string;
 }
+
+/** 대상이 실제로 볼 계정. 고른 그룹을 순서대로 합치고 직접 계정을 뒤에 붙인다. */
+export const resolveTargetBlogIds = (
+  preset: TenantPreset,
+  target: PresetTarget,
+): string[] => {
+  const byId = new Map(preset.blogGroups.map((group) => [group.id, group]));
+  const fromGroups = (target.blogGroupIds ?? []).flatMap(
+    (groupId) => byId.get(groupId)?.blogIds ?? [],
+  );
+
+  return Array.from(new Set([...fromGroups, ...(target.blogIds ?? [])]));
+};
 
 export interface PresetOwner {
   id: string;

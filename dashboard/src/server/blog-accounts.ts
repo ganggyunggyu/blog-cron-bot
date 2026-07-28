@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { normalizeBlogId } from './blog-id';
 
 /**
  * 노출체크 대상 계정 관리 저장소.
@@ -49,14 +50,6 @@ export const isManagedListId = (value: unknown): value is ManagedListId =>
   typeof value === 'string' &&
   MANAGED_LISTS.some((list) => list.id === value);
 
-/** 블로그 URL을 붙여넣어도 받아주고 소문자 ID만 남긴다. 봇 쪽 정규화와 동일 규칙. */
-export const normalizeBlogId = (raw: unknown): string => {
-  if (typeof raw !== 'string') return '';
-  const trimmed = raw.trim().toLowerCase();
-  const fromUrl = trimmed.match(/(?:m\.)?blog\.naver\.com\/([^/?&#\s]+)/)?.[1];
-  const candidate = (fromUrl ?? trimmed).replace(/[/?&#].*$/, '');
-  return /^[a-z0-9_-]{2,40}$/.test(candidate) ? candidate : '';
-};
 
 const normalizeList = (value: unknown): string[] =>
   Array.isArray(value)

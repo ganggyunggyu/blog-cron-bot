@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { EMPTY_PRESET, parsePreset } from './preset';
+import { EMPTY_PRESET, parsePreset, resolveTargetBlogIds } from './preset';
 
 const validTarget = {
   id: 'package',
@@ -126,4 +126,100 @@ test('대상 목록이 배열이 아니면 거부함', () => {
 
 test('빈 프리셋은 대상 없이 통과함', () => {
   assert.deepEqual(parsePreset(EMPTY_PRESET), EMPTY_PRESET);
+});
+
+const JOONCHOI = { id: 'joonchoi', label: '준최', blogIds: ['introsm', 'airtrd'] };
+const CHOIBLOG = { id: 'choiblog', label: '최블', blogIds: ['tpeany', 'airtrd'] };
+
+test('대상이 계정 그룹 여러 개를 더해서 씀', () => {
+  const preset = parsePreset({
+    blogGroups: [JOONCHOI, CHOIBLOG],
+    targets: [{ ...validTarget, blogGroupIds: ['joonchoi', 'choiblog'] }],
+  });
+
+  // 준최 + 최블 합집합. 겹치는 airtrd는 한 번만 나온다.
+  assert.deepEqual(resolveTargetBlogIds(preset, preset.targets[0]!), [
+    'introsm',
+    'airtrd',
+    'tpeany',
+  ]);
+});
+
+test('그룹과 직접 계정을 같이 쓰면 둘 다 합침', () => {
+  const preset = parsePreset({
+    blogGroups: [JOONCHOI],
+    targets: [
+      { ...validTarget, blogGroupIds: ['joonchoi'], blogIds: ['ylk3516'] },
+    ],
+  });
+
+  assert.deepEqual(resolveTargetBlogIds(preset, preset.targets[0]!), [
+    'introsm',
+    'airtrd',
+    'ylk3516',
+  ]);
+});
+
+test('그룹도 직접 계정도 없으면 전체 계정을 뜻하는 빈 목록임', () => {
+  const preset = parsePreset({ blogGroups: [JOONCHOI], targets: [validTarget] });
+
+  assert.deepEqual(resolveTargetBlogIds(preset, preset.targets[0]!), []);
+});
+
+test('없는 계정 그룹을 가리키면 거부함', () => {
+  // 통과시키면 그 대상만 조용히 계정 0개로 돌아 노출 0건으로 보인다.
+  assert.throws(
+    () =>
+      parsePreset({
+        blogGroups: [JOONCHOI],
+        targets: [{ ...validTarget, blogGroupIds: ['choiblog'] }],
+      }),
+    /계정 그룹 "choiblog"가 없음/,
+  );
+});
+
+test('계정 그룹 id가 겹치면 거부함', () => {
+  assert.throws(
+    () =>
+      parsePreset({
+        blogGroups: [JOONCHOI, { ...JOONCHOI, label: '준최 복사' }],
+        targets: [],
+      }),
+    /계정 그룹 id "joonchoi"가 중복됨/,
+  );
+});
+
+test('그룹의 블로그 ID는 URL을 붙여넣어도 받아주고 정리함', () => {
+  const preset = parsePreset({
+    blogGroups: [
+      {
+        id: 'joonchoi',
+        label: '준최',
+        blogIds: [
+          'https://blog.naver.com/introsm',
+          ' INTROSM ',
+          'm.blog.naver.com/airtrd?fromRss=true',
+          '!!',
+        ],
+      },
+    ],
+    targets: [],
+  });
+
+  assert.deepEqual(preset.blogGroups[0]?.blogIds, ['introsm', 'airtrd']);
+});
+
+test('계정 그룹이 없던 옛 프리셋도 그대로 통과함', () => {
+  const preset = parsePreset({ targets: [validTarget] });
+
+  assert.deepEqual(preset.blogGroups, []);
+});
+
+test('그룹을 안 고른 대상은 blogGroupIds 키를 남기지 않음', () => {
+  const [target] = parsePreset({
+    blogGroups: [JOONCHOI],
+    targets: [{ ...validTarget, blogGroupIds: [] }],
+  }).targets;
+
+  assert.equal('blogGroupIds' in target!, false);
 });
