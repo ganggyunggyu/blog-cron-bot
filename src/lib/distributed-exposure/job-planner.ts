@@ -191,7 +191,8 @@ export const prepareDistributedOldLogicMoreJobs = async (
     const definition = DIRECT_DATABASE_TARGETS[target];
     await syncKeywordsFromSourceSheet(requests[definition.requestIndex]);
     const keywords = (await getAllKeywords()).filter(
-      ({ sheetType }) => sheetType === definition.sheetType
+      ({ sheetType, isNewLogic }) =>
+        sheetType === definition.sheetType && isNewLogic !== true
     );
     if (keywords.length === 0) throw new Error(`${target} 처리 키워드가 없음`);
     const keywordById = new Map(

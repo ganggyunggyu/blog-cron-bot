@@ -69,6 +69,7 @@ interface CliOptions {
   targetBlogIdsOverridden: boolean;
   keywordFilters: string[];
   workerOutput: boolean;
+  workerKeywords: boolean;
   mergeOutputTitles: string[];
   cleanupMergedOutput: boolean;
 }
@@ -1181,6 +1182,7 @@ const parseArgs = (): CliOptions => {
   let targetBlogIdsOverridden = false;
   let keywordFilters: string[] = [];
   let workerOutput = false;
+  let workerKeywords = false;
   let mergeOutputTitles: string[] = [];
   let cleanupMergedOutput = false;
 
@@ -1256,6 +1258,11 @@ const parseArgs = (): CliOptions => {
 
     if (arg === '--worker-output') {
       workerOutput = true;
+      continue;
+    }
+
+    if (arg === '--worker-keywords') {
+      workerKeywords = true;
       continue;
     }
 
@@ -1384,6 +1391,7 @@ const parseArgs = (): CliOptions => {
     targetBlogIdsOverridden,
     keywordFilters,
     workerOutput,
+    workerKeywords,
     mergeOutputTitles,
     cleanupMergedOutput,
   };
@@ -3516,9 +3524,19 @@ const main = async (): Promise<void> => {
     throw new Error('키워드 필터 실행은 시트 덮어쓰기 방지를 위해 dry-run만 허용됨');
   }
 
+  if (options.workerKeywords && options.sourceTabs.length !== 1) {
+    throw new Error('worker-keywords는 source 하나와 함께 사용해야 함');
+  }
   const allRows = inputSheet
     ? await loadKeywordsFromWorksheet(inputSheet, options.inputExposedOnly)
-    : await loadOldLogicKeywords(auth, doc, options.sourceTabs);
+    : options.workerKeywords
+      ? options.keywordFilters.map((keyword, index) => ({
+          sourceTab: options.sourceTabs[0],
+          company: '',
+          keyword,
+          rowNumber: index + 1,
+        }))
+      : await loadOldLogicKeywords(auth, doc, options.sourceTabs);
   const selectedRows =
     options.keywordFilters.length > 0
       ? allRows.filter(({ keyword }) =>

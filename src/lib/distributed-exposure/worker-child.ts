@@ -84,6 +84,7 @@ const resolveWorkerCommand = (job: IDistributedExposureJob) => {
         '50',
         '--all-matches',
         '--worker-output',
+        '--worker-keywords',
         '--no-checkpoint',
       ],
     };
