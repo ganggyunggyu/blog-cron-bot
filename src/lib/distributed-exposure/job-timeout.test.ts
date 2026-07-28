@@ -5,6 +5,10 @@ assert.equal(getDistributedJobTimeoutMs(undefined), 10 * 60_000);
 assert.equal(getDistributedJobTimeoutMs(undefined, 'pet'), 15 * 60_000);
 assert.equal(getDistributedJobTimeoutMs(undefined, 'suripet'), 15 * 60_000);
 assert.equal(getDistributedJobTimeoutMs(undefined, 'root'), 15 * 60_000);
+assert.equal(
+  getDistributedJobTimeoutMs(undefined, 'dogmaru', 'old-logic-more'),
+  20 * 60_000
+);
 assert.equal(getDistributedJobTimeoutMs('7'), 7 * 60_000);
 assert.equal(getDistributedJobTimeoutMs('7', 'suripet'), 7 * 60_000);
 assert.equal(getDistributedJobTimeoutMs('0'), 10 * 60_000);

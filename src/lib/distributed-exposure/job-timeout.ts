@@ -1,4 +1,5 @@
 import type { ExposureTargetId } from '../exposure-suite/options';
+import type { DistributedJobKind } from './models';
 
 const DEFAULT_JOB_TIMEOUT_MINUTES = 10;
 /**
@@ -8,16 +9,20 @@ const DEFAULT_JOB_TIMEOUT_MINUTES = 10;
  * 한 시도가 실제로 완주할 수 있는 길이로 잡는다.
  */
 const DEFAULT_PAGE_JOB_TIMEOUT_MINUTES = 15;
+const DEFAULT_OLD_LOGIC_MORE_JOB_TIMEOUT_MINUTES = 20;
 
 export const getDistributedJobTimeoutMs = (
   value = process.env.DISTRIBUTED_EXPOSURE_JOB_TIMEOUT_MINUTES,
-  target?: ExposureTargetId
+  target?: ExposureTargetId,
+  jobKind: DistributedJobKind = 'standard'
 ): number => {
   const minutes = Number(value);
   const defaultMinutes =
-    target === 'root' || target === 'pet' || target === 'suripet'
-      ? DEFAULT_PAGE_JOB_TIMEOUT_MINUTES
-      : DEFAULT_JOB_TIMEOUT_MINUTES;
+    jobKind === 'old-logic-more'
+      ? DEFAULT_OLD_LOGIC_MORE_JOB_TIMEOUT_MINUTES
+      : target === 'root' || target === 'pet' || target === 'suripet'
+        ? DEFAULT_PAGE_JOB_TIMEOUT_MINUTES
+        : DEFAULT_JOB_TIMEOUT_MINUTES;
   const normalized =
     Number.isFinite(minutes) && minutes >= 1
       ? minutes

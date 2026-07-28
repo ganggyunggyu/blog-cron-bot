@@ -171,7 +171,8 @@ export const runWorkerChild = (
     onChild(child);
     const timeoutMs = getDistributedJobTimeoutMs(
       process.env.DISTRIBUTED_EXPOSURE_JOB_TIMEOUT_MINUTES,
-      job.target
+      job.target,
+      job.jobKind
     );
     const timeout = setTimeout(() => {
       timedOut = true;
