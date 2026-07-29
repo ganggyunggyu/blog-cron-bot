@@ -34,7 +34,7 @@ export const ProgressSummary = ({ latestProgress, targetProgress }: ProgressSumm
               className="rounded-lg border border-[var(--line)] p-2.5"
             >
               <div className="mb-1.5 flex items-center justify-between gap-2 text-xs">
-                <span className="font-medium text-neutral-800">
+                <span className="font-medium text-[var(--ink)]">
                   {EXPOSURE_PROGRESS_LABELS[target.target] ?? target.target}
                 </span>
                 <span className="text-[var(--ink-soft)]">
@@ -43,7 +43,7 @@ export const ProgressSummary = ({ latestProgress, targetProgress }: ProgressSumm
                 </span>
               </div>
               <div
-                className="h-1.5 overflow-hidden rounded-full bg-neutral-200"
+                className="h-1.5 overflow-hidden rounded-full bg-[var(--line)]"
                 role="progressbar"
                 aria-label={`${EXPOSURE_PROGRESS_LABELS[target.target] ?? target.target} 진행률`}
                 aria-valuemin={0}
@@ -54,9 +54,9 @@ export const ProgressSummary = ({ latestProgress, targetProgress }: ProgressSumm
                   className={cn(
                     'h-full rounded-full transition-all duration-300',
                     target.status === 'failed'
-                      ? 'bg-red-500'
+                      ? 'bg-[var(--alert)]'
                       : target.status === 'success'
-                        ? 'bg-emerald-500'
+                        ? 'bg-[var(--live)]'
                         : 'bg-[var(--signal)]/80',
                   )}
                   style={{ width: `${percent}%` }}
@@ -78,7 +78,7 @@ export const ProgressSummary = ({ latestProgress, targetProgress }: ProgressSumm
         <span>{percent}%</span>
       </div>
       <div
-        className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-200"
+        className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--line)]"
         role="progressbar"
         aria-label="전체 진행률"
         aria-valuemin={0}

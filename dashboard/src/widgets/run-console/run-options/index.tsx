@@ -14,26 +14,21 @@ export const TargetOption = ({ target, isSelected, onToggle }: TargetOptionProps
   return (
     <label
       className={cn(
-        'flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-all',
-        'focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2',
+        'flex cursor-pointer items-center gap-2.5 rounded-md border px-3 py-2.5 transition-colors',
+        'focus-within:ring-2 focus-within:ring-[var(--signal)]/30',
         isSelected
-          ? 'border-[var(--signal)]/40 bg-[var(--signal)]/8 shadow-sm'
-          : 'border-[var(--line)] bg-[var(--panel)]/80 hover:border-[var(--line)]',
+          ? 'border-[var(--signal)]/50 bg-[var(--signal)]/10'
+          : 'border-[var(--line)] hover:border-[var(--ink-faint)]',
       )}
     >
       <input
         type="checkbox"
         checked={isSelected}
         onChange={handleChange}
-        className={cn('mt-0.5 size-4 rounded border-[var(--line)] accent-blue-600')}
+        className="size-4 shrink-0 accent-[var(--signal)]"
       />
-      <span className={cn('min-w-0')}>
-        <span className={cn('block text-sm font-semibold text-[var(--ink)]')}>
-          {target.label}
-        </span>
-        <span className={cn('mt-0.5 block text-xs text-[var(--ink-soft)]')}>
-          {target.description}
-        </span>
+      <span className="truncate text-[13px] font-medium text-[var(--ink)]">
+        {target.label}
       </span>
     </label>
   );
@@ -48,19 +43,26 @@ interface NumberOptionProps {
   onChange: (value: number) => void;
 }
 
-export const NumberOption = ({ label, description, min, max, value, onChange }: NumberOptionProps) => {
+export const NumberOption = ({
+  label,
+  description,
+  min,
+  max,
+  value,
+  onChange,
+}: NumberOptionProps) => {
   const values = Array.from({ length: max - min + 1 }, (_, index) => min + index);
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     onChange(Number(event.target.value));
   };
 
   return (
-    <label className={cn('flex items-center justify-between gap-4 rounded-lg bg-[var(--panel)]/70 p-3')}>
-      <span>
-        <span className={cn('block text-sm font-medium text-neutral-800')}>
+    <label className="flex items-center justify-between gap-4 rounded-md border border-[var(--line)] px-3 py-2.5">
+      <span className="min-w-0">
+        <span className="block text-[13px] font-medium text-[var(--ink)]">
           {label}
         </span>
-        <span className={cn('mt-0.5 block text-xs text-[var(--ink-soft)]')}>
+        <span className="mt-0.5 block text-xs text-[var(--ink-faint)]">
           {description}
         </span>
       </span>
@@ -69,9 +71,8 @@ export const NumberOption = ({ label, description, min, max, value, onChange }: 
         value={value ?? ''}
         onChange={handleChange}
         className={cn(
-          'min-h-10 w-20 rounded-lg border border-[var(--line)] bg-[var(--panel)] px-3 text-sm font-semibold',
-          'outline-none transition focus:border-[var(--signal)] focus:ring-2 focus:ring-[var(--signal)]/25',
-          'dark:border-neutral-700',
+          'tabular h-9 w-16 shrink-0 rounded-md border border-[var(--line)] bg-[var(--panel)] px-2 text-sm text-[var(--ink)]',
+          'outline-none transition-colors focus:border-[var(--signal)] focus:ring-2 focus:ring-[var(--signal)]/25',
         )}
       >
         {values.map((optionValue) => (
