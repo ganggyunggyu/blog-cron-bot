@@ -7,6 +7,8 @@ import {
   PACKAGE_GENERAL_MORE_CHECK_BLOG_IDS,
   SURI_PET_PAGE_CHECK_BLOG_IDS,
 } from '../../constants/blog-ids';
+import { selectTargetBlogIds } from './target-blog-ids';
+import type { MemberSummary } from './store';
 
 const findTarget = (id: string) => {
   const target = LAB_21_PRESET.targets.find((entry) => entry.id === id);
@@ -84,6 +86,31 @@ const main = async (): Promise<void> => {
     sorted(resolveTargetBlogIds(LAB_21_PRESET, findTarget('package-more'))),
     sorted(PACKAGE_GENERAL_MORE_CHECK_BLOG_IDS)
   );
+
+  const presetWithRootAccount: MemberSummary = {
+    id: '21lab',
+    loginId: '21lab',
+    displayName: '21Lab',
+    preset: {
+      ...LAB_21_PRESET,
+      blogGroups: LAB_21_PRESET.blogGroups.map((group) =>
+        group.id === 'general'
+          ? { ...group, blogIds: [...group.blogIds, 'inho5062'] }
+          : group
+      ),
+    },
+  };
+  const rootSelection = selectTargetBlogIds(
+    presetWithRootAccount,
+    'root',
+    BLOG_IDS
+  );
+  assert.equal(rootSelection.source, 'preset');
+  assert.ok(rootSelection.blogIds.includes('inho5062'));
+
+  const fallbackSelection = selectTargetBlogIds(null, 'root', BLOG_IDS);
+  assert.equal(fallbackSelection.source, 'fallback');
+  assert.deepEqual(fallbackSelection.blogIds, BLOG_IDS);
 
   process.stdout.write('tenant password/preset tests passed\n');
 };

@@ -22,6 +22,8 @@ import {
 import { rewriteOrderedResultSheet } from './lib/google-sheets/ordered-result-sheet';
 import { syncRootKeywordsFromSheet } from './lib/root-keyword-sync';
 import { BLOG_IDS } from './constants/blog-ids';
+import { findMemberByLoginId } from './lib/tenant/store';
+import { selectTargetBlogIds } from './lib/tenant/target-blog-ids';
 
 dotenv.config();
 
@@ -59,6 +61,20 @@ const runRootWorkflow = async (): Promise<void> => {
   }
 
   await connectDB(mongoUri);
+
+  const tenantLoginId =
+    String(process.env.EXPOSURE_TENANT_LOGIN_ID ?? '').trim() || '21lab';
+  const member = await findMemberByLoginId(tenantLoginId);
+  const blogIdSelection = selectTargetBlogIds(member, 'root', BLOG_IDS);
+  if (blogIdSelection.source === 'preset') {
+    logger.info(
+      `🔐 루트 계정 목록: ${tenantLoginId} 저장 프리셋 ${blogIdSelection.blogIds.length}개`
+    );
+  } else {
+    logger.warn(
+      `루트 저장 프리셋을 찾지 못해 코드 기본 계정 ${blogIdSelection.blogIds.length}개 사용`
+    );
+  }
 
   if (!isDistributedShard) {
     const syncResult = await syncRootKeywordsFromSheet();
@@ -146,7 +162,7 @@ const runRootWorkflow = async (): Promise<void> => {
     maxPages,
     concurrency,
     keywordBatchSize,
-    blogIds: [...BLOG_IDS],
+    blogIds: blogIdSelection.blogIds,
     allowAnyBlog: false,
     matchByBlogIdOnly: true,
     consumeMatches: false,
