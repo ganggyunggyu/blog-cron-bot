@@ -129,6 +129,29 @@ export const addBlogAccount = async (
   return getBlogAccountLists();
 };
 
+/** 시트에서 통째로 붙여넣은 계정을 한 번에 넣는다. 한 건이라도 살아있으면 성공으로 본다. */
+export const addBlogAccounts = async (
+  listId: ManagedListId,
+  rawBlogIds: readonly string[]
+): Promise<BlogAccountList[]> => {
+  const blogIds = Array.from(
+    new Set(rawBlogIds.map(normalizeBlogId).filter((blogId) => blogId.length > 0))
+  ).slice(0, MAX_IDS_PER_LIST);
+  if (blogIds.length === 0) throw new Error('블로그 ID 형식이 올바르지 않음');
+
+  const collection = await connect();
+  await collection.updateOne(
+    { _id: listId },
+    {
+      $addToSet: { added: { $each: blogIds } },
+      $pull: { removed: { $in: blogIds } },
+      $set: { updatedAt: new Date() },
+    },
+    { upsert: true }
+  );
+  return getBlogAccountLists();
+};
+
 export const removeBlogAccount = async (
   listId: ManagedListId,
   rawBlogId: string

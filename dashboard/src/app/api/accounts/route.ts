@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import {
   addBlogAccount,
+  addBlogAccounts,
   getBlogAccountLists,
   isManagedListId,
   removeBlogAccount,
@@ -31,9 +32,10 @@ export const POST = async (request: NextRequest) => {
     );
   }
 
-  const { listId, blogId, action } = (body ?? {}) as {
+  const { listId, blogId, blogIds, action } = (body ?? {}) as {
     listId?: unknown;
     blogId?: unknown;
+    blogIds?: unknown;
     action?: unknown;
   };
 
@@ -43,6 +45,30 @@ export const POST = async (request: NextRequest) => {
       { status: 400 },
     );
   }
+
+  // 붙여넣기로 여러 건을 한 번에 넣는 경로. 지우기는 늘 한 건씩만 받는다.
+  if (Array.isArray(blogIds)) {
+    const candidates = blogIds.filter(
+      (value): value is string => typeof value === 'string',
+    );
+    if (candidates.length === 0) {
+      return NextResponse.json(
+        { error: '추가할 블로그 ID가 없음' },
+        { status: 400 },
+      );
+    }
+
+    try {
+      return NextResponse.json({ lists: await addBlogAccounts(listId, candidates) });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '계정 변경 실패';
+      if (message.includes('형식이 올바르지 않음')) {
+        return NextResponse.json({ error: message }, { status: 400 });
+      }
+      return toErrorResponse(error, '계정 변경 실패');
+    }
+  }
+
   if (typeof blogId !== 'string' || blogId.trim().length === 0) {
     return NextResponse.json({ error: '블로그 ID가 비어 있음' }, { status: 400 });
   }

@@ -1,14 +1,13 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Settings } from 'lucide-react';
-import { AccountManager } from '@/widgets/account-manager';
-import { PresetManager } from '@/widgets/preset-manager';
+import { SettingsWorkspace } from '@/widgets/settings-workspace';
 
 const SettingsPage = () => {
   return (
     <div className="min-h-screen flex-1 bg-transparent">
-      <header className="sticky top-0 z-10 border-b border-[var(--line)]/80 bg-[var(--panel)]/85 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-6 py-4">
+      <header className="sticky top-0 z-20 border-b border-[var(--line)]/80 bg-[var(--panel)]/85 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-6 py-4">
           <div className="flex items-center gap-3">
             <span className="flex size-9 items-center justify-center rounded-xl bg-neutral-800 text-white">
               <Settings className="size-5" />
@@ -32,9 +31,8 @@ const SettingsPage = () => {
         </div>
       </header>
 
-      <main className="mx-auto flex max-w-4xl flex-col gap-6 px-6 py-8">
-        <PresetManager />
-        <AccountManager />
+      <main className="mx-auto max-w-5xl px-6 py-6">
+        <SettingsWorkspace />
       </main>
     </div>
   );

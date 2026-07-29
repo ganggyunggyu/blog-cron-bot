@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "pnpm test:unit",
-    "test:unit": "node --import tsx --test src/server/*.test.ts src/entities/run/model/*.test.ts"
+    "test:unit": "node --import tsx --test src/server/*.test.ts src/entities/run/model/*.test.ts src/shared/lib/*/*.test.ts src/widgets/*/model/*.test.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.2",

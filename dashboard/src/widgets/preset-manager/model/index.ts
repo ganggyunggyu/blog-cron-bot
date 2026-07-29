@@ -31,6 +31,77 @@ export const replaceTarget = (
   next: PresetTarget,
 ): PresetTarget[] => targets.map((target, at) => (at === index ? next : target));
 
+/** 비슷한 대상을 하나 더 만들 때. id는 겹치면 저장이 막히므로 새로 딴다. */
+export const duplicateTargetAt = (
+  targets: PresetTarget[],
+  index: number,
+): PresetTarget[] => {
+  const origin = targets[index];
+  if (!origin) return targets;
+
+  const taken = new Set(targets.map(({ id }) => id));
+  let copyId = `${origin.id}-copy`;
+  let suffix = 2;
+  while (taken.has(copyId)) {
+    copyId = `${origin.id}-copy${suffix}`;
+    suffix += 1;
+  }
+
+  const copy: PresetTarget = {
+    ...origin,
+    id: copyId,
+    label: `${origin.label} 복사본`,
+    source: { ...origin.source },
+    result: origin.result ? { ...origin.result } : undefined,
+    blogGroupIds: origin.blogGroupIds ? [...origin.blogGroupIds] : undefined,
+    blogIds: origin.blogIds ? [...origin.blogIds] : undefined,
+  };
+
+  return [...targets.slice(0, index + 1), copy, ...targets.slice(index + 1)];
+};
+
+/** 실행 순서가 곧 목록 순서라 위아래로 옮길 수 있어야 한다. */
+export const moveTarget = (
+  targets: PresetTarget[],
+  index: number,
+  offset: number,
+): PresetTarget[] => {
+  const next = index + offset;
+  if (index < 0 || index >= targets.length) return targets;
+  if (next < 0 || next >= targets.length) return targets;
+
+  const reordered = [...targets];
+  const [moved] = reordered.splice(index, 1);
+  reordered.splice(next, 0, moved);
+  return reordered;
+};
+
+/** 대상이 많아지면 이름보다 시트 탭으로 찾는 일이 잦아 둘 다 본다. */
+export const matchesTargetQuery = (
+  target: PresetTarget,
+  query: string,
+): boolean => {
+  const keyword = query.trim().toLowerCase();
+  if (!keyword) return true;
+
+  return [
+    target.label,
+    target.id,
+    target.source.tabTitle,
+    target.source.sheetId,
+    target.result?.tabTitle ?? '',
+  ]
+    .join(' ')
+    .toLowerCase()
+    .includes(keyword);
+};
+
+/** 붙여넣기로 들어온 계정을 기존 목록 뒤에 붙인다. 중복은 뒤엣것을 버린다. */
+export const mergeBlogIds = (
+  current: string[] | undefined,
+  incoming: string[],
+): string[] => Array.from(new Set([...(current ?? []), ...incoming]));
+
 /** 그룹 id는 저장 후에도 대상이 계속 가리키는 키라 라벨과 달리 자동 생성한다. */
 export const createEmptyGroup = (existing: BlogGroup[]): BlogGroup => {
   const taken = new Set(existing.map(({ id }) => id));

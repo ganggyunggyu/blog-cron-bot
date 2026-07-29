@@ -1,14 +1,18 @@
 'use client';
 
 import React from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus, Search, X } from 'lucide-react';
 import { Badge, Button, Card, SectionHeader, cn } from '@/shared';
+import { PasteImport } from '@/features/blog-id-import';
 import {
+  useAddBlogAccounts,
   useBlogAccountLists,
   useMutateBlogAccount,
   type BlogAccountList,
   type ManagedListId,
 } from '@/entities/blog-account';
+
+const COLLAPSED_LIMIT = 24;
 
 interface AccountListCardProps {
   list: BlogAccountList;
@@ -16,10 +20,21 @@ interface AccountListCardProps {
 
 const AccountListCard = ({ list }: AccountListCardProps) => {
   const { mutate, isPending, variables, error } = useMutateBlogAccount();
+  const {
+    mutate: addMany,
+    isPending: isAdding,
+    error: addError,
+  } = useAddBlogAccounts();
   const [draft, setDraft] = React.useState('');
+  const [query, setQuery] = React.useState('');
+  const [isExpanded, setIsExpanded] = React.useState(false);
 
   const handleDraftChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setDraft(event.target.value);
+  };
+
+  const handleQueryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(event.target.value);
   };
 
   const handleAdd = (event: React.FormEvent<HTMLFormElement>) => {
@@ -35,6 +50,22 @@ const AccountListCard = ({ list }: AccountListCardProps) => {
   const handleRemove = (blogId: string) => {
     mutate({ listId: list.id, blogId, action: 'remove' });
   };
+
+  const handlePaste = (blogIds: string[]) => {
+    addMany({ listId: list.id, blogIds });
+  };
+
+  const handleToggleExpand = () => {
+    setIsExpanded((current) => !current);
+  };
+
+  const keyword = query.trim().toLowerCase();
+  const matched = keyword
+    ? list.effective.filter((blogId) => blogId.includes(keyword))
+    : list.effective;
+  const visible = isExpanded ? matched : matched.slice(0, COLLAPSED_LIMIT);
+  const restCount = matched.length - visible.length;
+  const failure = addError ?? error;
 
   return (
     <Card>
@@ -52,15 +83,33 @@ const AccountListCard = ({ list }: AccountListCardProps) => {
         }
       />
 
+      {list.effective.length > COLLAPSED_LIMIT ? (
+        <div className="relative mb-2.5">
+          <Search className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-[var(--ink-faint)]" />
+          <input
+            value={query}
+            onChange={handleQueryChange}
+            placeholder="계정 찾기"
+            aria-label={`${list.label} 계정 찾기`}
+            className={cn(
+              'w-full rounded border border-[var(--line)] bg-[var(--paper)] py-1.5 pl-8 pr-2.5',
+              'text-[13px] text-[var(--ink)] outline-none transition-colors',
+              'placeholder:text-[var(--ink-faint)]',
+              'focus:border-[var(--signal)] focus:ring-2 focus:ring-[var(--signal)]/20',
+            )}
+          />
+        </div>
+      ) : null}
+
       <div className="mb-3 flex flex-wrap gap-1.5">
-        {list.effective.map((blogId) => {
+        {visible.map((blogId) => {
           const isAdded = list.added.includes(blogId);
           const isBusy = isPending && variables?.blogId === blogId;
           return (
             <span
               key={blogId}
               className={cn(
-                'inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs',
+                'tabular inline-flex items-center gap-1 rounded border px-2 py-1 text-xs',
                 isAdded
                   ? 'border-[var(--signal)]/40 bg-[var(--signal)]/8 text-[var(--signal)]'
                   : 'border-[var(--line)] bg-transparent text-[var(--ink)]',
@@ -79,9 +128,24 @@ const AccountListCard = ({ list }: AccountListCardProps) => {
             </span>
           );
         })}
+
+        {restCount > 0 ? (
+          <Button variant="ghost" size="sm" onClick={handleToggleExpand}>
+            {restCount}개 더 보기
+          </Button>
+        ) : null}
+        {isExpanded && matched.length > COLLAPSED_LIMIT ? (
+          <Button variant="ghost" size="sm" onClick={handleToggleExpand}>
+            접기
+          </Button>
+        ) : null}
+
         {list.effective.length === 0 ? (
+          <p className="text-xs text-[var(--ink-soft)]">계정이 없음.</p>
+        ) : null}
+        {list.effective.length > 0 && matched.length === 0 ? (
           <p className="text-xs text-[var(--ink-soft)]">
-            계정이 없음.
+            &quot;{query}&quot;에 걸리는 계정이 없음
           </p>
         ) : null}
       </div>
@@ -101,7 +165,6 @@ const AccountListCard = ({ list }: AccountListCardProps) => {
           className={cn(
             'min-w-0 flex-1 rounded-lg border border-[var(--line)] bg-[var(--panel)] px-3 py-2 text-sm outline-none transition',
             'focus:border-[var(--signal)] focus:ring-2 focus:ring-[var(--signal)]/25',
-            'dark:border-neutral-700',
           )}
         />
         <Button type="submit" disabled={isPending || draft.trim().length === 0}>
@@ -110,9 +173,17 @@ const AccountListCard = ({ list }: AccountListCardProps) => {
         </Button>
       </form>
 
-      {error ? (
+      <div className="mt-2">
+        <PasteImport
+          existing={list.effective}
+          onApply={handlePaste}
+          isPending={isAdding}
+        />
+      </div>
+
+      {failure ? (
         <p className="mt-2 text-sm text-[var(--alert)]">
-          {error instanceof Error ? error.message : '변경에 실패함'}
+          {failure instanceof Error ? failure.message : '변경에 실패함'}
         </p>
       ) : null}
     </Card>
@@ -143,7 +214,17 @@ export const AccountManager = () => {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-[var(--live)]/30 bg-[var(--live)]/8 px-4 py-3">
+        <Badge tone="success" withDot>
+          실행 반영됨
+        </Badge>
+        <p className="text-[13px] text-[var(--ink-soft)]">
+          워커가 노출체크를 시작할 때 이 목록을 읽어 코드 기본값을 갈아끼움. 여기서 바꾸면
+          다음 실행부터 실제 크롤 대상이 바뀜
+        </p>
+      </div>
+
       {data?.map((list: BlogAccountList) => (
         <AccountListCard key={list.id satisfies ManagedListId} list={list} />
       ))}

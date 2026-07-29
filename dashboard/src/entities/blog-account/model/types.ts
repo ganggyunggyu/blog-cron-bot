@@ -15,3 +15,8 @@ export interface MutateBlogAccountInput {
   blogId: string;
   action: 'add' | 'remove';
 }
+
+export interface AddBlogAccountsInput {
+  listId: ManagedListId;
+  blogIds: string[];
+}
