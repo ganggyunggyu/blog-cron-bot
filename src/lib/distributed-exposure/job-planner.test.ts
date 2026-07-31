@@ -1,20 +1,29 @@
 import assert from 'node:assert/strict';
 import {
+  DEFAULT_REMOTE_WORKER_COUNT,
   PAGE_JOB_MAX_SHARD_SIZE,
-  PAGE_REMOTE_WORKER_COUNT,
   buildKeywordTargetJobs,
   buildPageTargetJobs,
   interleaveTargetJobs,
+  resolveRemoteWorkerCount,
 } from './job-planner';
 
-// 서로 다른 검색어 300개는 운영 중인 원격 워커 30대에 균등 분배한다.
+// 조각 수는 상시 워커 수를 따라간다. 환경변수가 없으면 기본값을 쓴다.
+assert.equal(resolveRemoteWorkerCount(undefined), DEFAULT_REMOTE_WORKER_COUNT);
+assert.equal(resolveRemoteWorkerCount('15'), 15);
+assert.equal(resolveRemoteWorkerCount('0'), DEFAULT_REMOTE_WORKER_COUNT);
+assert.equal(resolveRemoteWorkerCount('-3'), DEFAULT_REMOTE_WORKER_COUNT);
+assert.equal(resolveRemoteWorkerCount('2.5'), DEFAULT_REMOTE_WORKER_COUNT);
+assert.equal(resolveRemoteWorkerCount(''), DEFAULT_REMOTE_WORKER_COUNT);
+
+// 서로 다른 검색어 300개는 상시 워커 수만큼 조각으로 균등 분배한다.
 const uniqueKeywords = Array.from({ length: 300 }, (_, index) => ({
   _id: `pet-${index}`,
   keyword: `키워드 ${index}`,
 }));
 const shardedJobs = buildPageTargetJobs('pet', uniqueKeywords);
 
-assert.equal(shardedJobs.length, PAGE_REMOTE_WORKER_COUNT);
+assert.equal(shardedJobs.length, DEFAULT_REMOTE_WORKER_COUNT);
 shardedJobs.forEach((job, index) => {
   assert.equal(job.target, 'pet');
   assert.equal(job.shardIndex, index);
@@ -33,7 +42,7 @@ const suripetJobs = buildPageTargetJobs(
     keyword: `서리펫 ${index}`,
   }))
 );
-assert.equal(suripetJobs.length, PAGE_REMOTE_WORKER_COUNT);
+assert.equal(suripetJobs.length, DEFAULT_REMOTE_WORKER_COUNT);
 assert.ok(
   Math.max(...suripetJobs.map((job) => job.keywordIds?.length ?? 0)) -
     Math.min(...suripetJobs.map((job) => job.keywordIds?.length ?? 0)) <=
@@ -68,7 +77,7 @@ const rootJobs = buildKeywordTargetJobs(
     keyword: `루트 키워드 ${index}`,
   }))
 );
-assert.equal(rootJobs.length, PAGE_REMOTE_WORKER_COUNT);
+assert.equal(rootJobs.length, DEFAULT_REMOTE_WORKER_COUNT);
 assert.equal(new Set(rootJobs.flatMap((job) => job.keywordIds ?? [])).size, 191);
 assert.ok(
   Math.max(...rootJobs.map((job) => job.keywordIds?.length ?? 0)) -
@@ -83,7 +92,7 @@ const packageJobs = buildKeywordTargetJobs(
     keyword: `패키지 키워드 ${index}`,
   }))
 );
-assert.equal(packageJobs.length, PAGE_REMOTE_WORKER_COUNT);
+assert.equal(packageJobs.length, DEFAULT_REMOTE_WORKER_COUNT);
 assert.equal(
   new Set(packageJobs.flatMap((job) => job.keywordIds ?? [])).size,
   91

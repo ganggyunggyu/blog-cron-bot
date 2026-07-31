@@ -60,9 +60,23 @@ export const interleaveTargetJobs = (
   return interleaved;
 };
 
-// 모든 키워드 기반 노출체크는 30개 원격 워커에 균등 분배한다.
-export const PAGE_REMOTE_WORKER_COUNT = 30;
+/**
+ * 조각 수는 Railway에 상시 떠 있는 워커 수와 같아야 한다.
+ *
+ * 조각이 워커보다 많으면 남는 조각이 다음 차례를 기다리느라 실행이 길어지고,
+ * 적으면 워커가 놀면서 요금만 나간다. 워커 복제본 수를 바꿀 때 코드를 다시
+ * 배포하지 않아도 되도록 환경변수로 맞춘다.
+ */
+export const DEFAULT_REMOTE_WORKER_COUNT = 10;
 export const PAGE_JOB_MAX_SHARD_SIZE = 50;
+
+export const resolveRemoteWorkerCount = (
+  rawValue: string | undefined = process.env.EXPOSURE_REMOTE_WORKER_COUNT
+): number => {
+  const parsed = Number(rawValue);
+  if (!Number.isInteger(parsed) || parsed < 1) return DEFAULT_REMOTE_WORKER_COUNT;
+  return parsed;
+};
 
 export const buildKeywordTargetJobs = (
   target: ExposureTargetId,
@@ -70,7 +84,7 @@ export const buildKeywordTargetJobs = (
 ): DistributedJobInput[] => {
   const shards = buildBalancedPageKeywordShards(
     keywords,
-    PAGE_REMOTE_WORKER_COUNT,
+    resolveRemoteWorkerCount(),
     PAGE_JOB_MAX_SHARD_SIZE
   );
   return shards.map((keywordIds, shardIndex) => ({
