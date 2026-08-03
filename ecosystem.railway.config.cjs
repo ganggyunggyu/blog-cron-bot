@@ -19,12 +19,16 @@ const controlApps = [
     },
 ];
 
+// 워커는 실행이 없어도 상시 떠 있으므로 유휴 메모리가 그대로 요금이 된다.
+// ts-node는 타입스크립트 컴파일러를 프로세스에 계속 물고 있어 앱 코드를 올리기도 전에
+// 약 240MB를 더 쓴다(측정: node 41MB / ts-node 284MB). 이미지가 pnpm build로 dist를
+// 만들어 두므로 컴파일 산출물을 직접 띄운다.
 const workerApps = [
   {
     name: 'exposure-distributed-worker',
     cwd: __dirname,
-    script: 'pnpm',
-    args: 'exposure:worker',
+    script: 'node',
+    args: 'dist/exposure-worker.js',
     interpreter: 'none',
     instances: 1,
     exec_mode: 'fork',
