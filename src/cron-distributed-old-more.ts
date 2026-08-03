@@ -20,10 +20,15 @@ import {
   formatRailwayCost,
 } from './lib/distributed-exposure/cost-estimate';
 import { finalizeDistributedOldLogicMore } from './lib/distributed-exposure/more-finalizer';
+import {
+  MORE_TARGET_LABELS,
+  parseMoreTargets,
+  type MoreTarget,
+} from './lib/distributed-exposure/more-targets';
 
 dotenv.config();
 
-const TARGETS = ['package', 'general', 'dogmaru'] as const;
+const TARGETS = parseMoreTargets(process.argv.slice(2));
 const DEFAULT_TIMEOUT_MINUTES = 90;
 const SHEETS_QUOTA_RETRY_DELAY_MS = 65_000;
 const MAX_SHEETS_QUOTA_MERGE_ATTEMPTS = 3;
@@ -68,7 +73,7 @@ const getTimeoutMs = (): number => {
 const getWorkerOutputTitle = (runId: string, target: string, shardIndex: number): string =>
   `__more_${runId}_${target}_${shardIndex}`;
 
-const runMerge = (target: (typeof TARGETS)[number], titles: string[]): Promise<void> =>
+const runMerge = (target: MoreTarget, titles: string[]): Promise<void> =>
   new Promise((resolve, reject) => {
     const child = spawn(
       'pnpm',
@@ -105,7 +110,7 @@ const runMerge = (target: (typeof TARGETS)[number], titles: string[]): Promise<v
   });
 
 const runMergeWithRetry = async (
-  target: (typeof TARGETS)[number],
+  target: MoreTarget,
   titles: string[]
 ): Promise<void> => {
   for (let attempt = 1; attempt <= MAX_SHEETS_QUOTA_MERGE_ATTEMPTS; attempt += 1) {
@@ -142,11 +147,11 @@ const main = async (): Promise<void> => {
       maxPages: 1,
       jobs,
     });
-    logger.summary.start('더보기 30개 원격 워커 노출체크', [
+    logger.summary.start('더보기 다중 워커 노출체크', [
       { label: '실행 ID', value: runId },
-      { label: '대상', value: '패키지 · 일반건 · 도그마루' },
+      { label: '대상', value: TARGETS.map((target) => MORE_TARGET_LABELS[target]).join(' · ') },
       { label: '분산 작업', value: `${jobs.length}개` },
-      { label: '조각 기준', value: '대상별 최대 30개, 워커당 순차 1개' },
+      { label: '조각 기준', value: '대상별 상시 워커 수만큼, 워커당 순차 1개' },
     ]);
 
     startLocalWorker(runId);
@@ -179,7 +184,7 @@ const main = async (): Promise<void> => {
     });
     const elapsedMs = Date.now() - startedAt;
     const costEstimate = estimateRailwayWorkerCost(workerNetworks.size, elapsedMs);
-    logger.summary.complete('더보기 30개 원격 워커 노출체크 완료', [
+    logger.summary.complete('더보기 다중 워커 노출체크 완료', [
       { label: '총 소요', value: `${Math.floor(elapsedMs / 1000)}초` },
       { label: '완료 작업', value: `${snapshot.success}/${snapshot.total}` },
       { label: '원격 워커', value: `${workerNetworks.size}개` },

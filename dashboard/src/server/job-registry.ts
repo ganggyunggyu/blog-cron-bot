@@ -94,7 +94,9 @@ export const JOB_REGISTRY: JobDefinition[] = [
   {
     id: 'root-more-exposure',
     label: '루트',
-    script: 'old-logic:more-check:root',
+    // 단일 프로세스로 돌던 시절 708개 키워드에 5시간이 걸려 분산 경로로 옮겼다.
+    script: 'exposure:distributed:more',
+    args: ['--targets=root'],
     description: '루트 시트의 인기글 더보기를 끝까지 확인',
     riskNote: '더보기를 끝까지 펼쳐서 일반 노출체크보다 오래 걸림',
     kind: 'standard',

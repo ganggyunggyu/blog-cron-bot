@@ -99,12 +99,16 @@ export const OLD_LOGIC_MORE_OUTPUT_TITLES = {
   package: '패키지_더보기',
   general: '일반건_더보기',
   dogmaru: '도그마루_더보기',
+  // 루트 더보기는 예전부터 0611 탭에 쌓아왔다. 분산으로 바꾸면서 결과 위치를
+  // 옮기면 그 탭을 보고 있던 쪽이 빈 화면을 보게 되므로 그대로 둔다.
+  root: '0611',
 } as const;
 
 export const OLD_LOGIC_MORE_SOURCE_NAMES = {
   package: '패키지',
   general: '일반건',
   dogmaru: '도그마루',
+  root: '루트',
 } as const;
 
 const DIRECT_DATABASE_TARGETS = {
@@ -196,18 +200,40 @@ export const prepareDistributedJobs = async (
   return interleaveTargetJobs(jobs);
 };
 
+/**
+ * 더보기 조각에 넣을 키워드를 불러온다.
+ *
+ * 루트는 다른 시트와 컬렉션이 달라(RootKeyword) 같은 필터를 쓸 수 없다. 원본 동기화
+ * 경로도 달라서 대상별로 갈라 둔다.
+ */
+const loadOldLogicMoreKeywords = async (
+  target: keyof typeof OLD_LOGIC_MORE_OUTPUT_TITLES
+): Promise<Array<{ _id: unknown; keyword: string }>> => {
+  if (target === 'root') {
+    await syncRootKeywordsFromSheet();
+    return (await getAllRootKeywords()).map(({ _id, keyword }) => ({
+      _id,
+      keyword,
+    }));
+  }
+
+  const definition = DIRECT_DATABASE_TARGETS[target];
+  await syncKeywordsFromSourceSheet(requests[definition.requestIndex]);
+  return (await getAllKeywords())
+    .filter(
+      ({ sheetType, isNewLogic }) =>
+        sheetType === definition.sheetType && isNewLogic !== true
+    )
+    .map(({ _id, keyword }) => ({ _id, keyword }));
+};
+
 export const prepareDistributedOldLogicMoreJobs = async (
   targets: Array<keyof typeof OLD_LOGIC_MORE_OUTPUT_TITLES>
 ): Promise<DistributedJobInput[]> => {
   const jobs: DistributedJobInput[] = [];
 
   for (const target of targets) {
-    const definition = DIRECT_DATABASE_TARGETS[target];
-    await syncKeywordsFromSourceSheet(requests[definition.requestIndex]);
-    const keywords = (await getAllKeywords()).filter(
-      ({ sheetType, isNewLogic }) =>
-        sheetType === definition.sheetType && isNewLogic !== true
-    );
+    const keywords = await loadOldLogicMoreKeywords(target);
     if (keywords.length === 0) throw new Error(`${target} 처리 키워드가 없음`);
     const keywordById = new Map(
       keywords.map(({ _id, keyword }) => [String(_id), keyword])

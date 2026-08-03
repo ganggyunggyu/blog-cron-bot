@@ -24,6 +24,7 @@ const TARGETS = {
   package: { label: '패키지', outputTitle: '패키지_더보기' },
   general: { label: '일반건', outputTitle: '일반건_더보기' },
   dogmaru: { label: '도그마루', outputTitle: '도그마루_더보기' },
+  root: { label: '루트', outputTitle: '0611' },
 } as const;
 
 type MoreTarget = keyof typeof TARGETS;
