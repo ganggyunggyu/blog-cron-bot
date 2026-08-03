@@ -104,7 +104,7 @@ export const PasteImport = ({
         rows={4}
         autoFocus
         placeholder={
-          '엑셀이나 구글시트에서 행을 통째로 복사해 붙여넣어도 됨\n블로그 주소 칸만 골라서 아이디로 바꿈'
+          '구글시트에서 행을 통째로 복사해 붙여넣어도 됩니다.\n블로그 주소가 있는 칸만 찾아 아이디로 바꿉니다.'
         }
         className={cn(
           'w-full resize-y rounded border border-[var(--line)] bg-[var(--panel)] px-2.5 py-2',

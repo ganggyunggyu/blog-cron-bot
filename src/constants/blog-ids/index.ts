@@ -492,6 +492,44 @@ const replaceInPlace = (target: string[], next: readonly string[]): void => {
   target.push(...next);
 };
 
+export interface ResolvedBlogIdLists {
+  /** 패키지·일반건·루트가 쓰는 기본 계정. 생략하면 코드 기본값을 유지한다. */
+  base?: readonly string[];
+  dogmaru?: readonly string[];
+  suripet?: readonly string[];
+  /** 애견은 보통 파생값이지만, 직접 지정하면 그 값을 쓴다. */
+  pet?: readonly string[];
+}
+
+/**
+ * 설정 화면 프리셋에서 정한 계정 목록을 상수에 반영한다.
+ *
+ * 노출체크마다 계정을 읽는 곳이 달라(어떤 대상은 상수, 어떤 대상은 덮어쓰기 문서) 한 곳만
+ * 갱신되는 사고가 있었다. 프리셋 하나를 출처로 삼고, 파생 목록까지 여기서 다시 만든다.
+ */
+export const applyResolvedBlogIdLists = (lists: ResolvedBlogIdLists): void => {
+  const base = lists.base ? dedupeBlogIds([...lists.base]) : [...BLOG_IDS];
+  const dogmaru = lists.dogmaru
+    ? dedupeBlogIds([...lists.dogmaru])
+    : [...DOGMARU_BLOG_IDS];
+  const suripet = lists.suripet
+    ? dedupeBlogIds([...lists.suripet])
+    : [...SURI_PET_BLOG_IDS];
+  const pet = lists.pet
+    ? dedupeBlogIds([...lists.pet])
+    : dedupeBlogIds([...base, ...dogmaru, ...suripet]);
+
+  replaceInPlace(BLOG_IDS, base);
+  replaceInPlace(DOGMARU_BLOG_IDS, dogmaru);
+  replaceInPlace(DOGMARU_PAGE_CHECK_BLOG_IDS, dogmaru);
+  replaceInPlace(SURI_PET_BLOG_IDS, suripet);
+  replaceInPlace(SURI_PET_PAGE_CHECK_BLOG_IDS, suripet);
+  replaceInPlace(PET_PAGE_CHECK_BLOG_IDS, pet);
+  replaceInPlace(PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE.suripet, suripet);
+  replaceInPlace(PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE.pet, pet);
+  replaceInPlace(PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE['black-goat-old'], base);
+};
+
 /**
  * 런타임 덮어쓰기를 적용한다. 노출체크 시작 전에 한 번만 호출한다.
  * 파생 목록(애견 = 전체 + 도그마루 + 서리펫)도 같이 다시 계산한다.

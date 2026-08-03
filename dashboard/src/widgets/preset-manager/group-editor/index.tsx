@@ -124,7 +124,7 @@ const GroupRow = ({
             <input
               value={group.label}
               onChange={handleLabelChange}
-              placeholder="준최"
+              placeholder="그룹 이름"
               className={cn(FIELD_STYLE, 'w-full font-medium sm:w-56')}
             />
           </label>
@@ -137,7 +137,7 @@ const GroupRow = ({
               value={blogIdsToText(group.blogIds)}
               onChange={handleBlogIdsChange}
               rows={4}
-              placeholder="introsm, airtrd (블로그 주소를 붙여넣어도 됨)"
+              placeholder="블로그 아이디를 쉼표로 구분해 입력하세요"
               className={cn(FIELD_STYLE, 'w-full resize-y')}
             />
           </label>
@@ -185,7 +185,7 @@ export const GroupEditor = ({
 
       {groups.length === 0 ? (
         <p className="rounded-lg border border-dashed border-[var(--line)] px-4 py-5 text-center text-[13px] text-[var(--ink-soft)]">
-          계정 그룹이 없음. 준최, 최블처럼 묶어두면 대상마다 골라 쓸 수 있음
+          아직 만든 그룹이 없습니다. 계정을 묶어두면 대상마다 골라 쓸 수 있습니다
         </p>
       ) : null}
 

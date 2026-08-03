@@ -211,8 +211,8 @@ export const PresetManager = () => {
       <Card>
         <SectionHeader
           title="계정 그룹"
-          description="준최, 최블처럼 묶어두고 대상마다 골라 씀. 시트에서 복사한 행을 그대로 붙여넣어도 됨"
-          action={<Badge tone="neutral">실행 미반영</Badge>}
+          description="계정을 묶어두면 노출체크 대상마다 골라 쓸 수 있습니다"
+          action={<Badge tone="success">실행에 반영됨</Badge>}
         />
         <GroupEditor
           groups={preset.blogGroups}
@@ -228,7 +228,7 @@ export const PresetManager = () => {
       <Card>
         <SectionHeader
           title="노출체크 대상"
-          description="대상마다 읽는 시트와 쓰는 시트를 따로 잡음. 아직 저장까지만 되고, 실행은 코드 기본값을 봄"
+          description="대상마다 읽어올 시트와 결과를 쓸 시트를 지정합니다. 계정은 실행에 바로 반영되고, 시트 지정은 아직 저장만 됩니다"
           action={
             <div className="flex items-center gap-1">
               <Button variant="ghost" size="sm" onClick={handleExpandAll}>
@@ -246,7 +246,7 @@ export const PresetManager = () => {
           <input
             value={query}
             onChange={handleQueryChange}
-            placeholder="이름, 대상 id, 시트 탭으로 찾기"
+            placeholder="이름이나 시트 탭으로 찾기"
             className={cn(
               'w-full rounded border border-[var(--line)] bg-[var(--paper)] py-2 pl-8 pr-2.5',
               'text-[13px] text-[var(--ink)] outline-none transition-colors',
@@ -276,13 +276,13 @@ export const PresetManager = () => {
 
           {preset.targets.length === 0 ? (
             <p className="rounded-lg border border-dashed border-[var(--line)] px-4 py-6 text-center text-[13px] text-[var(--ink-soft)]">
-              아직 대상이 없음. 아래에서 하나 추가하고 읽기 시트를 지정하면 됨
+              아직 등록한 대상이 없습니다. 아래에서 추가하고 읽어올 시트를 지정하세요
             </p>
           ) : null}
 
           {preset.targets.length > 0 && visibleTargets.length === 0 ? (
             <p className="rounded-lg border border-dashed border-[var(--line)] px-4 py-6 text-center text-[13px] text-[var(--ink-soft)]">
-              &quot;{query}&quot;에 걸리는 대상이 없음
+              &quot;{query}&quot;와 맞는 대상이 없습니다
             </p>
           ) : null}
         </div>
@@ -303,7 +303,7 @@ export const PresetManager = () => {
       <Card>
         <SectionHeader
           title="알림"
-          description="비우면 서버 기본 웹훅으로 보냄"
+          description="비워두면 서버에 설정된 기본 웹훅으로 보냅니다"
         />
         <label className="flex flex-col gap-1.5">
           <span className="stamp">Dooray 웹훅</span>

@@ -2,10 +2,13 @@ import mongoose from 'mongoose';
 import {
   MANAGED_BLOG_ID_LIST_IDS,
   applyBlogIdOverrides,
+  applyResolvedBlogIdLists,
   type BlogIdOverrides,
   type ManagedBlogIdListId,
 } from '../../constants/blog-ids';
 import { logger } from '../logger';
+import { resolveTargetBlogIds, type TenantPreset } from '../tenant/preset';
+import { findMemberByLoginId } from '../tenant/store';
 
 /**
  * 계정 덮어쓰기 저장소.
@@ -68,7 +71,45 @@ export const loadBlogIdOverrides = async (): Promise<BlogIdOverrides> => {
 };
 
 /**
- * 저장된 덮어쓰기를 읽어 상수 목록에 적용한다. 노출체크 시작 직후 한 번만 부른다.
+ * 프리셋 대상 하나가 실제로 쓸 계정을 뽑는다. 그룹을 안 고른 대상은 건너뛴다.
+ */
+const resolvePresetList = (
+  preset: TenantPreset,
+  targetId: string
+): string[] | undefined => {
+  const target = preset.targets.find(({ id }) => id === targetId);
+  if (!target) return undefined;
+  const blogIds = resolveTargetBlogIds(preset, target);
+  return blogIds.length > 0 ? blogIds : undefined;
+};
+
+/**
+ * 설정 화면 프리셋을 계정 목록의 출처로 삼는다.
+ *
+ * 예전에는 관리 계정 목록(덮어쓰기 문서)과 프리셋이 따로 놀아서, 어디서 고쳐야 반영되는지가
+ * 대상마다 달랐다. 프리셋에 그룹이 잡혀 있으면 그쪽을 쓰고, 아직 안 잡힌 계정만
+ * 예전 덮어쓰기로 메운다.
+ */
+const applyPresetBlogIds = (preset: TenantPreset): string[] => {
+  const base = resolvePresetList(preset, 'package') ??
+    resolvePresetList(preset, 'general') ??
+    resolvePresetList(preset, 'root');
+  const dogmaru = resolvePresetList(preset, 'dogmaru');
+  const suripet = resolvePresetList(preset, 'suripet');
+  const pet = resolvePresetList(preset, 'pet');
+
+  applyResolvedBlogIdLists({ base, dogmaru, suripet, pet });
+
+  return [
+    base ? `기본 ${base.length}` : '',
+    dogmaru ? `도그마루 ${dogmaru.length}` : '',
+    suripet ? `서리펫 ${suripet.length}` : '',
+    pet ? `애견 ${pet.length}` : '',
+  ].filter((entry) => entry.length > 0);
+};
+
+/**
+ * 저장된 계정 설정을 읽어 상수 목록에 적용한다. 노출체크 시작 직후 한 번만 부른다.
  * 읽기에 실패해도 크롤을 막지 않는다 — 코드 기본값으로 계속 진행하는 편이 안전하다.
  */
 export const applyStoredBlogIdOverrides = async (): Promise<void> => {
@@ -87,5 +128,22 @@ export const applyStoredBlogIdOverrides = async (): Promise<void> => {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     logger.warn(`[계정] 계정 덮어쓰기 로드 실패, 코드 기본값 사용: ${message}`);
+  }
+
+  try {
+    const loginId =
+      String(process.env.EXPOSURE_TENANT_LOGIN_ID ?? '').trim() || '21lab';
+    const member = await findMemberByLoginId(loginId);
+    if (!member) {
+      logger.warn(`[계정] ${loginId} 프리셋을 찾지 못해 코드 기본 계정 사용`);
+      return;
+    }
+    const applied = applyPresetBlogIds(member.preset);
+    if (applied.length > 0) {
+      logger.info(`[계정] ${loginId} 프리셋 계정 적용: ${applied.join(', ')}`);
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    logger.warn(`[계정] 프리셋 계정 로드 실패, 이전 목록 유지: ${message}`);
   }
 };
