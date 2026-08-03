@@ -16,6 +16,10 @@ const CRAWL_ENTRYPOINTS = [
   'src/exposure-page-shard.ts',
   'src/exposure-worker.ts',
   'src/tools/run-parallel-direct-sheet-check.ts',
+  // 분산 실행에서 패키지·일반건·도그마루 조각을 크롤하는 진입점.
+  // worker-child가 keywordIds가 있는 direct-sheet 대상을 여기로 보내는데,
+  // 이 호출이 없어 도그마루에 새로 추가한 계정이 한 차례 통째로 빠졌다.
+  'src/index.ts',
 ];
 
 const HOOK = 'applyStoredBlogIdOverrides';

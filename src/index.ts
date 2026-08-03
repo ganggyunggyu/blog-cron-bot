@@ -15,6 +15,7 @@ import { getKSTTimestamp } from './utils';
 import { sendDoorayExposureResult } from './lib/dooray';
 import { ExposureResult } from './matcher';
 import { DOGMARU_PAGE_CHECK_BLOG_IDS } from './constants/blog-ids';
+import { applyStoredBlogIdOverrides } from './lib/blog-id-overrides';
 import {
   OrderedResultTarget,
   rewriteOrderedResultSheet,
@@ -45,6 +46,10 @@ const runExposureWorkflow = async (): Promise<void> => {
   }
 
   await connectDB(mongoUri);
+
+  // 대시보드에서 관리한 계정 목록을 크롤 시작 전에 반영한다. 이 진입점은 분산 실행에서
+  // 패키지·일반건·도그마루 조각을 실제로 크롤하므로, 빠지면 새로 추가한 계정이 조용히 빠진다.
+  await applyStoredBlogIdOverrides();
 
   const allKeywords = await getAllKeywords();
 
