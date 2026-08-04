@@ -45,6 +45,30 @@ export const extractBlogId = (blogUrl: string): string => {
   return '';
 };
 
+/**
+ * 이 결과 하나를 가리킬 수 있는 블로그 아이디 후보를 모은다.
+ *
+ * 검색 결과의 sourceId는 노출된 이름 쪽을 따라가서, 인플루언서로 등록된 블로그는
+ * 블로그 아이디가 아니라 인플루언서 핸들이 담긴다. 글 주소에는 항상 블로그 아이디가
+ * 있으므로 둘 다 후보로 두고, 등록한 계정과 맞는 쪽을 고른다.
+ */
+export const collectBlogIdCandidates = (item: PopularItem): string[] => {
+  const fromSource = item.sourceType === 'blog' ? item.sourceId || '' : '';
+  const fromLink =
+    extractBlogIdFromUrl(item.link) || extractBlogId(item.link);
+  const fromBlogLink =
+    extractBlogIdFromUrl(item.blogLink || '') ||
+    extractBlogId(item.blogLink || '');
+
+  return Array.from(
+    new Set(
+      [fromSource, fromLink, fromBlogLink]
+        .map((candidate) => candidate.toLowerCase())
+        .filter((candidate) => candidate.length > 0)
+    )
+  );
+};
+
 export const matchBlogs = (
   query: string,
   items: PopularItem[],
@@ -73,14 +97,18 @@ export const matchBlogs = (
   }
 
   items.forEach((item, index) => {
+    const candidates = collectBlogIdCandidates(item);
+    // 인플루언서로 등록된 블로그는 sourceId에 블로그 아이디 대신 인플루언서 핸들이 들어온다.
+    // (미마: 핸들 mima, 블로그 higher_0) sourceId만 보면 등록한 계정과 절대 만나지 않으므로
+    // 글 주소에서 뽑은 블로그 아이디까지 같이 본다.
     const blogId =
-      (item.sourceType === 'blog' ? item.sourceId || '' : '') ||
-      extractBlogIdFromUrl(item.blogLink || item.link) ||
-      extractBlogId(item.blogLink || item.link);
+      candidates.find((candidate) => allowedIds.has(candidate)) ??
+      candidates[0] ??
+      '';
 
     const accept = allowAnyBlog
       ? !!blogId && !EXCLUDED_SET.has(blogId)
-      : blogId && allowedIds.has(blogId);
+      : !!blogId && allowedIds.has(blogId);
     if (accept) {
       let exposureType: string;
       const isGenericBlogResult = isGenericBlogGroup(item.group || '');
