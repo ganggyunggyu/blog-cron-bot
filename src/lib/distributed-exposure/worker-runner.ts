@@ -18,9 +18,15 @@ const HEARTBEAT_MS = 15_000;
 
 export type DistributedJobOutcome = 'success' | 'retry' | 'failed';
 
-const getUncheckedDistributedKeywordIds = (
+export const getUncheckedDistributedKeywordIds = (
   job: IDistributedExposureJob
 ): Promise<string[]> | undefined => {
+  // 더보기(old-logic-more)는 결과를 구글시트 워커 탭에만 쓰고 RootKeyword.lastChecked나
+  // 페이지 체크 컬렉션의 updatedAt은 건드리지 않는다. 그 값을 검사하는 이 가드는 기본
+  // 노출체크가 Mongo에 직접 쓰는 경우만을 위한 것이라, 더보기에 그대로 적용하면 크롤이
+  // 끝나도 항상 "갱신 누락"으로 판정돼 같은 조각을 재시도 한도까지 영원히 반복한다.
+  // (루트 더보기가 90분 내내 0/10에서 안 움직인 원인이 이것이었다.)
+  if (job.jobKind === 'old-logic-more') return undefined;
   if (!job.startedAt || job.keywordIds.length === 0) return undefined;
   if (job.target === 'root') {
     return getUncheckedRootKeywordIds(
