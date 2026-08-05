@@ -356,7 +356,14 @@ const getDefaultTargetBlogIdsForSource = (sourceTab: SourceTab): string[] => {
     return dedupeTargetBlogIds(SURI_PET_PAGE_CHECK_BLOG_IDS);
   }
 
-  if (sourceTab === '패키지' || sourceTab === '일반건' || sourceTab === '시트') {
+  if (
+    sourceTab === '패키지' ||
+    sourceTab === '일반건' ||
+    sourceTab === '시트' ||
+    // 루트도 기본 노출체크와 같은 계정을 본다. 예전에는 이 도구 안에만 있던 목록을 써서
+    // 설정 화면에서 계정을 추가해도 루트 더보기에는 반영되지 않았다.
+    sourceTab === '루트'
+  ) {
     return dedupeTargetBlogIds(PACKAGE_GENERAL_MORE_CHECK_BLOG_IDS, {
       allowRemoved: true,
     });

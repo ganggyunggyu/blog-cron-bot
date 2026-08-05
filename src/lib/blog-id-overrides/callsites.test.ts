@@ -20,6 +20,9 @@ const CRAWL_ENTRYPOINTS = [
   // worker-child가 keywordIds가 있는 direct-sheet 대상을 여기로 보내는데,
   // 이 호출이 없어 도그마루에 새로 추가한 계정이 한 차례 통째로 빠졌다.
   'src/index.ts',
+  // 더보기 전 종류가 여기로 온다. 이 호출이 없어 설정 화면에서 계정을 추가해도
+  // 더보기만 예전 목록으로 검사했다.
+  'src/tools/check-old-logic-more-exposure.ts',
 ];
 
 const HOOK = 'applyStoredBlogIdOverrides';
