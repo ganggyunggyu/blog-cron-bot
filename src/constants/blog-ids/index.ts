@@ -499,6 +499,8 @@ export interface ResolvedBlogIdLists {
   suripet?: readonly string[];
   /** 애견은 보통 파생값이지만, 직접 지정하면 그 값을 쓴다. */
   pet?: readonly string[];
+  /** 더보기에서만 추가로 보는 계정. 기본 계정과 합쳐 쓴다. */
+  moreExtra?: readonly string[];
 }
 
 /**
@@ -528,6 +530,18 @@ export const applyResolvedBlogIdLists = (lists: ResolvedBlogIdLists): void => {
   replaceInPlace(PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE.suripet, suripet);
   replaceInPlace(PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE.pet, pet);
   replaceInPlace(PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE['black-goat-old'], base);
+
+  // 더보기 목록은 모듈 로드 시점에 BLOG_IDS로 한 번 만들어져서, 기본 계정만 갈아끼우면
+  // 예전 값이 그대로 남는다. 더보기에도 같은 계정이 반영되도록 여기서 다시 만든다.
+  const moreExtra = lists.moreExtra
+    ? dedupeBlogIds([...lists.moreExtra])
+    : PACKAGE_GENERAL_MORE_CHECK_EXTRA_BLOG_IDS.filter(
+        (blogId) => !base.includes(blogId)
+      );
+  replaceInPlace(
+    PACKAGE_GENERAL_MORE_CHECK_BLOG_IDS,
+    dedupeBlogIds([...base, ...moreExtra])
+  );
 };
 
 /**
