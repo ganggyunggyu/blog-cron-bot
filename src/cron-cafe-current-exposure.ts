@@ -12,6 +12,7 @@ import {
   openSpreadsheet,
 } from './lib/google-sheets/direct-exposure-sheet';
 import { assertWritableSheetId } from './lib/google-sheets/write-target-guard';
+import { applyStoredBlogIdOverridesStandalone } from './lib/blog-id-overrides';
 import { logger } from './lib/logger';
 import { formatDuration } from './lib/utils';
 import { getKSTTimestamp } from './utils';
@@ -26,8 +27,29 @@ const getConcurrency = (): number => {
   return Number.isFinite(value) && value >= 1 ? Math.floor(value) : 8;
 };
 
+/**
+ * 카페+블로그 체크는 이 파일이 BLOG_IDS를 직접 읽는 유일한 카페 진입점이라, 이 스크립트가
+ * DB 연결 없이 시트만 보고 도는 동안 계정 설정을 한 번도 불러오지 않고 있었다. 다른
+ * 노출체크는 전부 프리셋 계정을 쓰는데 이 대상만 코드 기본값 그대로였다.
+ */
+const applyCafeCheckBlogIds = async (): Promise<void> => {
+  const mongoUri = String(process.env.MONGODB_URI ?? '').trim();
+  if (!mongoUri) return;
+  try {
+    await connectDB(mongoUri);
+    await applyStoredBlogIdOverrides();
+  } catch (error) {
+    logger.warn(
+      `[계정] 카페 체크 계정 설정을 못 읽어 코드 기본값 사용: ${(error as Error).message}`
+    );
+  } finally {
+    await disconnectDB().catch(() => undefined);
+  }
+};
+
 const main = async (): Promise<void> => {
   const startedAt = Date.now();
+  await applyCafeCheckBlogIds();
   assertWritableSheetId(TEST_CONFIG.SHEET_ID, TARGET_TAB);
   const auth = getGoogleSheetAuth();
   const [sourceDoc, resultDoc, targets] = await Promise.all([

@@ -6,6 +6,7 @@ import {
   type BlogIdOverrides,
   type ManagedBlogIdListId,
 } from '../../constants/blog-ids';
+import { connectDB, disconnectDB } from '../../database';
 import { logger } from '../logger';
 import { resolveTargetBlogIds, type TenantPreset } from '../tenant/preset';
 import { findMemberByLoginId } from '../tenant/store';
@@ -145,5 +146,30 @@ export const applyStoredBlogIdOverrides = async (): Promise<void> => {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     logger.warn(`[계정] 프리셋 계정 로드 실패, 이전 목록 유지: ${message}`);
+  }
+};
+
+/**
+ * DB 연결이 열려 있지 않은 진입점을 위한 버전. 스스로 연결하고 끝나면 끊는다.
+ *
+ * 노출체크 중 일부(카페+블로그, 더보기)는 키워드를 시트에서만 읽고 원래 Mongo에
+ * 연결하지 않는다. 그 상태로는 저장된 계정 설정을 읽을 방법이 없어 그동안 코드
+ * 기본값만 쓰고 있었다 — 크롤은 정상으로 보여서 알아채기 어려운 종류의 누락이었다.
+ * 실패해도 크롤은 코드 기본값으로 계속한다.
+ */
+export const applyStoredBlogIdOverridesStandalone = async (
+  label: string
+): Promise<void> => {
+  const mongoUri = String(process.env.MONGODB_URI ?? '').trim();
+  if (!mongoUri) return;
+  const alreadyConnected = mongoose.connection.readyState !== 0;
+  try {
+    if (!alreadyConnected) await connectDB(mongoUri);
+    await applyStoredBlogIdOverrides();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    logger.warn(`[계정] ${label} 계정 설정을 못 읽어 코드 기본값 사용: ${message}`);
+  } finally {
+    if (!alreadyConnected) await disconnectDB().catch(() => undefined);
   }
 };
