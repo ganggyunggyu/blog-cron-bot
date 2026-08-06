@@ -1,5 +1,6 @@
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
+import { applyStoredBlogIdOverridesStandalone } from '../lib/blog-id-overrides';
 import { runCustomExposureChecks } from '../lib/custom-cafe-blog-check/checker';
 import {
   loadCafeExposureTargets,
@@ -17,6 +18,9 @@ const targetTab =
   '카페 노출체크 0722';
 
 const main = async (): Promise<void> => {
+  // 이 카페 계정도 checker.ts가 읽는 BLOG_IDS를 통해 매칭한다. 다른 카페 진입점과
+  // 같은 이유로 프리셋 계정을 불러오지 않으면 코드 기본값만 쓰게 된다.
+  await applyStoredBlogIdOverridesStandalone('카페 0722');
   const [rows, targets] = await Promise.all([
     loadCustomExposureRows(targetTab),
     loadCafeExposureTargets(),

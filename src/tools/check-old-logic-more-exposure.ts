@@ -30,8 +30,7 @@ import { logger } from '../lib/logger';
 import { emitExposureProgress } from '../lib/exposure-progress';
 import { resolveNaverSearchResultUrl } from '../lib/naver-source';
 import { ExposureResult } from '../matcher';
-import { applyStoredBlogIdOverrides } from '../lib/blog-id-overrides';
-import { connectDB, disconnectDB } from '../database';
+import { applyStoredBlogIdOverridesStandalone } from '../lib/blog-id-overrides';
 
 dotenv.config();
 
@@ -3504,32 +3503,12 @@ const writeRankOnlyResults = async (
   return changedCount;
 };
 
-/**
- * 저장된 계정 설정을 더보기 목록에 반영한다.
- *
- * 이 도구는 워커가 자식 프로세스로 띄우므로 상수 모듈을 새로 불러온다. 부모가 적용한
- * 값이 전달되지 않아 여기서 다시 읽어야 한다. 실패해도 크롤은 코드 기본값으로 계속한다.
- */
-const applyMoreCheckBlogIds = async (): Promise<void> => {
-  const mongoUri = String(process.env.MONGODB_URI ?? '').trim();
-  if (!mongoUri) return;
-  try {
-    await connectDB(mongoUri);
-    await applyStoredBlogIdOverrides();
-  } catch (error) {
-    logger.warn(
-      `[계정] 더보기 계정 설정을 못 읽어 코드 기본값 사용: ${(error as Error).message}`
-    );
-  } finally {
-    await disconnectDB().catch(() => undefined);
-  }
-};
-
 const main = async (): Promise<void> => {
   const options = parseArgs();
-  // 더보기도 설정 화면에서 정한 계정을 그대로 써야 한다. 이 호출이 없어서
-  // 계정을 추가해도 더보기에서는 예전 목록으로 검사하고 있었다.
-  await applyMoreCheckBlogIds();
+  // 더보기도 설정 화면에서 정한 계정을 그대로 써야 한다. 이 도구는 워커가 자식 프로세스로
+  // 띄우므로 상수 모듈을 새로 불러온다 — 부모가 적용한 값이 전달되지 않아 여기서 다시
+  // 읽어야 한다. 이 호출이 없어서 계정을 추가해도 더보기에서는 예전 목록으로 검사하고 있었다.
+  await applyStoredBlogIdOverridesStandalone('더보기');
   const auth = getGoogleSheetAuth();
   const doc = await openSpreadsheet(options.sheetId, auth);
   const outputSheet = await getOrCreateOutputWorksheet(
