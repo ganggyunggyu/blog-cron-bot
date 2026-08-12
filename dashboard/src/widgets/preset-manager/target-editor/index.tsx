@@ -120,7 +120,7 @@ export const TargetEditor = ({
     onChange(index, {
       ...target,
       kind,
-      maxPages: kind === 'page' ? (target.maxPages ?? 4) : undefined,
+      maxPages: kind === 'page' ? (target.maxPages ?? 1) : undefined,
     });
   };
 

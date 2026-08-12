@@ -9,7 +9,7 @@ test('suite 기본 옵션을 고정된 CLI 인자로 변환함', () => {
   assert.deepEqual(buildExposureSuiteArgs(undefined), [
     '--targets=package,general,dogmaru,root,pet,suripet,cafe',
     `--concurrency=${process.env.DISTRIBUTED_EXPOSURE_ENABLED === 'true' ? 0 : 50}`,
-    '--max-pages=4',
+    '--max-pages=1',
     `--target-concurrency=${process.env.DISTRIBUTED_EXPOSURE_ENABLED === 'true' ? 1 : 2}`,
   ]);
 });
@@ -84,8 +84,8 @@ test('분산 실행에서는 개별 대상 잡도 분산 러너로 보냄', () =
     ['package-exposure', 'exposure:package', ['--targets=package']],
     ['general-exposure', 'exposure:general', ['--targets=general']],
     ['dogmaru-exposure', 'exposure:dogmaru', ['--targets=dogmaru']],
-    ['pet-exposure', 'exposure:pet', ['--targets=pet', '--max-pages=4']],
-    ['suripet-exposure', 'exposure:suripet', ['--targets=suripet', '--max-pages=4']],
+    ['pet-exposure', 'exposure:pet', ['--targets=pet', '--max-pages=1']],
+    ['suripet-exposure', 'exposure:suripet', ['--targets=suripet', '--max-pages=1']],
     ['cafe-exposure', 'exposure:cafe', ['--targets=cafe']],
   ];
 

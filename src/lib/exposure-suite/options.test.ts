@@ -13,7 +13,7 @@ import {
 const defaults = parseExposureSuiteOptions([], {});
 assert.deepEqual(defaults.targets, DEFAULT_EXPOSURE_TARGETS);
 assert.equal(defaults.concurrency, AUTO_KEYWORD_CONCURRENCY);
-assert.equal(defaults.maxPages, 4);
+assert.equal(defaults.maxPages, 1);
 assert.equal(defaults.targetConcurrency, 2);
 
 const configured = parseExposureSuiteOptions(

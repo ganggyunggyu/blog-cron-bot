@@ -117,7 +117,7 @@ export const parseExposureSuiteOptions = (
   ),
   maxPages: parseRangedInteger(
     findArgValue(args, 'max-pages') ?? env.EXPOSURE_MAX_PAGES,
-    4,
+    1,
     '최대 페이지',
     1,
     9

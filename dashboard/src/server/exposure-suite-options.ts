@@ -7,7 +7,7 @@ const IS_DISTRIBUTED_EXPOSURE_ENABLED =
 export const EXPOSURE_SUITE_OPTION_DEFINITION = {
   targets: EXPOSURE_TARGETS,
   concurrency: { label: '시트 내부 병렬 수', min: 1, max: 50, defaultValue: 50 },
-  maxPages: { label: '애견·서리펫 최대 페이지', min: 1, max: 9, defaultValue: 4 },
+  maxPages: { label: '애견·서리펫 최대 페이지', min: 1, max: 9, defaultValue: 1 },
   targetConcurrency: {
     label: IS_DISTRIBUTED_EXPOSURE_ENABLED ? '예비 로컬 워커 수' : '동시 대상 수',
     min: 1,
