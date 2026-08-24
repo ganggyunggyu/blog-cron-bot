@@ -2,7 +2,7 @@ import type { ExposureExecutionMode, ExposureTargetId } from '@/shared';
 
 export type { ExposureExecutionMode, ExposureTargetId } from '@/shared';
 
-export type JobKind = 'standard' | 'exposure-suite';
+export type JobKind = 'standard' | 'exposure-suite' | 'root-cafe-url';
 export type JobCategory = 'daily' | 'more' | 'pet' | 'cafe' | 'reexport';
 
 export interface ExposureTargetDefinition {
@@ -32,9 +32,15 @@ export interface ExposureSuiteRunOptions {
   targetConcurrency: number;
 }
 
+export interface RootCafeUrlRunOptions {
+  url: string;
+}
+
+export type RunJobOptions = ExposureSuiteRunOptions | RootCafeUrlRunOptions;
+
 export interface RunJobInput {
   jobId: string;
-  options?: ExposureSuiteRunOptions;
+  options?: RunJobOptions;
 }
 
 export interface JobDefinition {

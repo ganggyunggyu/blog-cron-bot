@@ -4,7 +4,7 @@ import type { ExposureExecutionMode } from '@/shared';
 const IS_DISTRIBUTED_EXPOSURE_ENABLED =
   process.env.DISTRIBUTED_EXPOSURE_ENABLED === 'true';
 
-export type JobKind = 'standard' | 'exposure-suite';
+export type JobKind = 'standard' | 'exposure-suite' | 'root-cafe-url';
 export type JobResourceGroup = 'exposure';
 
 /** 화면에서 잡을 묶어 보여줄 분류. 14개가 한 줄로 나열되면 뭘 눌러야 할지 알 수 없다. */
@@ -79,6 +79,15 @@ export const JOB_REGISTRY: JobDefinition[] = [
     description: '루트(월보장) 시트 키워드의 노출 확인',
     kind: 'standard',
     category: 'daily',
+    resourceGroup: 'exposure',
+  },
+  {
+    id: 'root-cafe-url-exposure',
+    label: '루트 · 카페 URL',
+    script: 'exposure:root:cafe-url',
+    description: '카페 글 URL 하나를 붙여넣으면 루트 키워드 전체에서 그 글이 노출되는지 확인',
+    kind: 'root-cafe-url',
+    category: 'cafe',
     resourceGroup: 'exposure',
   },
   {

@@ -1,6 +1,7 @@
 import { buildExposureSuiteArgs } from './exposure-suite-options';
 import { InvalidJobInputError } from './job-errors';
 import type { JobDefinition } from './job-registry';
+import { buildRootCafeUrlArgs } from './root-cafe-url-options';
 
 const isEmptyOptionsObject = (input: unknown): boolean =>
   typeof input === 'object' &&
@@ -11,6 +12,11 @@ const isEmptyOptionsObject = (input: unknown): boolean =>
 export const buildJobSpawnArgs = (job: JobDefinition, input: unknown): string[] => {
   if (job.kind === 'exposure-suite') {
     const options = buildExposureSuiteArgs(input);
+    return ['run', job.script, ...options];
+  }
+
+  if (job.kind === 'root-cafe-url') {
+    const options = buildRootCafeUrlArgs(input);
     return ['run', job.script, ...options];
   }
 

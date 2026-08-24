@@ -12,7 +12,7 @@ import type {
 } from './types';
 
 const text = (value: unknown): string => String(value ?? '').trim();
-const sourceIdFromUrl = (url: string): string =>
+export const sourceIdFromUrl = (url: string): string =>
   url.match(/cafe\.naver\.com\/([^/?#]+)/i)?.[1]?.trim() ?? '';
 
 export const CAFE_FALLBACK_TARGETS: CafeTarget[] = [

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { api } from '@/shared';
-import type { ExposureSuiteRunOptions, JobDefinition } from '../model/types';
+import type { JobDefinition, RunJobOptions } from '../model/types';
 
 interface ErrorResponse {
   error?: string;
@@ -11,7 +11,7 @@ export const getJobList = async () => {
   return data.jobs;
 };
 
-export const runJob = async (jobId: string, options?: ExposureSuiteRunOptions) => {
+export const runJob = async (jobId: string, options?: RunJobOptions) => {
   try {
     const { data } = await api.post<{ runId: string }>(`/jobs/${jobId}/run`, options);
     return data;
