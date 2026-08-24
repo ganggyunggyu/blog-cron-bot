@@ -18,6 +18,7 @@ import {
 import { Button, Card, cn, formatDateTime } from '@/shared';
 import { LogPanel } from './log-panel';
 import { buildTargetRows, formatElapsed, summarizeShards } from './model';
+import { RootCafeUrlForm } from './root-cafe-url-form';
 import { NumberOption, TargetOption } from './run-options';
 import { TargetBoard } from './target-board';
 
@@ -263,6 +264,8 @@ export const RunConsole = () => {
           );
         })}
       </div>
+
+      <RootCafeUrlForm disabled={isBusy} />
 
       <div className="border-t border-[var(--line)]">
         <button

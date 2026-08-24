@@ -3,11 +3,11 @@ import type { LogLineKind, ParsedLogLine } from '@/entities/run';
 import { cn } from '@/shared';
 
 const LINE_TONE: Record<LogLineKind, string> = {
-  success: 'text-emerald-400',
-  failure: 'text-red-400',
-  search: 'mt-2 font-semibold text-cyan-300 first:mt-0',
-  detail: 'pl-4 text-[11px] text-[var(--ink-soft)]',
-  plain: 'text-neutral-200',
+  success: 'text-[var(--live)]',
+  failure: 'text-[var(--alert)]',
+  search: 'mt-2 font-semibold text-[var(--ink)] first:mt-0',
+  detail: 'pl-4 text-[11px] text-[var(--ink-faint)]',
+  plain: 'text-[var(--ink-soft)]',
 };
 
 const NEAR_BOTTOM_THRESHOLD_PX = 80;
@@ -33,32 +33,25 @@ export const TerminalOutput = ({ lines }: TerminalOutputProps) => {
   }, [lines]);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-neutral-800 bg-neutral-950">
-      <div className="flex items-center gap-1.5 border-b border-neutral-800 px-3 py-2">
-        <span className="size-2.5 rounded-full bg-neutral-700" />
-        <span className="size-2.5 rounded-full bg-neutral-700" />
-        <span className="size-2.5 rounded-full bg-neutral-700" />
-      </div>
-      <div
-        ref={containerRef}
-        onScroll={handleScroll}
-        className="h-80 overflow-y-auto p-3 font-mono text-xs"
-        aria-live="polite"
-        aria-label="실시간 실행 로그"
-      >
-        {lines.length === 0 ? (
-          <p className="text-[var(--ink-soft)]">로그 대기 중...</p>
-        ) : (
-          lines.map((line, index) => (
-            <div
-              key={`${index}-${line.raw}`}
-              className={cn('whitespace-pre-wrap break-all', LINE_TONE[line.kind])}
-            >
-              {line.raw}
-            </div>
-          ))
-        )}
-      </div>
+    <div
+      ref={containerRef}
+      onScroll={handleScroll}
+      className="h-80 overflow-y-auto rounded-lg border border-[var(--line)] bg-[var(--panel)] p-3 font-mono text-xs"
+      aria-live="polite"
+      aria-label="실시간 실행 로그"
+    >
+      {lines.length === 0 ? (
+        <p className="text-[var(--ink-soft)]">로그 대기 중...</p>
+      ) : (
+        lines.map((line, index) => (
+          <div
+            key={`${index}-${line.raw}`}
+            className={cn('whitespace-pre-wrap break-all', LINE_TONE[line.kind])}
+          >
+            {line.raw}
+          </div>
+        ))
+      )}
     </div>
   );
 };

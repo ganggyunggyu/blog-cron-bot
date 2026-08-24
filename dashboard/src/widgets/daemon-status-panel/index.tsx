@@ -43,13 +43,12 @@ const DaemonRow = ({ daemon }: DaemonRowProps) => {
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-[var(--line)] p-3.5">
       <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className={cn('size-2 shrink-0 rounded-full', isOnline ? 'bg-emerald-500' : 'bg-neutral-400')} />
-          <span className="text-sm font-medium text-[var(--ink)]">
-            {DAEMON_LABELS[daemon.name] ?? daemon.name}
-          </span>
-        </div>
-        <Badge tone={STATUS_TONE[daemon.status] ?? 'neutral'}>{daemon.status}</Badge>
+        <span className="text-sm font-medium text-[var(--ink)]">
+          {DAEMON_LABELS[daemon.name] ?? daemon.name}
+        </span>
+        <Badge withDot tone={STATUS_TONE[daemon.status] ?? 'neutral'}>
+          {daemon.status}
+        </Badge>
       </div>
       <p className="text-xs leading-5 text-[var(--ink-soft)]">
         {DAEMON_SCHEDULE_LABELS[daemon.name] ?? '-'} 실행 · PID {daemon.pid ?? '-'} · 가동{' '}
