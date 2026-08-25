@@ -28,7 +28,7 @@ const JobRow = ({ job, isBusy, onRun }: JobRowProps) => {
       <span className="flex min-w-0 items-center gap-2">
         <span className="truncate text-[13px] text-[var(--ink)]">{job.label}</span>
         {job.isRunning ? (
-          <span className="stamp shrink-0 text-[var(--signal)]">Running</span>
+          <span className="stamp shrink-0 text-[var(--signal)]">실행 중</span>
         ) : null}
         {job.riskNote ? (
           <span className="shrink-0 text-[11px] text-[var(--hold)]">오래 걸림</span>

@@ -76,12 +76,15 @@ body {
   letter-spacing: -0.01em;
 }
 
-/* 작은 대문자 라벨. 계기 옆에 붙는 각인처럼 쓴다. */
+/*
+ * 계기 옆에 붙는 각인처럼 쓰는 작은 라벨.
+ * 내용이 한글이라 mono(한글 글리프 없어 폴백)와 uppercase(한글에 무효)를 쓰지 않고,
+ * 자간도 한글이 뜯어져 보이지 않을 만큼만 준다.
+ */
 .stamp {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   color: var(--ink-faint);
 }
 

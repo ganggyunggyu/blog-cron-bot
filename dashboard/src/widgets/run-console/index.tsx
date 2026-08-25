@@ -153,7 +153,7 @@ export const RunConsole = () => {
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span className="size-1.5 shrink-0 rounded-full bg-[var(--signal)] animate-pulse-dot" />
-                <span className="stamp text-[var(--signal)]">Running</span>
+                <span className="stamp text-[var(--signal)]">실행 중</span>
                 <span className="tabular text-xs text-[var(--ink-soft)]">
                   {formatElapsed(elapsedMs)} 경과
                 </span>
@@ -210,7 +210,7 @@ export const RunConsole = () => {
         <div className="p-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">
-              <span className="stamp">Ready</span>
+              <span className="stamp">대기</span>
               <h2 className="mt-2 text-[26px] font-semibold leading-tight tracking-[-0.02em] text-[var(--ink)]">
                 전체 노출체크
               </h2>

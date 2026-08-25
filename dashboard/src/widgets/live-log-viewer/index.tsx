@@ -17,6 +17,15 @@ const STATUS_TONE: Record<string, 'success' | 'warning' | 'danger' | 'neutral'> 
   unknown: 'neutral',
 };
 
+/** 상태 원문(running, failed)이 화면에 그대로 나오지 않게 붙이는 이름. */
+const STATUS_LABELS: Record<string, string> = {
+  running: '실행 중',
+  success: '성공',
+  failed: '실패',
+  stopped: '중지',
+  unknown: '알 수 없음',
+};
+
 const CONNECTION_LABELS = {
   connecting: '연결 중',
   reconnecting: '로그 재연결 중',
@@ -65,7 +74,7 @@ export const LiveLogViewer = () => {
           <div className="flex items-center gap-2">
             {connectionLabel ? <Badge tone="warning">{connectionLabel}</Badge> : null}
             <Badge tone={STATUS_TONE[status ?? 'running'] ?? 'neutral'}>
-              {status ?? 'running'}
+              {STATUS_LABELS[status ?? 'running'] ?? '알 수 없음'}
             </Badge>
             <Button variant="ghost" onClick={handleToggleDetail}>
               {showDetail ? <EyeOff className="size-4" /> : <Eye className="size-4" />}

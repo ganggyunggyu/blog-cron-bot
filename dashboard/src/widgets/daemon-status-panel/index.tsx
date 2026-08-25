@@ -17,6 +17,18 @@ const STATUS_TONE: Record<string, 'success' | 'warning' | 'danger' | 'neutral'> 
   unknown: 'neutral',
 };
 
+/** pm2가 주는 상태 원문(not_found, waiting_restart)을 그대로 보여주지 않는다. */
+const STATUS_LABELS: Record<string, string> = {
+  online: '켜짐',
+  stopped: '꺼짐',
+  stopping: '끄는 중',
+  errored: '오류',
+  launching: '켜는 중',
+  waiting_restart: '재시작 대기',
+  not_found: '등록 안 됨',
+  unknown: '알 수 없음',
+};
+
 const DAEMON_LABELS: Record<string, string> = {
   'blog-cron-direct-check-8am': '패키지/일반건/도그마루/루트 노출체크',
   'blog-cron-more-check-830am': '더보기 노출체크',
@@ -47,7 +59,7 @@ const DaemonRow = ({ daemon }: DaemonRowProps) => {
           {DAEMON_LABELS[daemon.name] ?? daemon.name}
         </span>
         <Badge withDot tone={STATUS_TONE[daemon.status] ?? 'neutral'}>
-          {daemon.status}
+          {STATUS_LABELS[daemon.status] ?? daemon.status}
         </Badge>
       </div>
       <p className="text-xs leading-5 text-[var(--ink-soft)]">

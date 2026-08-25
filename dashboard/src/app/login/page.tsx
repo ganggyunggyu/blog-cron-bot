@@ -100,10 +100,10 @@ const LoginPage = () => {
     <div className="flex min-h-screen items-center justify-center bg-[var(--paper)] px-5 py-10">
       <main className="w-full max-w-[420px]">
         <div className="mb-7 flex items-center justify-between">
-          <span className="stamp">Exposure Monitor</span>
+          <span className="stamp">노출 관제</span>
           <span className="stamp flex items-center gap-1.5">
-            <span className="size-1.5 rounded-full bg-[var(--live)] animate-pulse-dot" />
-            Online
+            <span className="size-1.5 rounded-full bg-[var(--live)]" />
+            연결됨
           </span>
         </div>
 
@@ -116,7 +116,7 @@ const LoginPage = () => {
 
         <div className="mt-7 rounded-md border border-[var(--line)] bg-[var(--panel)] p-4">
           <div className="mb-3 flex items-baseline justify-between">
-            <span className="stamp">Rank 1&ndash;10</span>
+            <span className="stamp">검색 1~10위</span>
             <span className="tabular text-xs text-[var(--live)]">
               {FOUND_RANK}위 노출
             </span>
@@ -129,7 +129,7 @@ const LoginPage = () => {
             htmlFor="dashboard-login-id"
             className="stamp mb-2 block"
           >
-            ID
+            아이디
           </label>
           <input
             id="dashboard-login-id"
@@ -152,7 +152,7 @@ const LoginPage = () => {
             htmlFor="dashboard-password"
             className="stamp mb-2 mt-4 block"
           >
-            Password
+            비밀번호
           </label>
           <input
             id="dashboard-password"
