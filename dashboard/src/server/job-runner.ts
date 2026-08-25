@@ -118,10 +118,15 @@ export const isJobBlocked = (jobId: string): boolean => {
 
 export const startJob = (jobId: string, input?: unknown): RunSummary => {
   const job = getJobDefinition(jobId);
-  if (!job) throw new InvalidJobInputError(`알 수 없는 잡: ${jobId}`);
+  // 내부 slug(package-general-dogmaru-more-exposure 같은)를 화면에 흘리지 않는다.
+  // 여기 걸리면 화면이 없는 항목을 부른 것이라 사용자가 아니라 우리가 볼 정보다.
+  if (!job) {
+    console.error(`등록되지 않은 실행 항목 요청: ${jobId}`);
+    throw new InvalidJobInputError('없는 실행 항목임');
+  }
 
   const spawnArgs = buildJobSpawnArgs(job, input);
-  if (activeJobIds.has(jobId)) throw new JobConflictError('이미 실행 중인 잡임');
+  if (activeJobIds.has(jobId)) throw new JobConflictError('이미 실행 중임');
   const runId = randomUUID();
   const logPath = path.join(DASHBOARD_RUN_LOG_DIR, `${runId}.log`);
   const resource = reserveJobResource(job, runId);

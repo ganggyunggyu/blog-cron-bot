@@ -12,7 +12,7 @@ const parseRequestInput = async (request: NextRequest): Promise<unknown> => {
   try {
     return JSON.parse(body) as unknown;
   } catch {
-    throw new InvalidJobInputError('요청 본문이 올바른 JSON이 아님');
+    throw new InvalidJobInputError('보낸 내용의 형식이 잘못됨');
   }
 };
 
@@ -24,16 +24,16 @@ export const POST = async (request: NextRequest, { params }: RouteParams) => {
     const run = startJob(jobId, input);
     return NextResponse.json({ runId: run.runId });
   } catch (error) {
-    const message = error instanceof Error ? error.message : '잡 실행 실패';
+    const message = error instanceof Error ? error.message : '실행에 실패함';
     if (error instanceof InvalidJobInputError) {
       return NextResponse.json({ error: message }, { status: 400 });
     }
     if (error instanceof JobConflictError) {
       return NextResponse.json({ error: message }, { status: 409 });
     }
-    console.error('잡 실행 중 예상하지 못한 오류가 발생함', error);
+    console.error('실행 중 예상하지 못한 오류가 발생함', error);
     return NextResponse.json(
-      { error: '잡 실행 중 서버 오류가 발생함' },
+      { error: '실행 중 서버에서 오류가 남' },
       { status: 500 },
     );
   }

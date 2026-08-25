@@ -131,7 +131,7 @@ const GroupRow = ({
 
           <label className="flex flex-col gap-1.5">
             <span className="stamp">
-              계정 목록 · 그룹 id {group.id}
+              계정 목록 · 그룹 이름 {group.id}
             </span>
             <textarea
               value={blogIdsToText(group.blogIds)}

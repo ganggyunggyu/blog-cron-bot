@@ -318,7 +318,7 @@ export const TargetEditor = ({
               />
             </Field>
 
-            <Field label="대상 id">
+            <Field label="실행할 때 쓰는 이름">
               <input
                 value={target.id}
                 onChange={handleIdChange}

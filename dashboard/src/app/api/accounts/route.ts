@@ -27,7 +27,7 @@ export const POST = async (request: NextRequest) => {
     body = await request.json();
   } catch {
     return NextResponse.json(
-      { error: '요청 본문이 올바른 JSON이 아님' },
+      { error: '보낸 내용의 형식이 잘못됨' },
       { status: 400 },
     );
   }

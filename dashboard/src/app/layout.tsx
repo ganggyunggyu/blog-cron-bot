@@ -4,7 +4,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: '노출지기 대시보드',
-  description: '네이버 노출체크 크론 봇 제어판',
+  description: '네이버 검색에서 내 글이 몇 위에 잡히는지 확인하고 관리하는 곳',
 };
 
 interface RootLayoutProps {

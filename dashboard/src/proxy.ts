@@ -21,7 +21,11 @@ export const proxy = async (request: NextRequest) => {
   }
 
   if (pathname.startsWith('/api')) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // 이 문구는 설정 화면 등에서 그대로 사용자에게 보인다(preset-manager의 toErrorMessage).
+    return NextResponse.json(
+      { error: '로그인이 풀렸음. 새로고침해서 다시 로그인해야 함' },
+      { status: 401 },
+    );
   }
 
   return NextResponse.redirect(new URL('/login', request.url));

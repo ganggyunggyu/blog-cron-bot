@@ -17,7 +17,7 @@ export const runJob = async (jobId: string, options?: RunJobOptions) => {
     return data;
   } catch (error) {
     if (axios.isAxiosError<ErrorResponse>(error)) {
-      throw new Error(error.response?.data.error ?? '잡 실행 요청에 실패함');
+      throw new Error(error.response?.data.error ?? '실행 요청이 실패함');
     }
     throw error;
   }

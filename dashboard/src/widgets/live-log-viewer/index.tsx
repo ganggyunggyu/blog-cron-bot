@@ -54,7 +54,7 @@ export const LiveLogViewer = () => {
       <Card>
         <SectionHeader title="실시간 로그" />
         <p className="text-sm text-[var(--ink-soft)]">
-          잡을 실행하거나 실행 이력을 선택하면 여기에 로그가 표시됨.
+          위에서 실행 기록을 하나 고르면 그 로그가 여기 뜸.
         </p>
       </Card>
     );

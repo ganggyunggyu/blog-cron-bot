@@ -67,13 +67,15 @@ const parseInteger = (
 
 const parseExposureSuiteOptions = (input: unknown): ExposureSuiteOptions => {
   if (input !== undefined && !isRecord(input)) {
-    throw new InvalidJobInputError('잡 옵션은 JSON 객체여야 함');
+    throw new InvalidJobInputError('실행 옵션 형식이 잘못됨');
   }
 
   const options = input ?? {};
   const unknownKeys = Object.keys(options).filter((key) => !ALLOWED_OPTION_KEYS.has(key));
   if (unknownKeys.length > 0) {
-    throw new InvalidJobInputError(`허용되지 않은 잡 옵션: ${unknownKeys.join(', ')}`);
+    // 키 이름(targetConcurrency 같은)은 코드 식별자라 화면에 내보내지 않는다.
+    console.error(`허용되지 않은 실행 옵션 키: ${unknownKeys.join(', ')}`);
+    throw new InvalidJobInputError('화면이 보내면 안 되는 실행 옵션이 들어옴');
   }
 
   return {

@@ -62,9 +62,14 @@ const DaemonRow = ({ daemon }: DaemonRowProps) => {
           {STATUS_LABELS[daemon.status] ?? daemon.status}
         </Badge>
       </div>
+      {/*
+        restarts는 pm2의 restart_time이라 "몇 번 실행됐나"가 아니라 "몇 번 재시작됐나"다.
+        실행 횟수로 적어두면 매일 도는 횟수인 줄 읽게 된다.
+        PID는 이 화면에서 할 수 있는 게 없어 뺐다.
+      */}
       <p className="text-xs leading-5 text-[var(--ink-soft)]">
-        {DAEMON_SCHEDULE_LABELS[daemon.name] ?? '-'} 실행 · PID {daemon.pid ?? '-'} · 가동{' '}
-        {formatUptime(daemon.uptimeMs)} · 메모리 {formatBytes(daemon.memoryBytes)} · 실행 횟수{' '}
+        {DAEMON_SCHEDULE_LABELS[daemon.name] ?? '-'} · 켜진 지{' '}
+        {formatUptime(daemon.uptimeMs)} · 메모리 {formatBytes(daemon.memoryBytes)} · 재시작{' '}
         {daemon.restarts ?? '-'}회
       </p>
       <div className="flex items-center gap-2">
@@ -90,13 +95,16 @@ export const DaemonStatusPanel = () => {
 
   return (
     <Card>
-      <SectionHeader title="PM2 데몬 상태" description="예약 스케줄러 프로세스 관리" />
+      <SectionHeader
+        title="자동 실행 스케줄"
+        description="정해진 시간에 알아서 도는 노출체크"
+      />
       {isLoading ? (
         <p className="text-sm text-[var(--ink-soft)]">불러오는 중...</p>
       ) : null}
       {isError ? (
         <p className="text-sm text-[var(--alert)]">
-          {error instanceof Error ? error.message : 'PM2 상태를 불러오지 못함'}
+          {error instanceof Error ? error.message : '스케줄러 상태를 불러오지 못함'}
         </p>
       ) : null}
       {data ? (
