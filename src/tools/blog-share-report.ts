@@ -49,17 +49,7 @@ interface BlogShareBucket {
   bestPosition: number;
 }
 
-const PAGE_CHECK_SHEET_TYPES: PageCheckSheetType[] = [
-  'black-goat-new',
-  'black-goat-old',
-  'diet-supplement',
-  'skin-procedure',
-  'prescription',
-  'dental',
-  'eye-clinic',
-  'pet',
-  'suripet',
-];
+const PAGE_CHECK_SHEET_TYPES: PageCheckSheetType[] = ['pet', 'suripet'];
 
 const parseNumber = (value: string | undefined, fallback: number): number => {
   const parsed = Number(value ?? '');

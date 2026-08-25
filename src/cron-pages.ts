@@ -53,13 +53,6 @@ dotenv.config();
 const PAGE_CHECK_API = process.env.PAGE_CHECK_API || 'http://localhost:3000';
 
 const SHEET_TYPES: PageCheckSheetType[] = [
-  'black-goat-new',
-  'black-goat-old',
-  'diet-supplement',
-  'skin-procedure',
-  'prescription',
-  'dental',
-  'eye-clinic',
   'pet',
   'suripet',
 ];
@@ -73,13 +66,6 @@ const DOG_PET_COMPOSITE_TARGETS: readonly PageCheckRunTarget[] = [
 ];
 
 const SHEET_TYPE_NAMES: Record<PageCheckSheetType, string> = {
-  'black-goat-new': '흑염소 신규',
-  'black-goat-old': '흑염소 구',
-  'diet-supplement': '다이어트보조제',
-  'skin-procedure': '피부시술',
-  prescription: '약처방',
-  dental: '치과',
-  'eye-clinic': '안과',
   pet: '애견',
   suripet: '서리펫',
 };
@@ -91,7 +77,6 @@ const RUN_TARGET_NAMES: Record<PageCheckRunTarget, string> = {
 
 // 시트별 최대 페이지 수 설정 (기본값: 4)
 const MAX_PAGES_BY_SHEET: Partial<Record<PageCheckSheetType, number>> = {
-  'black-goat-old': 1,
   suripet: 9,
   pet: 9,
 };
@@ -469,13 +454,6 @@ const runPageCheckWorkflow = async (
 
   // 2. DB 연결 및 키워드 조회
   const keywordsBySheet: Record<PageCheckSheetType, IPageCheckKeyword[]> = {
-    'black-goat-new': [],
-    'black-goat-old': [],
-    'diet-supplement': [],
-    'skin-procedure': [],
-    prescription: [],
-    dental: [],
-    'eye-clinic': [],
     pet: [],
     suripet: [],
   };

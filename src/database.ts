@@ -323,56 +323,19 @@ const PageCheckKeywordSchema: Schema = new Schema(
   }
 );
 
-export type PageCheckSheetType =
-  | 'black-goat-new'
-  | 'black-goat-old'
-  | 'diet-supplement'
-  | 'skin-procedure'
-  | 'prescription'
-  | 'dental'
-  | 'eye-clinic'
-  | 'pet'
-  | 'suripet';
+/**
+ * 1-9페이지 노출체크가 다루는 시트.
+ *
+ * 흑염소·다이어트보조제·피부시술·약처방·치과·안과는 2026-07-20을 끝으로 한 번도
+ * 돌지 않아 걷어냈다. 그 계정들은 일반 계정 목록에 그대로 남아 있어 다른 체크에서
+ * 계속 쓰인다 - 없어진 건 시트 배선이지 계정이 아니다.
+ */
+export type PageCheckSheetType = 'pet' | 'suripet';
 
 const pageCheckModels: Record<
   PageCheckSheetType,
   mongoose.Model<IPageCheckKeyword>
 > = {
-  'black-goat-new': mongoose.model<IPageCheckKeyword>(
-    'blackgoatnews',
-    PageCheckKeywordSchema,
-    'blackgoatnews'
-  ),
-  'black-goat-old': mongoose.model<IPageCheckKeyword>(
-    'blackgoatolds',
-    PageCheckKeywordSchema,
-    'blackgoatolds'
-  ),
-  'diet-supplement': mongoose.model<IPageCheckKeyword>(
-    'dietsupplements',
-    PageCheckKeywordSchema,
-    'dietsupplements'
-  ),
-  'skin-procedure': mongoose.model<IPageCheckKeyword>(
-    'skinprocedures',
-    PageCheckKeywordSchema,
-    'skinprocedures'
-  ),
-  prescription: mongoose.model<IPageCheckKeyword>(
-    'prescriptions',
-    PageCheckKeywordSchema,
-    'prescriptions'
-  ),
-  dental: mongoose.model<IPageCheckKeyword>(
-    'dentals',
-    PageCheckKeywordSchema,
-    'dentals'
-  ),
-  'eye-clinic': mongoose.model<IPageCheckKeyword>(
-    'eyeclinics',
-    PageCheckKeywordSchema,
-    'eyeclinics'
-  ),
   pet: mongoose.model<IPageCheckKeyword>('pets', PageCheckKeywordSchema, 'pets'),
   suripet: mongoose.model<IPageCheckKeyword>(
     'suripetKeywords',

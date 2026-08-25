@@ -335,6 +335,11 @@ const TAGGED_SURI_PET_BLOG_IDS = dedupeBlogIds([
   'pjwon03',
 ] as const);
 
+/*
+ * 예전 캠페인별로 나눠 적어둔 계정들. 그 시트들(흑염소·다이어트보조제 등)은
+ * 걷어냈지만 계정은 일반 계정 풀에 그대로 남아 BLOG_IDS로 흘러간다.
+ * 여기서 빼면 패키지·일반건·루트·카페의 기본 계정이 조용히 줄어든다.
+ */
 const PAGE_GENERAL_BLOG_IDS = dedupeBlogIds([
   ...BLACK_GOAT_BLOG_IDS,
   ...DIET_SUPPLEMENT_BLOG_IDS,
@@ -427,13 +432,6 @@ export const PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE: Record<
   PageCheckSheetType,
   string[]
 > = {
-  'black-goat-new': [...BLACK_GOAT_BLOG_IDS],
-  'black-goat-old': [...BLOG_IDS],
-  'diet-supplement': [...DIET_SUPPLEMENT_BLOG_IDS],
-  'skin-procedure': [...SKIN_PROCEDURE_BLOG_IDS],
-  dental: [...DENTAL_BLOG_IDS],
-  prescription: [...PRESCRIPTION_BLOG_IDS],
-  'eye-clinic': [...EYE_CLINIC_BLOG_IDS],
   pet: [...PET_PAGE_CHECK_BLOG_IDS],
   suripet: [...SURI_PET_BLOG_IDS],
 };
@@ -528,7 +526,6 @@ export const applyResolvedBlogIdLists = (lists: ResolvedBlogIdLists): void => {
   replaceInPlace(PET_PAGE_CHECK_BLOG_IDS, pet);
   replaceInPlace(PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE.suripet, suripet);
   replaceInPlace(PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE.pet, pet);
-  replaceInPlace(PAGE_CHECK_BLOG_IDS_BY_SHEET_TYPE['black-goat-old'], base);
 
   // 더보기 목록은 모듈 로드 시점에 BLOG_IDS로 한 번 만들어져서, 기본 계정만 갈아끼우면
   // 예전 값이 그대로 남는다. 더보기에도 같은 계정이 반영되도록 여기서 다시 만든다.

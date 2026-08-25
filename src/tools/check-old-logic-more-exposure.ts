@@ -40,7 +40,6 @@ type SourceTab =
   | '도그마루'
   | '서리펫'
   | '루트'
-  | '흑염소 구'
   | '애견'
   | '시트';
 
@@ -1037,14 +1036,6 @@ const normalizeSourceTab = (value: string): SourceTab | null => {
     return '애견';
   }
   if (normalized === '루트' || normalized === 'root') return '루트';
-  if (
-    normalized === '흑염소구' ||
-    normalized === '흑염소 구' ||
-    normalized === 'black-goat-old' ||
-    normalized === 'blackgoatold'
-  ) {
-    return '흑염소 구';
-  }
   if (normalized === '시트' || normalized === 'sheet') return '시트';
 
   return null;
@@ -1572,9 +1563,6 @@ const loadOldLogicKeywords = async (
         resolvedSourceDoc = await openSpreadsheet(realLocation.sheetId, auth);
         realSourceDocCache.set(realLocation.sheetId, resolvedSourceDoc);
       }
-    } else if (sourceTab === '흑염소 구') {
-      resolvedSourceDoc =
-        pageCheckDoc ?? (pageCheckDoc = await openSpreadsheet(PAGE_CHECK_SHEET_ID, auth));
     } else {
       resolvedSourceDoc = doc;
     }
