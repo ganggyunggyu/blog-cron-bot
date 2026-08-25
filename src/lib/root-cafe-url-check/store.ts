@@ -23,16 +23,21 @@ export interface IRootCafeUrlResult extends Document {
   createdAt: Date;
 }
 
+/*
+ * 빈 문자열이 들어갈 수 있는 칸에는 required를 걸지 않는다.
+ * mongoose는 String의 ''를 "값 없음"으로 보기 때문에 required와 같이 쓰면
+ * rank: '' 한 칸 때문에 문서 전체가 검증에서 떨어진다.
+ */
 const resultSchema = new Schema<IRootCafeUrlResult>({
   runId: { type: String, required: true, index: true },
   shardIndex: { type: Number, required: true, default: 0 },
   cafeId: { type: String, required: true },
-  articleId: { type: String, required: true, default: '' },
+  articleId: { type: String, default: '' },
   keyword: { type: String, required: true },
   status: { type: String, required: true },
-  rank: { type: String, required: true, default: '' },
-  link: { type: String, required: true, default: '' },
-  error: { type: String, required: true, default: '' },
+  rank: { type: String, default: '' },
+  link: { type: String, default: '' },
+  error: { type: String, default: '' },
   createdAt: {
     type: Date,
     required: true,
@@ -74,7 +79,9 @@ export const saveRootCafeUrlResults = async (input: {
       error: row.error,
       createdAt: new Date(),
     })),
-    { ordered: false }
+    // throwOnValidationError를 켜지 않으면 검증에 떨어진 문서를 조용히 버린다.
+    // 조각은 "저장 완료"를 찍고 끝나는데 컬렉션은 비어 있는 상태가 그래서 나왔다.
+    { ordered: false, throwOnValidationError: true }
   );
 };
 
