@@ -14,4 +14,6 @@ export type ExposureExecutionMode = 'local' | 'distributed';
 export const EXPOSURE_PROGRESS_LABELS: Readonly<Record<string, string>> = {
   ...Object.fromEntries(EXPOSURE_TARGETS.map(({ id, label }) => [id, label])),
   'root-more': '루트 더보기',
+  // 7개 대상에는 없지만 진행률은 따로 올라온다. 'root'로 합치면 루트 진행바를 덮어쓴다.
+  'root-cafe-url': '루트 · 카페 URL',
 };
