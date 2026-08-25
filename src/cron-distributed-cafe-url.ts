@@ -28,7 +28,7 @@ import {
   getRootCafeUrlResults,
 } from './lib/root-cafe-url-check/store';
 import { syncRootKeywordsFromSheet } from './lib/root-keyword-sync';
-import { getKSTTimestamp } from './utils';
+import { getKSTTimestamp, getSearchQuery } from './utils';
 
 dotenv.config();
 
@@ -109,7 +109,13 @@ const main = async (): Promise<void> => {
     if (rootKeywords.length === 0) throw new Error('루트 키워드가 하나도 없음');
 
     // 샤딩은 검색어가 같은 키워드를 한 조각에 모은다. "청주맛집(A)"와 "청주맛집(B)"는
-    // 크롤러가 괄호를 떼면 같은 검색이라, 조각 안에서 중복이 자연히 정리된다.
+    // 크롤러가 괄호를 떼면 같은 검색이라 조각 안에서 하나로 합쳐진다. 그래서 돌아올
+    // 행 수는 원본 행 수가 아니라 검색어 종류 수다. 이 둘을 헷갈리면 정상 실행이
+    // "결과 유실"로 잡힌다.
+    const expectedRowCount = new Set(
+      rootKeywords.map(({ keyword }) => getSearchQuery(String(keyword ?? '')))
+    ).size;
+
     const jobs = buildKeywordTargetJobs(
       ROOT_CAFE_URL_TARGET,
       rootKeywords.map(({ _id, keyword }) => ({ _id, keyword }))
@@ -130,7 +136,8 @@ const main = async (): Promise<void> => {
       { label: '실행 ID', value: runId },
       { label: '카페', value: parsed.cafeId },
       { label: '글 번호', value: parsed.articleId || '(카페 전체)' },
-      { label: '루트 키워드', value: `${rootKeywords.length}개` },
+      { label: '루트 시트', value: `${rootKeywords.length}행` },
+      { label: '검색할 키워드', value: `${expectedRowCount}개` },
       { label: '분산 작업', value: `${jobs.length}개 조각` },
     ]);
 
@@ -156,7 +163,8 @@ const main = async (): Promise<void> => {
             cafeId: parsed.cafeId,
             articleId: parsed.articleId,
             // 계획한 키워드 수를 쓴다. 돌아온 행만 세면 절반이 유실돼도 100%로 보인다.
-            plannedKeywords: rootKeywords.length,
+            sheetRows: rootKeywords.length,
+            plannedKeywords: expectedRowCount,
             checkedKeywords: rows.length,
             exposedCount: exposed.length,
             otherArticleCount: otherArticle.length,
@@ -186,10 +194,10 @@ const main = async (): Promise<void> => {
 
     // 조각이 전부 성공했는데 돌아온 행이 계획보다 적으면, 결과가 유실된 것이다.
     // 이걸 막지 않으면 "노출 0개"가 "확인한 게 없음"과 구분되지 않는다.
-    if (rows.length < rootKeywords.length) {
+    if (rows.length < expectedRowCount) {
       await finishDistributedRun(runId, 'failed', '결과 유실');
       throw new Error(
-        `조각은 다 끝났는데 결과가 ${rootKeywords.length}개 중 ${rows.length}개만 돌아옴. ` +
+        `조각은 다 끝났는데 결과가 ${expectedRowCount}개 중 ${rows.length}개만 돌아옴. ` +
           `결과 저장 경로를 확인해야 함 (${outputPath})`
       );
     }
@@ -199,8 +207,9 @@ const main = async (): Promise<void> => {
     logger.summary.complete('루트 · 카페 URL 노출체크 완료', [
       { label: '카페', value: parsed.cafeId },
       { label: '글 번호', value: parsed.articleId || '(카페 전체)' },
-      { label: '전체 키워드', value: `${rootKeywords.length}개` },
-      { label: '확인한 키워드', value: `${rows.length}개` },
+      { label: '시트 행', value: `${rootKeywords.length}개` },
+      { label: '검색한 키워드', value: `${expectedRowCount}개 (업체명 빼고 중복 제거)` },
+      { label: '결과 받은 키워드', value: `${rows.length}개` },
       { label: '노출', value: `${exposed.length}개` },
       { label: '같은 카페 다른 글', value: `${otherArticle.length}개` },
       { label: '확인실패', value: `${failed.length}개` },
