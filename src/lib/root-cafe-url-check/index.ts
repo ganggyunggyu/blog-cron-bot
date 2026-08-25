@@ -5,6 +5,7 @@ import {
 } from '../../crawler';
 import { extractPopularItems, type PopularItem } from '../../parser';
 import { emitExposureProgress } from '../exposure-progress';
+import { getExposureConcurrency } from '../exposure-run-config';
 import {
   extractCafeRefFromLink,
   type CafeUrlTarget,
@@ -110,41 +111,71 @@ const checkKeyword = async (
   }
 };
 
-export const checkRootCafeUrlExposure = async (
-  keywords: string[],
+/** 한 번에 몇 개씩 볼지. 실행마다 EXPOSURE_CONCURRENCY로 조절할 수 있어야 한다. */
+const resolveWorkerCount = (
+  requested: number | undefined,
+  keywordCount: number
+): number => {
+  const base = requested ?? getExposureConcurrency();
+  const normalized = Math.max(1, Math.floor(base) || 8);
+  return Math.min(normalized, Math.max(keywordCount, 1));
+};
+
+/** 주어진 키워드를 병렬로 훑고 결과를 results에 채운다. */
+const runPass = async (
+  keywords: readonly string[],
   target: CafeUrlTarget,
-  concurrency = 8
-): Promise<Map<string, RootCafeUrlRow>> => {
-  const results = new Map<string, RootCafeUrlRow>();
+  results: Map<string, RootCafeUrlRow>,
+  workerCount: number,
+  onProgress: () => void
+): Promise<void> => {
   let nextIndex = 0;
-  let completed = 0;
-  const workerCount = Math.min(
-    Math.max(1, Math.floor(concurrency) || 8),
-    Math.max(keywords.length, 1)
-  );
   const worker = async (): Promise<void> => {
     while (nextIndex < keywords.length) {
-      const index = nextIndex++;
-      const keyword = keywords[index];
+      const keyword = keywords[nextIndex++];
       results.set(keyword, await checkKeyword(keyword, target));
-      completed += 1;
-      // 'root'로 쏘면 진짜 루트 노출체크의 진행바를 이 작업 숫자로 덮어쓴다.
-      emitExposureProgress(
-        ROOT_CAFE_URL_PROGRESS_TARGET,
-        completed,
-        keywords.length,
-        'running'
-      );
+      onProgress();
       await randomDelay(250, 500);
     }
   };
   await Promise.all(Array.from({ length: workerCount }, () => worker()));
+};
 
-  // 한 번 더 훑되 한 바퀴만 돈다. 실패가 계속 실패로 남는 게, 끝나지 않는 것보다 낫다.
-  for (const keyword of keywords) {
-    if (results.get(keyword)?.status !== '확인실패') continue;
+export const checkRootCafeUrlExposure = async (
+  keywords: string[],
+  target: CafeUrlTarget,
+  concurrency?: number
+): Promise<Map<string, RootCafeUrlRow>> => {
+  const results = new Map<string, RootCafeUrlRow>();
+  const workerCount = resolveWorkerCount(concurrency, keywords.length);
+  let completed = 0;
+  // 'root'로 쏘면 진짜 루트 노출체크의 진행바를 이 작업 숫자로 덮어쓴다.
+  const onProgress = () => {
+    completed += 1;
+    emitExposureProgress(
+      ROOT_CAFE_URL_PROGRESS_TARGET,
+      completed,
+      keywords.length,
+      'running'
+    );
+  };
+
+  await runPass(keywords, target, results, workerCount, onProgress);
+
+  // 재시도도 병렬로 돈다. 예전엔 여기서 한 개씩 순서대로 돌았는데, 403이 몰린 실행에서
+  // 이 꼬리 하나가 전체 시간의 대부분을 먹었다(같은 작업이 5분과 20분으로 갈렸다).
+  const failedKeywords = keywords.filter(
+    (keyword) => results.get(keyword)?.status === '확인실패'
+  );
+  if (failedKeywords.length > 0) {
     await randomDelay(900, 1400);
-    results.set(keyword, await checkKeyword(keyword, target));
+    await runPass(
+      failedKeywords,
+      target,
+      results,
+      resolveWorkerCount(concurrency, failedKeywords.length),
+      () => undefined
+    );
   }
   return results;
 };
