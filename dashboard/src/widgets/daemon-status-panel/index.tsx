@@ -107,7 +107,7 @@ export const DaemonStatusPanel = () => {
     <Card>
       <SectionHeader
         title="자동 실행 스케줄"
-        description="정해진 시간에 알아서 도는 노출체크"
+        description="정해진 시간에 자동으로 도는 노출체크입니다"
       />
       {isLoading ? (
         <p className="text-sm text-[var(--ink-soft)]">불러오는 중...</p>

@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { parsePreset, type TenantPreset } from './preset';
+import { parsePreset, type PresetTarget, type TenantPreset } from './preset';
 import { resolveRunBundles } from './member-jobs';
 
-const target = (id: string, enabled = true) => ({
+const target = (id: string, enabled = true): PresetTarget => ({
   id,
   label: id,
   kind: 'basic',

@@ -423,7 +423,7 @@ export const TargetEditor = ({
                 value={blogIdsToText(target.blogIds)}
                 onChange={handleBlogIdsChange}
                 rows={2}
-                placeholder="비우면 그룹 계정만 봄"
+                placeholder="비우면 그룹 계정만 사용합니다"
                 className={cn(FIELD_STYLE, 'resize-y')}
               />
               <div>

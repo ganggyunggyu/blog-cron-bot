@@ -27,7 +27,7 @@ export const RunHistory = () => {
 
   return (
     <Card>
-      <SectionHeader title="실행 기록" description="고르면 아래에 로그가 뜸" />
+      <SectionHeader title="실행 기록" description="고르면 아래에 그 실행의 로그가 나옵니다" />
 
       {isLoading ? (
         <p className="text-sm text-[var(--ink-soft)]">불러오는 중</p>

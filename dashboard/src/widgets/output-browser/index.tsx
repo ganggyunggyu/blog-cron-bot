@@ -61,7 +61,7 @@ export const OutputBrowser = () => {
     <Card>
       <SectionHeader
         title="결과 파일"
-        description="노출체크가 끝날 때마다 쌓이는 결과 파일"
+        description="노출체크가 끝날 때마다 쌓이는 결과 파일입니다"
         action={
           data && data.files.length > 0 ? (
             <div className="relative">

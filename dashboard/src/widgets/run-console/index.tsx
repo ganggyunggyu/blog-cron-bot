@@ -314,7 +314,7 @@ export const RunConsole = () => {
               <NumberOption
                 {...definition.maxPages}
                 value={maxPages}
-                description="애견과 서리펫에만 적용"
+                description="애견과 서리펫에만 적용됩니다"
                 onChange={setMaxPages}
               />
               <Button
