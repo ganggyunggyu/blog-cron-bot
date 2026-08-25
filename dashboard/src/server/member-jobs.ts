@@ -23,7 +23,6 @@ export const JOB_REQUIRED_TARGETS: Record<string, readonly string[]> = {
 
   // 루트 키워드를 훑으므로 루트 대상이 있어야 의미가 있다.
   'root-cafe-url-exposure': ['root'],
-  'custom-cafe-0722': ['cafe'],
 
   // 더보기 묶음 버튼은 세 대상을 한 번에 돈다. 하나라도 있으면 보인다.
   'package-general-dogmaru-more-exposure': [

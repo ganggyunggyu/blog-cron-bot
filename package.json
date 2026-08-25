@@ -50,7 +50,6 @@
     "exposure:pet:9-direct": "ts-node src/tools/run-parallel-direct-sheet-check.ts --target pet --concurrency 8 --max-pages 9 --skip-dooray",
     "exposure:suripet": "pnpm exposure:suite -- --targets=suripet --max-pages=1",
     "exposure:cafe": "pnpm exposure:suite -- --targets=cafe",
-    "exposure:custom-cafe-0722": "cross-env FAST_EXPOSURE_MODE=true ts-node src/tools/check-custom-cafe-blog-exposure.ts --tab=\"카페 노출체크 0722\"",
     "exposure:root:cafe-url": "cross-env FAST_EXPOSURE_MODE=true ts-node src/tools/check-root-cafe-url-exposure.ts",
     "exposure:distributed:cafe-url": "cross-env FAST_EXPOSURE_MODE=true ts-node src/cron-distributed-cafe-url.ts",
     "root:individual:sync": "ts-node src/tools/dry-run-root-individual-exposure.ts",

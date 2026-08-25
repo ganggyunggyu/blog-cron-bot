@@ -57,18 +57,15 @@ const CRAWL_ENTRYPOINTS: Array<{
     // DB 연결 없이 시트만 보고 돌아서 계정 설정을 한 번도 불러오지 않고 있었다.
     note: '카페+블로그 체크 — 7개 메인 대상 중 하나',
   },
-  {
-    path: 'src/tools/check-custom-cafe-blog-exposure.ts',
-    hook: STANDALONE_HOOK,
-    note: '카페 0722 커스텀 체크',
-  },
-  {
-    path: 'src/tools/sheet-direct-check.ts',
-    hook: STANDALONE_HOOK,
-    note: '수동 CLI 도구지만 같은 계정 목록을 봐야 결과가 어긋나지 않음',
-  },
 ];
 
+/*
+ * 여기에는 레포에 실제로 커밋된 파일만 넣는다.
+ *
+ * src/tools/*는 .gitignore에 걸려 있고 파일마다 예외를 적어야 올라간다. 올라가지
+ * 않은 파일을 여기 적어두면 이 맥에서는 통과하고 새로 클론한 곳에서는 readFileSync가
+ * ENOENT로 죽는다. test:unit이 && 체인이라 그 뒤 테스트가 전부 안 돌게 된다.
+ */
 CRAWL_ENTRYPOINTS.forEach(({ path: relativePath, hook, note }) => {
   const source = fs.readFileSync(path.join(REPO_ROOT, relativePath), 'utf-8');
   assert.ok(
