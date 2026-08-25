@@ -41,7 +41,7 @@ const DaemonRow = ({ daemon }: DaemonRowProps) => {
   };
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-[var(--line)] p-3.5">
+    <div className="flex flex-col gap-3 rounded-lg border border-[var(--line)] p-3.5">
       <div className="flex items-start justify-between gap-2">
         <span className="text-sm font-medium text-[var(--ink)]">
           {DAEMON_LABELS[daemon.name] ?? daemon.name}

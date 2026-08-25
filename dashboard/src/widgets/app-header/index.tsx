@@ -17,7 +17,7 @@ interface AppHeaderProps {
 /** 세 화면이 같은 자리에서 같은 이동 경로를 갖게 한다. */
 export const AppHeader = ({ current, memberId }: AppHeaderProps) => {
   return (
-    <header className="sticky top-0 z-10 border-b border-[var(--line)] bg-[var(--paper)]/90 backdrop-blur">
+    <header className="sticky top-0 z-10 border-b border-[var(--line)] bg-[var(--paper)]">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-6 py-3">
         <div className="flex items-baseline gap-2.5">
           <span className="text-[15px] font-semibold tracking-[-0.02em] text-[var(--ink)]">

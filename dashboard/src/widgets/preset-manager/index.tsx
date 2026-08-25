@@ -170,7 +170,7 @@ export const PresetManager = () => {
       <div
         className={cn(
           'sticky top-[73px] z-10 flex flex-wrap items-center gap-2 rounded-lg border px-4 py-3',
-          'bg-[var(--panel)]/95 backdrop-blur-sm',
+          'bg-[var(--panel)]',
           isDirty ? 'border-[var(--hold)]/50' : 'border-[var(--line)]',
         )}
       >
