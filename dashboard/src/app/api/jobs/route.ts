@@ -40,7 +40,8 @@ export const GET = async (request: NextRequest) => {
       description: job.description,
       riskNote: job.riskNote,
       kind: job.kind,
-      category: job.category,
+      section: job.section,
+      targetId: job.targetId,
       // 전체 실행의 대상 목록은 이 회원이 켜둔 것만 보여준다.
       options: job.options
         ? { ...EXPOSURE_SUITE_OPTION_DEFINITION, targets: suiteTargets }

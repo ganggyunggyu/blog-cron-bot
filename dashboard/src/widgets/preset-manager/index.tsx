@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Plus, RotateCcw, Save, Search } from 'lucide-react';
+import { Plus, RotateCcw, Save } from 'lucide-react';
 import { Badge, Button, Card, SectionHeader, cn } from '@/shared';
 import {
   usePreset,
@@ -18,10 +18,6 @@ import {
   countGroupUsage,
   createEmptyBundle,
   createEmptyGroup,
-  createEmptyTarget,
-  duplicateTargetAt,
-  matchesTargetQuery,
-  moveTarget,
   removeBundleAt,
   removeGroupAt,
   replaceBundle,
@@ -44,7 +40,6 @@ export const PresetManager = () => {
   const [draft, setDraft] = React.useState<TenantPreset | null>(null);
   const [openTargetIds, setOpenTargetIds] = React.useState<string[]>([]);
   const [openGroupIds, setOpenGroupIds] = React.useState<string[]>([]);
-  const [query, setQuery] = React.useState('');
 
   const serverPreset = data?.preset ?? null;
   const preset = draft ?? serverPreset;
@@ -64,34 +59,6 @@ export const PresetManager = () => {
       );
     }
     setDraft({ ...preset, targets: replaceTarget(preset.targets, index, next) });
-  };
-
-  const handleTargetRemove = (index: number) => {
-    if (!preset) return;
-    setDraft({
-      ...preset,
-      targets: preset.targets.filter((_, at) => at !== index),
-    });
-  };
-
-  const handleTargetAdd = () => {
-    if (!preset) return;
-    const target = createEmptyTarget(preset.targets);
-    setDraft({ ...preset, targets: [...preset.targets, target] });
-    setOpenTargetIds((current) => [...current, target.id]);
-  };
-
-  const handleTargetDuplicate = (index: number) => {
-    if (!preset) return;
-    const targets = duplicateTargetAt(preset.targets, index);
-    setDraft({ ...preset, targets });
-    const copyId = targets[index + 1]?.id;
-    if (copyId) setOpenTargetIds((current) => [...current, copyId]);
-  };
-
-  const handleTargetMove = (index: number, offset: number) => {
-    if (!preset) return;
-    setDraft({ ...preset, targets: moveTarget(preset.targets, index, offset) });
   };
 
   const handleTargetToggleOpen = (targetId: string) => {
@@ -146,19 +113,6 @@ export const PresetManager = () => {
     setDraft({ ...preset, doorayWebhookUrl: event.target.value });
   };
 
-  const handleQueryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(event.target.value);
-  };
-
-  const handleExpandAll = () => {
-    if (!preset) return;
-    setOpenTargetIds(preset.targets.map(({ id }) => id));
-  };
-
-  const handleCollapseAll = () => {
-    setOpenTargetIds([]);
-  };
-
   const handleReset = () => {
     setDraft(null);
   };
@@ -187,10 +141,11 @@ export const PresetManager = () => {
   }
 
   const enabledCount = preset.targets.filter(({ enabled }) => enabled).length;
-  const visibleTargets = preset.targets
-    .map((target, index) => ({ target, index }))
-    .filter(({ target }) => matchesTargetQuery(target, query));
-  const hiddenCount = preset.targets.length - visibleTargets.length;
+  // 봇이 base 계정을 package ?? general ?? root 순으로 고른다. package에 그룹이
+  // 붙어 있으면 general/root에 붙인 계정은 쓰이지 않는다.
+  const packageHasGroups = (
+    preset.targets.find(({ id }) => id === 'package')?.blogGroupIds ?? []
+  ).length > 0;
 
   return (
     <div className="flex flex-col gap-4">
@@ -286,76 +241,26 @@ export const PresetManager = () => {
       <Card>
         <SectionHeader
           title="노출체크 대상"
-          description="대상마다 읽어올 시트와 결과를 쓸 시트를 지정합니다. 계정은 실행에 바로 반영되고, 시트 지정은 아직 저장만 됩니다"
-          action={
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="sm" onClick={handleExpandAll}>
-                모두 펼치기
-              </Button>
-              <Button variant="ghost" size="sm" onClick={handleCollapseAll}>
-                모두 접기
-              </Button>
-            </div>
-          }
+          description="노출지기가 어떤 시트를 도는지는 봇에 정해져 있습니다. 여기서는 체크를 켜고 끄는 것과 어떤 계정으로 볼지를 정합니다"
         />
-
-        <div className="relative mb-3">
-          <Search className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-[var(--ink-faint)]" />
-          <input
-            value={query}
-            onChange={handleQueryChange}
-            placeholder="이름이나 시트 탭으로 찾기"
-            className={cn(
-              'w-full rounded border border-[var(--line)] bg-[var(--paper)] py-2 pl-8 pr-2.5',
-              'text-[13px] text-[var(--ink)] outline-none transition-colors',
-              'placeholder:text-[var(--ink-faint)]',
-              'focus:border-[var(--signal)] focus:ring-2 focus:ring-[var(--signal)]/20',
-            )}
-          />
-        </div>
-
         <div className="flex flex-col gap-2">
-          {visibleTargets.map(({ target, index }) => (
+          {preset.targets.map((target, index) => (
             <TargetEditor
-              key={`${target.id}-${index}`}
-              index={index}
+              key={target.id}
               target={target}
               groups={preset.blogGroups}
+              index={index}
               isOpen={openTargetIds.includes(target.id)}
-              isFirst={index === 0}
-              isLast={index === preset.targets.length - 1}
+              packageHasGroups={packageHasGroups}
               onChange={handleTargetChange}
-              onRemove={handleTargetRemove}
               onToggleOpen={handleTargetToggleOpen}
-              onDuplicate={handleTargetDuplicate}
-              onMove={handleTargetMove}
             />
           ))}
-
-          {preset.targets.length === 0 ? (
-            <p className="rounded-lg border border-dashed border-[var(--line)] px-4 py-6 text-center text-[13px] text-[var(--ink-soft)]">
-              아직 등록한 대상이 없습니다. 아래에서 추가하고 읽어올 시트를 지정하세요
-            </p>
-          ) : null}
-
-          {preset.targets.length > 0 && visibleTargets.length === 0 ? (
-            <p className="rounded-lg border border-dashed border-[var(--line)] px-4 py-6 text-center text-[13px] text-[var(--ink-soft)]">
-              &quot;{query}&quot;와 맞는 대상이 없습니다
-            </p>
-          ) : null}
         </div>
-
-        <div className="mt-3 flex items-center gap-2">
-          <Button variant="secondary" size="sm" onClick={handleTargetAdd}>
-            <Plus className="size-3.5" />
-            대상 추가
-          </Button>
-          {hiddenCount > 0 ? (
-            <span className="text-[12px] text-[var(--ink-faint)]">
-              검색으로 {hiddenCount}개 숨김
-            </span>
-          ) : null}
-        </div>
+        <p className="mt-3 text-[12px] text-[var(--ink-faint)]">
+          이 목록은 노출지기가 실제로 도는 시트에 맞춰져 있어 새로 만들 수 없습니다.
+          자주 쓰는 조합이 필요하면 실행 화면에서 체크를 고르고 묶음으로 저장하면 됩니다.
+        </p>
       </Card>
 
       <Card>

@@ -7,8 +7,14 @@ const IS_DISTRIBUTED_EXPOSURE_ENABLED =
 export type JobKind = 'standard' | 'exposure-suite' | 'root-cafe-url';
 export type JobResourceGroup = 'exposure';
 
-/** 화면에서 잡을 묶어 보여줄 분류. 14개가 한 줄로 나열되면 뭘 눌러야 할지 알 수 없다. */
-export type JobCategory = 'daily' | 'more' | 'pet' | 'cafe' | 'reexport';
+/**
+ * 실행 화면에서 줄을 묶는 기준.
+ *
+ * daily = 매일 도는 체크. 전체 실행과 묶음에 들어간다.
+ * more  = 더보기. 오래 걸리고 묶음에 못 들어간다.
+ * tool  = 필요할 때만 부르는 것. 크롤이 아니거나(내보내기) 입력이 필요하다(카페 URL).
+ */
+export type JobSection = 'daily' | 'more' | 'tool';
 
 export interface JobDefinition {
   id: string;
@@ -18,7 +24,14 @@ export interface JobDefinition {
   description: string;
   riskNote?: string;
   kind: JobKind;
-  category?: JobCategory;
+  section?: JobSection;
+  /**
+   * 이 잡이 어느 노출체크 대상을 도는지.
+   *
+   * 한 대상에 잡이 둘이면(애견 1페이지 / 1~9페이지) 화면이 줄 하나에 모아
+   * 고르게 한다. 없으면 대상과 무관한 항목이다.
+   */
+  targetId?: string;
   resourceGroup?: JobResourceGroup;
   options?: typeof EXPOSURE_SUITE_OPTION_DEFINITION;
   executionMode?: ExposureExecutionMode;
@@ -51,7 +64,8 @@ export const JOB_REGISTRY: JobDefinition[] = [
     ...resolveTargetJobCommand('package', 'exposure:package'),
     description: '패키지 시트의 키워드가 검색에서 몇 위에 있는지 확인합니다',
     kind: 'standard',
-    category: 'daily',
+    section: 'daily',
+    targetId: 'package',
     resourceGroup: 'exposure',
   },
   {
@@ -60,7 +74,8 @@ export const JOB_REGISTRY: JobDefinition[] = [
     ...resolveTargetJobCommand('general', 'exposure:general'),
     description: '도그마루를 뺀 나머지 키워드를 확인합니다',
     kind: 'standard',
-    category: 'daily',
+    section: 'daily',
+    targetId: 'general',
     resourceGroup: 'exposure',
   },
   {
@@ -69,7 +84,8 @@ export const JOB_REGISTRY: JobDefinition[] = [
     ...resolveTargetJobCommand('dogmaru', 'exposure:dogmaru'),
     description: '도그마루 시트의 키워드를 확인합니다',
     kind: 'standard',
-    category: 'daily',
+    section: 'daily',
+    targetId: 'dogmaru',
     resourceGroup: 'exposure',
   },
   {
@@ -78,7 +94,8 @@ export const JOB_REGISTRY: JobDefinition[] = [
     ...resolveTargetJobCommand('root', 'cron:root'),
     description: '루트(월보장) 시트의 키워드를 확인합니다',
     kind: 'standard',
-    category: 'daily',
+    section: 'daily',
+    targetId: 'root',
     resourceGroup: 'exposure',
   },
   {
@@ -91,7 +108,7 @@ export const JOB_REGISTRY: JobDefinition[] = [
       : 'exposure:root:cafe-url',
     description: '카페 글 주소를 넣으면 루트 키워드 전체에서 그 글이 뜨는지 확인합니다',
     kind: 'root-cafe-url',
-    category: 'cafe',
+    section: 'tool',
     resourceGroup: 'exposure',
   },
   {
@@ -101,7 +118,7 @@ export const JOB_REGISTRY: JobDefinition[] = [
     description: '세 시트의 인기글 더보기까지 펼쳐 확인하고 결과를 합칩니다',
     riskNote: '더보기를 끝까지 펼쳐서 보통 노출체크보다 오래 걸립니다',
     kind: 'standard',
-    category: 'more',
+    section: 'more',
     resourceGroup: 'exposure',
   },
   {
@@ -113,7 +130,7 @@ export const JOB_REGISTRY: JobDefinition[] = [
     description: '루트 시트의 인기글 더보기를 끝까지 펼쳐 확인합니다',
     riskNote: '더보기를 끝까지 펼쳐서 보통 노출체크보다 오래 걸립니다',
     kind: 'standard',
-    category: 'more',
+    section: 'more',
     resourceGroup: 'exposure',
   },
   {
@@ -122,7 +139,7 @@ export const JOB_REGISTRY: JobDefinition[] = [
     script: 'exposure:more:finalize:dogmaru',
     description: '이미 끝난 도그마루 더보기 결과를 시트에 반영하고 두레이로 보냅니다',
     kind: 'standard',
-    category: 'more',
+    section: 'tool',
     resourceGroup: 'exposure',
   },
   {
@@ -131,7 +148,8 @@ export const JOB_REGISTRY: JobDefinition[] = [
     ...resolveTargetJobCommand('pet', 'exposure:pet', ['--max-pages=1']),
     description: '애견 시트의 키워드를 1페이지까지만 확인합니다',
     kind: 'standard',
-    category: 'pet',
+    section: 'daily',
+    targetId: 'pet',
     resourceGroup: 'exposure',
   },
   {
@@ -142,7 +160,8 @@ export const JOB_REGISTRY: JobDefinition[] = [
     ...resolveTargetJobCommand('pet', 'exposure:pet:9-direct', ['--max-pages=9']),
     description: '애견 시트 전체를 9페이지까지 깊게 확인합니다',
     kind: 'standard',
-    category: 'pet',
+    section: 'daily',
+    targetId: 'pet',
     resourceGroup: 'exposure',
   },
   {
@@ -151,7 +170,8 @@ export const JOB_REGISTRY: JobDefinition[] = [
     ...resolveTargetJobCommand('suripet', 'exposure:suripet', ['--max-pages=1']),
     description: '서리펫 시트의 키워드를 1페이지까지만 확인합니다',
     kind: 'standard',
-    category: 'pet',
+    section: 'daily',
+    targetId: 'suripet',
     resourceGroup: 'exposure',
   },
   {
@@ -160,7 +180,8 @@ export const JOB_REGISTRY: JobDefinition[] = [
     ...resolveTargetJobCommand('cafe', 'exposure:cafe'),
     description: '카페 발행스케줄의 카페와 블로그를 함께 확인합니다',
     kind: 'standard',
-    category: 'cafe',
+    section: 'daily',
+    targetId: 'cafe',
     resourceGroup: 'exposure',
   },
   {
@@ -169,7 +190,7 @@ export const JOB_REGISTRY: JobDefinition[] = [
     script: 'exposure:reexport:current',
     description: '다시 검사하지 않고 지금 저장된 결과만 시트에 반영합니다',
     kind: 'standard',
-    category: 'reexport',
+    section: 'tool',
     resourceGroup: 'exposure',
   },
   {
@@ -178,7 +199,7 @@ export const JOB_REGISTRY: JobDefinition[] = [
     script: 'exposure:reexport:cafe',
     description: '다시 검사하지 않고 지금 저장된 카페 결과만 시트에 반영합니다',
     kind: 'standard',
-    category: 'reexport',
+    section: 'tool',
     resourceGroup: 'exposure',
   },
   {

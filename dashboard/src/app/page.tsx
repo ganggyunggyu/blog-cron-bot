@@ -2,7 +2,6 @@ import React from 'react';
 import { cookies } from 'next/headers';
 import { SESSION_COOKIE_NAME, readSessionToken } from '@/server/auth';
 import { AppHeader } from '@/widgets/app-header';
-import { JobRunnerPanel } from '@/widgets/job-runner-panel';
 import { RunConsole } from '@/widgets/run-console';
 
 const HomePage = async () => {
@@ -15,7 +14,6 @@ const HomePage = async () => {
 
       <main className="mx-auto flex max-w-5xl flex-col gap-4 px-6 py-6">
         <RunConsole />
-        <JobRunnerPanel />
       </main>
     </div>
   );
