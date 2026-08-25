@@ -61,8 +61,6 @@
     "cafe:schedule:check": "ts-node work/check-cafe-schedule-exposure-20260715.ts",
     "cafe:schedule:export": "ts-node work/export-cafe-schedule-exposure-20260715.ts",
     "cafe:schedule:run": "pnpm cafe:schedule:check && cross-env RETRY_FAILED_ONLY=true CHECK_CONCURRENCY=1 pnpm cafe:schedule:check && pnpm cafe:schedule:export",
-    "alibaba:check": "ts-node src/tools/run-alibaba-check.ts",
-    "alibaba:logic": "ts-node src/tools/check-alibaba-logic-type.ts",
     "old-logic:more-check": "ts-node src/tools/check-old-logic-more-exposure.ts",
     "old-logic:more-check:root": "cross-env EXPOSURE_PROGRESS_TARGET=root-more ts-node src/tools/check-old-logic-more-exposure.ts --sources 루트",
     "old-logic:more-check:daily": "ts-node src/tools/check-old-logic-more-exposure.ts --sources 패키지,일반건,도그마루,루트",

@@ -1,8 +1,5 @@
 import assert from 'node:assert/strict';
 import {
-  ALIBABA_BLOG_IDS,
-  ALIBABA_BLOG_IDS_BY_SECTION,
-  ALIBABA_SECTION_NAMES,
   BLOG_IDS,
   DOGMARU_BLOG_IDS,
   DOGMARU_PAGE_CHECK_BLOG_IDS,
@@ -30,7 +27,6 @@ const REQUIRED_SURI_PET_BLOG_IDS = [
   'ylk3516',
   'inho5062',
 ];
-const REQUIRED_ALIBABA_BLOG_IDS = ['introsm'];
 const REQUIRED_BASE_BLOG_IDS = ['introsm'];
 const REQUIRED_GENERAL_BLOG_IDS = ['yaves0218', 'airtrd'];
 const REQUIRED_REACTIVATED_BLOG_IDS = ['durysuk'];
@@ -129,18 +125,6 @@ assertContainsAll(
 assertContainsAll(PAGES_BLOG_IDS, REQUIRED_BASE_BLOG_IDS);
 assertContainsAll(PET_PAGE_CHECK_BLOG_IDS, REQUIRED_BASE_BLOG_IDS);
 assertContainsAll(PET_PAGE_CHECK_BLOG_IDS, REQUIRED_REACTIVATED_BLOG_IDS);
-
-assert.equal(ALIBABA_BLOG_IDS.length, 14);
-assert.equal(new Set(ALIBABA_BLOG_IDS).size, ALIBABA_BLOG_IDS.length);
-assertContainsAll(ALIBABA_BLOG_IDS, REQUIRED_ALIBABA_BLOG_IDS);
-
-for (const sectionName of ALIBABA_SECTION_NAMES) {
-  assert.deepEqual(
-    ALIBABA_BLOG_IDS_BY_SECTION[sectionName],
-    ALIBABA_BLOG_IDS,
-    `${sectionName} should check all Alibaba blog ids`
-  );
-}
 
 assert.deepEqual(DOGMARU_BLOG_IDS, REQUIRED_DOGMARU_BLOG_IDS);
 assert.deepEqual(DOGMARU_PAGE_CHECK_BLOG_IDS, DOGMARU_BLOG_IDS);

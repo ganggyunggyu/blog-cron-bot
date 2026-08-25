@@ -1,6 +1,5 @@
 import type { PageCheckSheetType } from '../../database';
 
-export * from './alibaba';
 
 export const EXCLUDED_BLOG_IDS = [
   'csoheon',

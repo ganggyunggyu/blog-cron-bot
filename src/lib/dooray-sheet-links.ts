@@ -19,7 +19,6 @@ const RESULT_SHEETS: Array<
   { name: '루트', aliases: ['루트'], url: resultSheetUrl(1624245350) },
   { name: '애견(전체블로그)', aliases: ['애견'], url: resultSheetUrl(529625636) },
   { name: '서리펫', aliases: ['서리펫'], url: resultSheetUrl(934688657) },
-  { name: '알리바바', aliases: ['알리바바'], url: resultSheetUrl(914645152) },
   { name: '카페노출체크', aliases: ['카페'], url: resultSheetUrl(1406050962) },
 ];
 
