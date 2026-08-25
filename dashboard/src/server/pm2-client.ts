@@ -17,6 +17,8 @@ export interface DaemonStatus {
   memoryBytes: number | null;
   cpuPercent: number | null;
   restarts: number | null;
+  /** pm2에 등록된 cron 표현식. 자동 실행이 없으면 null. */
+  cronRestart: string | null;
 }
 
 export const isControllableDaemon = (name: string): name is DaemonAppName =>
@@ -44,6 +46,7 @@ const toDaemonStatus = (name: string, proc: ProcessDescription | undefined): Dae
       memoryBytes: null,
       cpuPercent: null,
       restarts: null,
+      cronRestart: null,
     };
   }
 
@@ -58,6 +61,10 @@ const toDaemonStatus = (name: string, proc: ProcessDescription | undefined): Dae
     memoryBytes: proc.monit?.memory ?? null,
     cpuPercent: proc.monit?.cpu ?? null,
     restarts: proc.pm2_env?.restart_time ?? null,
+    // 시각을 화면에 하드코딩하면 스케줄러가 빠져도 계속 보인다. pm2가 실제로 들고
+    // 있는 cron 표현식만 내려보낸다.
+    cronRestart: (proc.pm2_env as { cron_restart?: string } | undefined)
+      ?.cron_restart ?? null,
   };
 };
 

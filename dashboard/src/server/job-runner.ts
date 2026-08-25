@@ -2,6 +2,7 @@ import type { ChildProcess } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { buildJobSpawnArgs } from './job-command';
+import type { ExposureTargetId } from '@/shared';
 import { InvalidJobInputError, JobConflictError } from './job-errors';
 import { spawnJobProcess } from './job-process';
 import { getJobDefinition } from './job-registry';
@@ -116,7 +117,18 @@ export const isJobBlocked = (jobId: string): boolean => {
   return isJobResourceBlocked(job, isJobActive(jobId));
 };
 
-export const startJob = (jobId: string, input?: unknown): RunSummary => {
+export interface StartJobContext {
+  /** 이 실행을 누구 설정으로 돌릴지. 봇이 EXPOSURE_TENANT_LOGIN_ID로 읽는다. */
+  tenantLoginId?: string;
+  /** 이 회원의 프리셋에 켜져 있는 대상. 전체 실행이 이 밖으로 못 나간다. */
+  allowedTargets?: readonly ExposureTargetId[];
+}
+
+export const startJob = (
+  jobId: string,
+  input?: unknown,
+  context: StartJobContext = {},
+): RunSummary => {
   const job = getJobDefinition(jobId);
   // 내부 slug(package-general-dogmaru-more-exposure 같은)를 화면에 흘리지 않는다.
   // 여기 걸리면 화면이 없는 항목을 부른 것이라 사용자가 아니라 우리가 볼 정보다.
@@ -125,14 +137,22 @@ export const startJob = (jobId: string, input?: unknown): RunSummary => {
     throw new InvalidJobInputError('없는 실행 항목임');
   }
 
-  const spawnArgs = buildJobSpawnArgs(job, input);
+  const spawnArgs = buildJobSpawnArgs(job, input, context.allowedTargets);
   if (activeJobIds.has(jobId)) throw new JobConflictError('이미 실행 중임');
   const runId = randomUUID();
   const logPath = path.join(DASHBOARD_RUN_LOG_DIR, `${runId}.log`);
   const resource = reserveJobResource(job, runId);
   let child: ChildProcess;
   try {
-    child = spawnJobProcess(spawnArgs, logPath);
+    // 이걸 안 넘기면 봇이 '21lab'으로 폴백해서, 다른 회원이 자기 설정을 저장하고
+    // 버튼을 눌러도 21lab 프리셋으로 돈다. 조용히 틀린 결과가 나온다.
+    child = spawnJobProcess(
+      spawnArgs,
+      logPath,
+      context.tenantLoginId
+        ? { EXPOSURE_TENANT_LOGIN_ID: context.tenantLoginId }
+        : {},
+    );
   } catch (error) {
     resource.release();
     throw error;

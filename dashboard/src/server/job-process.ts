@@ -9,14 +9,20 @@ const loadRepoEnv = (): Record<string, string> => {
   return result.parsed ?? {};
 };
 
-export const spawnJobProcess = (spawnArgs: string[], logPath: string): ChildProcess => {
+export const spawnJobProcess = (
+  spawnArgs: string[],
+  logPath: string,
+  extraEnv: Record<string, string> = {},
+): ChildProcess => {
   let logFileDescriptor: number | undefined;
   try {
     logFileDescriptor = prepareRunLogFile(logPath);
     return spawn('pnpm', spawnArgs, {
       cwd: REPO_ROOT,
       detached: true,
-      env: { ...process.env, ...loadRepoEnv() },
+      // extraEnv가 마지막이다. 누가 실행했는지(EXPOSURE_TENANT_LOGIN_ID)는
+      // .env의 값보다 우선해야 한다.
+      env: { ...process.env, ...loadRepoEnv(), ...extraEnv },
       stdio: ['ignore', logFileDescriptor, logFileDescriptor],
     });
   } finally {

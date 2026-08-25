@@ -34,9 +34,18 @@ const DAEMON_LABELS: Record<string, string> = {
   'blog-cron-more-check-830am': '더보기 노출체크',
 };
 
-const DAEMON_SCHEDULE_LABELS: Record<string, string> = {
-  'blog-cron-direct-check-8am': '매일 08:00',
-  'blog-cron-more-check-830am': '매일 08:30',
+/*
+ * 시각을 여기 적어두면 안 된다.
+ *
+ * 이 라벨은 프로세스 상태와 무관하게 찍혀서, 스케줄러가 배포에서 빠진 뒤에도
+ * "매일 08:00"이 계속 보였다. 지금 ecosystem.railway.config.cjs에 등록된 앱은
+ * 대시보드와 워커 둘뿐이고 cron_restart도 없다 - 즉 자동 실행은 없다.
+ * 시각은 pm2가 실제로 들고 있는 값에서만 읽는다.
+ */
+const describeSchedule = (daemon: DaemonStatus): string => {
+  if (daemon.status === 'not_found') return '등록되어 있지 않음 - 지금은 수동 실행만 됨';
+  if (daemon.cronRestart) return `자동 실행 ${daemon.cronRestart}`;
+  return '자동 실행 설정 없음';
 };
 
 interface DaemonRowProps {
@@ -68,9 +77,10 @@ const DaemonRow = ({ daemon }: DaemonRowProps) => {
         PID는 이 화면에서 할 수 있는 게 없어 뺐다.
       */}
       <p className="text-xs leading-5 text-[var(--ink-soft)]">
-        {DAEMON_SCHEDULE_LABELS[daemon.name] ?? '-'} · 켜진 지{' '}
-        {formatUptime(daemon.uptimeMs)} · 메모리 {formatBytes(daemon.memoryBytes)} · 재시작{' '}
-        {daemon.restarts ?? '-'}회
+        {describeSchedule(daemon)}
+        {daemon.status === 'not_found'
+          ? null
+          : ` · 켜진 지 ${formatUptime(daemon.uptimeMs)} · 메모리 ${formatBytes(daemon.memoryBytes)} · 재시작 ${daemon.restarts ?? '-'}회`}
       </p>
       <div className="flex items-center gap-2">
         <Button size="sm" variant="secondary" disabled={isOnline || isBusy} onClick={() => handleAction('start')}>

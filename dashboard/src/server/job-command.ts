@@ -1,6 +1,7 @@
 import { buildExposureSuiteArgs } from './exposure-suite-options';
 import { InvalidJobInputError } from './job-errors';
 import type { JobDefinition } from './job-registry';
+import type { ExposureTargetId } from '@/shared';
 import { buildRootCafeUrlArgs } from './root-cafe-url-options';
 
 const isEmptyOptionsObject = (input: unknown): boolean =>
@@ -9,9 +10,13 @@ const isEmptyOptionsObject = (input: unknown): boolean =>
   !Array.isArray(input) &&
   Object.keys(input).length === 0;
 
-export const buildJobSpawnArgs = (job: JobDefinition, input: unknown): string[] => {
+export const buildJobSpawnArgs = (
+  job: JobDefinition,
+  input: unknown,
+  allowedTargets?: readonly ExposureTargetId[],
+): string[] => {
   if (job.kind === 'exposure-suite') {
-    const options = buildExposureSuiteArgs(input);
+    const options = buildExposureSuiteArgs(input, allowedTargets);
     return ['run', job.script, ...options];
   }
 

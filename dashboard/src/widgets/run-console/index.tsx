@@ -143,6 +143,9 @@ export const RunConsole = () => {
   };
 
   const targetCount = definition?.targets.length ?? 0;
+  // 프리셋에 켜진 대상이 없으면 돌릴 게 없다. 버튼을 눌러 400을 받는 대신
+  // 어디로 가야 하는지 알려준다.
+  const hasNoTargets = definition !== undefined && targetCount === 0;
   const isBusy = activeRun !== null || isPending;
 
   return (
@@ -215,15 +218,16 @@ export const RunConsole = () => {
                 전체 노출체크
               </h2>
               <p className="mt-1.5 text-sm text-[var(--ink-soft)]">
-                {targetCount > 0 ? `${targetCount}개 시트` : '모든 시트'}를 검사하고 시트
-                반영과 두레이 발송까지 이어서 처리합니다.
+                {hasNoTargets
+                  ? '이 계정에 켜둔 시트가 없습니다. 설정에서 대상을 먼저 켜야 실행할 수 있습니다.'
+                  : `${targetCount}개 시트를 검사하고 시트 반영과 두레이 발송까지 이어서 처리합니다.`}
               </p>
             </div>
 
             <Button
               size="lg"
               className="w-full shrink-0 sm:w-auto"
-              disabled={!definition || isPending}
+              disabled={!definition || hasNoTargets || isPending}
               onClick={handleRunAll}
             >
               <Play className="size-[18px]" />
