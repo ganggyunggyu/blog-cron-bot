@@ -36,6 +36,7 @@ export const createDistributedRun = async (
       shardIndex: job.shardIndex ?? 0,
       shardCount: job.shardCount ?? 1,
       keywordIds: job.keywordIds ?? [],
+      cafeUrl: job.cafeUrl,
       attempts: 0,
       maxAttempts: getDistributedJobMaxAttempts(job.target),
       active: true,

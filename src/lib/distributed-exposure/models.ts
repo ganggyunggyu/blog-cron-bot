@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import type { ExposureTargetId } from '../exposure-suite/options';
+import type { DistributedTargetId } from './adhoc-targets';
 
 export type DistributedRunStatus =
   | 'queued'
@@ -11,7 +12,10 @@ export type DistributedJobStatus =
   | 'running'
   | 'success'
   | 'failed';
-export type DistributedJobKind = 'standard' | 'old-logic-more';
+export type DistributedJobKind =
+  | 'standard'
+  | 'old-logic-more'
+  | 'root-cafe-url';
 
 export interface IDistributedExposureRun extends Document {
   runId: string;
@@ -26,8 +30,10 @@ export interface IDistributedExposureRun extends Document {
 
 export interface IDistributedExposureJob extends Document {
   runId: string;
-  target: ExposureTargetId;
+  target: DistributedTargetId;
   jobKind: DistributedJobKind;
+  /** root-cafe-url 잡에서만 채운다. 워커는 잡 문서와 env만 보므로 URL이 여기 실린다. */
+  cafeUrl?: string;
   order: number;
   status: DistributedJobStatus;
   concurrency: number;
@@ -65,6 +71,7 @@ const jobSchema = new Schema<IDistributedExposureJob>(
     runId: { type: String, required: true, index: true },
     target: { type: String, required: true },
     jobKind: { type: String, required: true, default: 'standard' },
+    cafeUrl: String,
     order: { type: Number, required: true },
     status: { type: String, required: true, default: 'pending', index: true },
     concurrency: { type: Number, required: true },

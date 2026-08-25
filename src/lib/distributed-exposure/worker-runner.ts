@@ -26,7 +26,11 @@ export const getUncheckedDistributedKeywordIds = (
   // 노출체크가 Mongo에 직접 쓰는 경우만을 위한 것이라, 더보기에 그대로 적용하면 크롤이
   // 끝나도 항상 "갱신 누락"으로 판정돼 같은 조각을 재시도 한도까지 영원히 반복한다.
   // (루트 더보기가 90분 내내 0/10에서 안 움직인 원인이 이것이었다.)
-  if (job.jobKind === 'old-logic-more') return undefined;
+  //
+  // 그래서 old-logic-more만 빼는 게 아니라 standard가 아닌 종류는 전부 뺀다.
+  // 새 종류를 추가할 때 이 줄을 같이 고쳐야 한다는 걸 기억해야만 안전하다면,
+  // 언젠가 똑같은 사고가 다시 난다.
+  if (job.jobKind !== 'standard') return undefined;
   if (!job.startedAt || job.keywordIds.length === 0) return undefined;
   if (job.target === 'root') {
     return getUncheckedRootKeywordIds(

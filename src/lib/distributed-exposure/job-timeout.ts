@@ -1,4 +1,4 @@
-import type { ExposureTargetId } from '../exposure-suite/options';
+import type { DistributedTargetId } from './adhoc-targets';
 import type { DistributedJobKind } from './models';
 
 const DEFAULT_JOB_TIMEOUT_MINUTES = 10;
@@ -13,7 +13,7 @@ const DEFAULT_OLD_LOGIC_MORE_JOB_TIMEOUT_MINUTES = 20;
 
 export const getDistributedJobTimeoutMs = (
   value = process.env.DISTRIBUTED_EXPOSURE_JOB_TIMEOUT_MINUTES,
-  target?: ExposureTargetId,
+  target?: DistributedTargetId,
   jobKind: DistributedJobKind = 'standard'
 ): number => {
   const minutes = Number(value);

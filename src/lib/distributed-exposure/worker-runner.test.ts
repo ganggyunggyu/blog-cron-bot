@@ -78,4 +78,24 @@ assert.equal(
   undefined
 );
 
+// 카페 URL 잡도 RootKeyword를 갱신하지 않는다. 결과는 전용 컬렉션에만 쌓이므로
+// 여기서 확인하면 조각마다 "누락" 판정이 나서 재시도 한도까지 돈다.
+assert.equal(
+  getUncheckedDistributedKeywordIds(
+    buildJob({ target: 'root-cafe-url', jobKind: 'root-cafe-url' })
+  ),
+  undefined,
+  '카페 URL 잡은 DB 갱신을 확인하면 안 됨'
+);
+
+// standard가 아닌 종류는 앞으로 무엇이 추가되든 전부 빠져야 한다. 이 줄이 통과하는
+// 한, 새 kind를 만들 때 worker-runner를 같이 고치는 걸 잊어도 사고가 안 난다.
+assert.equal(
+  getUncheckedDistributedKeywordIds(
+    buildJob({ target: 'root', jobKind: 'made-up-future-kind' as never })
+  ),
+  undefined,
+  'standard가 아닌 종류는 전부 갱신 확인에서 빠져야 함'
+);
+
 process.stdout.write('worker-runner tests passed\n');

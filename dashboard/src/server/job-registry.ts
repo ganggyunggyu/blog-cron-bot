@@ -84,7 +84,11 @@ export const JOB_REGISTRY: JobDefinition[] = [
   {
     id: 'root-cafe-url-exposure',
     label: '루트 · 카페 URL',
-    script: 'exposure:root:cafe-url',
+    // resolveTargetJobCommand로 보내면 안 된다. job-command가 이 kind에서 args를
+    // buildRootCafeUrlArgs로 만들기 때문에 레지스트리의 args는 버려진다.
+    script: IS_DISTRIBUTED_EXPOSURE_ENABLED
+      ? 'exposure:distributed:cafe-url'
+      : 'exposure:root:cafe-url',
     description: '카페 글 주소를 넣으면 루트 키워드 전체에서 그 글을 찾아봄',
     kind: 'root-cafe-url',
     category: 'cafe',

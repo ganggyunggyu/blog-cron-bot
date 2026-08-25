@@ -2,6 +2,7 @@ import { sleep } from '@ganggyunggyu/shared';
 import { emitExposureProgress } from '../exposure-progress';
 import { logger } from '../logger';
 import type { ExposureTargetId } from '../exposure-suite/options';
+import type { DistributedTargetId } from './adhoc-targets';
 import { getDistributedRunSnapshot, type DistributedRunSnapshot } from './queue';
 
 const POLL_MS = 1_000;
@@ -37,9 +38,9 @@ export const describeUnfinishedJobs = (
 
 export interface DistributedRunOutcome {
   /** 크롤이 끝까지 성공한 대상. 이 대상만 시트 반영·Dooray를 진행한다. */
-  succeededTargets: ExposureTargetId[];
+  succeededTargets: DistributedTargetId[];
   /** 실패했거나 시간 안에 못 끝낸 대상. */
-  unfinishedTargets: ExposureTargetId[];
+  unfinishedTargets: DistributedTargetId[];
   /** 실패 사유 한 줄 요약. 성공이면 빈 문자열. */
   failureDetail: string;
   timedOut: boolean;

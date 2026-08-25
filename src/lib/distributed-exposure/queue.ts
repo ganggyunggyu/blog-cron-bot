@@ -1,4 +1,5 @@
 import type { ExposureTargetId } from '../exposure-suite/options';
+import type { DistributedTargetId } from './adhoc-targets';
 import {
   DistributedExposureJob,
   type DistributedJobKind,
@@ -10,18 +11,20 @@ const JOB_LEASE_MS = 60_000;
 
 export interface DistributedRunInput {
   runId: string;
-  targets: ExposureTargetId[];
+  targets: DistributedTargetId[];
   concurrency: number;
   maxPages: number;
   jobs: DistributedJobInput[];
 }
 
 export interface DistributedJobInput {
-  target: ExposureTargetId;
+  target: DistributedTargetId;
   jobKind?: DistributedJobKind;
   shardIndex?: number;
   shardCount?: number;
   keywordIds?: string[];
+  /** root-cafe-url 잡만 채운다. 워커가 볼 수 있는 유일한 통로다. */
+  cafeUrl?: string;
 }
 
 export interface DistributedRunSnapshot {
@@ -31,7 +34,7 @@ export interface DistributedRunSnapshot {
   success: number;
   failed: number;
   jobs: Array<{
-    target: ExposureTargetId;
+    target: DistributedTargetId;
     status: DistributedJobStatus;
     shardIndex: number;
     shardCount: number;

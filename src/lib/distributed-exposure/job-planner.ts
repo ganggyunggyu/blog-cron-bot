@@ -18,6 +18,7 @@ import {
   type PageShardKeyword,
 } from './page-shards';
 import type { DistributedJobInput } from './queue';
+import type { DistributedTargetId } from './adhoc-targets';
 
 export const isDistributedPageTarget = (
   target: ExposureTargetId
@@ -25,7 +26,7 @@ export const isDistributedPageTarget = (
   target === 'pet' || target === 'suripet';
 
 const toSingleSheetJob = (
-  target: ExposureTargetId,
+  target: DistributedTargetId,
   keywordIds: string[] = []
 ): DistributedJobInput => ({
   target,
@@ -39,7 +40,7 @@ const toSingleSheetJob = (
 export const interleaveTargetJobs = (
   jobs: readonly DistributedJobInput[]
 ): DistributedJobInput[] => {
-  const byTarget = new Map<ExposureTargetId, DistributedJobInput[]>();
+  const byTarget = new Map<DistributedTargetId, DistributedJobInput[]>();
   jobs.forEach((job) => {
     const targetJobs = byTarget.get(job.target) ?? [];
     targetJobs.push(job);
@@ -79,7 +80,7 @@ export const resolveRemoteWorkerCount = (
 };
 
 export const buildKeywordTargetJobs = (
-  target: ExposureTargetId,
+  target: DistributedTargetId,
   keywords: readonly PageShardKeyword[]
 ): DistributedJobInput[] => {
   const shards = buildBalancedPageKeywordShards(
