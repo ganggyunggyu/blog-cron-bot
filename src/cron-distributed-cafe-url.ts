@@ -184,6 +184,16 @@ const main = async (): Promise<void> => {
       );
     }
 
+    // 조각이 전부 성공했는데 돌아온 행이 계획보다 적으면, 결과가 유실된 것이다.
+    // 이걸 막지 않으면 "노출 0개"가 "확인한 게 없음"과 구분되지 않는다.
+    if (rows.length < rootKeywords.length) {
+      await finishDistributedRun(runId, 'failed', '결과 유실');
+      throw new Error(
+        `조각은 다 끝났는데 결과가 ${rootKeywords.length}개 중 ${rows.length}개만 돌아옴. ` +
+          `결과 저장 경로를 확인해야 함 (${outputPath})`
+      );
+    }
+
     await finishDistributedRun(runId, 'success');
 
     logger.summary.complete('루트 · 카페 URL 노출체크 완료', [
