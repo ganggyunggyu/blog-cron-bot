@@ -133,9 +133,10 @@ export const JOB_REGISTRY: JobDefinition[] = [
   {
     id: 'pet-exposure-9-direct',
     label: '애견 (1~9페이지)',
-    script: 'exposure:pet:9-direct',
+    // 한 프로세스에서 8개씩 돌던 시절 300개 키워드가 30분에 165개까지밖에 못 갔고
+    // 배포 한 번에 통째로 끊겼다. 같은 일을 분산으로 돌리면 5분에 끝난다.
+    ...resolveTargetJobCommand('pet', 'exposure:pet:9-direct', ['--max-pages=9']),
     description: '애견 시트 전체를 9페이지까지 깊게 봄',
-    riskNote: '워커를 안 나눠 쓰는 옛 방식이라 오래 걸리고 중간에 끊기기도 함',
     kind: 'standard',
     category: 'pet',
     resourceGroup: 'exposure',

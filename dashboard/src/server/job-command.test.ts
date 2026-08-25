@@ -85,6 +85,11 @@ test('분산 실행에서는 개별 대상 잡도 분산 러너로 보냄', () =
     ['general-exposure', 'exposure:general', ['--targets=general']],
     ['dogmaru-exposure', 'exposure:dogmaru', ['--targets=dogmaru']],
     ['pet-exposure', 'exposure:pet', ['--targets=pet', '--max-pages=1']],
+    [
+      'pet-exposure-9-direct',
+      'exposure:pet:9-direct',
+      ['--targets=pet', '--max-pages=9'],
+    ],
     ['suripet-exposure', 'exposure:suripet', ['--targets=suripet', '--max-pages=1']],
     ['cafe-exposure', 'exposure:cafe', ['--targets=cafe']],
   ];
