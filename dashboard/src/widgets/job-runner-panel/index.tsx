@@ -49,7 +49,8 @@ const JobRow = ({ job, isBusy, onRun }: JobRowProps) => {
 };
 
 export const JobRunnerPanel = () => {
-  const { data: jobs, isError } = useJobList();
+  const { data, isError } = useJobList();
+  const jobs = data?.jobs;
   const { mutate: runJob, isPending, variables } = useRunJob();
   const [isOpen, setIsOpen] = React.useState(false);
 

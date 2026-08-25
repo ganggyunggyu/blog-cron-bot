@@ -1,6 +1,6 @@
 import { JOB_REGISTRY, type JobDefinition } from './job-registry';
 import { EXPOSURE_TARGETS, type ExposureTargetId } from '@/shared';
-import type { TenantPreset } from './preset';
+import type { RunBundle, TenantPreset } from './preset';
 
 /**
  * 각 실행 항목이 어느 프리셋 대상을 필요로 하는지.
@@ -80,3 +80,33 @@ export const canMemberRunJob = (
 
 export const getJobsForPreset = (preset: TenantPreset): JobDefinition[] =>
   JOB_REGISTRY.filter(({ id }) => canMemberRunJob(preset, id));
+
+export interface ResolvedRunBundle {
+  id: string;
+  label: string;
+  /** 지금 실제로 돌릴 수 있는 대상만 남긴 것. */
+  targets: ExposureTargetId[];
+  maxPages?: number;
+  /** 묶어둔 대상 중 지금 꺼져 있어 빠진 것. 버튼 옆에 이유로 보여준다. */
+  droppedTargets: string[];
+}
+
+/**
+ * 저장된 실행 묶음을 지금 상태로 해석한다.
+ *
+ * 묶음을 만든 뒤 대상을 끄면 그 묶음은 없는 대상을 가리키게 된다. 눌러서 400을
+ * 받는 대신, 꺼진 대상은 미리 빼고 무엇이 빠졌는지 같이 알려준다.
+ */
+export const resolveRunBundles = (preset: TenantPreset): ResolvedRunBundle[] => {
+  const suiteIds = new Set<string>(getSuiteTargetIdsForPreset(preset));
+  return (preset.runBundles ?? []).map((bundle: RunBundle) => {
+    const targets = bundle.targets.filter((target) => suiteIds.has(target));
+    return {
+      id: bundle.id,
+      label: bundle.label,
+      targets: targets as ExposureTargetId[],
+      maxPages: bundle.maxPages,
+      droppedTargets: bundle.targets.filter((target) => !suiteIds.has(target)),
+    };
+  });
+};

@@ -6,6 +6,7 @@ import {
   useJobList,
   useRunJob,
   type ExposureTargetId,
+  type ResolvedRunBundle,
 } from '@/entities/job';
 import {
   findTargetProgress,
@@ -16,6 +17,7 @@ import {
   type RunSummary,
 } from '@/entities/run';
 import { Button, Card, cn, formatDateTime } from '@/shared';
+import { BundleBar } from './bundle-bar';
 import { LogPanel } from './log-panel';
 import { buildTargetRows, formatElapsed, summarizeShards } from './model';
 import { RootCafeUrlForm } from './root-cafe-url-form';
@@ -48,7 +50,9 @@ const findActiveRun = (runs: RunSummary[] | undefined): RunSummary | null =>
   runs?.find(({ status }) => status === 'running') ?? null;
 
 export const RunConsole = () => {
-  const { data: jobs } = useJobList();
+  const { data: jobList } = useJobList();
+  const jobs = jobList?.jobs;
+  const bundles = jobList?.bundles ?? [];
   const { data: runs } = useRunList();
   const { mutate: runJob, isPending, error, reset } = useRunJob();
   const { mutate: stopRun, isPending: isStopping } = useStopRun();
@@ -112,18 +116,25 @@ export const RunConsole = () => {
     );
   };
 
-  const runSuite = (targets: ExposureTargetId[]) => {
-    if (!definition || maxPages === null) return;
+  const runSuite = (
+    targets: ExposureTargetId[],
+    pages: number | null = maxPages,
+  ) => {
+    if (!definition || targets.length === 0) return;
     reset();
     runJob({
       jobId: 'exposure-suite',
       options: {
         targets,
         concurrency: definition.concurrency.defaultValue,
-        maxPages,
+        maxPages: pages ?? definition.maxPages.defaultValue,
         targetConcurrency: definition.targetConcurrency.defaultValue,
       },
     });
+  };
+
+  const handleRunBundle = (bundle: ResolvedRunBundle) => {
+    runSuite(bundle.targets, bundle.maxPages ?? null);
   };
 
   const handleRunAll = () => {
@@ -249,6 +260,8 @@ export const RunConsole = () => {
           ) : null}
         </div>
       )}
+
+      <BundleBar bundles={bundles} disabled={isBusy} onRun={handleRunBundle} />
 
       <div className="flex flex-wrap items-center gap-2 border-t border-[var(--line)] px-5 py-3">
         <span className="mr-1 text-xs text-[var(--ink-faint)]">더보기</span>

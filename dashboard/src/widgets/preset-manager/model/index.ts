@@ -3,6 +3,7 @@ import {
   type BlogGroup,
   type CheckKind,
   type PresetTarget,
+  type RunBundle,
   type TenantPreset,
 } from '@/entities/preset';
 
@@ -139,7 +140,20 @@ export const removeGroupAt = (
   return {
     ...preset,
     blogGroups: preset.blogGroups.filter((_, at) => at !== index),
-    targets: preset.targets.map((target) => {
+    // 저장 전에 정리한다. 대상이 하나도 없는 묶음은 서버 검증에서 걸리고, 지운 대상을
+  // 가리키는 묶음도 마찬가지다. 화면에서 실수한 걸 저장 실패로 알려주는 대신 치운다.
+  runBundles: (() => {
+    const targetIds = new Set(preset.targets.map(({ id }) => id));
+    const cleaned = (preset.runBundles ?? [])
+      .map((bundle) => ({
+        ...bundle,
+        label: bundle.label.trim(),
+        targets: bundle.targets.filter((id) => targetIds.has(id)),
+      }))
+      .filter(({ label, targets }) => label.length > 0 && targets.length > 0);
+    return cleaned.length > 0 ? cleaned : undefined;
+  })(),
+  targets: preset.targets.map((target) => {
       const blogGroupIds = (target.blogGroupIds ?? []).filter(
         (groupId) => groupId !== removed.id,
       );
@@ -170,6 +184,29 @@ export const textToBlogIds = (text: string): string[] =>
     .filter(Boolean);
 
 /** 저장 전에 서버와 같은 규칙으로 비워둔 쓰기 시트와 안 쓰는 필드를 정리한다. */
+export const createEmptyBundle = (existing: RunBundle[]): RunBundle => {
+  const used = new Set(existing.map(({ id }) => id));
+  let index = existing.length + 1;
+  while (used.has(`bundle-${index}`)) index += 1;
+  return { id: `bundle-${index}`, label: `묶음 ${index}`, targets: [] };
+};
+
+export const replaceBundle = (
+  bundles: RunBundle[],
+  index: number,
+  next: RunBundle,
+): RunBundle[] => bundles.map((bundle, i) => (i === index ? next : bundle));
+
+export const removeBundleAt = (bundles: RunBundle[], index: number): RunBundle[] =>
+  bundles.filter((_, i) => i !== index);
+
+export const toggleBundleTarget = (bundle: RunBundle, targetId: string): RunBundle => ({
+  ...bundle,
+  targets: bundle.targets.includes(targetId)
+    ? bundle.targets.filter((id) => id !== targetId)
+    : [...bundle.targets, targetId],
+});
+
 export const toSavablePreset = (preset: TenantPreset): TenantPreset => ({
   ...preset,
   blogGroups: preset.blogGroups ?? [],

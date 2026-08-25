@@ -38,6 +38,20 @@ export interface RootCafeUrlRunOptions {
 
 export type RunJobOptions = ExposureSuiteRunOptions | RootCafeUrlRunOptions;
 
+/** 서버가 지금 상태로 해석해준 실행 묶음. */
+export interface ResolvedRunBundle {
+  id: string;
+  label: string;
+  targets: ExposureTargetId[];
+  maxPages?: number;
+  droppedTargets: string[];
+}
+
+export interface JobListResult {
+  jobs: JobDefinition[];
+  bundles: ResolvedRunBundle[];
+}
+
 export interface RunJobInput {
   jobId: string;
   options?: RunJobOptions;

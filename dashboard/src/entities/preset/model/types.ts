@@ -37,9 +37,18 @@ export interface PresetTarget {
   enabled: boolean;
 }
 
+/** 자주 쓰는 대상 조합에 이름을 붙여둔 것. 버튼 하나로 돌린다. */
+export interface RunBundle {
+  id: string;
+  label: string;
+  targets: string[];
+  maxPages?: number;
+}
+
 export interface TenantPreset {
   targets: PresetTarget[];
   blogGroups: BlogGroup[];
+  runBundles?: RunBundle[];
   doorayWebhookUrl?: string;
 }
 

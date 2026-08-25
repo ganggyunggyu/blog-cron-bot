@@ -1,14 +1,14 @@
 import axios from 'axios';
 import { api } from '@/shared';
-import type { JobDefinition, RunJobOptions } from '../model/types';
+import type { JobListResult, RunJobOptions } from '../model/types';
 
 interface ErrorResponse {
   error?: string;
 }
 
-export const getJobList = async () => {
-  const { data } = await api.get<{ jobs: JobDefinition[] }>('/jobs');
-  return data.jobs;
+export const getJobList = async (): Promise<JobListResult> => {
+  const { data } = await api.get<JobListResult>('/jobs');
+  return { jobs: data.jobs ?? [], bundles: data.bundles ?? [] };
 };
 
 export const runJob = async (jobId: string, options?: RunJobOptions) => {

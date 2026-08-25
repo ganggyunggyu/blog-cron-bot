@@ -7,19 +7,24 @@ import {
   usePreset,
   useSavePreset,
   type BlogGroup,
+  type RunBundle,
   type PresetTarget,
   type TenantPreset,
 } from '@/entities/preset';
+import { BundleEditor } from './bundle-editor';
 import { GroupEditor } from './group-editor';
 import { TargetEditor } from './target-editor';
 import {
   countGroupUsage,
+  createEmptyBundle,
   createEmptyGroup,
   createEmptyTarget,
   duplicateTargetAt,
   matchesTargetQuery,
   moveTarget,
+  removeBundleAt,
   removeGroupAt,
+  replaceBundle,
   replaceGroup,
   replaceTarget,
   toSavablePreset,
@@ -112,6 +117,28 @@ export const PresetManager = () => {
 
   const handleGroupToggleOpen = (groupId: string) => {
     setOpenGroupIds((current) => toggleId(current, groupId));
+  };
+
+  const handleBundleAdd = () => {
+    if (!preset) return;
+    const bundles = preset.runBundles ?? [];
+    setDraft({ ...preset, runBundles: [...bundles, createEmptyBundle(bundles)] });
+  };
+
+  const handleBundleChange = (index: number, next: RunBundle) => {
+    if (!preset) return;
+    setDraft({
+      ...preset,
+      runBundles: replaceBundle(preset.runBundles ?? [], index, next),
+    });
+  };
+
+  const handleBundleRemove = (index: number) => {
+    if (!preset) return;
+    setDraft({
+      ...preset,
+      runBundles: removeBundleAt(preset.runBundles ?? [], index),
+    });
   };
 
   const handleWebhookChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -207,6 +234,37 @@ export const PresetManager = () => {
           </Button>
         </div>
       </div>
+
+      <Card>
+        <SectionHeader
+          title="실행 묶음"
+          description="자주 쓰는 대상 조합에 이름을 붙여두면 실행 화면에서 버튼 하나로 돌릴 수 있습니다"
+          action={
+            <Button variant="ghost" size="sm" onClick={handleBundleAdd}>
+              <Plus className="size-3.5" />
+              묶음 추가
+            </Button>
+          }
+        />
+        {(preset.runBundles ?? []).length === 0 ? (
+          <p className="text-sm text-[var(--ink-soft)]">
+            아직 만든 묶음이 없습니다. 예를 들어 &ldquo;아침 전체&rdquo;, &ldquo;애견만 9페이지&rdquo;처럼
+            묶어두고 실행 화면에서 바로 누를 수 있습니다.
+          </p>
+        ) : (
+          <div className="flex flex-col gap-2.5">
+            {(preset.runBundles ?? []).map((bundle, index) => (
+              <BundleEditor
+                key={bundle.id}
+                bundle={bundle}
+                targets={preset.targets.filter(({ enabled }) => enabled)}
+                onChange={(next) => handleBundleChange(index, next)}
+                onRemove={() => handleBundleRemove(index)}
+              />
+            ))}
+          </div>
+        )}
+      </Card>
 
       <Card>
         <SectionHeader

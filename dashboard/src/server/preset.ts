@@ -48,13 +48,31 @@ export interface PresetTarget {
   enabled: boolean;
 }
 
+/**
+ * 저장해둔 실행 묶음.
+ *
+ * 매번 대상 체크박스를 다시 고르는 대신, 자주 쓰는 조합에 이름을 붙여두고 버튼
+ * 하나로 돌린다. 계정마다 쓰는 조합이 달라서 프리셋에 같이 저장한다.
+ */
+export interface RunBundle {
+  id: string;
+  label: string;
+  /** 이 묶음이 돌릴 대상 id. 프리셋에 켜져 있는 대상만 실제로 실행된다. */
+  targets: string[];
+  /** 애견·서리펫에만 적용된다. 없으면 기본값을 쓴다. */
+  maxPages?: number;
+}
+
 export interface TenantPreset {
   targets: PresetTarget[];
   blogGroups: BlogGroup[];
+  runBundles?: RunBundle[];
   doorayWebhookUrl?: string;
 }
 
 export const EMPTY_PRESET: TenantPreset = { targets: [], blogGroups: [] };
+
+export const MAX_RUN_BUNDLES = 12;
 
 /**
  * 대상이 실제로 확인할 계정 목록. 고른 그룹들을 순서대로 합치고 직접 계정을 뒤에 붙인다.
@@ -246,8 +264,66 @@ const parseDoorayWebhookUrl = (raw: unknown): string | undefined => {
   return url;
 };
 
+const parseRunBundles = (
+  raw: unknown,
+  targetIds: ReadonlySet<string>,
+): RunBundle[] => {
+  if (raw === undefined || raw === null) return [];
+  if (!Array.isArray(raw)) throw new Error('실행 묶음 목록이 배열이 아님');
+  if (raw.length > MAX_RUN_BUNDLES) {
+    throw new Error(`실행 묶음은 ${MAX_RUN_BUNDLES}개까지만 만들 수 있음`);
+  }
+
+  const seen = new Set<string>();
+  return raw.map((entry, index) => {
+    const { id, label, targets, maxPages } = asRecord(entry);
+    const bundleId = String(id ?? '').trim();
+    const bundleLabel = String(label ?? '').trim();
+    const where = bundleLabel || `${index + 1}번째 실행 묶음`;
+
+    if (!bundleId) throw new Error(`${where}: 실행 묶음 id가 비어 있음`);
+    if (!bundleLabel) throw new Error(`${index + 1}번째 실행 묶음: 이름이 비어 있음`);
+    if (seen.has(bundleId)) throw new Error(`${where}: 실행 묶음 id가 중복됨`);
+    seen.add(bundleId);
+
+    if (!Array.isArray(targets) || targets.length === 0) {
+      throw new Error(`${where}: 대상을 1개 이상 골라야 함`);
+    }
+    const bundleTargets = targets.map((target) => String(target ?? '').trim());
+    if (bundleTargets.some((target) => !target)) {
+      throw new Error(`${where}: 빈 대상이 들어 있음`);
+    }
+    if (new Set(bundleTargets).size !== bundleTargets.length) {
+      throw new Error(`${where}: 같은 대상이 여러 번 들어 있음`);
+    }
+    // 프리셋에 없는 대상을 묶어두면 눌렀을 때 서버가 거절한다. 저장 때 막는다.
+    const unknown = bundleTargets.filter((target) => !targetIds.has(target));
+    if (unknown.length > 0) {
+      throw new Error(`${where}: 이 계정에 없는 대상임 (${unknown.join(', ')})`);
+    }
+
+    const bundle: RunBundle = {
+      id: bundleId,
+      label: bundleLabel,
+      targets: bundleTargets,
+    };
+    if (maxPages !== undefined && maxPages !== null) {
+      if (
+        typeof maxPages !== 'number' ||
+        !Number.isInteger(maxPages) ||
+        maxPages < 1 ||
+        maxPages > MAX_PAGE_DEPTH - 1
+      ) {
+        throw new Error(`${where}: 페이지 수는 1~${MAX_PAGE_DEPTH - 1} 사이여야 함`);
+      }
+      bundle.maxPages = maxPages;
+    }
+    return bundle;
+  });
+};
+
 export const parsePreset = (raw: unknown): TenantPreset => {
-  const { targets, blogGroups, doorayWebhookUrl } = asRecord(raw);
+  const { targets, blogGroups, runBundles, doorayWebhookUrl } = asRecord(raw);
   if (!Array.isArray(targets)) {
     throw new Error('대상 목록이 배열이 아님');
   }
@@ -266,6 +342,11 @@ export const parsePreset = (raw: unknown): TenantPreset => {
     targets: parsedTargets,
     blogGroups: parsedGroups,
   };
+  const parsedBundles = parseRunBundles(
+    runBundles,
+    new Set(parsedTargets.map(({ id }) => id)),
+  );
+  if (parsedBundles.length > 0) preset.runBundles = parsedBundles;
   const parsedWebhook = parseDoorayWebhookUrl(doorayWebhookUrl);
   if (parsedWebhook) preset.doorayWebhookUrl = parsedWebhook;
 

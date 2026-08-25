@@ -3,6 +3,7 @@ import { isJobActive, isJobBlocked } from '@/server/job-runner';
 import {
   getJobsForPreset,
   getSuiteTargetsForPreset,
+  resolveRunBundles,
 } from '@/server/member-jobs';
 import { EXPOSURE_SUITE_OPTION_DEFINITION } from '@/server/exposure-suite-options';
 import { readSessionMember } from '@/server/session-member';
@@ -51,5 +52,5 @@ export const GET = async (request: NextRequest) => {
     };
   });
 
-  return NextResponse.json({ jobs });
+  return NextResponse.json({ jobs, bundles: resolveRunBundles(preset) });
 };
