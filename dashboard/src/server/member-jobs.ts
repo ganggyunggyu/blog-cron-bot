@@ -68,6 +68,10 @@ export const canMemberRunJob = (
   preset: TenantPreset,
   jobId: string,
 ): boolean => {
+  if (jobId.startsWith(CAFE_CHECK_JOB_PREFIX)) {
+    return findCafeCheck(preset, jobId) !== undefined;
+  }
+
   const required = JOB_REQUIRED_TARGETS[jobId];
   // 매핑에 없는 항목은 숨긴다. 새 잡을 추가하면서 매핑을 빠뜨렸을 때, 아무에게나
   // 보이는 것보다 아무에게도 안 보이는 쪽이 낫다(테스트가 이 상태를 잡아준다).
@@ -78,8 +82,10 @@ export const canMemberRunJob = (
   return required.some((target) => enabled.has(target));
 };
 
-export const getJobsForPreset = (preset: TenantPreset): JobDefinition[] =>
-  JOB_REGISTRY.filter(({ id }) => canMemberRunJob(preset, id));
+export const getJobsForPreset = (preset: TenantPreset): JobDefinition[] => [
+  ...JOB_REGISTRY.filter(({ id }) => canMemberRunJob(preset, id)),
+  ...buildCafeCheckJobs(preset),
+];
 
 export interface ResolvedRunBundle {
   id: string;
@@ -110,3 +116,47 @@ export const resolveRunBundles = (preset: TenantPreset): ResolvedRunBundle[] => 
     };
   });
 };
+
+export const CAFE_CHECK_JOB_PREFIX = 'cafe-check:';
+
+/**
+ * 직접 만든 카페 체크를 실행 항목으로 바꾼다.
+ *
+ * 레지스트리는 고정 목록이라 여기 없다. 회원마다 다르므로 목록을 내려줄 때 붙인다.
+ */
+export const buildCafeCheckJobs = (preset: TenantPreset): JobDefinition[] =>
+  (preset.cafeChecks ?? []).map((check) => ({
+    id: `${CAFE_CHECK_JOB_PREFIX}${check.id}`,
+    label: check.label,
+    script: 'cafe:check',
+    description: `${check.tabTitle} 탭의 키워드로 ${check.cafeNames.join(', ')} 노출을 확인합니다`,
+    kind: 'cafe-check' as const,
+    section: 'daily' as const,
+    resourceGroup: 'exposure' as const,
+  }));
+
+export const findCafeCheck = (preset: TenantPreset, jobId: string) => {
+  if (!jobId.startsWith(CAFE_CHECK_JOB_PREFIX)) return undefined;
+  const checkId = jobId.slice(CAFE_CHECK_JOB_PREFIX.length);
+  return (preset.cafeChecks ?? []).find((check) => check.id === checkId);
+};
+
+/**
+ * 봇 스크립트에 넘길 환경변수.
+ *
+ * check-cafe-exposure.ts는 키워드를 CAFE_SOURCE_*에서 읽고 결과를 CAFE_SHEET_*에
+ * 쓴다. 사용자가 시트를 하나만 정하므로 둘 다 같은 곳을 가리킨다.
+ */
+export const buildCafeCheckEnv = (check: {
+  sheetUrl: string;
+  tabTitle: string;
+  cafeNames: string[];
+}): Record<string, string> => ({
+  CAFE_SOURCE_SHEET_URL: check.sheetUrl,
+  CAFE_SOURCE_SHEET_NAME: check.tabTitle,
+  CAFE_SOURCE_SHEET_GID: '',
+  CAFE_SHEET_ID: '',
+  CAFE_SHEET_NAME: check.tabTitle,
+  CAFE_SHEET_GID: '',
+  CAFE_TARGET_NAMES: check.cafeNames.join(','),
+});

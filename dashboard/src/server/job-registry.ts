@@ -4,7 +4,11 @@ import type { ExposureExecutionMode } from '@/shared';
 const IS_DISTRIBUTED_EXPOSURE_ENABLED =
   process.env.DISTRIBUTED_EXPOSURE_ENABLED === 'true';
 
-export type JobKind = 'standard' | 'exposure-suite' | 'root-cafe-url';
+export type JobKind =
+  | 'standard'
+  | 'exposure-suite'
+  | 'root-cafe-url'
+  | 'cafe-check';
 export type JobResourceGroup = 'exposure';
 
 /**

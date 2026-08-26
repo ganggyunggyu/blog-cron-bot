@@ -5,7 +5,7 @@ import { buildJobSpawnArgs } from './job-command';
 import type { ExposureTargetId } from '@/shared';
 import { InvalidJobInputError, JobConflictError } from './job-errors';
 import { spawnJobProcess } from './job-process';
-import { getJobDefinition } from './job-registry';
+import { getJobDefinition, type JobDefinition } from './job-registry';
 import { isJobResourceBlocked, reserveJobResource } from './job-resource-manager';
 import { DASHBOARD_RUN_LOG_DIR } from './paths';
 import { getProcessIdentity, isSameProcess, terminateProcessGroup } from './process-control';
@@ -122,6 +122,14 @@ export interface StartJobContext {
   tenantLoginId?: string;
   /** 이 회원의 프리셋에 켜져 있는 대상. 전체 실행이 이 밖으로 못 나간다. */
   allowedTargets?: readonly ExposureTargetId[];
+  /**
+   * 레지스트리에 없는 실행 항목의 정의.
+   *
+   * 직접 만든 카페 체크는 회원마다 달라서 고정 목록에 넣을 수 없다.
+   */
+  job?: JobDefinition;
+  /** 자식 프로세스에 더 넘길 환경변수. 카페 체크가 볼 시트를 이렇게 알려준다. */
+  extraEnv?: Record<string, string>;
 }
 
 export const startJob = (
@@ -129,7 +137,7 @@ export const startJob = (
   input?: unknown,
   context: StartJobContext = {},
 ): RunSummary => {
-  const job = getJobDefinition(jobId);
+  const job = context.job ?? getJobDefinition(jobId);
   // 내부 slug(package-general-dogmaru-more-exposure 같은)를 화면에 흘리지 않는다.
   // 여기 걸리면 화면이 없는 항목을 부른 것이라 사용자가 아니라 우리가 볼 정보다.
   if (!job) {
@@ -149,9 +157,12 @@ export const startJob = (
     child = spawnJobProcess(
       spawnArgs,
       logPath,
-      context.tenantLoginId
-        ? { EXPOSURE_TENANT_LOGIN_ID: context.tenantLoginId }
-        : {},
+      {
+        ...context.extraEnv,
+        ...(context.tenantLoginId
+          ? { EXPOSURE_TENANT_LOGIN_ID: context.tenantLoginId }
+          : {}),
+      },
     );
   } catch (error) {
     resource.release();

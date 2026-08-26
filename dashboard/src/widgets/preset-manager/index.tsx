@@ -7,20 +7,25 @@ import {
   usePreset,
   useSavePreset,
   type BlogGroup,
+  type CafeCheck,
   type RunBundle,
   type PresetTarget,
   type TenantPreset,
 } from '@/entities/preset';
 import { BundleEditor } from './bundle-editor';
+import { CafeCheckEditor } from './cafe-check-editor';
 import { GroupEditor } from './group-editor';
 import { TargetEditor } from './target-editor';
 import {
   countGroupUsage,
   createEmptyBundle,
+  createEmptyCafeCheck,
   createEmptyGroup,
   removeBundleAt,
+  removeCafeCheckAt,
   removeGroupAt,
   replaceBundle,
+  replaceCafeCheck,
   replaceGroup,
   replaceTarget,
   toSavablePreset,
@@ -105,6 +110,28 @@ export const PresetManager = () => {
     setDraft({
       ...preset,
       runBundles: removeBundleAt(preset.runBundles ?? [], index),
+    });
+  };
+
+  const handleCafeCheckAdd = () => {
+    if (!preset) return;
+    const checks = preset.cafeChecks ?? [];
+    setDraft({ ...preset, cafeChecks: [...checks, createEmptyCafeCheck(checks)] });
+  };
+
+  const handleCafeCheckChange = (index: number, next: CafeCheck) => {
+    if (!preset) return;
+    setDraft({
+      ...preset,
+      cafeChecks: replaceCafeCheck(preset.cafeChecks ?? [], index, next),
+    });
+  };
+
+  const handleCafeCheckRemove = (index: number) => {
+    if (!preset) return;
+    setDraft({
+      ...preset,
+      cafeChecks: removeCafeCheckAt(preset.cafeChecks ?? [], index),
     });
   };
 
@@ -261,6 +288,36 @@ export const PresetManager = () => {
           체크 종류는 정해져 있어 새로 만들 수 없습니다. 조합이 필요하면 실행 화면에서
           골라 묶음으로 저장하세요.
         </p>
+      </Card>
+
+      <Card>
+        <SectionHeader
+          title="직접 만든 카페 노출체크"
+          description="시트와 찾을 카페를 정하면 실행 화면에 줄이 생깁니다"
+          action={
+            <Button variant="ghost" size="sm" onClick={handleCafeCheckAdd}>
+              <Plus className="size-3.5" />
+              카페 체크 추가
+            </Button>
+          }
+        />
+        {(preset.cafeChecks ?? []).length === 0 ? (
+          <p className="text-sm text-[var(--ink-soft)]">
+            아직 만든 카페 체크가 없습니다. 키워드가 든 구글시트와 찾을 카페 이름만
+            있으면 됩니다.
+          </p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {(preset.cafeChecks ?? []).map((check, index) => (
+              <CafeCheckEditor
+                key={check.id}
+                check={check}
+                onChange={(next) => handleCafeCheckChange(index, next)}
+                onRemove={() => handleCafeCheckRemove(index)}
+              />
+            ))}
+          </div>
+        )}
       </Card>
 
       <Card>

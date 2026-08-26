@@ -2,7 +2,10 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { InvalidJobInputError, JobConflictError } from '@/server/job-errors';
 import { startJob } from '@/server/job-runner';
 import {
+  buildCafeCheckEnv,
+  buildCafeCheckJobs,
   canMemberRunJob,
+  findCafeCheck,
   getSuiteTargetIdsForPreset,
 } from '@/server/member-jobs';
 import { readSessionMember } from '@/server/session-member';
@@ -45,9 +48,15 @@ export const POST = async (request: NextRequest, { params }: RouteParams) => {
 
   try {
     const input = await parseRequestInput(request);
+    // 직접 만든 카페 체크는 고정 레지스트리에 없으므로 정의와 환경변수를 여기서 만든다.
+    const cafeCheck = findCafeCheck(member.preset, jobId);
     const run = startJob(jobId, input, {
       tenantLoginId: member.loginId,
       allowedTargets: getSuiteTargetIdsForPreset(member.preset),
+      job: cafeCheck
+        ? buildCafeCheckJobs(member.preset).find(({ id }) => id === jobId)
+        : undefined,
+      extraEnv: cafeCheck ? buildCafeCheckEnv(cafeCheck) : undefined,
     });
     return NextResponse.json({ runId: run.runId });
   } catch (error) {

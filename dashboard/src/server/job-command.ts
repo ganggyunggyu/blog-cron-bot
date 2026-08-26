@@ -25,6 +25,9 @@ export const buildJobSpawnArgs = (
     return ['run', job.script, ...options];
   }
 
+  // 카페 체크는 시트를 환경변수로 받으므로 인자가 없다.
+  if (job.kind === 'cafe-check') return ['run', job.script];
+
   if (input !== undefined && !isEmptyOptionsObject(input)) {
     throw new InvalidJobInputError('이 항목은 실행 옵션을 받지 않음');
   }

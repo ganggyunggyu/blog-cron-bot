@@ -3,6 +3,7 @@ import {
   type BlogGroup,
   type CheckKind,
   type PresetTarget,
+  type CafeCheck,
   type RunBundle,
   type TenantPreset,
 } from '@/entities/preset';
@@ -65,6 +66,23 @@ export const removeGroupAt = (
     blogGroups: preset.blogGroups.filter((_, at) => at !== index),
     // 저장 전에 정리한다. 대상이 하나도 없는 묶음은 서버 검증에서 걸리고, 지운 대상을
   // 가리키는 묶음도 마찬가지다. 화면에서 실수한 걸 저장 실패로 알려주는 대신 치운다.
+  // 아직 다 안 채운 카페 체크는 저장에서 뺀다. 서버 검증에 걸려 프리셋 전체가
+  // 저장되지 않는 것보다, 조용히 빠지고 계속 고칠 수 있는 쪽이 낫다.
+  cafeChecks: (() => {
+    const cleaned = (preset.cafeChecks ?? [])
+      .map((check) => ({
+        ...check,
+        label: check.label.trim(),
+        sheetUrl: check.sheetUrl.trim(),
+        tabTitle: check.tabTitle.trim(),
+        cafeNames: check.cafeNames.map((name) => name.trim()).filter(Boolean),
+      }))
+      .filter(
+        ({ label, sheetUrl, tabTitle, cafeNames }) =>
+          label && sheetUrl && tabTitle && cafeNames.length > 0,
+      );
+    return cleaned.length > 0 ? cleaned : undefined;
+  })(),
   runBundles: (() => {
     const targetIds = new Set(preset.targets.map(({ id }) => id));
     const cleaned = (preset.runBundles ?? [])
@@ -129,6 +147,28 @@ export const toggleBundleTarget = (bundle: RunBundle, targetId: string): RunBund
     ? bundle.targets.filter((id) => id !== targetId)
     : [...bundle.targets, targetId],
 });
+
+export const createEmptyCafeCheck = (existing: CafeCheck[]): CafeCheck => {
+  const used = new Set(existing.map(({ id }) => id));
+  let index = existing.length + 1;
+  while (used.has(`cafe-${index}`)) index += 1;
+  return {
+    id: `cafe-${index}`,
+    label: `카페 체크 ${index}`,
+    sheetUrl: '',
+    tabTitle: '',
+    cafeNames: [],
+  };
+};
+
+export const replaceCafeCheck = (
+  checks: CafeCheck[],
+  index: number,
+  next: CafeCheck,
+): CafeCheck[] => checks.map((check, i) => (i === index ? next : check));
+
+export const removeCafeCheckAt = (checks: CafeCheck[], index: number): CafeCheck[] =>
+  checks.filter((_, i) => i !== index);
 
 export const toSavablePreset = (preset: TenantPreset): TenantPreset => ({
   ...preset,

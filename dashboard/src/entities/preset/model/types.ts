@@ -45,10 +45,20 @@ export interface RunBundle {
   maxPages?: number;
 }
 
+/** 직접 만든 카페 노출체크. 시트와 볼 카페를 정하면 실행 화면에 줄이 생긴다. */
+export interface CafeCheck {
+  id: string;
+  label: string;
+  sheetUrl: string;
+  tabTitle: string;
+  cafeNames: string[];
+}
+
 export interface TenantPreset {
   targets: PresetTarget[];
   blogGroups: BlogGroup[];
   runBundles?: RunBundle[];
+  cafeChecks?: CafeCheck[];
   doorayWebhookUrl?: string;
 }
 

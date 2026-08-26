@@ -63,16 +63,41 @@ export interface RunBundle {
   maxPages?: number;
 }
 
+/**
+ * 직접 만든 카페 노출체크.
+ *
+ * 다른 체크와 달리 봇 스크립트(check-cafe-exposure.ts)가 읽을 시트와 볼 카페를
+ * 전부 환경변수로 받는다. 그래서 이건 코드를 고치지 않고도 화면에서 만들 수 있다.
+ * 키워드를 읽는 시트에 결과도 같이 쓴다.
+ */
+export interface CafeCheck {
+  id: string;
+  label: string;
+  /** 키워드를 읽고 결과를 쓸 구글시트 주소. */
+  sheetUrl: string;
+  /** 그 시트 안의 탭 이름. */
+  tabTitle: string;
+  /** 검색 결과에서 찾을 카페 이름. */
+  cafeNames: string[];
+}
+
 export interface TenantPreset {
   targets: PresetTarget[];
   blogGroups: BlogGroup[];
   runBundles?: RunBundle[];
+  cafeChecks?: CafeCheck[];
   doorayWebhookUrl?: string;
 }
 
 export const EMPTY_PRESET: TenantPreset = { targets: [], blogGroups: [] };
 
 export const MAX_RUN_BUNDLES = 12;
+export const MAX_CAFE_CHECKS = 12;
+export const MAX_CAFE_NAMES = 50;
+
+/** 구글시트 주소에서 시트 ID를 뽑는다. 없으면 주소가 아닌 것이다. */
+export const parseSheetIdFromUrl = (raw: string): string =>
+  raw.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/)?.[1] ?? '';
 
 /**
  * 대상이 실제로 확인할 계정 목록. 고른 그룹들을 순서대로 합치고 직접 계정을 뒤에 붙인다.
@@ -322,8 +347,57 @@ const parseRunBundles = (
   });
 };
 
+const parseCafeChecks = (raw: unknown): CafeCheck[] => {
+  if (raw === undefined || raw === null) return [];
+  if (!Array.isArray(raw)) throw new Error('카페 노출체크 목록이 배열이 아님');
+  if (raw.length > MAX_CAFE_CHECKS) {
+    throw new Error(`카페 노출체크는 ${MAX_CAFE_CHECKS}개까지만 만들 수 있음`);
+  }
+
+  const seen = new Set<string>();
+  return raw.map((entry, index) => {
+    const { id, label, sheetUrl, tabTitle, cafeNames } = asRecord(entry);
+    const checkId = trimmed(id);
+    const checkLabel = trimmed(label);
+    const where = checkLabel || `${index + 1}번째 카페 노출체크`;
+
+    if (!checkId) throw new Error(`${where}: 카페 노출체크 id가 비어 있음`);
+    if (!checkLabel) throw new Error(`${index + 1}번째 카페 노출체크: 이름이 비어 있음`);
+    if (seen.has(checkId)) throw new Error(`${where}: 카페 노출체크 id가 중복됨`);
+    seen.add(checkId);
+
+    const url = trimmed(sheetUrl);
+    if (!parseSheetIdFromUrl(url)) {
+      throw new Error(`${where}: 구글시트 주소가 아님`);
+    }
+    const tab = trimmed(tabTitle);
+    if (!tab) throw new Error(`${where}: 시트 탭 이름이 비어 있음`);
+
+    if (!Array.isArray(cafeNames) || cafeNames.length === 0) {
+      throw new Error(`${where}: 찾을 카페 이름을 1개 이상 적어야 함`);
+    }
+    if (cafeNames.length > MAX_CAFE_NAMES) {
+      throw new Error(`${where}: 카페는 ${MAX_CAFE_NAMES}개까지만 넣을 수 있음`);
+    }
+    const names = cafeNames.map((name) => trimmed(name));
+    if (names.some((name) => !name)) {
+      throw new Error(`${where}: 빈 카페 이름이 들어 있음`);
+    }
+    // 쉼표로 이어 붙여 환경변수로 넘기므로 이름에 쉼표가 있으면 두 개로 쪼개진다.
+    if (names.some((name) => name.includes(','))) {
+      throw new Error(`${where}: 카페 이름에 쉼표를 넣을 수 없음`);
+    }
+    if (new Set(names).size !== names.length) {
+      throw new Error(`${where}: 같은 카페가 여러 번 들어 있음`);
+    }
+
+    return { id: checkId, label: checkLabel, sheetUrl: url, tabTitle: tab, cafeNames: names };
+  });
+};
+
 export const parsePreset = (raw: unknown): TenantPreset => {
-  const { targets, blogGroups, runBundles, doorayWebhookUrl } = asRecord(raw);
+  const { targets, blogGroups, runBundles, cafeChecks, doorayWebhookUrl } =
+    asRecord(raw);
   if (!Array.isArray(targets)) {
     throw new Error('대상 목록이 배열이 아님');
   }
@@ -347,6 +421,8 @@ export const parsePreset = (raw: unknown): TenantPreset => {
     new Set(parsedTargets.map(({ id }) => id)),
   );
   if (parsedBundles.length > 0) preset.runBundles = parsedBundles;
+  const parsedCafeChecks = parseCafeChecks(cafeChecks);
+  if (parsedCafeChecks.length > 0) preset.cafeChecks = parsedCafeChecks;
   const parsedWebhook = parseDoorayWebhookUrl(doorayWebhookUrl);
   if (parsedWebhook) preset.doorayWebhookUrl = parsedWebhook;
 
