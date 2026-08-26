@@ -20,6 +20,7 @@ export const JOB_REQUIRED_TARGETS: Record<string, readonly string[]> = {
   'pet-exposure-9-direct': ['pet'],
   'suripet-exposure': ['suripet'],
   'cafe-exposure': ['cafe'],
+  'cafe-only-exposure': ['cafe'],
 
   // 루트 키워드를 훑으므로 루트 대상이 있어야 의미가 있다.
   'root-cafe-url-exposure': ['root'],

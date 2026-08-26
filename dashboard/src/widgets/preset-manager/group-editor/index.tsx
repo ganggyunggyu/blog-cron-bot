@@ -14,7 +14,7 @@ const FIELD_STYLE = cn(
   'focus:border-[var(--signal)] focus:ring-2 focus:ring-[var(--signal)]/20',
 );
 
-const PREVIEW_LIMIT = 8;
+const PREVIEW_LIMIT = 3;
 
 interface GroupRowProps {
   group: BlogGroup;
@@ -84,9 +84,9 @@ const GroupRow = ({
             계정 {group.blogIds.length}
           </Badge>
           {usedByCount > 0 ? (
-            <Badge tone="neutral">대상 {usedByCount}곳</Badge>
+            <Badge tone="neutral">체크 {usedByCount}곳</Badge>
           ) : (
-            <Badge tone="neutral">쓰는 대상 없음</Badge>
+            <Badge tone="neutral">쓰는 곳 없음</Badge>
           )}
         </button>
         <Button
@@ -130,9 +130,7 @@ const GroupRow = ({
           </label>
 
           <label className="flex flex-col gap-1.5">
-            <span className="stamp">
-              계정 목록 · 그룹 이름 {group.id}
-            </span>
+            <span className="stamp">계정 목록</span>
             <textarea
               value={blogIdsToText(group.blogIds)}
               onChange={handleBlogIdsChange}
@@ -185,7 +183,7 @@ export const GroupEditor = ({
 
       {groups.length === 0 ? (
         <p className="rounded-lg border border-dashed border-[var(--line)] px-4 py-5 text-center text-[13px] text-[var(--ink-soft)]">
-          아직 만든 그룹이 없습니다. 계정을 묶어두면 대상마다 골라 쓸 수 있습니다
+          아직 만든 그룹이 없습니다. 계정을 묶어두면 체크마다 골라 쓸 수 있습니다
         </p>
       ) : null}
 

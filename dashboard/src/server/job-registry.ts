@@ -99,6 +99,17 @@ export const JOB_REGISTRY: JobDefinition[] = [
     resourceGroup: 'exposure',
   },
   {
+    id: 'cafe-only-exposure',
+    label: '카페 노출체크',
+    // 카페만 본다. 계정 프리셋을 안 읽는 게 맞다 - matchCafeTargets만 쓰고
+    // 등록 블로그 계정은 보지 않는다.
+    script: 'cafe:check',
+    description: '카페키워드 시트를 읽어 카페 노출을 확인하고 카페 노출여부 시트에 씁니다',
+    kind: 'standard',
+    section: 'daily',
+    resourceGroup: 'exposure',
+  },
+  {
     id: 'root-cafe-url-exposure',
     label: '카페 글 노출 확인',
     // resolveTargetJobCommand로 보내면 안 된다. job-command가 이 kind에서 args를

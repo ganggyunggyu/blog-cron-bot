@@ -115,8 +115,8 @@ export const TargetEditor = ({
   const directCount = target.blogIds?.length ?? 0;
 
   const describeAccounts = (): string => {
-    if (!usesPresetAccounts) return '계정은 봇 설정을 따릅니다';
-    if (followsPackage) return '패키지와 같은 계정 목록을 씁니다';
+    if (!usesPresetAccounts) return '계정 지정 안 함';
+    if (followsPackage) return '패키지와 같음';
     const total = groupAccountCount + directCount;
     return total > 0 ? `계정 ${total}개` : '계정 전체';
   };
@@ -190,17 +190,6 @@ export const TargetEditor = ({
         </div>
       ) : null}
 
-      {followsPackage ? (
-        <p className="border-t border-[var(--line)] px-3.5 py-2 text-[11px] text-[var(--ink-faint)]">
-          이 체크는 패키지에 붙인 계정 목록을 그대로 씁니다.
-        </p>
-      ) : null}
-
-      {!usesPresetAccounts ? (
-        <p className="border-t border-[var(--line)] px-3.5 py-2 text-[11px] text-[var(--ink-faint)]">
-          이 체크가 볼 계정은 봇 설정에 정해져 있어 여기서 바꿀 수 없습니다.
-        </p>
-      ) : null}
     </div>
   );
 };

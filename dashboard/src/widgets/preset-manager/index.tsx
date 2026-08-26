@@ -160,7 +160,7 @@ export const PresetManager = () => {
           {isDirty ? '저장 안 됨' : '저장됨'}
         </Badge>
         <span className="tabular text-[12px] text-[var(--ink-soft)]">
-          대상 {enabledCount}/{preset.targets.length} · 그룹 {preset.blogGroups.length}
+          체크 {enabledCount}/{preset.targets.length} · 계정 그룹 {preset.blogGroups.length}
         </span>
         {data?.member ? (
           <span className="text-[12px] text-[var(--ink-faint)]">
@@ -193,7 +193,7 @@ export const PresetManager = () => {
       <Card>
         <SectionHeader
           title="실행 묶음"
-          description="자주 쓰는 대상 조합에 이름을 붙여두면 실행 화면에서 버튼 하나로 돌릴 수 있습니다"
+          description="실행 화면에서 버튼 하나로 돌릴 조합입니다"
           action={
             <Button variant="ghost" size="sm" onClick={handleBundleAdd}>
               <Plus className="size-3.5" />
@@ -224,7 +224,7 @@ export const PresetManager = () => {
       <Card>
         <SectionHeader
           title="계정 그룹"
-          description="계정을 묶어두면 노출체크 대상마다 골라 쓸 수 있습니다"
+          description="체크마다 골라 쓰는 계정 묶음입니다"
           action={<Badge tone="success">실행에 반영됨</Badge>}
         />
         <GroupEditor
@@ -240,8 +240,8 @@ export const PresetManager = () => {
 
       <Card>
         <SectionHeader
-          title="노출체크 대상"
-          description="노출지기가 어떤 시트를 도는지는 봇에 정해져 있습니다. 여기서는 체크를 켜고 끄는 것과 어떤 계정으로 볼지를 정합니다"
+          title="노출체크 종류"
+          description="켜고 끄는 것과 어떤 계정으로 볼지를 정합니다"
         />
         <div className="flex flex-col gap-2">
           {preset.targets.map((target, index) => (
@@ -258,15 +258,15 @@ export const PresetManager = () => {
           ))}
         </div>
         <p className="mt-3 text-[12px] text-[var(--ink-faint)]">
-          이 목록은 노출지기가 실제로 도는 시트에 맞춰져 있어 새로 만들 수 없습니다.
-          자주 쓰는 조합이 필요하면 실행 화면에서 체크를 고르고 묶음으로 저장하면 됩니다.
+          체크 종류는 정해져 있어 새로 만들 수 없습니다. 조합이 필요하면 실행 화면에서
+          골라 묶음으로 저장하세요.
         </p>
       </Card>
 
       <Card>
         <SectionHeader
           title="알림"
-          description="비워두면 서버에 설정된 기본 웹훅으로 보냅니다"
+          description="비워두면 기본 웹훅으로 보냅니다"
         />
         <label className="flex flex-col gap-1.5">
           <span className="stamp">Dooray 웹훅</span>
