@@ -6,6 +6,7 @@ import { cn } from '@/shared';
 const NAV_ITEMS = [
   { href: '/', label: '실행' },
   { href: '/activity', label: '기록' },
+  { href: '/sheets', label: '시트' },
   { href: '/settings', label: '설정' },
 ];
 
