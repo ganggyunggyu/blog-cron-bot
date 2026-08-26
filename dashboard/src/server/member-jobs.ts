@@ -1,6 +1,7 @@
 import { JOB_REGISTRY, type JobDefinition } from './job-registry';
 import { EXPOSURE_TARGETS, type ExposureTargetId } from '@/shared';
-import type { RunBundle, TenantPreset } from './preset';
+import type { CafeCheck, RunBundle, TenantPreset } from './preset';
+import { parseNaverTargetInputs } from './naver-target-input';
 
 /**
  * 각 실행 항목이 어느 프리셋 대상을 필요로 하는지.
@@ -124,12 +125,22 @@ export const CAFE_CHECK_JOB_PREFIX = 'cafe-check:';
  *
  * 레지스트리는 고정 목록이라 여기 없다. 회원마다 다르므로 목록을 내려줄 때 붙인다.
  */
+/** 무엇을 확인하는 체크인지 한 줄로. 카페와 블로그를 나눠 센다. */
+const describeCafeCheck = (check: CafeCheck): string => {
+  const { cafeIds, blogIds } = parseNaverTargetInputs(check.targets);
+  const parts = [
+    cafeIds.length > 0 ? `카페 ${cafeIds.length}곳` : '',
+    blogIds.length > 0 ? `블로그 ${blogIds.length}곳` : '',
+  ].filter(Boolean);
+  return `${check.tabTitle} 탭의 키워드로 ${parts.join(' · ') || '지정한 곳'} 노출을 확인합니다`;
+};
+
 export const buildCafeCheckJobs = (preset: TenantPreset): JobDefinition[] =>
   (preset.cafeChecks ?? []).map((check) => ({
     id: `${CAFE_CHECK_JOB_PREFIX}${check.id}`,
     label: check.label,
     script: 'cafe:check',
-    description: `${check.tabTitle} 탭의 키워드로 ${check.cafeNames.join(', ')} 노출을 확인합니다`,
+    description: describeCafeCheck(check),
     kind: 'cafe-check' as const,
     section: 'daily' as const,
     resourceGroup: 'exposure' as const,
@@ -147,16 +158,19 @@ export const findCafeCheck = (preset: TenantPreset, jobId: string) => {
  * check-cafe-exposure.ts는 키워드를 CAFE_SOURCE_*에서 읽고 결과를 CAFE_SHEET_*에
  * 쓴다. 사용자가 시트를 하나만 정하므로 둘 다 같은 곳을 가리킨다.
  */
-export const buildCafeCheckEnv = (check: {
-  sheetUrl: string;
-  tabTitle: string;
-  cafeNames: string[];
-}): Record<string, string> => ({
-  CAFE_SOURCE_SHEET_URL: check.sheetUrl,
-  CAFE_SOURCE_SHEET_NAME: check.tabTitle,
-  CAFE_SOURCE_SHEET_GID: '',
-  CAFE_SHEET_ID: '',
-  CAFE_SHEET_NAME: check.tabTitle,
-  CAFE_SHEET_GID: '',
-  CAFE_TARGET_NAMES: check.cafeNames.join(','),
-});
+export const buildCafeCheckEnv = (check: CafeCheck): Record<string, string> => {
+  const { cafeIds, blogIds } = parseNaverTargetInputs(check.targets);
+  return {
+    CAFE_SOURCE_SHEET_URL: check.sheetUrl,
+    CAFE_SOURCE_SHEET_NAME: check.tabTitle,
+    CAFE_SOURCE_SHEET_GID: '',
+    CAFE_SHEET_ID: '',
+    CAFE_SHEET_NAME: check.tabTitle,
+    CAFE_SHEET_GID: '',
+    // 이름이 아니라 아이디로 넘긴다. 이름 매칭은 부분 문자열까지 맞다고 봐서
+    // 짧은 이름이면 남의 카페가 걸린다.
+    CAFE_TARGET_IDS: cafeIds.join(','),
+    CAFE_TARGET_NAMES: '',
+    BLOG_TARGET_IDS: blogIds.join(','),
+  };
+};

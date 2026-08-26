@@ -5,6 +5,8 @@ import { GoogleSpreadsheet, GoogleSpreadsheetWorksheet } from 'google-spreadshee
 import { JWT } from 'google-auth-library';
 import { crawlWithRetry, crawlWithRetryWithoutCookie, randomDelay } from '../crawler';
 import { saveCafeExposureCSV, saveCafeExposureSheetCSV } from '../csv-writer';
+import { matchBlogs } from '../matcher';
+import { extractPopularItems } from '../parser';
 import {
   buildCafeExposureRow,
   CafeExposureRow,
@@ -58,18 +60,34 @@ const DEFAULT_TARGETS: CafeTarget[] = [
 const shouldUseGuestMode = (): boolean =>
   process.env.CAFE_GUEST_MODE === 'true' || process.env.CAFE_SKIP_LOGIN === 'true';
 
-const getTargets = (): CafeTarget[] => {
-  const envTargets = String(process.env.CAFE_TARGET_NAMES ?? '')
+const splitEnvList = (value: string | undefined): string[] =>
+  String(value ?? '')
     .split(',')
-    .map((value) => value.trim())
-    .filter((value) => value.length > 0);
+    .map((entry) => entry.trim())
+    .filter(Boolean);
 
-  if (envTargets.length > 0) {
-    return envTargets.map((name) => ({ name }));
+/**
+ * 확인할 카페.
+ *
+ * CAFE_TARGET_IDS를 주면 카페 아이디로만 맞춘다. 이름 매칭(CAFE_TARGET_NAMES)은
+ * 부분 문자열까지 같다고 보기 때문에, 이름이 짧으면 남의 카페가 걸린다.
+ * 아이디를 알 수 있으면 아이디를 쓴다.
+ */
+const getTargets = (): CafeTarget[] => {
+  const ids = splitEnvList(process.env.CAFE_TARGET_IDS);
+  if (ids.length > 0) {
+    return ids.map((id) => ({ name: id, ids: [id] }));
   }
+
+  const names = splitEnvList(process.env.CAFE_TARGET_NAMES);
+  if (names.length > 0) return names.map((name) => ({ name }));
 
   return DEFAULT_TARGETS;
 };
+
+/** 같이 확인할 블로그 계정. 없으면 카페만 본다. */
+const getBlogTargetIds = (): string[] =>
+  splitEnvList(process.env.BLOG_TARGET_IDS).map((id) => id.toLowerCase());
 
 const loadKeywords = (inputFile: string): KeywordLoadResult => {
   const content = fs.readFileSync(inputFile, 'utf8');
@@ -362,6 +380,8 @@ const main = async (): Promise<void> => {
   const hanryeodamwonCafeSheet = getHanryeodamwonCafeSheetConfig();
   const inputFile = process.env.CAFE_KEYWORD_FILE || DEFAULT_INPUT_FILE;
   const targets = getTargets();
+  const usesIdMatching = splitEnvList(process.env.CAFE_TARGET_IDS).length > 0;
+  const blogTargetIds = getBlogTargetIds();
   const { rawCount, duplicateCount, keywords, sourceLabel } =
     await loadKeywordsFromSource(inputFile);
 
@@ -370,6 +390,10 @@ const main = async (): Promise<void> => {
     { label: '중복 제거', value: `${duplicateCount}개` },
     { label: '키워드 소스', value: sourceLabel },
     { label: '대상 카페', value: targets.map((target) => target.name).join(', ') },
+    {
+      label: '대상 블로그',
+      value: blogTargetIds.length > 0 ? blogTargetIds.join(', ') : '(없음)',
+    },
     { label: '로그인', value: shouldUseGuestMode() ? 'guest' : 'cookie' },
   ]);
 
@@ -386,7 +410,18 @@ const main = async (): Promise<void> => {
         ? await crawlWithRetryWithoutCookie(keyword)
         : await crawlWithRetry(keyword);
       const cafeItems = extractCafeItems(html);
-      const matches = matchCafeTargets(cafeItems, targets);
+      const matches = matchCafeTargets(cafeItems, targets).filter((match) =>
+        // 아이디로 지정했으면 아이디로 걸린 것만 인정한다. 이름 브랜치는 부분
+        // 문자열까지 맞다고 보기 때문에 여기서는 오탐만 만든다.
+        usesIdMatching ? match.matchedBy === 'id' : true
+      );
+
+      const blogMatches =
+        blogTargetIds.length > 0
+          ? matchBlogs(keyword, extractPopularItems(html, { includeCafe: false }), {
+              blogIds: blogTargetIds,
+            })
+          : [];
 
       matches.forEach((match) => {
         const targetStat = targetStats.get(match.targetName);
@@ -410,6 +445,16 @@ const main = async (): Promise<void> => {
       });
 
       const row = buildCafeExposureRow(keyword, matches);
+      // 블로그가 걸렸으면 같은 줄에 합쳐 적는다. 카페만 보던 시절 형식을 깨지 않는다.
+      if (blogMatches.length > 0) {
+        const blogRanks = blogMatches.map(({ position }) => `블로그 ${position}`);
+        const blogNames = blogMatches.map(({ blogName, blogId }) => blogName || blogId);
+        const blogLinks = blogMatches.map(({ postLink }) => postLink);
+        row.exposureStatus = '노출';
+        row.rank = [row.rank, ...blogRanks].filter(Boolean).join(' | ');
+        row.cafeName = [row.cafeName, ...blogNames].filter(Boolean).join(' | ');
+        row.link = [row.link, ...blogLinks].filter(Boolean).join(' | ');
+      }
       rows.push(row);
 
       const rankInfo = row.rank ? ` ${row.rank}위` : '';

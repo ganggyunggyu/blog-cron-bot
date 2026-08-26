@@ -12,8 +12,8 @@ const FIELD_STYLE = cn(
   'focus:border-[var(--signal)] focus:ring-2 focus:ring-[var(--signal)]/20',
 );
 
-const namesToText = (names: string[]): string => names.join('\n');
-const textToNames = (text: string): string[] =>
+const linesToText = (values: string[]): string => values.join('\n');
+const textToLines = (text: string): string[] =>
   text
     .split(/[\n,]/)
     .map((value) => value.trim())
@@ -31,7 +31,7 @@ export const CafeCheckEditor = ({
   onRemove,
 }: CafeCheckEditorProps) => {
   const [isEditing, setIsEditing] = React.useState(
-    () => !check.sheetUrl || check.cafeNames.length === 0,
+    () => !check.sheetUrl || check.targets.length === 0,
   );
 
   const handleToggleEdit = () => setIsEditing((current) => !current);
@@ -48,8 +48,8 @@ export const CafeCheckEditor = ({
     onChange({ ...check, tabTitle: event.target.value });
   };
 
-  const handleNamesChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    onChange({ ...check, cafeNames: textToNames(event.target.value) });
+  const handleTargetsChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onChange({ ...check, targets: textToLines(event.target.value) });
   };
 
   if (!isEditing) {
@@ -59,7 +59,7 @@ export const CafeCheckEditor = ({
           {check.label || '이름 없음'}
         </span>
         <span className="min-w-0 flex-1 truncate text-[12px] text-[var(--ink-soft)]">
-          {check.tabTitle} 탭 · 카페 {check.cafeNames.length}곳
+          {check.tabTitle} 탭 · {check.targets.length}곳 확인
         </span>
         <Button size="sm" variant="ghost" onClick={handleToggleEdit}>
           <Pencil className="size-3.5" />
@@ -118,17 +118,18 @@ export const CafeCheckEditor = ({
       </label>
 
       <label className="flex flex-col gap-1.5">
-        <span className="stamp">찾을 카페 이름</span>
+        <span className="stamp">찾을 카페 · 블로그 주소</span>
         <textarea
-          value={namesToText(check.cafeNames)}
-          onChange={handleNamesChange}
-          rows={3}
-          placeholder={'쇼핑지름신\n샤넬오픈런'}
-          aria-label="찾을 카페 이름"
+          value={linesToText(check.targets)}
+          onChange={handleTargetsChange}
+          rows={4}
+          placeholder={'https://cafe.naver.com/카페이름\nhttps://blog.naver.com/블로그아이디'}
+          aria-label="찾을 카페 블로그 주소"
           className={cn(FIELD_STYLE, 'resize-y')}
         />
         <span className="text-[11px] text-[var(--ink-faint)]">
-          한 줄에 하나씩 적습니다. 검색 결과에 뜨는 카페 이름과 같아야 합니다.
+          한 줄에 하나씩 붙여넣습니다. 카페 주소는 카페로, 블로그 주소는 블로그로
+          알아서 갈립니다.
         </span>
       </label>
     </div>

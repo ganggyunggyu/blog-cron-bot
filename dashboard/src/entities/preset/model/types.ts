@@ -51,7 +51,8 @@ export interface CafeCheck {
   label: string;
   sheetUrl: string;
   tabTitle: string;
-  cafeNames: string[];
+  /** 찾을 카페·블로그 주소. 주소를 보고 알아서 갈린다. */
+  targets: string[];
 }
 
 export interface TenantPreset {

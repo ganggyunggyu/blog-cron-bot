@@ -77,8 +77,13 @@ export interface CafeCheck {
   sheetUrl: string;
   /** 그 시트 안의 탭 이름. */
   tabTitle: string;
-  /** 검색 결과에서 찾을 카페 이름. */
-  cafeNames: string[];
+  /**
+   * 찾을 카페·블로그. 주소를 그대로 붙여넣는다.
+   *
+   * cafe.naver.com이면 카페로, blog.naver.com이면 블로그로 알아서 갈린다.
+   * 아이디만 적으면 어느 쪽인지 알 수 없어 양쪽 후보로 둔다.
+   */
+  targets: string[];
 }
 
 export interface TenantPreset {
@@ -93,7 +98,7 @@ export const EMPTY_PRESET: TenantPreset = { targets: [], blogGroups: [] };
 
 export const MAX_RUN_BUNDLES = 12;
 export const MAX_CAFE_CHECKS = 12;
-export const MAX_CAFE_NAMES = 50;
+export const MAX_CAFE_TARGETS = 50;
 
 /** 구글시트 주소에서 시트 ID를 뽑는다. 없으면 주소가 아닌 것이다. */
 export const parseSheetIdFromUrl = (raw: string): string =>
@@ -356,7 +361,7 @@ const parseCafeChecks = (raw: unknown): CafeCheck[] => {
 
   const seen = new Set<string>();
   return raw.map((entry, index) => {
-    const { id, label, sheetUrl, tabTitle, cafeNames } = asRecord(entry);
+    const { id, label, sheetUrl, tabTitle, targets: rawTargets } = asRecord(entry);
     const checkId = trimmed(id);
     const checkLabel = trimmed(label);
     const where = checkLabel || `${index + 1}번째 카페 노출체크`;
@@ -373,25 +378,25 @@ const parseCafeChecks = (raw: unknown): CafeCheck[] => {
     const tab = trimmed(tabTitle);
     if (!tab) throw new Error(`${where}: 시트 탭 이름이 비어 있음`);
 
-    if (!Array.isArray(cafeNames) || cafeNames.length === 0) {
-      throw new Error(`${where}: 찾을 카페 이름을 1개 이상 적어야 함`);
+    if (!Array.isArray(rawTargets) || rawTargets.length === 0) {
+      throw new Error(`${where}: 찾을 카페나 블로그를 1개 이상 넣어야 함`);
     }
-    if (cafeNames.length > MAX_CAFE_NAMES) {
-      throw new Error(`${where}: 카페는 ${MAX_CAFE_NAMES}개까지만 넣을 수 있음`);
+    if (rawTargets.length > MAX_CAFE_TARGETS) {
+      throw new Error(`${where}: ${MAX_CAFE_TARGETS}개까지만 넣을 수 있음`);
     }
-    const names = cafeNames.map((name) => trimmed(name));
-    if (names.some((name) => !name)) {
-      throw new Error(`${where}: 빈 카페 이름이 들어 있음`);
+    const targets = rawTargets.map((value) => trimmed(value));
+    if (targets.some((value) => !value)) {
+      throw new Error(`${where}: 빈 줄이 들어 있음`);
     }
-    // 쉼표로 이어 붙여 환경변수로 넘기므로 이름에 쉼표가 있으면 두 개로 쪼개진다.
-    if (names.some((name) => name.includes(','))) {
-      throw new Error(`${where}: 카페 이름에 쉼표를 넣을 수 없음`);
+    // 쉼표로 이어 붙여 환경변수로 넘기므로 값에 쉼표가 있으면 두 개로 쪼개진다.
+    if (targets.some((value) => value.includes(','))) {
+      throw new Error(`${where}: 주소에 쉼표를 넣을 수 없음`);
     }
-    if (new Set(names).size !== names.length) {
-      throw new Error(`${where}: 같은 카페가 여러 번 들어 있음`);
+    if (new Set(targets).size !== targets.length) {
+      throw new Error(`${where}: 같은 주소가 여러 번 들어 있음`);
     }
 
-    return { id: checkId, label: checkLabel, sheetUrl: url, tabTitle: tab, cafeNames: names };
+    return { id: checkId, label: checkLabel, sheetUrl: url, tabTitle: tab, targets };
   });
 };
 

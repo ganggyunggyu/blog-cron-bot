@@ -75,11 +75,11 @@ export const removeGroupAt = (
         label: check.label.trim(),
         sheetUrl: check.sheetUrl.trim(),
         tabTitle: check.tabTitle.trim(),
-        cafeNames: check.cafeNames.map((name) => name.trim()).filter(Boolean),
+        targets: check.targets.map((value) => value.trim()).filter(Boolean),
       }))
       .filter(
-        ({ label, sheetUrl, tabTitle, cafeNames }) =>
-          label && sheetUrl && tabTitle && cafeNames.length > 0,
+        ({ label, sheetUrl, tabTitle, targets }) =>
+          label && sheetUrl && tabTitle && targets.length > 0,
       );
     return cleaned.length > 0 ? cleaned : undefined;
   })(),
@@ -157,7 +157,7 @@ export const createEmptyCafeCheck = (existing: CafeCheck[]): CafeCheck => {
     label: `카페 체크 ${index}`,
     sheetUrl: '',
     tabTitle: '',
-    cafeNames: [],
+    targets: [],
   };
 };
 

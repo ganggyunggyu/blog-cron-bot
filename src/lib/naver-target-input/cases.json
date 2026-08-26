@@ -1,0 +1,15 @@
+{
+  "comment": "주소를 카페/블로그로 가르는 기준. 봇(src/lib/naver-target-input)과 대시보드(dashboard/src/server/naver-target-input)가 같은 결과를 내야 해서 양쪽 테스트가 이 파일을 읽는다.",
+  "cases": [
+    { "line": "https://cafe.naver.com/localtable702/12345", "cafeIds": ["localtable702"], "blogIds": [], "why": "카페 글 주소" },
+    { "line": "https://cafe.naver.com/localtable702", "cafeIds": ["localtable702"], "blogIds": [], "why": "카페 첫 화면" },
+    { "line": "https://m.cafe.naver.com/menunote702/1?art=x", "cafeIds": ["menunote702"], "blogIds": [], "why": "모바일 + 쿼리스트링" },
+    { "line": "https://blog.naver.com/higher_0/224367708238", "cafeIds": [], "blogIds": ["higher_0"], "why": "블로그 글 주소" },
+    { "line": "https://m.blog.naver.com/gee0403", "cafeIds": [], "blogIds": ["gee0403"], "why": "모바일 블로그" },
+    { "line": "https://cafe.naver.com/LocalTable702", "cafeIds": ["localtable702"], "blogIds": [], "why": "대소문자 안 가림" },
+    { "line": "localtable702", "cafeIds": ["localtable702"], "blogIds": ["localtable702"], "why": "아이디만 적으면 어느 쪽인지 몰라 양쪽 후보" },
+    { "line": "https://cafe.naver.com/f-e/cafes/1/articles/2", "cafeIds": [], "blogIds": [], "why": "카페를 숫자로 가리키는 새 주소라 아이디를 못 맞춤" },
+    { "line": "https://cafe.daum.net/x", "cafeIds": [], "blogIds": [], "why": "다음 카페" },
+    { "line": "한글 이름", "cafeIds": [], "blogIds": [], "why": "주소도 아이디도 아님" }
+  ]
+}

@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import fs from 'node:fs';
+import path from 'node:path';
 import { parsePreset, type TenantPreset } from './preset';
+import { parseNaverTargetInputs } from './naver-target-input';
 import {
   buildCafeCheckEnv,
   buildCafeCheckJobs,
@@ -30,14 +33,14 @@ const check = (over: Record<string, unknown> = {}) => ({
   label: '내 카페',
   sheetUrl: SHEET,
   tabTitle: '카페키워드',
-  cafeNames: ['쇼핑지름신', '샤넬오픈런'],
+  targets: ['https://cafe.naver.com/localtable702', 'https://blog.naver.com/higher_0'],
   ...over,
 });
 
 test('카페 체크를 저장하고 다시 읽음', () => {
   const preset = parsePreset(base([check()]));
   assert.equal(preset.cafeChecks?.length, 1);
-  assert.deepEqual(preset.cafeChecks?.[0].cafeNames, ['쇼핑지름신', '샤넬오픈런']);
+  assert.equal(preset.cafeChecks?.[0].targets.length, 2);
 });
 
 test('없으면 키를 만들지 않음', () => {
@@ -50,10 +53,10 @@ test('잘못된 카페 체크는 저장을 거부함', () => {
     [[check({ label: '  ' })], /이름이 비어 있음/],
     [[check({ sheetUrl: 'https://example.com/nope' })], /구글시트 주소가 아님/],
     [[check({ tabTitle: '' })], /탭 이름이 비어 있음/],
-    [[check({ cafeNames: [] })], /1개 이상/],
-    [[check({ cafeNames: ['a', 'a'] })], /여러 번/],
-    // 환경변수로 쉼표 이어붙여 넘기므로 이름에 쉼표가 있으면 두 개로 쪼개진다.
-    [[check({ cafeNames: ['가, 나'] })], /쉼표/],
+    [[check({ targets: [] })], /1개 이상/],
+    [[check({ targets: ['a', 'a'] })], /여러 번/],
+    // 환경변수로 쉼표 이어붙여 넘기므로 값에 쉼표가 있으면 두 개로 쪼개진다.
+    [[check({ targets: ['가, 나'] })], /쉼표/],
     [[check(), check()], /중복됨/],
     [{ nope: 1 }, /배열이 아님/],
   ];
@@ -81,14 +84,35 @@ test('실행 항목으로 나오고 그 회원만 돌릴 수 있음', () => {
   );
 });
 
-test('시트와 카페를 환경변수로 넘김', () => {
+test('시트와 대상을 환경변수로 넘김', () => {
   const env = buildCafeCheckEnv(check());
   assert.equal(env.CAFE_SOURCE_SHEET_URL, SHEET);
   assert.equal(env.CAFE_SOURCE_SHEET_NAME, '카페키워드');
   assert.equal(env.CAFE_SHEET_NAME, '카페키워드');
-  assert.equal(env.CAFE_TARGET_NAMES, '쇼핑지름신,샤넬오픈런');
+  // 주소를 보고 카페와 블로그가 알아서 갈린다.
+  assert.equal(env.CAFE_TARGET_IDS, 'localtable702');
+  assert.equal(env.BLOG_TARGET_IDS, 'higher_0');
+  // 이름 매칭은 부분 문자열까지 맞다고 봐서 오탐을 만든다. 비워둔다.
+  assert.equal(env.CAFE_TARGET_NAMES, '');
   // .env에 남아 있는 기본 시트 gid가 새 시트에 섞이면 엉뚱한 탭을 읽는다.
   assert.equal(env.CAFE_SOURCE_SHEET_GID, '');
   assert.equal(env.CAFE_SHEET_GID, '');
   assert.equal(env.CAFE_SHEET_ID, '');
+});
+
+/** 봇과 대시보드가 같은 판정을 해야 화면 개수와 실제 확인 대상이 안 어긋난다. */
+test('주소 판정 기준이 봇과 같음', () => {
+  const casesPath = path.join(
+    __dirname,
+    '../../../src/lib/naver-target-input/cases.json',
+  );
+  const { cases } = JSON.parse(fs.readFileSync(casesPath, 'utf-8')) as {
+    cases: { line: string; cafeIds: string[]; blogIds: string[]; why: string }[];
+  };
+  assert.ok(cases.length > 0, '기준 목록이 비어 있으면 안 됨');
+  cases.forEach(({ line, cafeIds, blogIds, why }) => {
+    const result = parseNaverTargetInputs([line]);
+    assert.deepEqual(result.cafeIds, cafeIds, `카페(${why}): ${line}`);
+    assert.deepEqual(result.blogIds, blogIds, `블로그(${why}): ${line}`);
+  });
 });
