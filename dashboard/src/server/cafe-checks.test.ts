@@ -94,10 +94,17 @@ test('시트와 대상을 환경변수로 넘김', () => {
   assert.equal(env.BLOG_TARGET_IDS, 'higher_0');
   // 이름 매칭은 부분 문자열까지 맞다고 봐서 오탐을 만든다. 비워둔다.
   assert.equal(env.CAFE_TARGET_NAMES, '');
-  // .env에 남아 있는 기본 시트 gid가 새 시트에 섞이면 엉뚱한 탭을 읽는다.
+  // 읽는 시트와 쓰는 시트가 둘 다 사용자가 지정한 곳이어야 한다.
+  //
+  // 비워두면 안 된다. 자식 프로세스가 루트 .env의 CAFE_SOURCE_SHEET_ID를 물려받고,
+  // check-cafe-exposure.ts가 URL보다 그 값을 먼저 쓴다. 결과 시트도 비우면
+  // 하드코딩된 기본 시트로 써버린다. 둘 다 실제로 겪은 일이다.
+  const sheetId = '1AbC_dEf-123';
+  assert.equal(env.CAFE_SOURCE_SHEET_ID, sheetId, '읽는 시트가 사용자 것이어야 함');
+  assert.equal(env.CAFE_SHEET_ID, sheetId, '쓰는 시트도 사용자 것이어야 함');
+  // gid는 비운다. .env에 남은 기본 시트 gid가 섞이면 엉뚱한 탭을 읽는다.
   assert.equal(env.CAFE_SOURCE_SHEET_GID, '');
   assert.equal(env.CAFE_SHEET_GID, '');
-  assert.equal(env.CAFE_SHEET_ID, '');
 });
 
 /** 봇과 대시보드가 같은 판정을 해야 화면 개수와 실제 확인 대상이 안 어긋난다. */

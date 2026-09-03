@@ -38,10 +38,10 @@ export const TerminalOutput = ({ lines }: TerminalOutputProps) => {
       onScroll={handleScroll}
       className="h-80 overflow-y-auto rounded-lg border border-[var(--line)] bg-[var(--panel)] p-3 font-mono text-xs"
       aria-live="polite"
-      aria-label="실시간 실행 로그"
+      aria-label="실행 로그"
     >
       {lines.length === 0 ? (
-        <p className="text-[var(--ink-soft)]">로그 대기 중...</p>
+        <p className="text-[var(--ink-soft)]">로그 대기 중</p>
       ) : (
         lines.map((line, index) => (
           <div

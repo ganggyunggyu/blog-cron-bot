@@ -72,7 +72,7 @@ export const SheetMap = () => {
     <Card>
       <SectionHeader
         title="원본 → 결과 시트"
-        description="대상마다 키워드를 어디서 읽어서 결과를 어디에 쓰는지"
+        description="체크마다 키워드를 어디서 읽고 결과를 어디에 쓰는지 보여줍니다"
       />
       <div className="flex flex-col divide-y divide-[var(--line)]">
         {preset.targets.map((target) => {
@@ -106,7 +106,7 @@ export const SheetMap = () => {
                   {result.isHardcodedOverride ? (
                     <span
                       className="stamp shrink-0"
-                      title="프리셋 result엔 없지만 코드에 결과 시트가 고정돼 있음"
+                      title="설정에는 없지만 결과를 쓸 시트가 봇에 정해져 있습니다"
                     >
                       코드고정
                     </span>

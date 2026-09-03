@@ -43,9 +43,9 @@ const DAEMON_LABELS: Record<string, string> = {
  * 시각은 pm2가 실제로 들고 있는 값에서만 읽는다.
  */
 const describeSchedule = (daemon: DaemonStatus): string => {
-  if (daemon.status === 'not_found') return '등록되어 있지 않음 - 지금은 수동 실행만 됨';
+  if (daemon.status === 'not_found') return '등록되어 있지 않습니다. 지금은 직접 눌러야 돕니다';
   if (daemon.cronRestart) return `자동 실행 ${daemon.cronRestart}`;
-  return '자동 실행 설정 없음';
+  return '자동 실행 설정이 없습니다';
 };
 
 interface DaemonRowProps {
@@ -110,11 +110,11 @@ export const DaemonStatusPanel = () => {
         description="정해진 시간에 자동으로 도는 노출체크입니다"
       />
       {isLoading ? (
-        <p className="text-sm text-[var(--ink-soft)]">불러오는 중...</p>
+        <p className="text-sm text-[var(--ink-soft)]">불러오는 중</p>
       ) : null}
       {isError ? (
         <p className="text-sm text-[var(--alert)]">
-          {error instanceof Error ? error.message : '스케줄러 상태를 불러오지 못함'}
+          {error instanceof Error ? error.message : '스케줄러 상태를 불러오지 못했습니다'}
         </p>
       ) : null}
       {data ? (

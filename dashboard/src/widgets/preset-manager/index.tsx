@@ -152,7 +152,7 @@ export const PresetManager = () => {
   if (isLoading) {
     return (
       <Card>
-        <p className="text-[13px] text-[var(--ink-soft)]">프리셋 불러오는 중</p>
+        <p className="text-[13px] text-[var(--ink-soft)]">설정 불러오는 중</p>
       </Card>
     );
   }
@@ -161,7 +161,7 @@ export const PresetManager = () => {
     return (
       <Card>
         <p className="text-[13px] text-[var(--alert)]">
-          {toErrorMessage(error, '프리셋을 불러오지 못함')}
+          {toErrorMessage(error, '설정을 불러오지 못함')}
         </p>
       </Card>
     );
@@ -198,7 +198,7 @@ export const PresetManager = () => {
         <div className="ml-auto flex items-center gap-2">
           {saveError ? (
             <span className="text-[12px] text-[var(--alert)]">
-              {toErrorMessage(saveError, '프리셋을 저장하지 못함')}
+              {toErrorMessage(saveError, '설정을 저장하지 못함')}
             </span>
           ) : null}
           {isSuccess && !isDirty ? (

@@ -5,13 +5,13 @@ import { useRouter } from 'next/navigation';
 import { api, cn } from '@/shared';
 
 const RANK_SLOTS = Array.from({ length: 10 }, (_, index) => index + 1);
-/** 이 제품이 실제로 찾아내는 자리. 스캔이 여기서 멈춘다. */
+/** 스캔이 멈추는 자리. 실제 순위가 아니라 그림이 멈출 지점일 뿐이다. */
 const FOUND_RANK = 3;
 
 /**
  * 검색결과 1~10위를 훑다가 한 칸에 멈추는 스트립.
- * 노출지기가 매일 하는 일(검색결과에서 내 글 찾기)을 그대로 시각화한 것이라
- * 장식이 아니라 제품 설명 역할을 한다.
+ * 이 제품이 하는 일을 그대로 보여주는 그림이다. 옆에 "3위 노출" 같은 숫자를
+ * 붙이면 진짜 결과처럼 읽히므로 붙이지 않는다.
  */
 /** 모션을 끈 사용자에게는 스캔 없이 결과 상태만 바로 보여준다. */
 const prefersReducedMotion = (): boolean =>
@@ -99,27 +99,16 @@ const LoginPage = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--paper)] px-5 py-10">
       <main className="w-full max-w-[420px]">
-        <div className="mb-7 flex items-center justify-between">
-          <span className="stamp">노출 관제</span>
-          <span className="stamp flex items-center gap-1.5">
-            <span className="size-1.5 rounded-full bg-[var(--live)]" />
-            연결됨
-          </span>
-        </div>
-
         <h1 className="text-[40px] font-semibold leading-[1.05] tracking-[-0.03em] text-[var(--ink)]">
           노출지기
         </h1>
         <p className="mt-2.5 text-[15px] leading-relaxed text-[var(--ink-soft)]">
-          네이버 검색에서 내 글이 몇 위에 잡히는지 매일 확인합니다.
+          네이버 검색에서 내 글이 몇 위에 있는지 확인합니다.
         </p>
 
         <div className="mt-7 rounded-md border border-[var(--line)] bg-[var(--panel)] p-4">
-          <div className="mb-3 flex items-baseline justify-between">
-            <span className="stamp">검색 1~10위</span>
-            <span className="tabular text-xs text-[var(--live)]">
-              {FOUND_RANK}위 노출
-            </span>
+          <div className="mb-3">
+            <span className="stamp">검색결과에서 내 글 찾기</span>
           </div>
           <RankScan />
         </div>

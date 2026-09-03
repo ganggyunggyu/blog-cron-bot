@@ -52,9 +52,9 @@ export const LiveLogViewer = () => {
   if (!runId) {
     return (
       <Card>
-        <SectionHeader title="실시간 로그" />
+        <SectionHeader title="실행 로그" />
         <p className="text-sm text-[var(--ink-soft)]">
-          위에서 실행 기록을 하나 고르면 그 로그가 여기 뜸.
+          위에서 실행 기록을 하나 고르면 그 로그가 여기 나옵니다.
         </p>
       </Card>
     );
@@ -68,7 +68,7 @@ export const LiveLogViewer = () => {
   return (
     <Card>
       <SectionHeader
-        title="실시간 로그"
+        title="실행 로그"
         description={`성공 ${viewModel.successCount}건${viewModel.failureCount > 0 ? ` · 실패 ${viewModel.failureCount}건` : ''}`}
         action={
           <div className="flex items-center gap-2">

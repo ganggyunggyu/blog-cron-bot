@@ -124,7 +124,7 @@ export const CafeCheckEditor = ({
           onChange={handleTargetsChange}
           rows={4}
           placeholder={'https://cafe.naver.com/카페이름\nhttps://blog.naver.com/블로그아이디'}
-          aria-label="찾을 카페 블로그 주소"
+          aria-label="찾을 카페 · 블로그 주소"
           className={cn(FIELD_STYLE, 'resize-y')}
         />
         <span className="text-[11px] text-[var(--ink-faint)]">

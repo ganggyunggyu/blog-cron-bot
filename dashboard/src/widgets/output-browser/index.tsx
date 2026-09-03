@@ -81,16 +81,16 @@ export const OutputBrowser = () => {
         }
       />
       {isLoading ? (
-        <p className="text-sm text-[var(--ink-soft)]">불러오는 중...</p>
+        <p className="text-sm text-[var(--ink-soft)]">불러오는 중</p>
       ) : null}
       {isError ? (
-        <p className="text-sm text-[var(--alert)]">파일 목록을 불러오지 못함</p>
+        <p className="text-sm text-[var(--alert)]">파일 목록을 불러오지 못했습니다</p>
       ) : null}
       {data ? (
         <div className="flex flex-col">
           {filteredFiles.length === 0 ? (
             <p className="text-sm text-[var(--ink-soft)]">
-              {search ? '검색 결과가 없음.' : '생성된 결과 파일이 없음.'}
+              {search ? '검색 결과가 없습니다' : '아직 만들어진 결과 파일이 없습니다'}
             </p>
           ) : null}
           <div className="flex max-h-96 flex-col overflow-y-auto">
