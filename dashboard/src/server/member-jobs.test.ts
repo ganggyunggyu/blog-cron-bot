@@ -3,12 +3,13 @@ import test from 'node:test';
 import { JOB_REGISTRY } from './job-registry';
 import {
   JOB_REQUIRED_TARGETS,
+  buildCafeCheckEnv,
   canMemberRunJob,
   getEnabledTargetIds,
   getJobsForPreset,
   getSuiteTargetIdsForPreset,
 } from './member-jobs';
-import { EMPTY_PRESET, type TenantPreset } from './preset';
+import { EMPTY_PRESET, type TenantPreset, type CafeCheck } from './preset';
 
 const target = (id: string, enabled = true) => ({
   id,
@@ -86,6 +87,27 @@ test('더보기 묶음은 세 대상 중 하나만 있어도 보임', () => {
 test('카페 URL 체크는 루트 대상이 있어야 보임', () => {
   assert.equal(canMemberRunJob(presetWith(['root']), 'root-cafe-url-exposure'), true);
   assert.equal(canMemberRunJob(presetWith(['cafe']), 'root-cafe-url-exposure'), false);
+});
+
+test('카페 체크 실행env는 사용자가 지정한 시트를 결과 저장 대상으로도 씀', () => {
+  const check: CafeCheck = {
+    id: 'c1',
+    label: '테스트 카페 노출',
+    sheetUrl:
+      'https://docs.google.com/spreadsheets/d/1T9PHu-fH6HPmyYA9dtfXaDLm20XAPN-9mzlE2QTPkF0/edit#gid=123',
+    tabTitle: '테스트카페키워드',
+    targets: ['https://cafe.naver.com/localtable702', 'https://blog.naver.com/higher_0'],
+  };
+  const env = buildCafeCheckEnv(check);
+  // 결과 시트가 소스 시트와 다른 곳(하드코딩된 기본 시트)으로 새는 걸 막는다.
+  assert.equal(env.CAFE_SHEET_ID, '1T9PHu-fH6HPmyYA9dtfXaDLm20XAPN-9mzlE2QTPkF0');
+  // 소스도 마찬가지다. .env의 CAFE_SOURCE_SHEET_ID가 먼저 채워져 있으면
+  // getSourceSheetConfig()가 URL 파싱보다 그 값을 우선 쓰므로, 비워두면 안 된다.
+  assert.equal(env.CAFE_SOURCE_SHEET_ID, '1T9PHu-fH6HPmyYA9dtfXaDLm20XAPN-9mzlE2QTPkF0');
+  assert.equal(env.CAFE_SOURCE_SHEET_URL, check.sheetUrl);
+  assert.equal(env.CAFE_SHEET_NAME, '테스트카페키워드');
+  assert.equal(env.CAFE_TARGET_IDS, 'localtable702');
+  assert.equal(env.BLOG_TARGET_IDS, 'higher_0');
 });
 
 test('21lab 프리셋 모양이면 지금 쓰는 항목이 전부 보임', () => {

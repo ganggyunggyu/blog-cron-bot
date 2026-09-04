@@ -20,14 +20,12 @@ import {
   OrderedResultTarget,
   rewriteOrderedResultSheet,
 } from './lib/google-sheets/ordered-result-sheet';
+import { selectStandardExposureKeywords } from './lib/standard-exposure/keyword-selection';
 
 dotenv.config();
 
 const runExposureWorkflow = async (): Promise<void> => {
   const startTime = Date.now();
-  const isDistributedShard =
-    process.env.DISTRIBUTED_EXPOSURE_SHARD === 'true';
-
   const loginStatus = await checkNaverLogin();
   logger.divider('로그인 상태');
   if (loginStatus.isLoggedIn) {
@@ -53,62 +51,13 @@ const runExposureWorkflow = async (): Promise<void> => {
 
   const allKeywords = await getAllKeywords();
 
-  const onlySheetType = (process.env.ONLY_SHEET_TYPE || '').trim();
-  const onlyCompany = (process.env.ONLY_COMPANY || '').trim();
-  const onlyKeywordRegex = (process.env.ONLY_KEYWORD_REGEX || '').trim();
-  const onlyId = (process.env.ONLY_ID || '').trim();
   const concurrency = getExposureConcurrency();
   const maxPages = getExposureMaxPages(1);
-
-  let filtered = allKeywords;
-  const normalize = (s: unknown) =>
-    String(s ?? '')
-      .toLowerCase()
-      .replace(/\s+/g, '');
-
-  if (onlySheetType)
-    filtered = filtered.filter(
-      (k: any) => normalize(k.sheetType) === normalize(onlySheetType)
-    );
-  if (onlyCompany)
-    filtered = filtered.filter(
-      (k: any) => normalize(k.company) === normalize(onlyCompany)
-    );
-  if (onlyKeywordRegex) {
-    try {
-      const re = new RegExp(onlyKeywordRegex);
-      filtered = filtered.filter((k: any) => re.test(k.keyword));
-    } catch {}
+  const selection = selectStandardExposureKeywords(allKeywords, process.env);
+  const { keywords, onlySheetType, isDistributedShard, startIndex } = selection;
+  if (selection.invalidKeywordRegex) {
+    logger.warn(`ONLY_KEYWORD_REGEX 무시: ${selection.invalidKeywordRegex}`);
   }
-  if (onlyId) {
-    filtered = filtered.filter((k: any) => String(k._id) === onlyId);
-  }
-
-  const distributedKeywordIds = new Set(
-    String(process.env.DISTRIBUTED_EXPOSURE_KEYWORD_IDS ?? '')
-      .split(',')
-      .filter(Boolean)
-  );
-  if (isDistributedShard) {
-    if (distributedKeywordIds.size === 0) {
-      throw new Error('분산 키워드 조각 ids 누락');
-    }
-    filtered = filtered.filter((keyword) =>
-      distributedKeywordIds.has(String(keyword._id))
-    );
-    if (filtered.length !== distributedKeywordIds.size) {
-      throw new Error(
-        `분산 키워드 스냅샷 불일치: ${filtered.length}/${distributedKeywordIds.size}`
-      );
-    }
-  }
-
-  const startIndexRaw = Number(process.env.START_INDEX ?? '0');
-  const startIndex = Number.isFinite(startIndexRaw)
-    ? Math.max(0, Math.min(startIndexRaw, filtered.length))
-    : 0;
-
-  const keywords = filtered.slice(startIndex);
   logger.info(
     `📋 검색어 ${keywords.length}개 처리 예정 (필터 applied, start=${startIndex})`
   );
@@ -125,8 +74,8 @@ const runExposureWorkflow = async (): Promise<void> => {
   const logBuilder = createDetailedLogBuilder();
   const keywordLogicMap = new Map<string, boolean>();
 
-  const dogmaruKeywords = keywords.filter((k: any) => k.sheetType === 'dogmaru');
-  const otherKeywords = keywords.filter((k: any) => k.sheetType !== 'dogmaru');
+  const dogmaruKeywords = keywords.filter((keyword) => keyword.sheetType === 'dogmaru');
+  const otherKeywords = keywords.filter((keyword) => keyword.sheetType !== 'dogmaru');
 
   const allResults: ExposureResult[] = [];
 
@@ -163,29 +112,12 @@ const runExposureWorkflow = async (): Promise<void> => {
 
     saveToCSV(allResults, filename);
     saveToSheetCSV(
-      keywords.map((k: any) => ({ keyword: k.keyword, company: k.company })),
+      keywords.map((keyword) => ({ keyword: keyword.keyword, company: keyword.company })),
       allResults,
       `${csvPrefix}_sheet_${timestamp}.csv`,
       keywordLogicMap
     );
 
-    const orderedTargetBySheetType: Record<string, OrderedResultTarget> = {
-      package: 'package',
-      'dogmaru-exclude': 'general',
-      dogmaru: 'dogmaru',
-    };
-    const orderedTarget = orderedTargetBySheetType[onlySheetType];
-    if (orderedTarget) {
-      await rewriteOrderedResultSheet(
-        orderedTarget,
-        allResults,
-        keywordLogicMap,
-        keywords.map((keyword) => ({
-          keyword: keyword.keyword,
-          company: keyword.company,
-        }))
-      );
-    }
   }
 
   const orderedTargetBySheetType: Record<string, OrderedResultTarget> = {
@@ -237,8 +169,8 @@ const runExposureWorkflow = async (): Promise<void> => {
   // 미노출 키워드 (변경=false인 것만)
   const exposedKeywords = new Set(allResults.map((r) => r.query));
   const missingKeywords = keywords
-    .filter((k: any) => !exposedKeywords.has(k.keyword) && !k.isUpdateRequired)
-    .map((k: any) => k.keyword);
+    .filter((keyword) => !exposedKeywords.has(keyword.keyword) && !keyword.isUpdateRequired)
+    .map((keyword) => keyword.keyword);
 
   // Dooray 메시지 전송
   const SHEET_TYPE_LABELS: Record<string, string> = {

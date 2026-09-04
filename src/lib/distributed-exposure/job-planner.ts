@@ -5,7 +5,7 @@ import {
   type PageCheckSheetType,
 } from '../../database';
 import { requests } from '../../constants';
-import { importSheetAPI } from '../../cron-pages';
+import { importSheetAPI } from '../page-check/sheet-api';
 import type { ExposureTargetId } from '../exposure-suite/options';
 import { logger } from '../logger';
 import { syncKeywordsFromSourceSheet } from '../sheet-keyword-sync';

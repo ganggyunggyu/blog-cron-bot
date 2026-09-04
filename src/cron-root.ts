@@ -16,6 +16,8 @@ import { sendDoorayExposureResult } from './lib/dooray';
 import { autoLogin } from './tools/auto-login';
 import { closeBrowser, launchBrowser } from './lib/playwright-crawler';
 import {
+  getExposureConcurrency,
+  getExposureKeywordBatchSize,
   getFullKeywordParallelism,
   getExposureMaxPages,
 } from './lib/exposure-run-config';
@@ -136,9 +138,13 @@ const runRootWorkflow = async (): Promise<void> => {
     : 0;
 
   const keywords = filtered.slice(startIndex);
-  const { concurrency, keywordBatchSize } = getFullKeywordParallelism(
-    keywords.length
-  );
+  const useSuiteConcurrency = Boolean(process.env.EXPOSURE_CONCURRENCY);
+  const { concurrency, keywordBatchSize } = useSuiteConcurrency
+    ? {
+        concurrency: getExposureConcurrency(),
+        keywordBatchSize: getExposureKeywordBatchSize(),
+      }
+    : getFullKeywordParallelism(keywords.length);
   const maxPages = getExposureMaxPages(1);
   logger.info(
     `📋 루트 키워드 ${keywords.length}개 처리 예정 (필터 applied, start=${startIndex})`

@@ -43,11 +43,11 @@
   },
   "루트 키워드": {
     "cronType": "루트 키워드",
-    "totalKeywords": 190,
-    "exposureCount": 0,
-    "popularCount": 0,
+    "totalKeywords": 170,
+    "exposureCount": 18,
+    "popularCount": 1,
     "sblCount": 0,
-    "timestamp": "2026-07-29T00:42:29.349Z"
+    "timestamp": "2026-08-31T10:30:23.919Z"
   },
   "멀티페이지 크론 [애견]": {
     "cronType": "멀티페이지 크론 [애견]",
@@ -157,27 +157,27 @@
   },
   "패키지": {
     "cronType": "패키지",
-    "totalKeywords": 166,
-    "exposureCount": 2,
-    "popularCount": 2,
+    "totalKeywords": 112,
+    "exposureCount": 19,
+    "popularCount": 13,
     "sblCount": 0,
-    "timestamp": "2026-07-20T01:31:23.578Z"
+    "timestamp": "2026-08-31T10:31:20.802Z"
   },
   "일반건": {
     "cronType": "일반건",
     "totalKeywords": 123,
-    "exposureCount": 6,
-    "popularCount": 6,
+    "exposureCount": 31,
+    "popularCount": 25,
     "sblCount": 0,
-    "timestamp": "2026-07-20T01:31:23.592Z"
+    "timestamp": "2026-08-31T10:31:26.940Z"
   },
   "도그마루": {
     "cronType": "도그마루",
     "totalKeywords": 299,
-    "exposureCount": 103,
-    "popularCount": 103,
+    "exposureCount": 122,
+    "popularCount": 122,
     "sblCount": 0,
-    "timestamp": "2026-07-20T01:31:23.639Z"
+    "timestamp": "2026-08-31T10:31:35.387Z"
   },
   "흑염소 구": {
     "cronType": "흑염소 구",
@@ -360,17 +360,25 @@
   "서리펫": {
     "cronType": "서리펫",
     "totalKeywords": 131,
-    "exposureCount": 67,
-    "popularCount": 56,
+    "exposureCount": 52,
+    "popularCount": 52,
     "sblCount": 0,
-    "timestamp": "2026-07-23T07:08:58.159Z"
+    "timestamp": "2026-08-31T10:31:15.404Z"
   },
   "애견": {
     "cronType": "애견",
     "totalKeywords": 300,
-    "exposureCount": 18,
-    "popularCount": 12,
+    "exposureCount": 184,
+    "popularCount": 145,
     "sblCount": 0,
-    "timestamp": "2026-07-27T04:35:50.596Z"
+    "timestamp": "2026-08-31T10:30:32.015Z"
+  },
+  "카페노출체크": {
+    "cronType": "카페노출체크",
+    "totalKeywords": 40,
+    "exposureCount": 9,
+    "popularCount": 0,
+    "sblCount": 0,
+    "timestamp": "2026-08-31T10:31:36.319Z"
   }
 }

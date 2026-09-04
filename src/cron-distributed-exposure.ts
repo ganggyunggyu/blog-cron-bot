@@ -5,7 +5,7 @@ import {
   connectDB,
   disconnectDB,
 } from './database';
-import { exportSheetAPI } from './cron-pages';
+import { exportSheetAPI } from './lib/page-check/sheet-api';
 import { logger } from './lib/logger';
 import { emitExposureProgress } from './lib/exposure-progress';
 import {

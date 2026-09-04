@@ -1,6 +1,7 @@
 import { JOB_REGISTRY, type JobDefinition } from './job-registry';
 import { EXPOSURE_TARGETS, type ExposureTargetId } from '@/shared';
 import type { CafeCheck, RunBundle, TenantPreset } from './preset';
+import { parseSheetIdFromUrl } from './preset';
 import { parseNaverTargetInputs } from './naver-target-input';
 
 /**
@@ -160,11 +161,20 @@ export const findCafeCheck = (preset: TenantPreset, jobId: string) => {
  */
 export const buildCafeCheckEnv = (check: CafeCheck): Record<string, string> => {
   const { cafeIds, blogIds } = parseNaverTargetInputs(check.targets);
+  // 키워드를 읽는 시트와 결과를 쓰는 시트가 실제로 같은 곳을 가리키게 한다.
+  // CAFE_SHEET_ID를 비워두면 check-cafe-exposure.ts가 하드코딩된 기본 시트로
+  // 결과를 써버려서, 사용자가 UI에 지정한 시트가 아닌 곳에 쓰였다.
+  // 마찬가지로 소스도 CAFE_SOURCE_SHEET_ID를 비워두면 안 된다. 자식 프로세스가
+  // 루트 .env에서 물려받은 CAFE_SOURCE_SHEET_ID(다른 하드코딩된 시트)가 이미
+  // process.env에 있으면, getSourceSheetConfig()가 URL 파싱보다 그 값을 먼저
+  // 쓰기 때문에 소스 시트조차 사용자가 지정한 곳이 아니게 된다.
+  const sheetId = parseSheetIdFromUrl(check.sheetUrl);
   return {
+    CAFE_SOURCE_SHEET_ID: sheetId,
     CAFE_SOURCE_SHEET_URL: check.sheetUrl,
     CAFE_SOURCE_SHEET_NAME: check.tabTitle,
     CAFE_SOURCE_SHEET_GID: '',
-    CAFE_SHEET_ID: '',
+    CAFE_SHEET_ID: sheetId,
     CAFE_SHEET_NAME: check.tabTitle,
     CAFE_SHEET_GID: '',
     // 이름이 아니라 아이디로 넘긴다. 이름 매칭은 부분 문자열까지 맞다고 봐서

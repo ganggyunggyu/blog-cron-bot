@@ -5,7 +5,7 @@ import {
   getPageCheckKeywords,
   type PageCheckSheetType,
 } from './database';
-import { processSheetKeywords } from './cron-pages';
+import { processSheetKeywords } from './lib/page-check/page-keyword-processor';
 import { applyStoredBlogIdOverrides } from './lib/blog-id-overrides';
 import { checkNaverLogin } from './lib/check-naver-login';
 import { getExposureConcurrency } from './lib/exposure-run-config';
